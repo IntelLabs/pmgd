@@ -223,11 +223,6 @@ Jarvis::Property Jarvis::Edge::get_property(StringID) const
 {
 }
 
-double Jarvis::PropertyValue::float_value() const
-{
-    return 0;
-}
-
 Jarvis::PathRef::operator Jarvis::Path() const
 {
     return Path();
@@ -240,5 +235,19 @@ Jarvis::PathIterator Jarvis::Graph::get_paths(Jarvis::Node &, bool)
 
 Jarvis::NodeIterator Jarvis::PathIteratorImpl::end_nodes() const
 {
+    throw e_not_implemented;
+}
+
+Jarvis::PropertyValue::PropertyValue(const PropertyValue &a)
+{
+}
+
+Jarvis::PropertyValue::~PropertyValue()
+{
+}
+
+bool Jarvis::PropertyValue::operator<(const PropertyValue &a)
+{
+
     throw e_not_implemented;
 }
