@@ -13,28 +13,26 @@
  * This test contains stubs for any Jarvis functions that are
  * not inline, so it should not be linked against jarvis.lib.
  *
- * Compile with g++-4.7 -std=c++11 -I ../include apitest.cc
+ * Compile with g++-4.8 -std=c++11 -I ../include apitest.cc
  */
 
 #include "jarvis.h"
 
-typedef Jarvis::Node Node;
-typedef Jarvis::Disposition Disposition;
-typedef Jarvis::NodeIterator NodeIterator;
-typedef Jarvis::EdgeIterator EdgeIterator;
-typedef Jarvis::PathIterator PathIterator;
+using namespace Jarvis;
 
-
-Jarvis::Graph db("name");
 
 int main()
 {
+    Graph db("name");
+
+    db.get_node(3);
+
     return 0;
 }
 
 // Query 1.
 // Return the length of the shortest path between two nodes.
-int q1(Node &a, Node &b)
+int q1(Graph &db, Node &a, Node &b)
 {
     class min_path {
         int min_length;
@@ -58,7 +56,7 @@ int q1(Node &a, Node &b)
 // Return the length of the shortest path between two nodes.
 // Since the breadth-first search will always return the shortest path first,
 // all the filter has to do is stop on the first path.
-int q1a(Node &a, Node &b)
+int q1a(Graph &db, Node &a, Node &b)
 {
     return db.get_paths(a, b, false)
                .filter([](PathIterator &) { return Jarvis::pass_stop; })
@@ -70,7 +68,7 @@ int q1a(Node &a, Node &b)
 // Return the shortest path between two nodes.
 // Since the breadth-first search will always return the shortest path first,
 // all the filter has to do is stop on the first path.
-int q5(Node &a, Node &b)
+int q5(Graph &db, Node &a, Node &b)
 {
     return db.get_paths(a, b, false)
                .filter([](PathIterator &) { return Jarvis::pass_stop; });
@@ -79,7 +77,7 @@ int q5(Node &a, Node &b)
 
 // Query 6.
 // Return the length of the shortest weighted path between two nodes.
-int q6(Node &a, Node &b)
+int q6(Graph &db, Node &a, Node &b)
 {
     class min_weighted_path {
         double min_length;
@@ -105,7 +103,7 @@ int q6(Node &a, Node &b)
 
 // Query 6a.
 // Return the shortest weighted path between two nodes.
-Jarvis::Path q6a(Node &a, Node &b)
+Jarvis::Path q6a(Graph &db, Node &a, Node &b)
 {
     Jarvis::Path path;
     double min_length;
@@ -128,7 +126,7 @@ Jarvis::Path q6a(Node &a, Node &b)
 
 // Query 4.
 // Return true if A is connected to B.
-bool q4(Node &a, Node &b)
+bool q4(Graph &db, Node &a, Node &b)
 {
     return bool(db.get_paths(a, b)
                     .filter([](PathIterator &) { return Jarvis::pass_stop; }));
@@ -137,7 +135,7 @@ bool q4(Node &a, Node &b)
 
 // Query 8.
 // Get all paths of length N between nodes A and B.
-int q8(Node &a, Node &b, int N)
+int q8(Graph &db, Node &a, Node &b, int N)
 {
     PathIterator i = db.get_paths(a, b)
         .filter([N](PathIterator &i)
@@ -147,7 +145,7 @@ int q8(Node &a, Node &b, int N)
 
 // Query 3.
 // Get all nodes at distance N from node A.
-NodeIterator q3(Node &a, int N)
+NodeIterator q3(Graph &db, Node &a, int N)
 {
     return db.get_paths(a)
                .filter([N](PathIterator &i)
@@ -158,7 +156,7 @@ NodeIterator q3(Node &a, int N)
 
 // Query 2.
 // Get all nodes at distance <= N from node A.
-NodeIterator q2(Node &a, int N)
+NodeIterator q2(Graph &db, Node &a, int N)
 {
     return db.get_paths(a)
                .filter([N](PathIterator &i)
@@ -173,7 +171,7 @@ NodeIterator q2(Node &a, int N)
 
 // Query 3.
 // Get all nodes at distance N from node A.
-void q3a(Node &a, int N, void (*process)(Node &))
+void q3a(Graph &db, Node &a, int N, void (*process)(Node &))
 {
     PathIterator i = db.get_paths(a)
         .filter([N](PathIterator &i)
@@ -187,7 +185,7 @@ void q3a(Node &a, int N, void (*process)(Node &))
 
 // Query 2.
 // Get all nodes at distance <= N from node A.
-void q2a(Node &a, int N, void (*process)(Node &))
+void q2a(Graph &db, Node &a, int N, void (*process)(Node &))
 {
     PathIterator i = db.get_paths(a)
         .filter([N](PathIterator &i)
@@ -205,6 +203,11 @@ Jarvis::Graph::Graph(const char *, int)
 
 Jarvis::Graph::~Graph()
 {
+}
+
+Jarvis::Node &Jarvis::Graph::get_node(NodeID id)
+{
+    throw e_not_implemented;
 }
 
 Jarvis::PathIterator Jarvis::Graph::get_paths(Node &, Node&, bool)
