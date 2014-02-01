@@ -28,8 +28,8 @@ namespace Jarvis {
     public:
         IteratorFilter(B *i, F f) : base_iter(i), func(f) { _next(); }
         operator bool() const { return bool(*base_iter); }
-        const typename B::Ref_type &operator*() const { return (*base_iter).operator*(); }
-        const typename B::Ref_type *operator->() const { return (*base_iter).operator->(); }
+        typename B::Ref_type &operator*() const { return (*base_iter).operator*(); }
+        typename B::Ref_type *operator->() const { return (*base_iter).operator->(); }
         void next() { if (base_iter) { base_iter->next(); _next(); } }
     };
 

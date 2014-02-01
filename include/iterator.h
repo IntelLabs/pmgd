@@ -12,8 +12,8 @@ namespace Jarvis {
         typedef R Ref_type;
         virtual ~IteratorImpl() { }
         virtual operator bool() const = 0;
-        virtual const Ref_type &operator*() const = 0;
-        virtual const Ref_type *operator->() const = 0;
+        virtual Ref_type &operator*() const = 0;
+        virtual Ref_type *operator->() const = 0;
         virtual void next() = 0;
     };
 
@@ -30,9 +30,9 @@ namespace Jarvis {
         void done() { delete impl; impl = NULL; }
 
         operator bool() const { return impl && bool(*impl); }
-        const Ref_type &operator*() const
+        Ref_type &operator*() const
             { if (!impl) throw e_null_iterator; return (*impl).operator*(); }
-        const Ref_type *operator->() const
+        Ref_type *operator->() const
             { if (!impl) throw e_null_iterator; return (*impl).operator->(); }
         void next() { if (impl) impl->next(); }
     };
@@ -93,11 +93,11 @@ namespace Jarvis {
     };
 
     class PropertyIteratorImpl : public IteratorImpl<PropertyRef> {
-        PropertyRef ref;
+        mutable PropertyRef ref;
     public:
         PropertyIteratorImpl() : ref(this) { }
-        const PropertyRef &operator*() const { return ref; }
-        const PropertyRef *operator->() const { return &ref; }
+        PropertyRef &operator*() const { return ref; }
+        PropertyRef *operator->() const { return &ref; }
         virtual StringID id_() const = 0;
         virtual PropertyType type_() const = 0;
         virtual bool bool_value_() const = 0;
@@ -133,11 +133,11 @@ namespace Jarvis {
     };
 
     class PathIteratorImpl : public IteratorImpl<PathRef> {
-        PathRef ref;
+        mutable PathRef ref;
     public:
         PathIteratorImpl() : ref(this) { }
-        const PathRef &operator*() const { return ref; }
-        const PathRef *operator->() const { return &ref; }
+        PathRef &operator*() const { return ref; }
+        PathRef *operator->() const { return &ref; }
         virtual NodeIterator end_nodes() const = 0;
 
         virtual Node &start_node_() const = 0;
