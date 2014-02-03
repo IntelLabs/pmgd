@@ -74,8 +74,9 @@ namespace Jarvis {
     public:
         PropertyValueRef(PropertyIteratorImpl *i) : iter(i) { }
         operator PropertyValue() const;
+        PropertyType type() const;
         bool bool_value() const;
-        unsigned long long int_value() const;
+        long long int_value() const;
         std::string string_value() const;
         double float_value() const;
         Time time_value() const;
@@ -98,8 +99,9 @@ namespace Jarvis {
         const PropertyRef &operator*() const { return ref; }
         const PropertyRef *operator->() const { return &ref; }
         virtual StringID id_() const = 0;
+        virtual PropertyType type_() const = 0;
         virtual bool bool_value_() const = 0;
-        virtual unsigned long long int_value_() const = 0;
+        virtual long long int_value_() const = 0;
         virtual std::string string_value_() const = 0;
         virtual double float_value_() const = 0;
         virtual Time time_value_() const = 0;
@@ -158,8 +160,9 @@ namespace Jarvis {
 
 namespace Jarvis {
     inline StringID PropertyRef::id() const { return iter->id_(); }
+    inline PropertyType PropertyValueRef::type() const { return iter->type_(); }
     inline bool PropertyValueRef::bool_value() const { return iter->bool_value_(); }
-    inline unsigned long long PropertyValueRef::int_value() const { return iter->int_value_(); }
+    inline long long PropertyValueRef::int_value() const { return iter->int_value_(); }
     inline std::string PropertyValueRef::string_value() const { return iter->string_value_(); }
     inline double PropertyValueRef::float_value() const { return iter->float_value_(); }
     inline Time PropertyValueRef::time_value() const { return iter->time_value_(); }
