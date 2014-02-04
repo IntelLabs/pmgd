@@ -37,6 +37,7 @@ int q1(Graph &db, Node &a, Node &b)
     class min_path {
         int min_length;
     public:
+        min_path() : min_length(0) { }
         Disposition operator()(PathIterator &i) {
             if (i->length() < min_length)
                 min_length = i->length();
@@ -77,13 +78,14 @@ int q5(Graph &db, Node &a, Node &b)
 
 // Query 6.
 // Return the length of the shortest weighted path between two nodes.
-int q6(Graph &db, Node &a, Node &b)
+double q6(Graph &db, Node &a, Node &b)
 {
     class min_weighted_path {
         double min_length;
     public:
+        min_weighted_path() : min_length(0) { }
         Disposition operator()(PathIterator &i) {
-            double length;
+            double length = 0;
             EdgeIterator e = i->get_edges();
             while (e) {
                 length += e->get_property("weight").value().float_value();
@@ -93,7 +95,7 @@ int q6(Graph &db, Node &a, Node &b)
                 min_length = length;
             return Jarvis::stop;
         }
-        int get_length() { return min_length; }
+        double get_length() { return min_length; }
     };
     min_weighted_path m;
     PathIterator i = db.get_paths(a, b).filter(m);
@@ -129,17 +131,22 @@ Jarvis::Path q6a(Graph &db, Node &a, Node &b)
 bool q4(Graph &db, Node &a, Node &b)
 {
     return bool(db.get_paths(a, b)
-                    .filter([](PathIterator &) { return Jarvis::pass_stop; }));
+                .filter([](PathIterator &) { return Jarvis::pass_stop; }));
 }
 
 
 // Query 8.
 // Get all paths of length N between nodes A and B.
-int q8(Graph &db, Node &a, Node &b, int N)
+void q8(Graph &db, Node &a, Node &b, int N, void (*process)(Path &))
 {
     PathIterator i = db.get_paths(a, b)
         .filter([N](PathIterator &i)
-                       { return i->length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
+            { return i->length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
+
+    while (i) {
+        //process(*i);
+        i.next();
+    }
 }
 
 
@@ -148,9 +155,9 @@ int q8(Graph &db, Node &a, Node &b, int N)
 NodeIterator q3(Graph &db, Node &a, int N)
 {
     return db.get_paths(a)
-               .filter([N](PathIterator &i)
-                       { return i->length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; })
-               .end_nodes();
+        .filter([N](PathIterator &i)
+            { return i->length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; })
+        .end_nodes();
 }
 
 
@@ -159,9 +166,9 @@ NodeIterator q3(Graph &db, Node &a, int N)
 NodeIterator q2(Graph &db, Node &a, int N)
 {
     return db.get_paths(a)
-               .filter([N](PathIterator &i)
-                       { return i->length() < N ? Jarvis::pass : Jarvis::pass_stop; })
-               .end_nodes();
+        .filter([N](PathIterator &i)
+            { return i->length() < N ? Jarvis::pass : Jarvis::pass_stop; })
+        .end_nodes();
 }
 
 
@@ -175,7 +182,8 @@ void q3a(Graph &db, Node &a, int N, void (*process)(Node &))
 {
     PathIterator i = db.get_paths(a)
         .filter([N](PathIterator &i)
-                       { return i->length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
+           { return i->length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
+
     while (i) {
         process(i->end_node());
         i.next();
@@ -189,7 +197,8 @@ void q2a(Graph &db, Node &a, int N, void (*process)(Node &))
 {
     PathIterator i = db.get_paths(a)
         .filter([N](PathIterator &i)
-                       { return i->length() < N ? Jarvis::pass : Jarvis::pass_stop; });
+            { return i->length() < N ? Jarvis::pass : Jarvis::pass_stop; });
+
     while (i) {
         process(i->end_node());
         i.next();
@@ -221,6 +230,7 @@ Jarvis::StringID::StringID(const char *)
 
 Jarvis::Property Jarvis::Edge::get_property(StringID) const
 {
+    throw e_not_implemented;
 }
 
 Jarvis::PathRef::operator Jarvis::Path() const

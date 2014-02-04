@@ -38,9 +38,9 @@ int main(int argc, char **argv)
 
 static void dump(Node &n)
 {
-    printf("Node %llu:\n", n.get_id());
+    printf("Node %lu:\n", n.get_id());
     for (PropertyIterator i = n.get_properties(); i; i.next()) {
-        printf("  %d: %s\n", i->id(), property_text(i).c_str());
+        printf("  %s: %s\n", i->id().name().c_str(), property_text(i).c_str());
     }
 }
 
@@ -93,12 +93,9 @@ void Node::set_property(const Property &)
 {
 }
 
-Jarvis::StringID::StringID(const char *)
-{
-}
-
 Jarvis::Property Jarvis::Edge::get_property(StringID) const
 {
+    throw e_not_implemented;
 }
 
 Jarvis::PropertyValue::PropertyValue(const PropertyValue &a)
