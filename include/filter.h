@@ -20,6 +20,7 @@ namespace Jarvis {
                     case pass: break;
                     case stop: base_iter->done(); break;
                     case pass_stop: done = true; break;
+                    default: throw e_not_implemented;
                 }
                 break;
             }

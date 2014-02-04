@@ -1,6 +1,7 @@
 CC := g++-4.8
 AR := ar
 CP := cp -a
+RM := rm -f
 
 TARGET := jarvis.lib
 INSTALLPATH := ../lib
