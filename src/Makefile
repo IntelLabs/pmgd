@@ -6,7 +6,7 @@ TARGET := jarvis.lib
 INSTALLPATH := ../lib
 CLEANFILES := 
 
-SRC := property.cc
+SRC := property.cc stringid.cc
 
 # Translates source file names to object file names
 OBJS := $(patsubst %.cc, %.o, $(SRC))
