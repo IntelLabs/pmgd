@@ -12,7 +12,7 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
                                  bool &create, bool truncate)
 {
     std::string filename = std::string(db_name) + "/" + region_name;
-    int open_flags = O_RDWR | (create ? O_CREAT : 0) | (truncate ? O_TRUNC : 0);
+    int open_flags = O_RDWR | create * O_CREAT | truncate * O_TRUNC;
     if ((_fd = open(filename.c_str(), open_flags)) < 0)
         throw e_map_failed;
 
