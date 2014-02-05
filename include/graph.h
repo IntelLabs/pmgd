@@ -7,6 +7,9 @@
 
 namespace Jarvis {
     class Graph {
+        class GraphImpl;
+        GraphImpl *_impl;
+
         Graph(const Graph &);
         void operator=(const Graph &);
 
