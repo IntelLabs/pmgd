@@ -1,3 +1,4 @@
+#include <string>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -6,19 +7,20 @@
 #include "os.h"
 #include "exception.h"
 
-Jarvis::os::MapHandle::MapHandle(const char *dir, const char *name,
+Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
                                  uint64_t map_addr, uint64_t map_len,
                                  bool &create, bool truncate)
 {
+    std::string filename = std::string(db_name) + "/" + region_name;
     int open_flags = O_RDWR | (create ? O_CREAT : 0) | (truncate ? O_TRUNC : 0);
-    if ((_fd = open(name, open_flags)) < 0)
-        throw e_open_failed;
+    if ((_fd = open(filename.c_str(), open_flags)) < 0)
+        throw e_map_failed;
 
     // check for size before mmap'ing
     struct stat sb;
     if (fstat(_fd, &sb) < 0) {
         close(_fd);
-        throw e_open_failed;
+        throw e_map_failed;
     }
 
     if (sb.st_size == off_t(map_len)) {
@@ -27,12 +29,12 @@ Jarvis::os::MapHandle::MapHandle(const char *dir, const char *name,
     else if (sb.st_size == 0 && create) {
         if (ftruncate(_fd, map_len) < 0) {
             close(_fd);
-            throw e_open_failed;
+            throw e_map_failed;
         }
     }
     else {
         close(_fd);
-        throw e_open_failed;
+        throw e_map_failed;
     }
 
     if (mmap((void *)map_addr, map_len,
@@ -40,11 +42,11 @@ Jarvis::os::MapHandle::MapHandle(const char *dir, const char *name,
              _fd, 0) == MAP_FAILED)
     {
         close(_fd);
-        throw e_open_failed;
+        throw e_map_failed;
     }
 }
 
-Jarvis::os::MapHandle::~MapHandle()
+Jarvis::os::MapRegion::~MapRegion()
 {
     close(_fd);
 }
