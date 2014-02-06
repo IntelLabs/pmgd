@@ -11,9 +11,17 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
                                  uint64_t map_addr, uint64_t map_len,
                                  bool &create, bool truncate)
 {
+    if (create) {
+        // It doesn't matter if this step fails, either because the
+        // name already exists, permissions are insufficient, or any
+        // other reason. In any case, success or failure of the open
+        // call is what is important.
+        mkdir(db_name, 0777);
+    }
+
     std::string filename = std::string(db_name) + "/" + region_name;
     int open_flags = O_RDWR | create * O_CREAT | truncate * O_TRUNC;
-    if ((_fd = open(filename.c_str(), open_flags)) < 0)
+    if ((_fd = open(filename.c_str(), open_flags, 0666)) < 0)
         throw e_map_failed;
 
     // check for size before mmap'ing
