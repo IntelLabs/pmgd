@@ -140,22 +140,22 @@ void Jarvis::FixedAllocator::free(void *p)
     release_lock();
 }
 
-void *Jarvis::FixedAllocator::begin()
+void *Jarvis::FixedAllocator::begin() const
 {
     return (void *)((unsigned long)_pm + _alloc_offset);
 }
 
-void *Jarvis::FixedAllocator::end()
+const void *Jarvis::FixedAllocator::end() const
 {
     return _pm->tail_ptr;
 }
 
-void *Jarvis::FixedAllocator::next(void *curr)
+void *Jarvis::FixedAllocator::next(const void *curr) const
 {
     return (void *)((unsigned long)curr + _pm->size);
 }
 
-bool Jarvis::FixedAllocator::is_free(void *curr)
+bool Jarvis::FixedAllocator::is_free(const void *curr) const
 {
     return *(uint64_t *)curr & FREE_BIT;
 }
