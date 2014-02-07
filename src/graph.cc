@@ -2,6 +2,7 @@
 #include "node.h"
 #include "edge.h"
 #include "allocator.h"
+#include "iterator.h"
 #include "os.h"
 
 class Jarvis::Graph::GraphImpl {
@@ -112,4 +113,52 @@ Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
 
         // Other information
     }
+}
+
+namespace Jarvis {
+    class Graph_NodeIterator : public NodeIteratorImpl {
+        const FixedAllocator &node_table;
+        void *current_node;
+        void _next();
+        void _skip();
+
+    public:
+        Graph_NodeIterator(const FixedAllocator &);
+        operator bool() const { return current_node != NULL; }
+        Node &operator*() const { return *(Node *)current_node; }
+        Node *operator->() const { return (Node *)current_node; }
+        void next();
+    };
+};
+
+Jarvis::Graph_NodeIterator::Graph_NodeIterator(const FixedAllocator &n)
+    : node_table(n)
+{
+    current_node = node_table.begin();
+    _next();
+}
+
+void Jarvis::Graph_NodeIterator::next()
+{
+    _skip();
+    _next();
+}
+
+void Jarvis::Graph_NodeIterator::_next()
+{
+    while (current_node < node_table.end() && node_table.is_free(current_node))
+        _skip();
+
+    if (current_node >= node_table.end())
+        current_node = NULL;
+}
+
+void Jarvis::Graph_NodeIterator::_skip()
+{
+    current_node = node_table.next(current_node);
+}
+
+Jarvis::NodeIterator Jarvis::Graph::get_nodes()
+{
+    return NodeIterator(new Graph_NodeIterator(_impl->node_table()));
 }
