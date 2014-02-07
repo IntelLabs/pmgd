@@ -18,15 +18,15 @@ CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) -DSTUBS
 all: lib apitest alloctest soltest
 
 apitest: apitest.o
-	$(CC) -o $@ $< ../lib/jarvis.lib
+	$(CC) -o $@ $<
 CLEANFILES += apitest apitest.o
 
-alloctest: alloctest.o
-	$(CC) -o $@ $< ../lib/jarvis.lib
+alloctest: alloctest.o $(LIB)
+	$(CC) -o $@ $< $(LIB)
 CLEANFILES += alloctest alloctest.o
 
-soltest: soltest.o
-	$(CC) -o $@ $< ../lib/jarvis.lib
+soltest: soltest.o $(LIB)
+	$(CC) -o $@ $< $(LIB)
 CLEANFILES += soltest soltest.o
 
 lib:
