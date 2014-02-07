@@ -5,6 +5,7 @@
 #include "iterator.h"
 
 namespace Jarvis {
+    class Graph;
     typedef uint64_t NodeID;
 
     enum Direction { ANY, OUTGOING, INCOMING };
@@ -15,6 +16,9 @@ namespace Jarvis {
         EdgeList *_in_edges;
         StringID _tag;
         uint8_t _property_list[];
+
+        friend class Graph;
+        void init(StringID tag);
 
         Node(const Node &);
         ~Node();

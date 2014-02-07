@@ -7,7 +7,8 @@ TARGET := jarvis.lib
 INSTALLPATH := ../lib
 CLEANFILES := 
 
-SRC := graph.cc property.cc stringid.cc FixedAllocator.cc linux.cc
+SRC := graph.cc node.cc edge.cc property.cc stringid.cc \
+       FixedAllocator.cc linux.cc
 
 # Translates source file names to object file names
 OBJS := $(patsubst %.cc, %.o, $(SRC))
