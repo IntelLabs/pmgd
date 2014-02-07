@@ -15,11 +15,15 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
 
 CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) -DSTUBS
 
-all: lib apitest soltest
+all: lib apitest alloctest soltest
 
 apitest: apitest.o
 	$(CC) -o $@ $< ../lib/jarvis.lib
 CLEANFILES += apitest apitest.o
+
+alloctest: alloctest.o
+	$(CC) -o $@ $< ../lib/jarvis.lib
+CLEANFILES += alloctest alloctest.o
 
 soltest: soltest.o
 	$(CC) -o $@ $< ../lib/jarvis.lib
