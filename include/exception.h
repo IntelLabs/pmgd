@@ -3,6 +3,7 @@
 namespace Jarvis {
     enum {
         e_undefined_exception,
+        e_bad_alloc,
         e_null_iterator,
 
         e_map_failed,
