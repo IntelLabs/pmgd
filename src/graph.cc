@@ -61,8 +61,8 @@ public:
           _node_table(name, _init.node_info(), _init.create()),
           _edge_table(name, _init.edge_info(), _init.create())
         { }
-    NodeTable node_table();
-    EdgeTable edge_table();
+    NodeTable &node_table() { return _node_table; }
+    EdgeTable &edge_table() { return _edge_table; }
 };
 
 Jarvis::Graph::Graph(const char *name, int options)
@@ -73,6 +73,20 @@ Jarvis::Graph::Graph(const char *name, int options)
 Jarvis::Graph::~Graph()
 {
     delete _impl;
+}
+
+Jarvis::Node &Jarvis::Graph::add_node(StringID tag)
+{
+    Node *node = (Node *)_impl->node_table().alloc();
+    node->init(tag);
+    return *node;
+}
+
+Jarvis::Edge &Jarvis::Graph::add_edge(Node &src, Node &dest, StringID tag)
+{
+    Edge *edge = (Edge *)_impl->edge_table().alloc();
+    edge->init(src, dest, tag);
+    return *edge;
 }
 
 
