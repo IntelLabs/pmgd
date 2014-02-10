@@ -66,16 +66,6 @@ Jarvis::NodeIterator Jarvis::Graph::get_nodes()
     throw e_not_implemented;
 }
 
-Node &Jarvis::Graph::add_node(StringID id)
-{
-    throw e_not_implemented;
-}
-
-NodeID Node::get_id() const
-{
-    throw e_not_implemented;
-}
-
 PropertyIterator Node::get_properties() const
 {
     throw e_not_implemented;
