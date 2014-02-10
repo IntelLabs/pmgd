@@ -21,7 +21,7 @@ FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
 WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
           -Wformat=2 -Wno-parentheses -Wno-conversion
 
-CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS)
+CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) -MP -MMD
 
 install: $(TARGET)
 	$(call print,INSTALL,$(INSTALLPATH))
@@ -39,3 +39,6 @@ clean:
 %.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
+
+DEPS := $(OBJS:%.o=%.d)
+-include $(DEPS)

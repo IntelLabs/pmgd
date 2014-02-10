@@ -13,24 +13,24 @@ FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
 WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
           -Wformat=2 -Wno-parentheses -Wno-conversion
 
-CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) -DSTUBS
+CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) -DSTUBS -g
 
 all: lib apitest alloctest soltest
 
 apitest: apitest.o
-	$(CC) -o $@ $< ../lib/jarvis.lib
+	$(CC) -o $@ $<
 CLEANFILES += apitest apitest.o
 
-alloctest: alloctest.o
-	$(CC) -o $@ $< ../lib/jarvis.lib
+alloctest: alloctest.o $(LIB)
+	$(CC) -o $@ $< $(LIB)
 CLEANFILES += alloctest alloctest.o
 
-soltest: soltest.o
-	$(CC) -o $@ $< ../lib/jarvis.lib
+soltest: soltest.o $(LIB)
+	$(CC) -g -o $@ $< $(LIB)
 CLEANFILES += soltest soltest.o
 
 lib:
-	make -C ../src install
+	make -C ../src OPT=-g install
 
 clean:
 	$(call print,CLEAN)
