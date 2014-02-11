@@ -14,6 +14,7 @@
 using namespace Jarvis;
 
 static void dump(Node &n);
+static void dump(Edge &n);
 static std::string property_text(const PropertyIterator &i);
 
 int main(int argc, char **argv)
@@ -28,9 +29,14 @@ int main(int argc, char **argv)
             a.set_property(Property(0, "node a"));
             Node &b = db.add_node(0);
             b.set_property(Property(0, "node b"));
+            Edge &e = db.add_edge(a, b, 0);
         }
 
         for (NodeIterator i = db.get_nodes(); i; i.next()) {
+            dump(*i);
+        }
+
+        for (EdgeIterator i = db.get_edges(); i; i.next()) {
             dump(*i);
         }
     }
@@ -45,6 +51,21 @@ static void dump(Node &n)
 {
     printf("Node %lu:\n", n.get_id());
     for (PropertyIterator i = n.get_properties(); i; i.next()) {
+        printf("  %s: %s\n", i->id().name().c_str(), property_text(i).c_str());
+    }
+    for (EdgeIterator i = n.get_edges(OUTGOING); i; i.next()) {
+        printf("  -> n%lu (e%lu)\n", i->get_destination().get_id(), i->get_id());
+    }
+    for (EdgeIterator i = n.get_edges(INCOMING); i; i.next()) {
+        printf("  <- n%lu\n (e%lu)", i->get_source().get_id(), i->get_id());
+    }
+}
+
+static void dump(Edge &e)
+{
+    printf("Edge %lu: n%lu -> n%lu\n", e.get_id(),
+           e.get_source().get_id(), e.get_destination().get_id());
+    for (PropertyIterator i = e.get_properties(); i; i.next()) {
         printf("  %s: %s\n", i->id().name().c_str(), property_text(i).c_str());
     }
 }
@@ -67,6 +88,16 @@ static std::string property_text(const PropertyIterator &i)
 #ifdef STUBS
 
 PropertyIterator Node::get_properties() const
+{
+    return PropertyIterator(NULL);
+}
+
+EdgeIterator Node::get_edges(Direction, StringID, const PropertyPredicate &) const
+{
+    return EdgeIterator(NULL);
+}
+
+PropertyIterator Edge::get_properties() const
 {
     return PropertyIterator(NULL);
 }
