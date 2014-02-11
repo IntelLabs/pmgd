@@ -34,7 +34,7 @@ $(TARGET): $(OBJS)
 
 clean:
 	$(call print,CLEAN)
-	$(RM) $(TARGET) $(OBJS) $(CLEANFILES)
+	$(RM) $(TARGET) $(OBJS) $(DEPS) $(CLEANFILES)
 
 %.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
