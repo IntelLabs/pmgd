@@ -68,7 +68,7 @@ static std::string property_text(const PropertyIterator &i)
 
 PropertyIterator Node::get_properties() const
 {
-    throw e_not_implemented;
+    return PropertyIterator(NULL);
 }
 
 void Node::set_property(const Property &)
