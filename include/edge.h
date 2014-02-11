@@ -4,12 +4,22 @@
 #include "iterator.h"
 
 namespace Jarvis {
+    class Graph;
     typedef uint64_t EdgeID;
 
     class Edge {
+        Node *_src;
+        Node *_dest;
+        StringID _tag;
+        uint8_t _property_list[];
+
+        friend class Graph;
+        void init(Node &src, Node &dest, StringID tag);
+
         Edge(const Edge &);
         ~Edge();
         void operator=(const Edge &);
+
     public:
         EdgeID get_id() const;
         StringID get_tag() const;
