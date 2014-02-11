@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     try {
         addr2 = region2.alloc();
     }
-    catch (int e)
+    catch (Exception e)
     {
         ok = true;
         std::cout << "Exception occured.  Exception nr. " << e << "\n";

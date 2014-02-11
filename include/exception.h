@@ -1,7 +1,7 @@
 #pragma once
 
 namespace Jarvis {
-    enum {
+    enum Exception {
         e_undefined_exception,
         e_bad_alloc,
         e_null_iterator,

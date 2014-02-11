@@ -65,9 +65,9 @@ namespace Jarvis {
 
         // Support functions for the node and edge iterators; not serialized
         // (depends on the caller to serialize access)
-        void *begin();
-        void *end();
-        void *next(void *curr);
-        bool is_free(void *curr);
+        void *begin() const;
+        const void *end() const;
+        void *next(const void *curr) const;
+        bool is_free(const void *curr) const;
     };
 }
