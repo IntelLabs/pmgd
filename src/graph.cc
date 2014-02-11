@@ -115,50 +115,61 @@ Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
     }
 }
 
+
 namespace Jarvis {
-    class Graph_NodeIterator : public NodeIteratorImpl {
-        const FixedAllocator &node_table;
-        void *current_node;
+    template <typename T>
+    class Graph_Iterator : public IteratorImpl<T> {
+        const FixedAllocator &table;
+        void *cur;
         void _next();
         void _skip();
 
     public:
-        Graph_NodeIterator(const FixedAllocator &);
-        operator bool() const { return current_node != NULL; }
-        Node &operator*() const { return *(Node *)current_node; }
-        Node *operator->() const { return (Node *)current_node; }
+        Graph_Iterator(const FixedAllocator &);
+        operator bool() const { return cur != NULL; }
+        T &operator*() const { return *(T *)cur; }
+        T *operator->() const { return (T *)cur; }
         void next();
     };
 };
 
-Jarvis::Graph_NodeIterator::Graph_NodeIterator(const FixedAllocator &n)
-    : node_table(n)
+template <typename T>
+Jarvis::Graph_Iterator<T>::Graph_Iterator(const FixedAllocator &n)
+    : table(n)
 {
-    current_node = node_table.begin();
+    cur = table.begin();
     _next();
 }
 
-void Jarvis::Graph_NodeIterator::next()
+template <typename T>
+void Jarvis::Graph_Iterator<T>::next()
 {
     _skip();
     _next();
 }
 
-void Jarvis::Graph_NodeIterator::_next()
+template <typename T>
+void Jarvis::Graph_Iterator<T>::_next()
 {
-    while (current_node < node_table.end() && node_table.is_free(current_node))
+    while (cur < table.end() && table.is_free(cur))
         _skip();
 
-    if (current_node >= node_table.end())
-        current_node = NULL;
+    if (cur >= table.end())
+        cur = NULL;
 }
 
-void Jarvis::Graph_NodeIterator::_skip()
+template <typename T>
+void Jarvis::Graph_Iterator<T>::_skip()
 {
-    current_node = node_table.next(current_node);
+    cur = table.next(cur);
 }
 
 Jarvis::NodeIterator Jarvis::Graph::get_nodes()
 {
-    return NodeIterator(new Graph_NodeIterator(_impl->node_table()));
+    return NodeIterator(new Graph_Iterator<Node>(_impl->node_table()));
+}
+
+Jarvis::EdgeIterator Jarvis::Graph::get_edges()
+{
+    return EdgeIterator(new Graph_Iterator<Edge>(_impl->edge_table()));
 }
