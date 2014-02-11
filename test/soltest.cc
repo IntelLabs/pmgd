@@ -61,14 +61,6 @@ static std::string property_text(const PropertyIterator &i)
 
 #ifdef STUBS
 
-Jarvis::Graph::Graph(const char *, int)
-{
-}
-
-Jarvis::Graph::~Graph()
-{
-}
-
 Jarvis::NodeIterator Jarvis::Graph::get_nodes()
 {
     throw e_not_implemented;
