@@ -20,17 +20,22 @@ int main(int argc, char **argv)
 {
     bool create = (argc > 1);
 
-    Graph db("solgraph", create ? Graph::Create : Graph::ReadOnly);
+    try {
+        Graph db("solgraph", create ? Graph::Create : Graph::ReadOnly);
 
-    if (create) {
-        Node &a = db.add_node(0);
-        a.set_property(Property(0, "node a"));
-        Node &b = db.add_node(0);
-        b.set_property(Property(0, "node b"));
+        if (create) {
+            Node &a = db.add_node(0);
+            a.set_property(Property(0, "node a"));
+            Node &b = db.add_node(0);
+            b.set_property(Property(0, "node b"));
+        }
+
+        for (NodeIterator i = db.get_nodes(); i; i.next()) {
+            dump(*i);
+        }
     }
-
-    for (NodeIterator i = db.get_nodes(); i; i.next()) {
-        dump(*i);
+    catch (Exception e) {
+        printf("EXCEPTION %d\n", e);
     }
 
     return 0;
