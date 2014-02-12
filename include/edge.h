@@ -5,7 +5,6 @@
 
 namespace Jarvis {
     class Graph;
-    typedef uint64_t EdgeID;
 
     class Edge {
         Node *_src;
@@ -21,7 +20,6 @@ namespace Jarvis {
         void operator=(const Edge &);
 
     public:
-        EdgeID get_id() const;
         StringID get_tag() const { return _tag; }
         Node &get_source() const { return *_src; }
         Node &get_destination() const { return *_dest; }

@@ -69,5 +69,7 @@ namespace Jarvis {
         const void *end() const;
         void *next(const void *curr) const;
         bool is_free(const void *curr) const;
+
+        uint64_t get_id(const void *obj) const;
     };
 }

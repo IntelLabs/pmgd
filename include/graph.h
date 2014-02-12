@@ -6,6 +6,9 @@
 #include "iterator.h"
 
 namespace Jarvis {
+    typedef uint64_t NodeID;
+    typedef uint64_t EdgeID;
+
     class Graph {
         class GraphImpl;
         GraphImpl *_impl;
@@ -18,8 +21,8 @@ namespace Jarvis {
         Graph(const char *name, int options = 0);
         ~Graph();
 
-        Node &get_node(NodeID);
-        Edge &get_edge(EdgeID);
+        NodeID get_id(const Node &) const;
+        EdgeID get_id(const Edge &) const;
 
         NodeIterator get_nodes();
         NodeIterator get_nodes(StringID tag);
