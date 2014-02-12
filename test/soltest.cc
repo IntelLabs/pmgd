@@ -24,12 +24,13 @@ int main(int argc, char **argv)
     try {
         Graph db("solgraph", create ? Graph::Create : Graph::ReadOnly);
 
-        if (create) {
-            Node &a = db.add_node(0);
-            a.set_property(Property(0, "node a"));
-            Node &b = db.add_node(0);
-            b.set_property(Property(0, "node b"));
-            Edge &e = db.add_edge(a, b, 0);
+        Node *prev = 0;
+        for (int i = 1; i < argc; i++) {
+            Node &n = db.add_node(0);
+            n.set_property(Property(0, argv[i]));
+            if (prev != NULL)
+                db.add_edge(*prev, n, 0);
+            prev = &n;
         }
 
         for (NodeIterator i = db.get_nodes(); i; i.next()) {
