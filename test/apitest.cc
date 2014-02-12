@@ -24,8 +24,11 @@ using namespace Jarvis;
 int main()
 {
     Graph db("name");
-
-    db.get_node(3);
+    Node &a = db.add_node(0);
+    Node &b = db.add_node(0);
+    db.add_edge(a, b, 0);
+    NodeIterator ni = db.get_nodes();
+    EdgeIterator ei = db.get_edges();
 
     return 0;
 }
@@ -214,7 +217,17 @@ Jarvis::Graph::~Graph()
 {
 }
 
-Jarvis::Node &Jarvis::Graph::get_node(NodeID id)
+Jarvis::Node &Jarvis::Graph::add_node(StringID)
+{
+    throw e_not_implemented;
+}
+
+Jarvis::Edge &Jarvis::Graph::add_edge(Node &, Node &, StringID)
+{
+    throw e_not_implemented;
+}
+
+Jarvis::NodeIterator Jarvis::Graph::get_nodes()
 {
     throw e_not_implemented;
 }
@@ -222,6 +235,11 @@ Jarvis::Node &Jarvis::Graph::get_node(NodeID id)
 Jarvis::PathIterator Jarvis::Graph::get_paths(Node &, Node&, bool)
 {
     return PathIterator(NULL);
+}
+
+Jarvis::EdgeIterator Jarvis::Graph::get_edges()
+{
+    throw e_not_implemented;
 }
 
 Jarvis::StringID::StringID(const char *)
