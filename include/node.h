@@ -6,7 +6,6 @@
 
 namespace Jarvis {
     class Graph;
-    typedef uint64_t NodeID;
 
     enum Direction { ANY, OUTGOING, INCOMING };
 
@@ -25,7 +24,6 @@ namespace Jarvis {
         void operator=(const Node &);
 
     public:
-        NodeID get_id() const;
         StringID get_tag() const { return _tag; }
         bool check_property(StringID property, Property &result) const;
         Property get_property(StringID property) const;

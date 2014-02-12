@@ -173,3 +173,13 @@ Jarvis::EdgeIterator Jarvis::Graph::get_edges()
 {
     return EdgeIterator(new Graph_Iterator<Edge>(_impl->edge_table()));
 }
+
+Jarvis::NodeID Jarvis::Graph::get_id(const Node &node) const
+{
+    return _impl->node_table().get_id(&node);
+}
+
+Jarvis::EdgeID Jarvis::Graph::get_id(const Edge &edge) const
+{
+    return _impl->edge_table().get_id(&edge);
+}

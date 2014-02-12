@@ -13,8 +13,8 @@
 
 using namespace Jarvis;
 
-static void dump(Node &n);
-static void dump(Edge &n);
+static void dump(const Graph &db, const Node &n);
+static void dump(const Graph &db, const Edge &n);
 static std::string property_text(const PropertyIterator &i);
 
 int main(int argc, char **argv)
@@ -33,11 +33,11 @@ int main(int argc, char **argv)
         }
 
         for (NodeIterator i = db.get_nodes(); i; i.next()) {
-            dump(*i);
+            dump(db, *i);
         }
 
         for (EdgeIterator i = db.get_edges(); i; i.next()) {
-            dump(*i);
+            dump(db, *i);
         }
     }
     catch (Exception e) {
@@ -47,24 +47,24 @@ int main(int argc, char **argv)
     return 0;
 }
 
-static void dump(Node &n)
+static void dump(const Graph &db, const Node &n)
 {
-    printf("Node %lu:\n", n.get_id());
+    printf("Node %lu:\n", db.get_id(n));
     for (PropertyIterator i = n.get_properties(); i; i.next()) {
         printf("  %s: %s\n", i->id().name().c_str(), property_text(i).c_str());
     }
     for (EdgeIterator i = n.get_edges(OUTGOING); i; i.next()) {
-        printf("  -> n%lu (e%lu)\n", i->get_destination().get_id(), i->get_id());
+        printf("  -> n%lu (e%lu)\n", db.get_id(i->get_destination()), db.get_id(*i));
     }
     for (EdgeIterator i = n.get_edges(INCOMING); i; i.next()) {
-        printf("  <- n%lu\n (e%lu)", i->get_source().get_id(), i->get_id());
+        printf("  <- n%lu\n (e%lu)", db.get_id(i->get_source()), db.get_id(*i));
     }
 }
 
-static void dump(Edge &e)
+static void dump(const Graph &db, const Edge &e)
 {
-    printf("Edge %lu: n%lu -> n%lu\n", e.get_id(),
-           e.get_source().get_id(), e.get_destination().get_id());
+    printf("Edge %lu: n%lu -> n%lu\n", db.get_id(e),
+           db.get_id(e.get_source()), db.get_id(e.get_destination()));
     for (PropertyIterator i = e.get_properties(); i; i.next()) {
         printf("  %s: %s\n", i->id().name().c_str(), property_text(i).c_str());
     }

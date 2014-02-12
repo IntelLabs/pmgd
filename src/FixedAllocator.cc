@@ -70,6 +70,11 @@ Jarvis::FixedAllocator::FixedAllocator(const char *db_name,
     }
 }
 
+uint64_t Jarvis::FixedAllocator::get_id(const void *obj) const
+{
+    return (((uint64_t)obj - (uint64_t)begin()) / _pm->size) + 1;
+}
+
 void *Jarvis::FixedAllocator::alloc()
 {
     acquire_lock();
