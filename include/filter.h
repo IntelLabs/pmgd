@@ -10,28 +10,42 @@ namespace Jarvis {
         F func;
 
     private:
-        bool done;
+        bool _done;
 
-        virtual void _next() {
-            if (done) base_iter->done();
-            while (base_iter) {
+        virtual bool _next() {
+            while (bool(*base_iter)) {
                 switch (func(*base_iter)) {
-                    case dont_pass: base_iter->next(); continue;
-                    case pass: break;
-                    case stop: base_iter->done(); break;
-                    case pass_stop: done = true; break;
+                    case dont_pass: base_iter->next(); break;
+                    case pass: return true;
+                    case stop: base_iter->done(); return false;
+                    case pass_stop: _done = true; return true;
                     default: throw e_not_implemented;
                 }
-                break;
             }
+            return false;
         }
 
     public:
         IteratorFilter(B *i, F f) : base_iter(i), func(f) { _next(); }
         operator bool() const { return bool(*base_iter); }
-        typename B::Ref_type &operator*() const { return (*base_iter).operator*(); }
-        typename B::Ref_type *operator->() const { return (*base_iter).operator->(); }
-        void next() { if (base_iter) { base_iter->next(); _next(); } }
+        const typename B::Ref_type &operator*() const
+            { return (*base_iter).operator*(); }
+        const typename B::Ref_type *operator->() const
+            { return (*base_iter).operator->(); }
+        typename B::Ref_type &operator*() { return (*base_iter).operator*(); }
+        typename B::Ref_type *operator->() { return (*base_iter).operator->(); }
+
+        bool next()
+        {
+            if (_done) {
+                base_iter->done();
+                return false;
+            }
+            else {
+                base_iter->next();
+                return _next();
+            }
+        }
     };
 
     template <typename Iter> class PropertyFilter {

@@ -12,9 +12,11 @@ namespace Jarvis {
         typedef R Ref_type;
         virtual ~IteratorImpl() { }
         virtual operator bool() const = 0;
-        virtual Ref_type &operator*() const = 0;
-        virtual Ref_type *operator->() const = 0;
-        virtual void next() = 0;
+        virtual const Ref_type &operator*() const = 0;
+        virtual const Ref_type *operator->() const = 0;
+        virtual Ref_type &operator*() = 0;
+        virtual Ref_type *operator->() = 0;
+        virtual bool next() = 0;
     };
 
     template <typename Impl> class Iterator {
@@ -30,9 +32,13 @@ namespace Jarvis {
         void done() { delete impl; impl = NULL; }
 
         operator bool() const { return impl && bool(*impl); }
-        Ref_type &operator*() const
+        const Ref_type &operator*() const
             { if (!impl) throw e_null_iterator; return (*impl).operator*(); }
-        Ref_type *operator->() const
+        const Ref_type *operator->() const
+            { if (!impl) throw e_null_iterator; return (*impl).operator->(); }
+        Ref_type &operator*()
+            { if (!impl) throw e_null_iterator; return (*impl).operator*(); }
+        Ref_type *operator->()
             { if (!impl) throw e_null_iterator; return (*impl).operator->(); }
         void next() { if (impl) impl->next(); }
     };
@@ -96,8 +102,10 @@ namespace Jarvis {
         mutable PropertyRef ref;
     public:
         PropertyIteratorImpl() : ref(this) { }
-        PropertyRef &operator*() const { return ref; }
-        PropertyRef *operator->() const { return &ref; }
+        const PropertyRef &operator*() const { return ref; }
+        const PropertyRef *operator->() const { return &ref; }
+        PropertyRef &operator*() { return ref; }
+        PropertyRef *operator->() { return &ref; }
         virtual StringID id_() const = 0;
         virtual PropertyType type_() const = 0;
         virtual bool bool_value_() const = 0;
@@ -136,8 +144,10 @@ namespace Jarvis {
         mutable PathRef ref;
     public:
         PathIteratorImpl() : ref(this) { }
-        PathRef &operator*() const { return ref; }
-        PathRef *operator->() const { return &ref; }
+        const PathRef &operator*() const { return ref; }
+        const PathRef *operator->() const { return &ref; }
+        PathRef &operator*() { return ref; }
+        PathRef *operator->() { return &ref; }
         virtual NodeIterator end_nodes() const = 0;
 
         virtual Node &start_node_() const = 0;

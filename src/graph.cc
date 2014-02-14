@@ -128,9 +128,11 @@ namespace Jarvis {
     public:
         Graph_Iterator(const FixedAllocator &);
         operator bool() const { return _cur != NULL; }
-        T &operator*() const { return *(T *)_cur; }
-        T *operator->() const { return (T *)_cur; }
-        void next();
+        const T &operator*() const { return *(const T *)_cur; }
+        const T *operator->() const { return (const T *)_cur; }
+        T &operator*() { return *(T *)_cur; }
+        T *operator->() { return (T *)_cur; }
+        bool next();
     };
 };
 
@@ -143,10 +145,11 @@ Jarvis::Graph_Iterator<T>::Graph_Iterator(const FixedAllocator &n)
 }
 
 template <typename T>
-void Jarvis::Graph_Iterator<T>::next()
+bool Jarvis::Graph_Iterator<T>::next()
 {
     _skip();
     _next();
+    return _cur != NULL;
 }
 
 template <typename T>
