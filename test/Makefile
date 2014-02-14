@@ -2,11 +2,9 @@ CC := g++-4.8
 RM := rm -f
 
 LIB := ../lib/jarvis.lib
-CLEANFILES := apitest apitest.o soltest soltest.o listtest listtest.o \
-		edgeindextest edgeindextest.o
+CLEANFILES :=
 
 INCLUDES := -I../include -I../src
-OPT ?= -O2
 
 FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
           -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics
@@ -14,7 +12,7 @@ FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
 WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
           -Wformat=2 -Wno-parentheses -Wno-conversion
 
-CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) -DSTUBS -g
+CFLAGS := --std=c++11 $(INCLUDES) $(FFLAGS) $(WFLAGS) -DSTUBS -g
 
 all: lib apitest alloctest soltest listtest edgeindextest
 
