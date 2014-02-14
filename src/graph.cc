@@ -121,15 +121,15 @@ namespace Jarvis {
     template <typename T>
     class Graph_Iterator : public IteratorImpl<T> {
         const FixedAllocator &table;
-        void *cur;
+        void *_cur;
         void _next();
         void _skip();
 
     public:
         Graph_Iterator(const FixedAllocator &);
-        operator bool() const { return cur != NULL; }
-        T &operator*() const { return *(T *)cur; }
-        T *operator->() const { return (T *)cur; }
+        operator bool() const { return _cur != NULL; }
+        T &operator*() const { return *(T *)_cur; }
+        T *operator->() const { return (T *)_cur; }
         void next();
     };
 };
@@ -138,7 +138,7 @@ template <typename T>
 Jarvis::Graph_Iterator<T>::Graph_Iterator(const FixedAllocator &n)
     : table(n)
 {
-    cur = table.begin();
+    _cur = table.begin();
     _next();
 }
 
@@ -152,17 +152,17 @@ void Jarvis::Graph_Iterator<T>::next()
 template <typename T>
 void Jarvis::Graph_Iterator<T>::_next()
 {
-    while (cur < table.end() && table.is_free(cur))
+    while (_cur < table.end() && table.is_free(_cur))
         _skip();
 
-    if (cur >= table.end())
-        cur = NULL;
+    if (_cur >= table.end())
+        _cur = NULL;
 }
 
 template <typename T>
 void Jarvis::Graph_Iterator<T>::_skip()
 {
-    cur = table.next(cur);
+    _cur = table.next(_cur);
 }
 
 Jarvis::NodeIterator Jarvis::Graph::get_nodes()
