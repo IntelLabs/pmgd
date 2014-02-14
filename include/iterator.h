@@ -21,32 +21,32 @@ namespace Jarvis {
 
     template <typename Impl> class Iterator {
     protected:
-        Impl *impl;
+        Impl *_impl;
 
     public:
         typedef Impl Impl_type;
         typedef typename Impl::Ref_type Ref_type;
 
         explicit Iterator(Impl *i)
-            : impl(i)
+            : _impl(i)
         {
-            if (impl && !bool(*impl))
+            if (_impl && !bool(*_impl))
                 done();
         }
 
-        ~Iterator() { delete impl; }
-        void done() { delete impl; impl = NULL; }
+        ~Iterator() { delete _impl; }
+        void done() { delete _impl; _impl = NULL; }
 
-        operator bool() const { return impl != NULL; }
+        operator bool() const { return _impl != NULL; }
         const Ref_type &operator*() const
-            { if (!impl) throw e_null_iterator; return (*impl).operator*(); }
+            { if (!_impl) throw e_null_iterator; return (*_impl).operator*(); }
         const Ref_type *operator->() const
-            { if (!impl) throw e_null_iterator; return (*impl).operator->(); }
+            { if (!_impl) throw e_null_iterator; return (*_impl).operator->(); }
         Ref_type &operator*()
-            { if (!impl) throw e_null_iterator; return (*impl).operator*(); }
+            { if (!_impl) throw e_null_iterator; return (*_impl).operator*(); }
         Ref_type *operator->()
-            { if (!impl) throw e_null_iterator; return (*impl).operator->(); }
-        void next() { if (impl) if (!impl->next()) done(); }
+            { if (!_impl) throw e_null_iterator; return (*_impl).operator->(); }
+        void next() { if (_impl) if (!_impl->next()) done(); }
     };
 };
 
@@ -170,7 +170,7 @@ namespace Jarvis {
         template <typename F> PathIterator filter(F f);
 
         NodeIterator end_nodes() const
-            { if (!impl) return NodeIterator(NULL); return impl->end_nodes(); }
+            { if (!_impl) return NodeIterator(NULL); return _impl->end_nodes(); }
     };
 };
 
