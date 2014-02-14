@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
+#include <stddef.h>
 #include <assert.h>
+#include <string>
 #include "exception.h"
 #include "stringid.h"
 

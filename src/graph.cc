@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "graph.h"
 #include "node.h"
 #include "edge.h"

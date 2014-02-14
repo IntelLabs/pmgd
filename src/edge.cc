@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "edge.h"
 
 void Jarvis::Edge::init(Node &src, Node &dest, StringID tag)
