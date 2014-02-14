@@ -27,11 +27,17 @@ namespace Jarvis {
         typedef Impl Impl_type;
         typedef typename Impl::Ref_type Ref_type;
 
-        explicit Iterator(Impl *i) : impl(i) { }
+        explicit Iterator(Impl *i)
+            : impl(i)
+        {
+            if (impl && !bool(*impl))
+                done();
+        }
+
         ~Iterator() { delete impl; }
         void done() { delete impl; impl = NULL; }
 
-        operator bool() const { return impl && bool(*impl); }
+        operator bool() const { return impl != NULL; }
         const Ref_type &operator*() const
             { if (!impl) throw e_null_iterator; return (*impl).operator*(); }
         const Ref_type *operator->() const
@@ -40,7 +46,7 @@ namespace Jarvis {
             { if (!impl) throw e_null_iterator; return (*impl).operator*(); }
         Ref_type *operator->()
             { if (!impl) throw e_null_iterator; return (*impl).operator->(); }
-        void next() { if (impl) impl->next(); }
+        void next() { if (impl) if (!impl->next()) done(); }
     };
 };
 
