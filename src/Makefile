@@ -9,7 +9,7 @@ CLEANFILES :=
 
 SRC := graph.cc node.cc edge.cc property.cc stringid.cc \
        EdgeIndex.cc \
-       FixedAllocator.cc linux.cc
+       PropertyList.cc FixedAllocator.cc linux.cc
 
 # Translates source file names to object file names
 OBJS := $(patsubst %.cc, %.o, $(SRC))

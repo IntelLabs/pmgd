@@ -8,6 +8,7 @@ namespace Jarvis {
 
         e_map_failed,
         e_property_type,
+        e_property_not_found,
 
         e_not_implemented = 100,
         e_internal_error,

@@ -117,16 +117,4 @@ Jarvis::Property Jarvis::Edge::get_property(StringID) const
     throw e_not_implemented;
 }
 
-Jarvis::PropertyValue::PropertyValue(const PropertyValue &a)
-{
-}
-
-Jarvis::PropertyValue::~PropertyValue()
-{
-}
-
-bool Jarvis::PropertyValue::operator<(const PropertyValue &a)
-{
-    throw e_not_implemented;
-}
 #endif

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stddef.h>
 #include "exception.h"
 #include "stringid.h"
 #include "property.h"
@@ -65,55 +66,138 @@ namespace Jarvis {
 };
 
 namespace Jarvis {
-    class PropertyIteratorImpl;
+    class PropertyList;
+    class PropertyValueRef;
 
-    class PropertyValueRef {
-        PropertyIteratorImpl *iter;
-    public:
-        PropertyValueRef(PropertyIteratorImpl *i) : iter(i) { }
-        operator PropertyValue() const;
-        PropertyType type() const;
+    class PropertyRef {
+        uint8_t *_chunk;
+        unsigned _offset;
+
+        friend class PropertyValueRef;
+        friend class PropertyList;
+        friend class PropertyListIterator;
+
+        enum { p_unused, p_end, p_link,
+               p_novalue, p_boolean_false, p_boolean_true,
+               p_integer, p_float, p_time, p_string, p_string_ptr, p_blob };
+
+        unsigned chunk_size() const { return _chunk[0]; }
+
+        StringID &get_id() { return *(StringID *)(&_chunk[_offset]); }
+
+        operator bool() const { return _offset != 0; }
+
+        uint8_t &type_size() { return _chunk[_offset+2]; }
+        const uint8_t &type_size() const
+            { return const_cast<PropertyRef *>(this)->type_size(); }
+
+        int type() const { return type_size() & 0xf; }
+        int size() const { return type_size() >> 4; }
+
+        PropertyValue get_value() const;
+
+        bool check_space(unsigned size) const
+            { return _offset + size + 3 <= chunk_size(); }
+
+        bool next() { _offset += size() + 3; return not_done(); }
+        bool not_done() const
+            { return _offset <= chunk_size() - 3 && type() != p_end; }
+
+        void set_id(StringID id) { this->get_id() = id; }
+
+        void set_type(int type)
+            { type_size() = uint8_t((type_size() & 0xf0) | type); }
+
+        void set_size(int new_size)
+        {
+            if (_offset + new_size + 3 < chunk_size() - 3)
+                PropertyRef(*this, new_size).free(type(), size() - (new_size + 3));
+            type_size() = uint8_t((new_size << 4) | type());
+        }
+
+        void set_value(const PropertyValue &);
+
+        void set_end() { set_id(0); type_size() = p_end; }
+        void free() { type_size() &= 0xf0; /* keep size and clear type */ }
+
+        void free(int type, int size)
+        {
+            if (type == p_end)
+                type_size() = p_end;
+            else
+                type_size() = uint8_t(size << 4) | p_unused;
+        }
+
         bool bool_value() const;
         long long int_value() const;
         std::string string_value() const;
         double float_value() const;
         Time time_value() const;
-        void *blob_value() const;
-    };
+        PropertyValue::blob_t blob_value() const;
 
-    class PropertyRef {
-        PropertyIteratorImpl *iter;
+        PropertyRef() : _chunk(0), _offset(0) { }
+        PropertyRef(const PropertyList *l) : _chunk((uint8_t *)l), _offset(1) {}
+        PropertyRef(const PropertyRef &p, unsigned size)
+            : _chunk(p._chunk), _offset(p._offset + size + 3)
+            { assert(_offset <= chunk_size()); }
+
     public:
-        PropertyRef(PropertyIteratorImpl *i) : iter(i) { }
-        operator Property() const;
-        StringID id() const;
-        PropertyValueRef value() const { return PropertyValueRef(iter); }
+        StringID id() const { return const_cast<PropertyRef *>(this)->get_id(); }
+        PropertyValueRef value() const;
+        operator Property() const { return Property(id(), get_value()); }
     };
 
-    class PropertyIteratorImpl : public IteratorImpl<PropertyRef> {
-        mutable PropertyRef ref;
+    class PropertyValueRef {
+        const PropertyRef &p;
     public:
-        PropertyIteratorImpl() : ref(this) { }
-        const PropertyRef &operator*() const { return ref; }
-        const PropertyRef *operator->() const { return &ref; }
-        PropertyRef &operator*() { return ref; }
-        PropertyRef *operator->() { return &ref; }
-        virtual StringID id_() const = 0;
-        virtual PropertyType type_() const = 0;
-        virtual bool bool_value_() const = 0;
-        virtual long long int_value_() const = 0;
-        virtual std::string string_value_() const = 0;
-        virtual double float_value_() const = 0;
-        virtual Time time_value_() const = 0;
-        virtual void *blob_value_() const = 0;
+        PropertyValueRef(const PropertyRef &a) : p(a) { }
+        PropertyType type() const
+        {
+            assert(p.type() >= PropertyRef::p_novalue && p.type() <= PropertyRef::p_blob);
+            static constexpr PropertyType type_map[] = {
+                t_novalue, t_boolean, t_boolean, t_integer, t_float,
+                t_time, t_string, t_string, t_blob
+            };
+            return type_map[p.type() - PropertyRef::p_novalue];
+        }
+        operator PropertyValue() const { return p.get_value(); }
+        bool bool_value() const { return p.bool_value(); };
+        long long int_value() const { return p.int_value(); };
+        std::string string_value() const { return p.string_value(); };
+        double float_value() const { return p.float_value(); };
+        Time time_value() const { return p.time_value(); };
+        PropertyValue::blob_t blob_value() const { return p.blob_value(); };
     };
 
+    inline PropertyValueRef PropertyRef::value() const
+        { return PropertyValueRef(*this); }
+
+    typedef IteratorImpl<PropertyRef> PropertyIteratorImpl;
     class PropertyIterator : public Iterator<PropertyIteratorImpl> {
     public:
         explicit PropertyIterator(PropertyIteratorImpl *i)
             : Iterator<PropertyIteratorImpl>(i) { }
 
         template <typename F> PropertyIterator filter(F f);
+    };
+
+    class PropertyList {
+        uint8_t _chunk0[];
+
+        class PropertySpace;
+        bool find_property(StringID property, PropertyRef &p,
+                           PropertySpace *space = 0) const;
+        void find_space(PropertySpace &space) const;
+        static PropertySpace get_space(const PropertyValue &);
+        void follow_link(PropertyRef &) const;
+
+    public:
+        void init(std::size_t size);
+        bool check_property(StringID property, Property &result) const;
+        Property get_property(StringID id) const;
+        PropertyIterator get_properties() const;
+        void set_property(const Property &);
+        void remove_property(StringID name);
     };
 };
 
@@ -198,17 +282,6 @@ namespace Jarvis {
         NodeIterator end_nodes() const
             { if (!_impl) return NodeIterator(NULL); return _impl->end_nodes(); }
     };
-};
-
-namespace Jarvis {
-    inline StringID PropertyRef::id() const { return iter->id_(); }
-    inline PropertyType PropertyValueRef::type() const { return iter->type_(); }
-    inline bool PropertyValueRef::bool_value() const { return iter->bool_value_(); }
-    inline long long PropertyValueRef::int_value() const { return iter->int_value_(); }
-    inline std::string PropertyValueRef::string_value() const { return iter->string_value_(); }
-    inline double PropertyValueRef::float_value() const { return iter->float_value_(); }
-    inline Time PropertyValueRef::time_value() const { return iter->time_value_(); }
-    inline void *PropertyValueRef::blob_value() const { return iter->blob_value_(); }
 };
 
 namespace Jarvis {

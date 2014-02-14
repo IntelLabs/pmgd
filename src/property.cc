@@ -56,18 +56,3 @@ bool Jarvis::PropertyValue::operator<(const PropertyValue &a)
 
     throw e_internal_error;
 }
-
-Jarvis::PropertyValueRef::operator PropertyValue() const
-{
-    switch (type()) {
-        case t_novalue: return PropertyValue();
-        case t_boolean: return PropertyValue(bool_value());
-        case t_integer: return PropertyValue(int_value());
-        case t_string: return PropertyValue(string_value());
-        case t_float: return PropertyValue(float_value());
-        case t_time: return PropertyValue(time_value());
-        case t_blob: return PropertyValue(blob_value());
-    }
-
-    throw e_internal_error;
-}
