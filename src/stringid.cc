@@ -1,3 +1,4 @@
+#include <string>
 #include "stringid.h"
 #include "exception.h"
 
@@ -11,8 +12,5 @@ Jarvis::StringID::StringID(const char *s)
 
 std::string Jarvis::StringID::name()
 {
-    if (_id == 0)
-        return "0";
-    else
-        throw e_not_implemented;
+    return std::to_string(_id);
 }
