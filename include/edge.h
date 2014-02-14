@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stringid.h"
+#include "property.h"
 #include "iterator.h"
 
 namespace Jarvis {
@@ -10,10 +11,10 @@ namespace Jarvis {
         Node *_src;
         Node *_dest;
         StringID _tag;
-        uint8_t _property_list[];
+        PropertyList _property_list;
 
         friend class Graph;
-        void init(Node &src, Node &dest, StringID tag);
+        void init(Node &src, Node &dest, StringID tag, unsigned object_size);
 
         Edge(const Edge &);
         ~Edge();

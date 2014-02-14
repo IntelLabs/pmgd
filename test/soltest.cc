@@ -84,37 +84,3 @@ static std::string property_text(const PropertyIterator &i)
     }
     throw Jarvis::e_property_type;
 }
-
-
-#ifdef STUBS
-
-PropertyIterator Node::get_properties() const
-{
-    return PropertyIterator(NULL);
-}
-
-EdgeIterator Node::get_edges() const
-{
-    return EdgeIterator(NULL);
-}
-
-EdgeIterator Node::get_edges(Direction) const
-{
-    return EdgeIterator(NULL);
-}
-
-PropertyIterator Edge::get_properties() const
-{
-    return PropertyIterator(NULL);
-}
-
-void Node::set_property(const Property &)
-{
-}
-
-Jarvis::Property Jarvis::Edge::get_property(StringID) const
-{
-    throw e_not_implemented;
-}
-
-#endif
