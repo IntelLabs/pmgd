@@ -74,6 +74,11 @@ uint64_t Jarvis::FixedAllocator::get_id(const void *obj) const
     return (((uint64_t)obj - (uint64_t)begin()) / _pm->size) + 1;
 }
 
+unsigned Jarvis::FixedAllocator::object_size() const
+{
+    return _pm->size;
+}
+
 void *Jarvis::FixedAllocator::alloc()
 {
     acquire_lock();
