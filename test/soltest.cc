@@ -93,7 +93,17 @@ PropertyIterator Node::get_properties() const
     return PropertyIterator(NULL);
 }
 
-EdgeIterator Node::get_edges(Direction, StringID, const PropertyPredicate &) const
+EdgeIterator Node::get_edges() const
+{
+    return EdgeIterator(NULL);
+}
+
+EdgeIterator Node::get_edges(Direction) const
+{
+    return EdgeIterator(NULL);
+}
+
+EdgeIterator Node::get_edges(Direction, StringID) const
 {
     return EdgeIterator(NULL);
 }

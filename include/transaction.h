@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stddef.h>
 #include "graph.h"
 
 namespace Jarvis {
@@ -8,7 +9,7 @@ namespace Jarvis {
     class Transaction {
         TransactionImpl *impl;
 
-        void *operator new(size_t);
+        void *operator new(std::size_t);
 
     public:
         enum TransactionOptions { Dependent = 0, Independent = 1,

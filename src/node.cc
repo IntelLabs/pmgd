@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "node.h"
 
 void Jarvis::Node::init(StringID tag)

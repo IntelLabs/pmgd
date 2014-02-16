@@ -28,8 +28,9 @@ namespace Jarvis {
         bool check_property(StringID property, Property &result) const;
         Property get_property(StringID property) const;
         PropertyIterator get_properties() const;
-        EdgeIterator get_edges(Direction dir = ANY, StringID tag = NULL,
-                               const PropertyPredicate & = PropertyPredicate()) const;
+        EdgeIterator get_edges() const;
+        EdgeIterator get_edges(Direction dir) const;
+        EdgeIterator get_edges(Direction dir, StringID tag) const;
         void set_property(const Property &);
         void remove_property(StringID name);
     };
