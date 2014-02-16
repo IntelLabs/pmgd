@@ -84,10 +84,10 @@ namespace Jarvis {
     };
 
     template <typename F>
-    class PropertyIteratorFilter : public IteratorFilter<PropertyRef, F> {
+    class PropertyIteratorFilter : public IteratorFilter<PropertyIterator, F> {
     public:
         PropertyIteratorFilter(PropertyIterator *i, F f)
-            : IteratorFilter<PropertyRef, F>(i, f) { }
+            : IteratorFilter<PropertyIterator, F>(i, f) { }
     };
 
     template <typename F>
