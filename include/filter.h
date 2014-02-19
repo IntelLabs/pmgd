@@ -99,16 +99,6 @@ namespace Jarvis {
             : IteratorFilter<PathIterator, F>(i, f) { }
 
         NodeIterator end_nodes() const { return base_iter->end_nodes(); }
-
-        Node &start_node() const { return base_iter->start_node(); }
-        Node &end_node() const { return base_iter->end_node(); }
-        int length() const { return base_iter->length(); }
-        EdgeIterator get_edges() const { return base_iter->get_edges(); }
-
-        Node &start_node_() const { throw e_internal_error; }
-        Node &end_node_() const { throw e_internal_error; }
-        int length_() const { throw e_internal_error; }
-        EdgeIterator get_edges_() const { throw e_internal_error; }
     };
 
     inline NodeIterator NodeIterator::filter(const PropertyPredicate &pp)
