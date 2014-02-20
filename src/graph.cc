@@ -12,18 +12,18 @@ class Jarvis::Graph::GraphImpl {
 
     static const size_t BASE_ADDRESS = 0x10000000000;
     static const size_t REGION_SIZE = 0x10000000000;
-    static const unsigned INDEX_SIZE = 4096;
+    static const unsigned INFO_SIZE = 4096;
     static const unsigned NODE_SIZE = 64;
     static const unsigned EDGE_SIZE = 32;
 
-    static constexpr char index_name[] = "index.jdb";
+    static constexpr char info_name[] = "graph.jdb";
 
     static constexpr AllocatorInfo default_allocators[] = {
         { "nodes.jdb", BASE_ADDRESS + REGION_SIZE, REGION_SIZE, NODE_SIZE },
         { "edges.jdb", BASE_ADDRESS + 2*REGION_SIZE, REGION_SIZE, EDGE_SIZE },
     };
 
-    struct GraphIndex {
+    struct GraphInfo {
         uint64_t version;
 
         // node_table, edge_table, property_chunks
@@ -36,14 +36,14 @@ class Jarvis::Graph::GraphImpl {
 
     class GraphInit {
         bool _create;
-        os::MapRegion _index_map;
-        GraphIndex *_index;
+        os::MapRegion _info_map;
+        GraphInfo *_info;
 
     public:
         GraphInit(const char *name, int options);
         bool create() { return _create; }
-        const AllocatorInfo &node_info() { return _index->node_info; }
-        const AllocatorInfo &edge_info() { return _index->edge_info; }
+        const AllocatorInfo &node_info() { return _info->node_info; }
+        const AllocatorInfo &edge_info() { return _info->edge_info; }
     };
 
     // ** Order here is important: GraphInit MUST be first
@@ -92,25 +92,25 @@ Jarvis::Edge &Jarvis::Graph::add_edge(Node &src, Node &dest, StringID tag)
 }
 
 
-constexpr char Jarvis::Graph::GraphImpl::index_name[];
+constexpr char Jarvis::Graph::GraphImpl::info_name[];
 constexpr Jarvis::AllocatorInfo Jarvis::Graph::GraphImpl::default_allocators[];
 
 Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
     : _create(options & Create),
-      _index_map(name, index_name, BASE_ADDRESS, INDEX_SIZE, _create, false),
-      _index(reinterpret_cast<GraphIndex *>(BASE_ADDRESS))
+      _info_map(name, info_name, BASE_ADDRESS, INFO_SIZE, _create, false),
+      _info(reinterpret_cast<GraphInfo *>(BASE_ADDRESS))
 {
-    // _create was modified by _index_map constructor
+    // _create was modified by _info_map constructor
     // depending on whether the file existed or not
 
     // Set up the info structure
     if (_create) {
         // Version info
-        _index->version = 1;
+        _info->version = 1;
 
         // TODO replace static indexing
-        _index->node_info = default_allocators[0];
-        _index->edge_info = default_allocators[1];
+        _info->node_info = default_allocators[0];
+        _info->edge_info = default_allocators[1];
 
         // Other information
     }
