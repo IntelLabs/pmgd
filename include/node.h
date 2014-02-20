@@ -6,13 +6,13 @@
 
 namespace Jarvis {
     class Graph;
+    class EdgeIndex;
 
     enum Direction { ANY, OUTGOING, INCOMING };
 
     class Node {
-        class EdgeList;
-        EdgeList *_out_edges;
-        EdgeList *_in_edges;
+        EdgeIndex *_out_edges;
+        EdgeIndex *_in_edges;
         StringID _tag;
         uint8_t _property_list[];
 

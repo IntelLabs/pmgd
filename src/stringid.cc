@@ -10,7 +10,7 @@ Jarvis::StringID::StringID(const char *s)
         throw e_not_implemented;
 }
 
-std::string Jarvis::StringID::name()
+std::string Jarvis::StringID::name() const
 {
     return std::to_string(_id);
 }

@@ -17,7 +17,6 @@
  */
 
 #include <stddef.h>
-#include <iostream>
 #include <assert.h>
 
 #include "exception.h"

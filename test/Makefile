@@ -2,9 +2,10 @@ CC := g++-4.8
 RM := rm -f
 
 LIB := ../lib/jarvis.lib
-CLEANFILES := apitest apitest.o soltest soltest.o
+CLEANFILES := apitest apitest.o soltest soltest.o listtest listtest.o \
+		edgeindextest edgeindextest.o
 
-INCLUDES := -I../include
+INCLUDES := -I../include -I../src
 OPT ?= -O2
 
 FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
@@ -15,7 +16,7 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
 
 CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) -DSTUBS -g
 
-all: lib apitest alloctest soltest
+all: lib apitest alloctest soltest listtest edgeindextest
 
 apitest: apitest.o
 	$(CC) -o $@ $<
@@ -28,6 +29,14 @@ CLEANFILES += alloctest alloctest.o
 soltest: soltest.o $(LIB)
 	$(CC) -g -o $@ $< $(LIB)
 CLEANFILES += soltest soltest.o
+
+listtest: listtest.o
+	$(CC) -o $@ $< ../lib/jarvis.lib
+CLEANFILES += listtest listtest.o
+
+edgeindextest: edgeindextest.o
+	$(CC) -o $@ $< ../lib/jarvis.lib
+CLEANFILES += edgeindextest edgeindextest.o
 
 lib:
 	make -C ../src OPT=-g install
