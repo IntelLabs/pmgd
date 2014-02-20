@@ -103,11 +103,6 @@ EdgeIterator Node::get_edges(Direction) const
     return EdgeIterator(NULL);
 }
 
-EdgeIterator Node::get_edges(Direction, StringID) const
-{
-    return EdgeIterator(NULL);
-}
-
 PropertyIterator Edge::get_properties() const
 {
     return PropertyIterator(NULL);
