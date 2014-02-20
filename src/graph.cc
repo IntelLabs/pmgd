@@ -138,13 +138,21 @@ namespace Jarvis {
     };
 
     class Graph_EdgeIterator : public Graph_Iterator<EdgeIteratorImpl> {
+        EdgeRef _ref;
+
         friend class EdgeRef;
         Edge *get_edge() const { return (Edge *)_cur; }
         StringID get_tag() const { return get_edge()->get_tag(); }
         Node &get_source() const { return get_edge()->get_source(); }
         Node &get_destination() const { return get_edge()->get_destination(); }
     public:
-        Graph_EdgeIterator(const FixedAllocator &a) : Graph_Iterator<EdgeIteratorImpl>(a) {}
+        Graph_EdgeIterator(const FixedAllocator &a)
+            : Graph_Iterator<EdgeIteratorImpl>(a), _ref(this)
+            {}
+        const EdgeRef &operator*() const { return _ref; }
+        const EdgeRef *operator->() const { return &_ref; }
+        EdgeRef &operator*() { return _ref; }
+        EdgeRef *operator->() { return &_ref; }
     };
 };
 
