@@ -118,26 +118,33 @@ Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
 
 
 namespace Jarvis {
-    template <typename T>
-    class Graph_Iterator : public T {
+    template <typename B, typename T>
+    class Graph_Iterator : public B {
         const FixedAllocator &table;
         void _next();
         void _skip();
 
     protected:
-        void *_cur;
+        T *_cur;
 
     public:
         Graph_Iterator(const FixedAllocator &);
         operator bool() const { return _cur != NULL; }
-        const typename T::Ref_type &operator*() const { return *(typename T::Ref_type *)_cur; }
-        const typename T::Ref_type *operator->() const { return (typename T::Ref_type *)_cur; }
-        typename T::Ref_type &operator*() { return *(typename T::Ref_type *)_cur; }
-        typename T::Ref_type *operator->() { return (typename T::Ref_type *)_cur; }
         bool next();
     };
 
-    class Graph_EdgeIterator : public Graph_Iterator<EdgeIteratorImpl> {
+    class Graph_NodeIterator : public Graph_Iterator<NodeIteratorImpl, Node> {
+    public:
+        Graph_NodeIterator(const FixedAllocator &a)
+            : Graph_Iterator<NodeIteratorImpl, Node>(a)
+            { }
+        const Node &operator*() const { return *_cur; }
+        const Node *operator->() const { return _cur; }
+        Node &operator*() { return *_cur; }
+        Node *operator->() { return _cur; }
+    };
+
+    class Graph_EdgeIterator : public Graph_Iterator<EdgeIteratorImpl, Edge> {
         EdgeRef _ref;
 
         friend class EdgeRef;
@@ -147,7 +154,7 @@ namespace Jarvis {
         Node &get_destination() const { return get_edge()->get_destination(); }
     public:
         Graph_EdgeIterator(const FixedAllocator &a)
-            : Graph_Iterator<EdgeIteratorImpl>(a), _ref(this)
+            : Graph_Iterator<EdgeIteratorImpl, Edge>(a), _ref(this)
             {}
         const EdgeRef &operator*() const { return _ref; }
         const EdgeRef *operator->() const { return &_ref; }
@@ -156,24 +163,24 @@ namespace Jarvis {
     };
 };
 
-template <typename T>
-Jarvis::Graph_Iterator<T>::Graph_Iterator(const FixedAllocator &n)
+template <typename B, typename T>
+Jarvis::Graph_Iterator<B, T>::Graph_Iterator(const FixedAllocator &n)
     : table(n)
 {
-    _cur = table.begin();
+    _cur = static_cast<T *>(table.begin());
     _next();
 }
 
-template <typename T>
-bool Jarvis::Graph_Iterator<T>::next()
+template <typename B, typename T>
+bool Jarvis::Graph_Iterator<B, T>::next()
 {
     _skip();
     _next();
     return _cur != NULL;
 }
 
-template <typename T>
-void Jarvis::Graph_Iterator<T>::_next()
+template <typename B, typename T>
+void Jarvis::Graph_Iterator<B, T>::_next()
 {
     while (_cur < table.end() && table.is_free(_cur))
         _skip();
@@ -182,15 +189,15 @@ void Jarvis::Graph_Iterator<T>::_next()
         _cur = NULL;
 }
 
-template <typename T>
-void Jarvis::Graph_Iterator<T>::_skip()
+template <typename B, typename T>
+void Jarvis::Graph_Iterator<B, T>::_skip()
 {
-    _cur = table.next(_cur);
+    _cur = static_cast<T *>(table.next(_cur));
 }
 
 Jarvis::NodeIterator Jarvis::Graph::get_nodes()
 {
-    return NodeIterator(new Graph_Iterator<NodeIteratorImpl>(_impl->node_table()));
+    return NodeIterator(new Graph_NodeIterator(_impl->node_table()));
 }
 
 Jarvis::EdgeIterator Jarvis::Graph::get_edges()
