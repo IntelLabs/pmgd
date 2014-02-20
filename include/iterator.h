@@ -65,20 +65,6 @@ namespace Jarvis {
 };
 
 namespace Jarvis {
-    class Edge;
-    typedef IteratorImpl<Edge> EdgeIteratorImpl;
-
-    class EdgeIterator : public Iterator<EdgeIteratorImpl> {
-    public:
-        explicit EdgeIterator(EdgeIteratorImpl *i)
-            : Iterator<EdgeIteratorImpl>(i) { }
-
-        EdgeIterator filter(const PropertyPredicate &pp);
-        template <typename F> EdgeIterator filter(F f);
-    };
-};
-
-namespace Jarvis {
     class PropertyIteratorImpl;
 
     class PropertyValueRef {
@@ -128,6 +114,46 @@ namespace Jarvis {
             : Iterator<PropertyIteratorImpl>(i) { }
 
         template <typename F> PropertyIterator filter(F f);
+    };
+};
+
+namespace Jarvis {
+    class Edge;
+    class EdgeRef;
+
+    class EdgeIteratorImpl : public IteratorImpl<EdgeRef> {
+        friend class EdgeRef;
+        virtual Edge *get_edge() const = 0;
+        virtual StringID get_tag() const = 0;
+        virtual Node &get_source() const = 0;
+        virtual Node &get_destination() const = 0;
+    };
+
+    class EdgeRef {
+        EdgeIteratorImpl *_impl;
+
+        Edge *edge() const { return _impl->get_edge(); }
+
+    public:
+        EdgeRef(EdgeIteratorImpl *impl) : _impl(impl) {}
+        operator Edge &() { return *edge(); }
+        StringID get_tag() const { return _impl->get_tag(); }
+        Node &get_source() const { return _impl->get_source(); }
+        Node &get_destination() const { return _impl->get_destination(); }
+        bool check_property(StringID id, Property &result) const;
+        Property get_property(StringID id) const;
+        PropertyIterator get_properties() const;
+        void set_property(const Property &property);
+        void remove_property(StringID id);
+    };
+
+    class EdgeIterator : public Iterator<IteratorImpl<EdgeRef>> {
+    public:
+        explicit EdgeIterator(IteratorImpl<EdgeRef> *i)
+            : Iterator<IteratorImpl<EdgeRef>>(i) { }
+
+        EdgeIterator filter(const PropertyPredicate &pp);
+        template <typename F> EdgeIterator filter(F f);
     };
 };
 

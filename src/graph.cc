@@ -119,20 +119,32 @@ Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
 
 namespace Jarvis {
     template <typename T>
-    class Graph_Iterator : public IteratorImpl<T> {
+    class Graph_Iterator : public T {
         const FixedAllocator &table;
-        void *_cur;
         void _next();
         void _skip();
+
+    protected:
+        void *_cur;
 
     public:
         Graph_Iterator(const FixedAllocator &);
         operator bool() const { return _cur != NULL; }
-        const T &operator*() const { return *(const T *)_cur; }
-        const T *operator->() const { return (const T *)_cur; }
-        T &operator*() { return *(T *)_cur; }
-        T *operator->() { return (T *)_cur; }
+        const typename T::Ref_type &operator*() const { return *(typename T::Ref_type *)_cur; }
+        const typename T::Ref_type *operator->() const { return (typename T::Ref_type *)_cur; }
+        typename T::Ref_type &operator*() { return *(typename T::Ref_type *)_cur; }
+        typename T::Ref_type *operator->() { return (typename T::Ref_type *)_cur; }
         bool next();
+    };
+
+    class Graph_EdgeIterator : public Graph_Iterator<EdgeIteratorImpl> {
+        friend class EdgeRef;
+        Edge *get_edge() const { return (Edge *)_cur; }
+        StringID get_tag() const { return get_edge()->get_tag(); }
+        Node &get_source() const { return get_edge()->get_source(); }
+        Node &get_destination() const { return get_edge()->get_destination(); }
+    public:
+        Graph_EdgeIterator(const FixedAllocator &a) : Graph_Iterator<EdgeIteratorImpl>(a) {}
     };
 };
 
@@ -170,12 +182,12 @@ void Jarvis::Graph_Iterator<T>::_skip()
 
 Jarvis::NodeIterator Jarvis::Graph::get_nodes()
 {
-    return NodeIterator(new Graph_Iterator<Node>(_impl->node_table()));
+    return NodeIterator(new Graph_Iterator<NodeIteratorImpl>(_impl->node_table()));
 }
 
 Jarvis::EdgeIterator Jarvis::Graph::get_edges()
 {
-    return EdgeIterator(new Graph_Iterator<Edge>(_impl->edge_table()));
+    return EdgeIterator(new Graph_EdgeIterator(_impl->edge_table()));
 }
 
 Jarvis::NodeID Jarvis::Graph::get_id(const Node &node) const
