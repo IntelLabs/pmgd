@@ -15,12 +15,14 @@ class Jarvis::Graph::GraphImpl {
     static const unsigned INFO_SIZE = 4096;
     static const unsigned NODE_SIZE = 64;
     static const unsigned EDGE_SIZE = 32;
+    static const unsigned GENERIC_ALLOC_SIZE = 32;
 
     static constexpr char info_name[] = "graph.jdb";
 
     static constexpr AllocatorInfo default_allocators[] = {
         { "nodes.jdb", BASE_ADDRESS + REGION_SIZE, REGION_SIZE, NODE_SIZE },
         { "edges.jdb", BASE_ADDRESS + 2*REGION_SIZE, REGION_SIZE, EDGE_SIZE },
+        { "pooh-bah.jdb", BASE_ADDRESS + 3*REGION_SIZE, REGION_SIZE, GENERIC_ALLOC_SIZE },
     };
 
     struct GraphInfo {
@@ -29,6 +31,7 @@ class Jarvis::Graph::GraphImpl {
         // node_table, edge_table, property_chunks
         AllocatorInfo node_info;
         AllocatorInfo edge_info;
+        AllocatorInfo allocator_info;
 
         // Transaction info
         // Lock table info
@@ -44,6 +47,7 @@ class Jarvis::Graph::GraphImpl {
         bool create() { return _create; }
         const AllocatorInfo &node_info() { return _info->node_info; }
         const AllocatorInfo &edge_info() { return _info->edge_info; }
+        const AllocatorInfo &allocator_info() { return _info->allocator_info; }
     };
 
     // ** Order here is important: GraphInit MUST be first
@@ -52,6 +56,7 @@ class Jarvis::Graph::GraphImpl {
     NodeTable _node_table;
     EdgeTable _edge_table;
     // Other Fixed ones
+    Allocator _allocator;
     // Variable allocator
 
     // Transactions
@@ -61,10 +66,12 @@ public:
     GraphImpl(const char *name, int options)
         : _init(name, options),
           _node_table(name, _init.node_info(), _init.create()),
-          _edge_table(name, _init.edge_info(), _init.create())
+          _edge_table(name, _init.edge_info(), _init.create()),
+          _allocator(name, _init.allocator_info(), _init.create())
         { }
     NodeTable &node_table() { return _node_table; }
     EdgeTable &edge_table() { return _edge_table; }
+    Allocator &allocator() { return _allocator; }
 };
 
 Jarvis::Graph::Graph(const char *name, int options)
@@ -111,6 +118,7 @@ Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
         // TODO replace static indexing
         _info->node_info = default_allocators[0];
         _info->edge_info = default_allocators[1];
+        _info->allocator_info = default_allocators[2];
 
         // Other information
     }
