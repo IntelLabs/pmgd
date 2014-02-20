@@ -54,11 +54,11 @@ static void dump(const Graph &db, const Node &n)
     for (PropertyIterator i = n.get_properties(); i; i.next()) {
         printf("  %s: %s\n", i->id().name().c_str(), property_text(i).c_str());
     }
-    for (EdgeIterator i = n.get_edges(OUTGOING); i; i.next()) {
+    for (EdgeIterator i = n.get_edges(OUTGOING, 0); i; i.next()) {
         printf("  -> n%lu (e%lu)\n", db.get_id(i->get_destination()), db.get_id(*i));
     }
-    for (EdgeIterator i = n.get_edges(INCOMING); i; i.next()) {
-        printf("  <- n%lu\n (e%lu)", db.get_id(i->get_source()), db.get_id(*i));
+    for (EdgeIterator i = n.get_edges(INCOMING, 0); i; i.next()) {
+        printf("  <- n%lu (e%lu)\n", db.get_id(i->get_source()), db.get_id(*i));
     }
 }
 
