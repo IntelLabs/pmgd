@@ -87,7 +87,7 @@ Jarvis::Graph::~Graph()
 Jarvis::Node &Jarvis::Graph::add_node(StringID tag)
 {
     Node *node = (Node *)_impl->node_table().alloc();
-    node->init(tag);
+    node->init(tag, _impl->allocator());
     return *node;
 }
 
@@ -95,6 +95,8 @@ Jarvis::Edge &Jarvis::Graph::add_edge(Node &src, Node &dest, StringID tag)
 {
     Edge *edge = (Edge *)_impl->edge_table().alloc();
     edge->init(src, dest, tag);
+    src.add_edge(edge, OUTGOING, tag, _impl->allocator());
+    dest.add_edge(edge, INCOMING, tag, _impl->allocator());
     return *edge;
 }
 

@@ -10,12 +10,20 @@
 
 using namespace Jarvis;
 
-void Node::init(StringID tag)
+void Node::init(StringID tag, Allocator &index_allocator)
 {
-    _out_edges = 0;
-    _in_edges = 0;
+    _out_edges = EdgeIndex::create(index_allocator);
+    _in_edges = EdgeIndex::create(index_allocator);
     _tag = tag;
     //PropertyList::init(_property_list);
+}
+
+void Node::add_edge(Edge *edge, Direction dir, StringID tag, Allocator &index_allocator)
+{
+    if (dir == OUTGOING)
+        _out_edges->add(tag, edge, &edge->get_destination(), index_allocator);
+    else
+        _in_edges->add(tag, edge, &edge->get_source(), index_allocator);
 }
 
 namespace Jarvis {
