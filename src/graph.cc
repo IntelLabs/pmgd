@@ -12,23 +12,26 @@ class Jarvis::Graph::GraphImpl {
 
     static const size_t BASE_ADDRESS = 0x10000000000;
     static const size_t REGION_SIZE = 0x10000000000;
-    static const unsigned INDEX_SIZE = 4096;
+    static const unsigned INFO_SIZE = 4096;
     static const unsigned NODE_SIZE = 64;
     static const unsigned EDGE_SIZE = 32;
+    static const unsigned GENERIC_ALLOC_SIZE = 32;
 
-    static constexpr char index_name[] = "index.jdb";
+    static constexpr char info_name[] = "graph.jdb";
 
     static constexpr AllocatorInfo default_allocators[] = {
         { "nodes.jdb", BASE_ADDRESS + REGION_SIZE, REGION_SIZE, NODE_SIZE },
         { "edges.jdb", BASE_ADDRESS + 2*REGION_SIZE, REGION_SIZE, EDGE_SIZE },
+        { "pooh-bah.jdb", BASE_ADDRESS + 3*REGION_SIZE, REGION_SIZE, GENERIC_ALLOC_SIZE },
     };
 
-    struct GraphIndex {
+    struct GraphInfo {
         uint64_t version;
 
         // node_table, edge_table, property_chunks
         AllocatorInfo node_info;
         AllocatorInfo edge_info;
+        AllocatorInfo allocator_info;
 
         // Transaction info
         // Lock table info
@@ -36,14 +39,15 @@ class Jarvis::Graph::GraphImpl {
 
     class GraphInit {
         bool _create;
-        os::MapRegion _index_map;
-        GraphIndex *_index;
+        os::MapRegion _info_map;
+        GraphInfo *_info;
 
     public:
         GraphInit(const char *name, int options);
         bool create() { return _create; }
-        const AllocatorInfo &node_info() { return _index->node_info; }
-        const AllocatorInfo &edge_info() { return _index->edge_info; }
+        const AllocatorInfo &node_info() { return _info->node_info; }
+        const AllocatorInfo &edge_info() { return _info->edge_info; }
+        const AllocatorInfo &allocator_info() { return _info->allocator_info; }
     };
 
     // ** Order here is important: GraphInit MUST be first
@@ -52,6 +56,7 @@ class Jarvis::Graph::GraphImpl {
     NodeTable _node_table;
     EdgeTable _edge_table;
     // Other Fixed ones
+    Allocator _allocator;
     // Variable allocator
 
     // Transactions
@@ -61,10 +66,12 @@ public:
     GraphImpl(const char *name, int options)
         : _init(name, options),
           _node_table(name, _init.node_info(), _init.create()),
-          _edge_table(name, _init.edge_info(), _init.create())
+          _edge_table(name, _init.edge_info(), _init.create()),
+          _allocator(name, _init.allocator_info(), _init.create())
         { }
     NodeTable &node_table() { return _node_table; }
     EdgeTable &edge_table() { return _edge_table; }
+    Allocator &allocator() { return _allocator; }
 };
 
 Jarvis::Graph::Graph(const char *name, int options)
@@ -80,7 +87,7 @@ Jarvis::Graph::~Graph()
 Jarvis::Node &Jarvis::Graph::add_node(StringID tag)
 {
     Node *node = (Node *)_impl->node_table().alloc();
-    node->init(tag);
+    node->init(tag, _impl->allocator());
     return *node;
 }
 
@@ -88,29 +95,32 @@ Jarvis::Edge &Jarvis::Graph::add_edge(Node &src, Node &dest, StringID tag)
 {
     Edge *edge = (Edge *)_impl->edge_table().alloc();
     edge->init(src, dest, tag);
+    src.add_edge(edge, OUTGOING, tag, _impl->allocator());
+    dest.add_edge(edge, INCOMING, tag, _impl->allocator());
     return *edge;
 }
 
 
-constexpr char Jarvis::Graph::GraphImpl::index_name[];
+constexpr char Jarvis::Graph::GraphImpl::info_name[];
 constexpr Jarvis::AllocatorInfo Jarvis::Graph::GraphImpl::default_allocators[];
 
 Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
     : _create(options & Create),
-      _index_map(name, index_name, BASE_ADDRESS, INDEX_SIZE, _create, false),
-      _index(reinterpret_cast<GraphIndex *>(BASE_ADDRESS))
+      _info_map(name, info_name, BASE_ADDRESS, INFO_SIZE, _create, false),
+      _info(reinterpret_cast<GraphInfo *>(BASE_ADDRESS))
 {
-    // _create was modified by _index_map constructor
+    // _create was modified by _info_map constructor
     // depending on whether the file existed or not
 
     // Set up the info structure
     if (_create) {
         // Version info
-        _index->version = 1;
+        _info->version = 1;
 
         // TODO replace static indexing
-        _index->node_info = default_allocators[0];
-        _index->edge_info = default_allocators[1];
+        _info->node_info = default_allocators[0];
+        _info->edge_info = default_allocators[1];
+        _info->allocator_info = default_allocators[2];
 
         // Other information
     }

@@ -73,4 +73,12 @@ namespace Jarvis {
 
         uint64_t get_id(const void *obj) const;
     };
+
+    class Allocator : public FixedAllocator {
+    public:
+        Allocator(const char *db_name, const struct AllocatorInfo &info,
+                  bool create)
+            : FixedAllocator(db_name, info, create)
+            { }
+    };
 }

@@ -7,6 +7,7 @@
 namespace Jarvis {
     class Graph;
     class EdgeIndex;
+    class Allocator;
 
     enum Direction { ANY, OUTGOING, INCOMING };
 
@@ -17,7 +18,9 @@ namespace Jarvis {
         uint8_t _property_list[];
 
         friend class Graph;
-        void init(StringID tag);
+        void init(StringID tag, Allocator &index_allocator);
+        void add_edge(Edge *edge, Direction dir, StringID tag,
+                      Allocator &index_allocator);
 
         Node(const Node &);
         ~Node();
