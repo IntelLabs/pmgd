@@ -160,20 +160,52 @@ void PropertyList::find_space(PropertySpace &space, Allocator &allocator) const
         } while (p.next());
     }
 
+    // We're at p_end. If there's not space in this chunk,
+    // allocate another chunk.
     if (p.check_space(space.min())) {
         PropertyRef next(p, space.min());
         next.set_end();
         space.set_pos(p);
-        return;
     }
+    else {
+        // Allocate and initialize a new property chunk
+        PropertyList *p_chunk = static_cast<PropertyList *>(allocator.alloc(PropertyList::chunk_size));
+        p_chunk->init(PropertyList::chunk_size);
 
-    // Allocate a new property chunk
-    throw Exception(not_implemented);
+        // If there isn't space for the link in the current chunk,
+        // copy some properties from this chunk to the new one.
+        // Make_space sets p to the beginning of the space freed up
+        // for the link, and sets q to the beginning of free space
+        // in the new chunk.
+        PropertyRef q(p_chunk);
+        if (!p.check_space(sizeof p_chunk))
+            p.make_space(q);
+
+        p.set_link(p_chunk);
+        space.set_pos(q);
+    }
 }
 
-bool PropertyList::PropertySpace::match(const PropertyRef &p) const
+void PropertyRef::make_space(PropertyRef &q)
 {
-    return p.size() == _min || (!_exact && p.size() >= _min + 3);
+    PropertyRef p;
+    p._chunk = _chunk;
+    p._offset = 1;
+    while (p._offset + p.size() + 3 <= chunk_size() - (3 + sizeof (PropertyList *)))
+        p.next();
+
+    *this = p;
+
+    while (p.ptype() != p_end) {
+        q.set_size(p.get_space());
+        q.set_id(p.id());
+        q.set_type(p.ptype());
+        memcpy(q.val(), p.val(), size());
+        q.next();
+        p.next();
+    }
+
+    this->type_size() = p_end;
 }
 
 static int get_int_len(long long v)
@@ -181,6 +213,27 @@ static int get_int_len(long long v)
     if (v == 0) return 1;
     if (v < 0) v = -v;
     return bsr(v) / 8 + 1;
+}
+
+int PropertyRef::get_space() const
+{
+    switch (ptype()) {
+        case p_novalue: return 0;
+        case p_boolean_false: return 0;
+        case p_boolean_true: return 0;
+        case p_integer: return get_int_len(int_value());
+        case p_string: return size();
+        case p_string_ptr: return sizeof (void *);
+        case p_float: return sizeof (double);
+        case p_time: return sizeof (Time);
+        case p_blob: return sizeof (void *);
+        default: assert(0);
+    }
+}
+
+bool PropertyList::PropertySpace::match(const PropertyRef &p) const
+{
+    return p.size() == _min || (!_exact && p.size() >= _min + 3);
 }
 
 PropertyList::PropertySpace PropertyList::get_space(const Property &p)
@@ -223,6 +276,45 @@ bool PropertyList::PropertySpace::set_property(StringID id, const Property &p,
     }
     else
         return false;
+}
+
+void PropertyRef::set_size(int new_size)
+{
+    assert(ptype() == p_end);
+    int unused_size = chunk_size() - _offset - (3 + new_size);
+    assert(unused_size >= 0);
+    if (unused_size >= 3)
+        PropertyRef(*this, new_size).type_size() = p_end;
+    type_size() = uint8_t((new_size << 4) | ptype());
+}
+
+bool PropertyRef::next()
+{
+    while (1) {
+        _offset += size() + 3;
+        if (!not_done())
+            return false;
+        if (ptype() == p_unused)
+            continue;
+        if (ptype() == p_link)
+            follow_link();
+        return true;
+    }
+}
+
+void PropertyRef::set_link(PropertyList *p_chunk)
+{
+    int unused_size = int(chunk_size()) - _offset - (3 + int(sizeof p_chunk));
+    assert(unused_size >= 0 && unused_size <= 3 + 15);
+    assert(ptype() == p_end);
+    if (unused_size >= 3) {
+        set_id(0);
+        type_size() = uint8_t((unused_size - 3) << 4) | p_unused;
+        _offset += unused_size;
+    }
+    set_id(0);
+    type_size() = uint8_t(sizeof p_chunk << 4) | p_link;
+    *(PropertyList **)val() = p_chunk;
 }
 
 void PropertyRef::set_value(const Property &p, Allocator &allocator)
