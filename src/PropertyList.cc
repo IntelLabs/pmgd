@@ -42,7 +42,9 @@ namespace Jarvis {
 
 void PropertyList::init(size_t size)
 {
-    assert(size >= 3 && size <= 255);
+    // Size must be at least 12: 1 byte for the size, 3 bytes for
+    // the property info (id and type), and 8 bytes for a link.
+    assert(size >= 12 && size <= 255);
     _chunk0[0] = uint8_t(size);
     PropertyRef p(this);
     p.set_end();
