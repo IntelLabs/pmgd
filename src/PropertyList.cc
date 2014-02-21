@@ -2,8 +2,11 @@
 #include <assert.h>
 #include <string.h> // for memcpy
 #include "exception.h"
+#include "graph.h"
 #include "iterator.h"
 #include "property.h"
+#include "TransactionImpl.h"
+#include "GraphImpl.h"
 #include "arch.h"
 
 using namespace Jarvis;
@@ -36,7 +39,7 @@ namespace Jarvis {
         bool exact() const { return _exact; }
         bool match(const PropertyRef &p) const;
         void set_pos(const PropertyRef &p) { _pos = p; }
-        bool set_property(StringID id, const Property &);
+        bool set_property(StringID id, const Property &, Allocator &);
     };
 };
 
@@ -79,22 +82,24 @@ PropertyIterator PropertyList::get_properties() const
 
 void PropertyList::set_property(StringID id, const Property &property)
 {
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    Allocator &allocator = tx->get_db()->allocator();
     PropertyRef pos;
     PropertySpace space(get_space(property));
 
     if (find_property(id, pos, &space)) {
         space.set_pos(pos);
-        if (space.set_property(id, property))
+        if (space.set_property(id, property, allocator))
             return;
         pos.free();
     }
 
     if (!space) {
         space.set_pos(pos);
-        find_space(space);
+        find_space(space, allocator);
     }
 
-    bool r = space.set_property(id, property);
+    bool r = space.set_property(id, property, allocator);
     assert(r);
 }
 
@@ -139,7 +144,7 @@ bool PropertyList::find_property(StringID id, PropertyRef &r,
     return false;
 }
 
-void PropertyList::find_space(PropertySpace &space) const
+void PropertyList::find_space(PropertySpace &space, Allocator &allocator) const
 {
     PropertyRef p = space.pos();
     if (p.ptype() != PropertyRef::p_end) {
@@ -197,7 +202,8 @@ PropertyList::PropertySpace PropertyList::get_space(const Property &p)
     }
 }
 
-bool PropertyList::PropertySpace::set_property(StringID id, const Property &p)
+bool PropertyList::PropertySpace::set_property(StringID id, const Property &p,
+                                               Allocator &allocator)
 {
     assert(_min == get_space(p)._min);
     assert(_exact == get_space(p)._exact);
@@ -208,19 +214,19 @@ bool PropertyList::PropertySpace::set_property(StringID id, const Property &p)
     if (_pos.ptype() == PropertyRef::p_end || _pos.size() >= _min + 3) {
         _pos.set_size(_min);
         _pos.set_id(id);
-        _pos.set_value(p);
+        _pos.set_value(p, allocator);
         return true;
     }
     else if (_pos.size() == _min || !_exact) {
         _pos.set_id(id);
-        _pos.set_value(p);
+        _pos.set_value(p, allocator);
         return true;
     }
     else
         return false;
 }
 
-void PropertyRef::set_value(const Property &p)
+void PropertyRef::set_value(const Property &p, Allocator &allocator)
 {
     assert(_offset <= chunk_size() - 3);
     switch (p.type()) {
