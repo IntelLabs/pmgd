@@ -14,7 +14,7 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
 
 CFLAGS := --std=c++11 $(INCLUDES) $(FFLAGS) $(WFLAGS) -DSTUBS -g
 
-all: lib apitest alloctest soltest listtest edgeindextest
+all: lib apitest alloctest soltest listtest edgeindextest propertytest
 
 apitest: apitest.o
 	$(CC) -o $@ $<
@@ -35,6 +35,10 @@ CLEANFILES += listtest listtest.o
 edgeindextest: edgeindextest.o
 	$(CC) -o $@ $< ../lib/jarvis.lib
 CLEANFILES += edgeindextest edgeindextest.o
+
+propertytest: propertytest.o $(LIB)
+	$(CC) -g -o $@ $< $(LIB)
+CLEANFILES += propertytest propertytest.o
 
 lib:
 	make -C ../src OPT=-g install

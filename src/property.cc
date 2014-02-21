@@ -8,11 +8,11 @@ Jarvis::PropertyValue::PropertyValue(const PropertyValue &a)
         case t_novalue: break;
         case t_boolean: v_boolean = a.v_boolean; break;
         case t_integer: v_integer = a.v_integer; break;
-        case t_string: v_string = a.v_string; break;
+        case t_string: new(&v_string) std::string(a.v_string); break;
         case t_float: v_float = a.v_float; break;
         case t_time: v_time = a.v_time; break;
         case t_blob: v_blob = a.v_blob; break;
-        default: throw e_property_type;
+        default: throw e_internal_error;
     }
 }
 
@@ -20,6 +20,23 @@ Jarvis::PropertyValue::~PropertyValue()
 {
     if (_type == t_string) {
         v_string.std::string::~string();
+    }
+}
+
+void Jarvis::PropertyValue::operator=(const PropertyValue &a)
+{
+    if (_type == t_string)
+        v_string.std::string::~string();
+    _type = a._type;
+    switch (a._type) {
+        case t_novalue: break;
+        case t_boolean: v_boolean = a.v_boolean; break;
+        case t_integer: v_integer = a.v_integer; break;
+        case t_string: new(&v_string) std::string(a.v_string); break;
+        case t_float: v_float = a.v_float; break;
+        case t_time: v_time = a.v_time; break;
+        case t_blob: v_blob = a.v_blob; break;
+        default: throw e_internal_error;
     }
 }
 
@@ -37,20 +54,5 @@ bool Jarvis::PropertyValue::operator<(const PropertyValue &a)
         case t_blob: return false; // no ordering
     }
 
-    throw e_property_type;
-}
-
-Jarvis::PropertyValueRef::operator PropertyValue() const
-{
-    switch (type()) {
-        case t_novalue: return PropertyValue();
-        case t_boolean: return PropertyValue(bool_value());
-        case t_integer: return PropertyValue(int_value());
-        case t_string: return PropertyValue(string_value());
-        case t_float: return PropertyValue(float_value());
-        case t_time: return PropertyValue(time_value());
-        case t_blob: return PropertyValue(blob_value());
-    }
-
-    throw e_property_type;
+    throw e_internal_error;
 }

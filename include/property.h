@@ -39,6 +39,7 @@ namespace Jarvis {
         PropertyValue() : _type(t_novalue) { }
         PropertyValue(const PropertyValue &);
         PropertyValue(bool v) : _type(t_boolean), v_boolean(v) { }
+        PropertyValue(int v) : _type(t_integer), v_integer(v) { }
         PropertyValue(long long v) : _type(t_integer), v_integer(v) { }
         PropertyValue(const char *s) : _type(t_string), v_string(s) { }
         PropertyValue(const char *s, std::size_t len)
@@ -53,6 +54,8 @@ namespace Jarvis {
             : _type(t_blob), v_blob(blob, size) { }
 
         ~PropertyValue();
+
+        void operator=(const PropertyValue &);
 
         bool operator<(const PropertyValue &);
 
@@ -72,7 +75,7 @@ namespace Jarvis {
     public:
         Property(StringID id, PropertyValue value) : _id(id), _value(value) { }
         StringID id() const { return _id; }
-        PropertyValue value() const { return _value; }
+        const PropertyValue &value() const { return _value; }
     };
 
     struct PropertyPredicate {

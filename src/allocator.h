@@ -72,6 +72,7 @@ namespace Jarvis {
         bool is_free(const void *curr) const;
 
         uint64_t get_id(const void *obj) const;
+        unsigned object_size() const;
     };
 
     class Allocator : public FixedAllocator {

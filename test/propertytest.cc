@@ -1,12 +1,5 @@
 /*
- * This test checks Jarvis signs of life.
- *
- * Compile with:
- *     make -C ../src
- *     g++-4.8 -std=c++11 -I ../include soltest.cc ../lib/jarvis.lib
- *
- * To include stubs for as-yet unimplemented graph functions, use:
- *     g++-4.8 -std=c++11 -I ../include -DSTUBS soltest.cc ../lib/jarvis.lib
+ * This test checks Jarvis property lists
  */
 
 #include "jarvis.h"
@@ -22,14 +15,18 @@ int main(int argc, char **argv)
     bool create = (argc > 1);
 
     try {
-        Graph db("solgraph", create ? Graph::Create : Graph::ReadOnly);
+        Graph db("propertygraph", create ? Graph::Create : Graph::ReadOnly);
 
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {
             Node &n = db.add_node(0);
-            n.set_property(Property(0, argv[i]));
-            if (prev != NULL)
-                db.add_edge(*prev, n, 0);
+            n.set_property(Property(1, argv[i]));
+            n.set_property(Property(2, i + 16ll));
+            if (prev != NULL) {
+                Edge &e = db.add_edge(*prev, n, 0);
+                e.set_property(Property(3, prev->get_property(1).value().string_value()));
+                e.set_property(Property(4, n.get_property(1).value().string_value()));
+            }
             prev = &n;
         }
 

@@ -15,10 +15,11 @@ namespace Jarvis {
         EdgeIndex *_out_edges;
         EdgeIndex *_in_edges;
         StringID _tag;
-        uint8_t _property_list[];
+        PropertyList _property_list;
 
         friend class Graph;
-        void init(StringID tag, Allocator &index_allocator);
+        void init(StringID tag, unsigned object_size,
+                  Allocator &index_allocator);
         void add_edge(Edge *edge, Direction dir, StringID tag,
                       Allocator &index_allocator);
 

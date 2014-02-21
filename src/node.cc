@@ -10,12 +10,12 @@
 
 using namespace Jarvis;
 
-void Node::init(StringID tag, Allocator &index_allocator)
+void Node::init(StringID tag, unsigned object_size, Allocator &index_allocator)
 {
     _out_edges = EdgeIndex::create(index_allocator);
     _in_edges = EdgeIndex::create(index_allocator);
     _tag = tag;
-    //PropertyList::init(_property_list);
+    _property_list.init(object_size - offsetof(Node, _property_list));
 }
 
 void Node::add_edge(Edge *edge, Direction dir, StringID tag, Allocator &index_allocator)
@@ -66,3 +66,18 @@ EdgeIterator Node::get_edges(Direction dir, StringID tag) const
     EdgeIndex *idx = (dir == OUTGOING) ? _out_edges : _in_edges;
     return EdgeIterator(new NodeEdgeIteratorImpl(idx, this, dir, tag));
 }
+
+bool Jarvis::Node::check_property(StringID id, Property &result) const
+    { return _property_list.check_property(id, result); }
+
+Jarvis::Property Jarvis::Node::get_property(StringID id) const
+    { return _property_list.get_property(id); }
+
+Jarvis::PropertyIterator Jarvis::Node::get_properties() const
+    { return _property_list.get_properties(); }
+
+void Jarvis::Node::set_property(const Property &p)
+    { _property_list.set_property(p); }
+
+void Jarvis::Node::remove_property(StringID id)
+    { _property_list.remove_property(id); }
