@@ -114,31 +114,35 @@ bool PropertyList::find_property(StringID id, PropertyRef &r,
                                  PropertySpace *space) const
 {
     PropertyRef p(this);
-    if (p.ptype() != PropertyRef::p_end) {
-        do {
-            switch (p.ptype()) {
-                case PropertyRef::p_unused:
-                    if (space != NULL && space->match(p)) {
-                        // We try for exact fit. If we don't find it, use worst fit.
-                        bool exact = p.size() == space->min();
-                        if (!space || exact || p.size() > space->pos().size())
-                            space->set_pos(p);
-                        // If we got an exact fit, quit looking.
-                        if (exact)
-                            space = NULL;
-                    }
-                    break;
-                case PropertyRef::p_link:
-                    follow_link(p);
-                    continue;
-                default:
-                    if (p.id() == id) {
-                        r = p;
-                        return true;
-                    }
-            }
-        } while (p.next());
+    while (1) {
+        switch (p.ptype()) {
+            case PropertyRef::p_end:
+                goto break2;
+            case PropertyRef::p_link:
+                p.follow_link();
+                continue;
+            case PropertyRef::p_unused:
+                if (space != NULL && space->match(p)) {
+                    // We try for exact fit. If we don't find it, use worst fit.
+                    bool exact = p.size() == space->min();
+                    if (!space || exact || p.size() > space->pos().size())
+                        space->set_pos(p);
+                    // If we got an exact fit, quit looking.
+                    if (exact)
+                        space = NULL;
+                }
+                break;
+            default:
+                if (p.id() == id) {
+                    r = p;
+                    return true;
+                }
+                break;
+        }
+        if (!p.next())
+            break;
     }
+break2:
     if (space != NULL)
         r = p;
     return false;
@@ -164,11 +168,6 @@ void PropertyList::find_space(PropertySpace &space, Allocator &allocator) const
     }
 
     // Allocate a new property chunk
-    throw Exception(not_implemented);
-}
-
-void PropertyList::follow_link(PropertyRef &) const
-{
     throw Exception(not_implemented);
 }
 

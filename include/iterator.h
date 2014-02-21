@@ -139,6 +139,8 @@ namespace Jarvis {
                 type_size() = uint8_t(size << 4) | p_unused;
         }
 
+        void follow_link() { *this = *(PropertyList **)val(); }
+
         PropertyRef() : _chunk(0), _offset(0) { }
         PropertyRef(const PropertyList *l) : _chunk((uint8_t *)l), _offset(1) {}
         PropertyRef(const PropertyRef &p, unsigned size)
@@ -184,7 +186,6 @@ namespace Jarvis {
                            PropertySpace *space = 0) const;
         void find_space(PropertySpace &space, Allocator &) const;
         static PropertySpace get_space(const Property &);
-        void follow_link(PropertyRef &) const;
 
     public:
         void init(std::size_t size);
