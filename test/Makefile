@@ -21,7 +21,7 @@ ifneq ($(findstring s,$(MAKEFLAGS)),)
 endif
 
 all: lib apitest alloctest soltest nodeedgetest listtest edgeindextest \
-     propertytest propertypredicatetest filtertest txtest \
+     propertytest propertypredicatetest propertychunktest filtertest txtest \
      dumpgraph
 
 apitest: apitest.o
@@ -62,6 +62,11 @@ propertypredicatetest: propertypredicatetest.o $(LIB)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += propertypredicatetest propertypredicatetest.o
+
+propertychunktest: propertychunktest.o $(LIB)
+	$(call print,LINK,$@)
+	$(CC) -g -o $@ $< $(LIB)
+CLEANFILES += propertychunktest propertychunktest.o
 
 filtertest: filtertest.o $(LIB)
 	$(call print,LINK,$@)
