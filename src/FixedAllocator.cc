@@ -23,14 +23,14 @@ using namespace Jarvis;
  * 'void *' to control layout.
  */
 struct FixedAllocator::RegionHeader {
+    // Keep following fields together for easy logging
     uint64_t *tail_ptr;
-    uint64_t *free_ptr;              ///< Beginning of free list 
-    uint32_t size;                   ///< Object size
-    uint32_t zero;                   ///< Zero region before use
-    uint64_t max_addr;               ///< tail_ptr < max_addr (always)
-
+    uint64_t *free_ptr;              ///< Beginning of free list
     // Stats
     int64_t num_allocated;
+    uint64_t max_addr;               ///< tail_ptr < max_addr (always)
+    uint32_t size;                   ///< Object size
+    uint32_t zero;                   ///< Zero region before use
 };
 
 FixedAllocator::FixedAllocator(const uint64_t region_addr,
