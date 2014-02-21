@@ -227,7 +227,6 @@ bool PropertyList::PropertySpace::set_property(StringID id, const Property &p)
 void PropertyRef::set_value(const Property &p)
 {
     assert(_offset <= chunk_size() - 3);
-    uint8_t *val = &_chunk[_offset + 3];
     switch (p.type()) {
         case t_novalue:
             set_type(p_novalue);
@@ -240,7 +239,7 @@ void PropertyRef::set_value(const Property &p)
             assert(size() >= get_int_len(v));
             set_type(p_integer);
             int len = std::min(size(), (int)sizeof v);
-            memcpy(val, &v, len);
+            memcpy(val(), &v, len);
             break;
         }
         case t_string: {
@@ -248,7 +247,7 @@ void PropertyRef::set_value(const Property &p)
             if (len <= 15) {
                 assert(size() == (int)len);
                 set_type(p_string);
-                memcpy(val, p.string_value().data(), len);
+                memcpy(val(), p.string_value().data(), len);
             }
             else {
                 assert(size() >= (int)sizeof (void *));
@@ -260,12 +259,12 @@ void PropertyRef::set_value(const Property &p)
         case t_float:
             assert(size() >= (int)sizeof (double));
             set_type(p_float);
-            *(double *)val = p.float_value();
+            *(double *)val() = p.float_value();
             break;
         case t_time:
             assert(size() >= (int)sizeof (Time));
             set_type(p_time);
-            *(Time *)val = p.time_value();
+            *(Time *)val() = p.time_value();
             break;
         case t_blob: {
             assert(size() >= (int)sizeof (void *));
@@ -289,11 +288,10 @@ bool PropertyRef::bool_value() const
 
 long long PropertyRef::int_value() const
 {
-    const uint8_t *val = &_chunk[_offset + 3];
     if (ptype() == p_integer) {
         long long v = 0;
         int len = std::min(size(), (int)sizeof v);
-        memcpy(&v, val, len);
+        memcpy(&v, val(), len);
         return v;
     }
     throw Exception(property_type);
@@ -301,9 +299,8 @@ long long PropertyRef::int_value() const
 
 std::string PropertyRef::string_value() const
 {
-    const uint8_t *val = &_chunk[_offset + 3];
     switch (ptype()) {
-        case p_string: return std::string((const char *)val, size());
+        case p_string: return std::string((const char *)val(), size());
         case p_string_ptr: throw Exception(not_implemented);
     }
     throw Exception(property_type);
@@ -311,23 +308,20 @@ std::string PropertyRef::string_value() const
 
 double PropertyRef::float_value() const
 {
-    const uint8_t *val = &_chunk[_offset + 3];
     if (ptype() == p_float)
-        return *(double *)val;
+        return *(double *)val();
     throw Exception(property_type);
 }
 
 Time PropertyRef::time_value() const
 {
-    const uint8_t *val = &_chunk[_offset + 3];
     if (ptype() == p_time)
-        return *(Time *)val;
+        return *(Time *)val();
     throw Exception(property_type);
 }
 
 Property::blob_t PropertyRef::blob_value() const
 {
-    //const uint8_t *val = &_chunk[_offset + 3];
     if (ptype() == p_blob) {
         throw Exception(not_implemented);
     }

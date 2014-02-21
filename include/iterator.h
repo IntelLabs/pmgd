@@ -104,6 +104,8 @@ namespace Jarvis {
 
         Property get_value() const;
 
+        uint8_t *val() const { return &_chunk[_offset + 3]; }
+
         bool check_space(unsigned size) const
             { return _offset + size + 3 <= chunk_size(); }
 
