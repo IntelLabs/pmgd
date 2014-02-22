@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <functional>
 #include "exception.h"
 #include "stringid.h"
 #include "property.h"
@@ -61,7 +62,7 @@ namespace Jarvis {
             : Iterator<NodeIteratorImpl>(i) { }
 
         NodeIterator filter(const PropertyPredicate &pp);
-        template <typename F> NodeIterator filter(F f);
+        NodeIterator filter(std::function<Disposition(NodeIterator &)> f);
     };
 };
 
@@ -178,7 +179,7 @@ namespace Jarvis {
         explicit PropertyIterator(PropertyIteratorImpl *i)
             : Iterator<PropertyIteratorImpl>(i) { }
 
-        template <typename F> PropertyIterator filter(F f);
+        PropertyIterator filter(std::function<Disposition(PropertyIterator &)> f);
     };
 
     class PropertyList {
@@ -237,56 +238,46 @@ namespace Jarvis {
             : Iterator<IteratorImpl<EdgeRef>>(i) { }
 
         EdgeIterator filter(const PropertyPredicate &pp);
-        template <typename F> EdgeIterator filter(F f);
+        EdgeIterator filter(std::function<Disposition(EdgeIterator &)> f);
     };
 };
 
 namespace Jarvis {
     class Path;
-    class PathIteratorImpl;
+    class PathRef;
+
+    class PathIteratorImplBase : public IteratorImpl<PathRef> {
+    public:
+        virtual NodeIterator end_nodes() const = 0;
+    };
+
+    class PathIteratorImpl : public PathIteratorImplBase {
+        friend class PathRef;
+        virtual Node &start_node() const = 0;
+        virtual Node &end_node() const = 0;
+        virtual int length() const = 0;
+        virtual EdgeIterator get_edges() const = 0;
+    };
 
     class PathRef {
-        PathIteratorImpl *iter;
+        PathIteratorImpl *_impl;
     public:
-        PathRef(PathIteratorImpl *i) : iter(i) { }
+        PathRef(PathIteratorImpl *i) : _impl(i) { }
         operator Path() const;
-        Node &start_node() const;
-        Node &end_node() const;
-        int length() const;
-        EdgeIterator get_edges() const;
+        Node &start_node() const { return _impl->start_node(); }
+        Node &end_node() const { return _impl->end_node(); }
+        int length() const { return _impl->length(); }
+        EdgeIterator get_edges() const { return _impl->get_edges(); }
     };
 
-    class PathIteratorImpl : public IteratorImpl<PathRef> {
-        mutable PathRef ref;
+    class PathIterator : public Iterator<PathIteratorImplBase> {
     public:
-        PathIteratorImpl() : ref(this) { }
-        const PathRef &operator*() const { return ref; }
-        const PathRef *operator->() const { return &ref; }
-        PathRef &operator*() { return ref; }
-        PathRef *operator->() { return &ref; }
-        virtual NodeIterator end_nodes() const = 0;
+        explicit PathIterator(PathIteratorImplBase *i)
+            : Iterator<PathIteratorImplBase>(i) { }
 
-        virtual Node &start_node_() const = 0;
-        virtual Node &end_node_() const = 0;
-        virtual int length_() const = 0;
-        virtual EdgeIterator get_edges_() const = 0;
-    };
-
-    class PathIterator : public Iterator<PathIteratorImpl> {
-    public:
-        explicit PathIterator(PathIteratorImpl *i)
-            : Iterator<PathIteratorImpl>(i) { }
-
-        template <typename F> PathIterator filter(F f);
+        PathIterator filter(std::function<Disposition(PathIterator &)> f);
 
         NodeIterator end_nodes() const
             { if (!_impl) return NodeIterator(NULL); return _impl->end_nodes(); }
     };
-};
-
-namespace Jarvis {
-    inline Node &PathRef::start_node() const { return iter->start_node_(); }
-    inline Node &PathRef::end_node() const { return iter->end_node_(); }
-    inline int PathRef::length() const { return iter->length_(); }
-    inline EdgeIterator PathRef::get_edges() const { return iter->get_edges_(); }
 };
