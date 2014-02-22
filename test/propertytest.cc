@@ -27,6 +27,7 @@ int main(int argc, char **argv)
             n.set_property(1, argv[i]);
             n.set_property(2, i + 16ll);
             n.set_property(3, -(1ull<<(i*4)));
+            n.set_property(4, "this is a very long string");
             if (prev != NULL) {
                 Edge &e = db.add_edge(*prev, n, 0);
                 e.set_property(3, prev->get_property(1).string_value());

@@ -20,7 +20,7 @@ int main(int argc, char **argv)
         Node &n1 = db.add_node(0);
         n1.set_property(1, "14 char string");
         n1.set_property(2, "14 char string");
-        n1.set_property(6, "longest  string");
+        n1.set_property(6, "this is a really long string");
 
         Node &n2 = db.add_node(0);
         n2.set_property(1, "14 char string");
@@ -35,6 +35,25 @@ int main(int argc, char **argv)
         n3.set_property(2, "14 char string");
         n3.set_property(3, "8 char s");
         n3.set_property(6, true);
+
+        Node &n4 = db.add_node(0);
+        n4.set_property(1, "14 char string");
+        n4.set_property(2, "15  char string");
+        n4.set_property(3, "7 char s");
+        n4.set_property(6, true);
+
+        Node &n5 = db.add_node(0);
+        n5.set_property(1, "14 char string");
+        n5.set_property(2, "14 char string");
+        n5.set_property(3, "short1");
+        n5.set_property(6, "short2");
+        n5.set_property(7, "this is another really long string");
+
+        Node &n6 = db.add_node(0);
+        n6.set_property(1, "14 char string");
+        n6.set_property(3, "8 char s");
+        n6.set_property(2, "15  char string");
+        n6.set_property(6, true);
 
         for (NodeIterator i = db.get_nodes(); i; i.next()) {
             dump(db, *i);
