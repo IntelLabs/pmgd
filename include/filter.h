@@ -1,13 +1,14 @@
 #pragma once
 
+#include <functional>
 #include "iterator.h"
 
 namespace Jarvis {
-    template <typename B, typename F>
+    template <typename B>
     class IteratorFilter : public B::Impl_type {
     protected:
         B *base_iter;
-        F func;
+        std::function<Disposition(B &)> func;
 
     private:
         bool _done;
@@ -26,7 +27,8 @@ namespace Jarvis {
         }
 
     public:
-        IteratorFilter(B *i, F f) : base_iter(i), func(f) { _next(); }
+        IteratorFilter(B *i, std::function<Disposition(B &)> f)
+            : base_iter(i), func(f) { _next(); }
         operator bool() const { return bool(*base_iter); }
         const typename B::Ref_type &operator*() const
             { return (*base_iter).operator*(); }
@@ -55,69 +57,61 @@ namespace Jarvis {
         Disposition operator()(const Iter &);
     };
 
-    template <typename F>
-    class NodeIteratorFilter : public IteratorFilter<NodeIterator, F> {
+    class NodeIteratorFilter : public IteratorFilter<NodeIterator> {
     public:
-        NodeIteratorFilter(NodeIterator *i, F f)
-            : IteratorFilter<NodeIterator, F>(i, f) { }
+        NodeIteratorFilter(NodeIterator *i, std::function<Disposition(NodeIterator &)> f)
+            : IteratorFilter<NodeIterator>(i, f) { }
     };
 
-    template <typename F>
-    class NodeIteratorPropertyFilter : public IteratorFilter<NodeIterator, F> {
+    class NodeIteratorPropertyFilter : public IteratorFilter<NodeIterator> {
     public:
         NodeIteratorPropertyFilter(NodeIterator *i, const PropertyPredicate &pp)
-            : IteratorFilter<NodeIterator, F>(i, PropertyFilter<NodeIterator>(pp)) { }
+            : IteratorFilter<NodeIterator>(i, PropertyFilter<NodeIterator>(pp)) { }
     };
 
-    template <typename F>
-    class EdgeIteratorFilter : public IteratorFilter<EdgeIterator, F> {
+    class EdgeIteratorFilter : public IteratorFilter<EdgeIterator> {
     public:
-        EdgeIteratorFilter(EdgeIterator *i, F f)
-            : IteratorFilter<EdgeIterator, F>(i, f) { }
+        EdgeIteratorFilter(EdgeIterator *i, std::function<Disposition(EdgeIterator &)> f)
+            : IteratorFilter<EdgeIterator>(i, f) { }
     };
 
-    template <typename F>
-    class EdgeIteratorPropertyFilter : public IteratorFilter<EdgeIterator, F> {
+    class EdgeIteratorPropertyFilter : public IteratorFilter<EdgeIterator> {
     public:
         EdgeIteratorPropertyFilter(EdgeIterator *i, const PropertyPredicate &pp)
-            : IteratorFilter<EdgeIterator, F>(i, PropertyFilter<EdgeIterator>(pp)) { }
+            : IteratorFilter<EdgeIterator>(i, PropertyFilter<EdgeIterator>(pp)) { }
     };
 
-    template <typename F>
-    class PropertyIteratorFilter : public IteratorFilter<PropertyIterator, F> {
+    class PropertyIteratorFilter : public IteratorFilter<PropertyIterator> {
     public:
-        PropertyIteratorFilter(PropertyIterator *i, F f)
-            : IteratorFilter<PropertyIterator, F>(i, f) { }
+        PropertyIteratorFilter(PropertyIterator *i, std::function<Disposition(PropertyIterator &)> f)
+            : IteratorFilter<PropertyIterator>(i, f) { }
     };
 
-    template <typename F>
-    class PathIteratorFilter : public IteratorFilter<PathIterator, F> {
-        using IteratorFilter<PathIterator, F>::base_iter;
+    class PathIteratorFilter : public IteratorFilter<PathIterator> {
+        using IteratorFilter<PathIterator>::base_iter;
 
     public:
-        PathIteratorFilter(PathIterator *i, F f)
-            : IteratorFilter<PathIterator, F>(i, f) { }
+        PathIteratorFilter(PathIterator *i, std::function<Disposition(PathIterator &)> f)
+            : IteratorFilter<PathIterator>(i, f) { }
 
         NodeIterator end_nodes() const { return base_iter->end_nodes(); }
     };
 
     inline NodeIterator NodeIterator::filter(const PropertyPredicate &pp)
-        { return NodeIterator(new NodeIteratorPropertyFilter<
-                     PropertyFilter<NodeIterator> >(this, pp)); }
+        { return NodeIterator(new NodeIteratorPropertyFilter(this, pp)); }
 
-    template <typename F> inline NodeIterator NodeIterator::filter(F f)
-        { return NodeIterator(new NodeIteratorFilter<F>(this, f)); }
+    inline NodeIterator NodeIterator::filter(std::function<Disposition(NodeIterator &)> f)
+        { return NodeIterator(new NodeIteratorFilter(this, f)); }
 
     inline EdgeIterator EdgeIterator::filter(const PropertyPredicate &pp)
-        { return EdgeIterator(new EdgeIteratorPropertyFilter<
-                     PropertyFilter<EdgeIterator> >(this, pp)); }
+        { return EdgeIterator(new EdgeIteratorPropertyFilter(this, pp)); }
 
-    template <typename F> inline EdgeIterator EdgeIterator::filter(F f)
-        { return EdgeIterator(new EdgeIteratorFilter<F>(this, f)); }
+    inline EdgeIterator EdgeIterator::filter(std::function<Disposition(EdgeIterator &)> f)
+        { return EdgeIterator(new EdgeIteratorFilter(this, f)); }
 
-    template <typename F> inline PropertyIterator PropertyIterator::filter(F f)
-        { return PropertyIterator(new PropertyIteratorFilter<F>(this, f)); }
+    inline PropertyIterator PropertyIterator::filter(std::function<Disposition(PropertyIterator &)> f)
+        { return PropertyIterator(new PropertyIteratorFilter(this, f)); }
 
-    template <typename F> inline PathIterator PathIterator::filter(F f)
-        { return PathIterator(new PathIteratorFilter<F>(this, f)); }
+    inline PathIterator PathIterator::filter(std::function<Disposition(PathIterator &)> f)
+        { return PathIterator(new PathIteratorFilter(this, f)); }
 };

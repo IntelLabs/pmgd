@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <functional>
 #include "exception.h"
 #include "stringid.h"
 #include "property.h"
@@ -61,7 +62,7 @@ namespace Jarvis {
             : Iterator<NodeIteratorImpl>(i) { }
 
         NodeIterator filter(const PropertyPredicate &pp);
-        template <typename F> NodeIterator filter(F f);
+        NodeIterator filter(std::function<Disposition(NodeIterator &)> f);
     };
 };
 
@@ -178,7 +179,7 @@ namespace Jarvis {
         explicit PropertyIterator(PropertyIteratorImpl *i)
             : Iterator<PropertyIteratorImpl>(i) { }
 
-        template <typename F> PropertyIterator filter(F f);
+        PropertyIterator filter(std::function<Disposition(PropertyIterator &)> f);
     };
 
     class PropertyList {
@@ -237,7 +238,7 @@ namespace Jarvis {
             : Iterator<IteratorImpl<EdgeRef>>(i) { }
 
         EdgeIterator filter(const PropertyPredicate &pp);
-        template <typename F> EdgeIterator filter(F f);
+        EdgeIterator filter(std::function<Disposition(EdgeIterator &)> f);
     };
 };
 
@@ -274,7 +275,7 @@ namespace Jarvis {
         explicit PathIterator(PathIteratorImplBase *i)
             : Iterator<PathIteratorImplBase>(i) { }
 
-        template <typename F> PathIterator filter(F f);
+        PathIterator filter(std::function<Disposition(PathIterator &)> f);
 
         NodeIterator end_nodes() const
             { if (!_impl) return NodeIterator(NULL); return _impl->end_nodes(); }
