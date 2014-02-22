@@ -86,6 +86,8 @@ namespace Jarvis {
         friend class PropertyList;
         friend class PropertyListIterator;
 
+        struct BlobRef;
+
         enum { p_unused, p_end, p_link,
                p_novalue, p_boolean_false, p_boolean_true,
                p_integer, p_float, p_time, p_string, p_string_ptr, p_blob };
@@ -122,6 +124,8 @@ namespace Jarvis {
         void set_size(int new_size);
         void set_value(const Property &, Allocator &);
         void set_link(PropertyList *p_chunk);
+        void set_blob(const void *value, std::size_t size,
+                      Allocator &allocator);
         void set_end() { set_id(0); type_size() = p_end; }
         void free() { type_size() &= 0xf0; /* keep size and clear type */ }
 

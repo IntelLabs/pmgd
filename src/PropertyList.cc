@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <limits.h>
 #include <assert.h>
 #include <string.h> // for memcpy
 #include "exception.h"
@@ -12,6 +13,11 @@
 using namespace Jarvis;
 
 namespace Jarvis {
+    struct __attribute((packed)) PropertyRef::BlobRef {
+        const void *value;
+        uint32_t size;
+    };
+
     class PropertyListIterator : public PropertyIteratorImpl {
         PropertyRef _cur;
     public:
@@ -223,10 +229,10 @@ int PropertyRef::get_space() const
         case p_boolean_true: return 0;
         case p_integer: return get_int_len(int_value());
         case p_string: return size();
-        case p_string_ptr: return sizeof (void *);
+        case p_string_ptr: return sizeof (BlobRef);
         case p_float: return sizeof (double);
         case p_time: return sizeof (Time);
-        case p_blob: return sizeof (void *);
+        case p_blob: return sizeof (BlobRef);
         default: assert(0);
     }
 }
@@ -245,11 +251,11 @@ PropertyList::PropertySpace PropertyList::get_space(const Property &p)
         case t_string: {
             size_t len = p.string_value().length();
             if (len <= 15) return PropertySpace((unsigned char)len, true);
-            return sizeof (void *);
+            return sizeof (PropertyRef::BlobRef);
         }
         case t_float: return sizeof (double);
         case t_time: return sizeof (Time);
-        case t_blob: return sizeof (void *);
+        case t_blob: return sizeof (PropertyRef::BlobRef);
         default: assert(0);
     }
 }
@@ -336,16 +342,16 @@ void PropertyRef::set_value(const Property &p, Allocator &allocator)
             break;
         }
         case t_string: {
-            size_t len = p.string_value().length();
+            std::string value = p.string_value();
+            size_t len = value.length();
             if (len <= 15) {
                 assert(size() == (int)len);
                 set_type(p_string);
-                memcpy(val(), p.string_value().data(), len);
+                memcpy(val(), value.data(), len);
             }
             else {
-                assert(size() >= (int)sizeof (void *));
+                set_blob(value.data(), len, allocator);
                 set_type(p_string_ptr);
-                throw Exception(not_implemented);
             }
             break;
         }
@@ -360,14 +366,26 @@ void PropertyRef::set_value(const Property &p, Allocator &allocator)
             *(Time *)val() = p.time_value();
             break;
         case t_blob: {
-            assert(size() >= (int)sizeof (void *));
+            Property::blob_t value = p.blob_value();
+            set_blob(value.value, value.size, allocator);
             set_type(p_blob);
-            throw Exception(not_implemented);
             break;
         }
         default:
             assert(0);
     }
+}
+
+void PropertyRef::set_blob(const void *value, std::size_t size,
+                           Allocator &allocator)
+{
+    assert(this->size() >= (int)sizeof (BlobRef));
+    if (size > UINT_MAX) throw Exception(not_implemented);
+    void *p = allocator.alloc(size);
+    memcpy(p, value, size);
+    BlobRef *v = (BlobRef *)val();
+    v->value = p;
+    v->size = uint32_t(size);
 }
 
 bool PropertyRef::bool_value() const
@@ -397,7 +415,10 @@ std::string PropertyRef::string_value() const
 {
     switch (ptype()) {
         case p_string: return std::string((const char *)val(), size());
-        case p_string_ptr: throw Exception(not_implemented);
+        case p_string_ptr: {
+            BlobRef *v = (BlobRef *)val();
+            return std::string((const char *)v->value, v->size);
+        }
     }
     throw Exception(property_type);
 }
@@ -419,7 +440,8 @@ Time PropertyRef::time_value() const
 Property::blob_t PropertyRef::blob_value() const
 {
     if (ptype() == p_blob) {
-        throw Exception(not_implemented);
+        BlobRef *v = (BlobRef *)val();
+        return Property::blob_t(v->value, v->size);
     }
     throw Exception(property_type);
 }
