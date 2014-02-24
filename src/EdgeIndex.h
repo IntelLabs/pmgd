@@ -43,10 +43,12 @@ namespace Jarvis {
     // This class sits in PM. No DRAM image. So create a pointer 
     // and typecast
     class EdgeIndex {
+        class EdgeIndexType;
     public:
         typedef KeyValuePair<Edge *, Node *> EdgeNodePair;
         typedef List<EdgeNodePair> EdgeList;
         typedef List<EdgeNodePair>::ListType EdgePosition;
+        typedef List<EdgeIndexType>::ListType KeyPosition;
     private:
         class EdgeIndexType {
             // Tag values
@@ -92,8 +94,11 @@ namespace Jarvis {
             {
                 _list.remove(pair, allocator);
             }
-            const EdgePosition *get_list_head() const { return _list.begin(); }
             size_t num_elems() { return _list.num_elems(); }
+
+            // For iterators
+            const EdgePosition *get_first() const { return _list.begin(); }
+            const StringID &get_key() const { return _key; }
         };
 
         // Data structure for the keys that come in. Choosing a list
@@ -121,6 +126,9 @@ namespace Jarvis {
         void add(const StringID key, Edge* edge, Node* node, FixedAllocator &allocator);
         // For the iterator, give it head of PairList for the key
         const EdgePosition *get_first(StringID key);
+        // For the iterator, give it head of the key list
+        const KeyPosition *get_first() { return _key_list.begin(); }
+        size_t num_elems() { return _key_list.num_elems(); }
         // This will remove the element based on edge pointer value
         void remove(const StringID key, Edge* edge, Node* node, FixedAllocator& allocator);
     };
