@@ -11,7 +11,7 @@ namespace Jarvis {
                         t_float, t_time, t_blob };
 
     struct Time {
-        bool operator<(const Time &) { throw e_not_implemented; }
+        bool operator<(const Time &) const { throw e_not_implemented; }
     };
 
     class PropertyValue {
@@ -57,7 +57,7 @@ namespace Jarvis {
 
         void operator=(const PropertyValue &);
 
-        bool operator<(const PropertyValue &);
+        bool operator<(const PropertyValue &) const;
 
         PropertyType type() const { return _type; } 
         bool bool_value() const { check(t_boolean); return v_boolean; }
@@ -73,6 +73,7 @@ namespace Jarvis {
         PropertyValue _value;
 
     public:
+        Property() : _id(0) { }
         Property(StringID id, PropertyValue value) : _id(id), _value(value) { }
         StringID id() const { return _id; }
         const PropertyValue &value() const { return _value; }
@@ -93,4 +94,15 @@ namespace Jarvis {
             : id(i), op(o), v1(val1), v2(val2)
             { assert(o >= gele); }
     };
+
+    inline bool operator==(const PropertyValue &a, const PropertyValue &b)
+        { return !(a < b && b < a); }
+    inline bool operator!=(const PropertyValue &a, const PropertyValue &b)
+        { return !(a == b); }
+    inline bool operator>(const PropertyValue &a, const PropertyValue &b)
+        { return (b < a); }
+    inline bool operator<=(const PropertyValue &a, const PropertyValue &b)
+        { return !(a > b); }
+    inline bool operator>=(const PropertyValue &a, const PropertyValue &b)
+        { return !(a < b); }
 };

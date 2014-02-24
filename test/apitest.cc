@@ -274,8 +274,7 @@ Jarvis::PropertyValue::~PropertyValue()
 {
 }
 
-bool Jarvis::PropertyValue::operator<(const PropertyValue &a)
+bool Jarvis::PropertyValue::operator<(const PropertyValue &a) const
 {
-
     throw e_not_implemented;
 }
