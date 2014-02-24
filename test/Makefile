@@ -14,7 +14,8 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
 
 CFLAGS := --std=c++11 $(INCLUDES) $(FFLAGS) $(WFLAGS) -DSTUBS -g
 
-all: lib apitest alloctest soltest nodeedgetest listtest edgeindextest propertytest
+all: lib apitest alloctest soltest nodeedgetest listtest edgeindextest \
+     propertytest propertypredicatetest
 
 apitest: apitest.o
 	$(CC) -o $@ $<
@@ -43,6 +44,10 @@ CLEANFILES += edgeindextest edgeindextest.o
 propertytest: propertytest.o $(LIB)
 	$(CC) -g -o $@ $< $(LIB)
 CLEANFILES += propertytest propertytest.o
+
+propertypredicatetest: propertypredicatetest.o $(LIB)
+	$(CC) -g -o $@ $< $(LIB)
+CLEANFILES += propertypredicatetest propertypredicatetest.o
 
 lib:
 	make -C ../src OPT=-g install
