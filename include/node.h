@@ -34,6 +34,7 @@ namespace Jarvis {
         PropertyIterator get_properties() const;
         EdgeIterator get_edges() const;
         EdgeIterator get_edges(Direction dir) const;
+        EdgeIterator get_edges(StringID tag) const;
         EdgeIterator get_edges(Direction dir, StringID tag) const;
         void set_property(const Property &);
         void remove_property(StringID name);
