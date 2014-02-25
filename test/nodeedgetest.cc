@@ -9,12 +9,14 @@
  *     g++-4.8 -std=c++11 -I ../include -DSTUBS nodeedgetest.cc ../lib/jarvis.lib
  */
 
+#include <stdio.h>
 #include "jarvis.h"
 
 using namespace Jarvis;
 
 static void dump(const Graph &db, const Node &n);
 static void dump(const Graph &db, const Edge &e);
+static int print_exception(FILE *s, Exception& e);
 
 int main(int argc, char **argv)
 {
@@ -43,7 +45,7 @@ int main(int argc, char **argv)
         }
     }
     catch (Exception e) {
-        printf("EXCEPTION %d\n", e);
+        print_exception(stdout, e);
     }
 
     return 0;
@@ -88,4 +90,9 @@ static void dump(const Graph &db, const Edge &e)
     printf("Edge %lu, tag %s: n%lu -> n%lu\n", db.get_id(e),
             e.get_tag().name().c_str(),
             db.get_id(e.get_source()), db.get_id(e.get_destination()));
+}
+
+static int print_exception(FILE *s, Exception& e)
+{
+    return fprintf(s, "[Exception] %s at %s:%d\n", e.name, e.file, e.line);
 }

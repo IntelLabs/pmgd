@@ -11,7 +11,7 @@ namespace Jarvis {
                         t_float, t_time, t_blob };
 
     struct Time {
-        bool operator<(const Time &) const { throw e_not_implemented; }
+        bool operator<(const Time &) const { throw Exception(not_implemented); }
     };
 
     class PropertyValue {
@@ -33,7 +33,7 @@ namespace Jarvis {
             blob_t v_blob;
         };
 
-        void check(int t) const { if (_type != t) throw e_property_type; }
+        void check(int t) const { if (_type != t) throw Exception(property_type); }
 
     public:
         PropertyValue() : _type(t_novalue) { }

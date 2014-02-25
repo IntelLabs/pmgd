@@ -7,7 +7,7 @@ Jarvis::StringID::StringID(const char *s)
     if (s == NULL)
         _id = 0;
     else
-        throw e_not_implemented;
+        throw Exception(not_implemented);
 }
 
 std::string Jarvis::StringID::name() const

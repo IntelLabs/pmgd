@@ -10,6 +10,7 @@
 using namespace Jarvis;
 
 void passfail(long id, long expected, long actual);
+std::ostream& operator<< (std::ostream &out, Exception& e);
 
 int main(int argc, char **argv)
 {
@@ -61,7 +62,7 @@ int main(int argc, char **argv)
     catch (Exception e)
     {
         ok = true;
-        std::cout << "Exception occured.  Exception nr. " << e << "\n";
+        std::cout << e << "\n";
         std::cout << "Test 7: passed\n";
     }
     if (!ok) {
@@ -84,4 +85,10 @@ void passfail(long id, long expected, long actual)
     std::cerr << "got " << std::hex << actual << "\n";
 
     exit(1);
+}
+
+std::ostream& operator<< (std::ostream &out, Exception& e)
+{
+    out << "[Exception] " << e.name << " at " << e.file << ":" << e.line;
+    return out;
 }

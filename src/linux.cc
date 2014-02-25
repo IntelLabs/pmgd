@@ -22,13 +22,13 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
     std::string filename = std::string(db_name) + "/" + region_name;
     int open_flags = O_RDWR | create * O_CREAT | truncate * O_TRUNC;
     if ((_fd = open(filename.c_str(), open_flags, 0666)) < 0)
-        throw e_map_failed;
+        throw Exception(map_failed);
 
     // check for size before mmap'ing
     struct stat sb;
     if (fstat(_fd, &sb) < 0) {
         close(_fd);
-        throw e_map_failed;
+        throw Exception(map_failed);
     }
 
     if (sb.st_size == off_t(map_len)) {
@@ -37,12 +37,12 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
     else if (sb.st_size == 0 && create) {
         if (ftruncate(_fd, map_len) < 0) {
             close(_fd);
-            throw e_map_failed;
+            throw Exception(map_failed);
         }
     }
     else {
         close(_fd);
-        throw e_map_failed;
+        throw Exception(map_failed);
     }
 
     if (mmap((void *)map_addr, map_len,
@@ -50,7 +50,7 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
              _fd, 0) == MAP_FAILED)
     {
         close(_fd);
-        throw e_map_failed;
+        throw Exception(map_failed);
     }
 }
 

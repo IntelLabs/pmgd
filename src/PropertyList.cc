@@ -64,7 +64,7 @@ Property PropertyList::get_property(StringID id) const
     PropertyRef p;
 
     if (!find_property(id, p))
-        throw e_property_not_found;
+        throw Exception(property_not_found);
 
     return Property(id, p.get_value());
 }
@@ -156,12 +156,12 @@ void PropertyList::find_space(PropertySpace &space) const
     }
 
     // Allocate a new property chunk
-    throw e_not_implemented;
+    throw Exception(not_implemented);
 }
 
 void PropertyList::follow_link(PropertyRef &) const
 {
-    throw e_not_implemented;
+    throw Exception(not_implemented);
 }
 
 bool PropertyList::PropertySpace::match(const PropertyRef &p) const
@@ -196,7 +196,7 @@ PropertyList::PropertySpace PropertyList::get_space(const PropertyValue &p)
         case t_time: return sizeof (Time);
         case t_blob: return sizeof (void *);
     }
-    throw e_internal_error;
+    throw Exception(internal_error);
 }
 
 bool PropertyList::PropertySpace::set_property(const Property &p)
@@ -251,7 +251,7 @@ void PropertyRef::set_value(const PropertyValue &p)
             else {
                 assert(size() >= (int)sizeof (void *));
                 set_type(p_string_ptr);
-                throw e_not_implemented;
+                throw Exception(not_implemented);
             }
             break;
         }
@@ -268,11 +268,11 @@ void PropertyRef::set_value(const PropertyValue &p)
         case t_blob: {
             assert(size() >= (int)sizeof (void *));
             set_type(p_blob);
-            throw e_not_implemented;
+            throw Exception(not_implemented);
             break;
         }
         default:
-            throw e_internal_error;
+            throw Exception(internal_error);
     }
 }
 
@@ -282,7 +282,7 @@ bool PropertyRef::bool_value() const
         case p_boolean_false: return false;
         case p_boolean_true: return true;
     }
-    throw e_property_type;
+    throw Exception(property_type);
 }
 
 long long PropertyRef::int_value() const
@@ -294,7 +294,7 @@ long long PropertyRef::int_value() const
         memcpy(&v, val, len);
         return v;
     }
-    throw e_property_type;
+    throw Exception(property_type);
 }
 
 std::string PropertyRef::string_value() const
@@ -302,9 +302,9 @@ std::string PropertyRef::string_value() const
     const uint8_t *val = &_chunk[_offset + 3];
     switch (type()) {
         case p_string: return std::string((const char *)val, size());
-        case p_string_ptr: throw e_not_implemented;
+        case p_string_ptr: throw Exception(not_implemented);
     }
-    throw e_property_type;
+    throw Exception(property_type);
 }
 
 double PropertyRef::float_value() const
@@ -312,7 +312,7 @@ double PropertyRef::float_value() const
     const uint8_t *val = &_chunk[_offset + 3];
     if (type() == p_float)
         return *(double *)val;
-    throw e_property_type;
+    throw Exception(property_type);
 }
 
 Time PropertyRef::time_value() const
@@ -320,16 +320,16 @@ Time PropertyRef::time_value() const
     const uint8_t *val = &_chunk[_offset + 3];
     if (type() == p_time)
         return *(Time *)val;
-    throw e_property_type;
+    throw Exception(property_type);
 }
 
 PropertyValue::blob_t PropertyRef::blob_value() const
 {
     //const uint8_t *val = &_chunk[_offset + 3];
     if (type() == p_blob) {
-        throw e_not_implemented;
+        throw Exception(not_implemented);
     }
-    throw e_property_type;
+    throw Exception(property_type);
 }
 
 PropertyValue PropertyRef::get_value() const
@@ -346,5 +346,5 @@ PropertyValue PropertyRef::get_value() const
         case p_blob: return PropertyValue(blob_value());
     }
 
-    throw e_internal_error;
+    throw Exception(internal_error);
 }
