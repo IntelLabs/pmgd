@@ -9,6 +9,7 @@
  *     g++-4.8 -std=c++11 -I ../include -DSTUBS soltest.cc ../lib/jarvis.lib
  */
 
+#include <stdio.h>
 #include "jarvis.h"
 
 using namespace Jarvis;
@@ -16,6 +17,7 @@ using namespace Jarvis;
 static void dump(const Graph &db, const Node &n);
 static void dump(const Graph &db, const Edge &n);
 static std::string property_text(const PropertyIterator &i);
+static int print_exception(FILE *s, Exception& e);
 
 int main(int argc, char **argv)
 {
@@ -42,7 +44,7 @@ int main(int argc, char **argv)
         }
     }
     catch (Exception e) {
-        printf("EXCEPTION %d\n", e);
+        print_exception(stdout, e);
     }
 
     return 0;
@@ -82,5 +84,10 @@ static std::string property_text(const PropertyIterator &i)
         case t_time: return "<time value>";
         case t_blob: return "<blob value>";
     }
-    throw Jarvis::e_property_type;
+    throw Jarvis::Exception(property_type);
+}
+
+static int print_exception(FILE *s, Exception& e)
+{
+    return fprintf(s, "[Exception] %s at %s:%d\n", e.name, e.file, e.line);
 }
