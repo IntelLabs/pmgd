@@ -1,0 +1,91 @@
+/*
+ * This test checks Jarvis signs of life.
+ *
+ * Compile with:
+ *     make -C ../src
+ *     g++-4.8 -std=c++11 -I ../include nodeedgetest.cc ../lib/jarvis.lib
+ *
+ * To include stubs for as-yet unimplemented graph functions, use:
+ *     g++-4.8 -std=c++11 -I ../include -DSTUBS nodeedgetest.cc ../lib/jarvis.lib
+ */
+
+#include "jarvis.h"
+
+using namespace Jarvis;
+
+static void dump(const Graph &db, const Node &n);
+static void dump(const Graph &db, const Edge &e);
+
+int main(int argc, char **argv)
+{
+    bool create = (argc > 1);
+
+    try {
+        Graph db("nodeedgegraph", create ? Graph::Create : Graph::ReadOnly);
+
+        Node *prev = 0;
+        for (int i = 1; i < argc; i++) {
+            Node &n = db.add_node(0);
+            if (prev != NULL) {
+                db.add_edge(*prev, n, 0);
+                db.add_edge(*prev, n, 1);
+            }
+            prev = &n;
+        }
+
+        for (NodeIterator i = db.get_nodes(); i; i.next()) {
+            dump(db, *i);
+        }
+
+        // Just for verification if all covered
+        for (EdgeIterator i = db.get_edges(); i; i.next()) {
+            dump(db, *i);
+        }
+    }
+    catch (Exception e) {
+        printf("EXCEPTION %d\n", e);
+    }
+
+    return 0;
+}
+
+static void dump(const Graph &db, const Node &n)
+{
+    NodeID my_id = db.get_id(n);
+    printf("Node %lu:\n", my_id);
+    printf("All edges: \n");
+    for (EdgeIterator i = n.get_edges(); i; i.next()) {
+        NodeID other_id = db.get_id(i->get_destination());
+        if (other_id == my_id ) { // I am destination
+            printf("  <- n%lu (%s,e%lu)\n", db.get_id(i->get_source()),
+                    i->get_tag().name().c_str(), db.get_id(*i));
+        }
+        else {
+            printf("  -> n%lu (%s,e%lu)\n", db.get_id(i->get_destination()),
+                    i->get_tag().name().c_str(), db.get_id(*i));
+        }
+    }
+    printf("All outgoing edges: \n");
+    for (EdgeIterator i = n.get_edges(OUTGOING); i; i.next()) {
+        printf("  -> n%lu (%s,e%lu)\n", db.get_id(i->get_destination()),
+                i->get_tag().name().c_str(), db.get_id(*i));
+    }
+    printf("All outgoing edges with tag 0: \n");
+    for (EdgeIterator i = n.get_edges(OUTGOING, 0); i; i.next()) {
+        printf("  -> n%lu (%s,e%lu)\n", db.get_id(i->get_destination()),
+                i->get_tag().name().c_str(), db.get_id(*i));
+    }
+    printf("All incoming edges with tag 1: \n");
+    for (EdgeIterator i = n.get_edges(INCOMING, 1); i; i.next()) {
+        printf("  <- n%lu (%s,e%lu)\n", db.get_id(i->get_source()),
+                i->get_tag().name().c_str(), db.get_id(*i));
+    }
+    printf("\n");
+}
+
+static void dump(const Graph &db, const Edge &e)
+{
+    printf("Edge %lu, tag %s: n%lu -> n%lu\n", db.get_id(e),
+            e.get_tag().name().c_str(),
+            db.get_id(e.get_source()), db.get_id(e.get_destination()));
+}
