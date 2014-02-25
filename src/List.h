@@ -81,7 +81,7 @@ namespace Jarvis {
         temp1->next = temp->next;
         temp->next = temp1;
         _num_elems++;
-        return &(temp->value);
+        return &(temp1->value);
     }
 
     template <typename T> void List<T>::remove(const T &value, FixedAllocator &allocator)

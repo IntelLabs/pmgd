@@ -25,6 +25,7 @@ namespace Jarvis {
         // but then we would have all sorts of indirections that we want
         // to avoid. So take a copy hit here with temporary objects. These
         // objects are small anyway
+        // EdgeIndexType ptr
         ptr = _key_list.add(newkey, allocator);
         // TODO log
         // Now that you have the PM location, add all the values
@@ -34,13 +35,12 @@ namespace Jarvis {
     const EdgeIndex::EdgePosition *EdgeIndex::get_first(StringID key)
     {
         EdgeIndexType newkey(key);
-
         // Construct the entry for search in the list
         // If they key is found, there should at least be one element
         // in the list
         EdgeIndexType *ptr = _key_list.find(newkey);
         if (ptr != NULL)
-            return ptr->get_list_head();
+            return ptr->get_first();
         return NULL;
     }
 
