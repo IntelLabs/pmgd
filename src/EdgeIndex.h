@@ -9,35 +9,35 @@
 #include "edge.h"
 
 namespace Jarvis {
-    template <typename Type1, typename Type2> class KeyValuePair {
-        Type1 elem1;
-        Type2 elem2;
+    template <typename KeyType, typename ValueType> class KeyValuePair {
+        KeyType _key;
+        ValueType _value;
 
     public:
-        KeyValuePair(const Type1& e1, const Type2& e2)
+        KeyValuePair(const KeyType& k, const ValueType& v)
         {
-            elem1 = e1;
-            elem2 = e2;
+            _key = k;
+            _value = v;
         }
 
         bool operator== (const KeyValuePair& val2) const
         {
-            return (elem1 == val2.elem1);
+            return (_key == val2._key);
         }
         bool operator< (const KeyValuePair& val2) const
         {
-            return (elem1 < val2.elem1);
+            return (_key < val2._key);
         }
 
-        void set(const Type1 &e1, const Type2 &e2)
+        void set(const KeyType &k, const ValueType &v)
         {
-            elem1 = e1;
-            elem2 = e2;
+            _key = k;
+            _value = v;
         }
-        void set_key(const Type1 &e1) { elem1 = e1; }
-        void set_value(const Type2 &e2) { elem2 = e2; }
-        const Type1 &key() const { return elem1; }
-        const Type2 &value() const { return elem2; }
+        void set_key(const KeyType &k) { _key = k; }
+        void set_value(const ValueType &v) { _value = v; }
+        const KeyType &key() const { return _key; }
+        const ValueType &value() const { return _value; }
     };
 
     // This class sits in PM. No DRAM image. So create a pointer 
