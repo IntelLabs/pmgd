@@ -20,7 +20,7 @@ namespace Jarvis {
                     case pass: return true;
                     case stop: base_iter->done(); return false;
                     case pass_stop: _done = true; return true;
-                    default: throw e_not_implemented;
+                    default: throw Exception(not_implemented);
                 }
             }
             return false;
@@ -135,7 +135,7 @@ namespace Jarvis {
                 case PropertyPredicate::gelt: r = val >= pp.v1 && val < pp.v2; break;
                 case PropertyPredicate::gtle: r = val > pp.v1 && val <= pp.v2; break;
                 case PropertyPredicate::gtlt: r = val > pp.v1 && val < pp.v2; break;
-                default: throw e_internal_error;
+                default: throw Exception(internal_error);
             }
         }
         return r ? pass : dont_pass;

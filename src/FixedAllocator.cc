@@ -108,7 +108,7 @@ void *Jarvis::FixedAllocator::alloc()
         return p;
     }
     if (((uint64_t)_pm->tail_ptr + _pm->size) > _pm->max_addr)
-        throw e_bad_alloc;
+        throw Exception(bad_alloc);
 
     /* Free list exhausted, we are growing our pool of objects by one */
 
