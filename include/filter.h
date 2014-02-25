@@ -114,4 +114,33 @@ namespace Jarvis {
 
     inline PathIterator PathIterator::filter(std::function<Disposition(PathIterator &)> f)
         { return PathIterator(new PathIteratorFilter(this, f)); }
+
+
+    template <typename Iter>
+    Disposition PropertyFilter<Iter>::operator()(const Iter &i)
+    {
+        bool r = false;
+        Property p;
+        if (i->check_property(pp.id, p)) {
+            const PropertyValue &val = p.value();
+            switch (pp.op) {
+                case PropertyPredicate::dont_care: r = true; break;
+                case PropertyPredicate::eq: r = val == pp.v1; break;
+                case PropertyPredicate::ne: r = val != pp.v1; break;
+                case PropertyPredicate::gt: r = val > pp.v1; break;
+                case PropertyPredicate::ge: r = val >= pp.v1; break;
+                case PropertyPredicate::lt: r = val < pp.v1; break;
+                case PropertyPredicate::le: r = val <= pp.v1; break;
+                case PropertyPredicate::gele: r = val >= pp.v1 && val <= pp.v2; break;
+                case PropertyPredicate::gelt: r = val >= pp.v1 && val < pp.v2; break;
+                case PropertyPredicate::gtle: r = val > pp.v1 && val <= pp.v2; break;
+                case PropertyPredicate::gtlt: r = val > pp.v1 && val < pp.v2; break;
+                default: throw e_internal_error;
+            }
+        }
+        return r ? pass : dont_pass;
+    }
+
+    template Disposition PropertyFilter<NodeIterator>::operator()(const NodeIterator &);
+    template Disposition PropertyFilter<EdgeIterator>::operator()(const EdgeIterator &);
 };
