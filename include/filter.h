@@ -2,6 +2,7 @@
 
 #include <functional>
 #include "iterator.h"
+#include "node.h"
 
 namespace Jarvis {
     template <typename B>
