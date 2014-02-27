@@ -4,6 +4,7 @@
 #include "exception.h"
 #include "iterator.h"
 #include "property.h"
+#include "arch.h"
 
 using namespace Jarvis;
 
@@ -26,8 +27,8 @@ namespace Jarvis {
         PropertyRef _pos;
 
     public:
-        PropertySpace(unsigned char m, bool e = false)
-            : _min(m), _exact(e), _pos()
+        PropertySpace(int m, bool e = false)
+            : _min((unsigned char)m), _exact(e), _pos()
             { }
         operator bool() const { return _pos; }
         const PropertyRef &pos() const { return _pos; }
@@ -171,16 +172,11 @@ bool PropertyList::PropertySpace::match(const PropertyRef &p) const
     return p.size() == _min || (!_exact && p.size() >= _min + 3);
 }
 
-static constexpr unsigned char get_int_len(long long v)
+static int get_int_len(long long v)
 {
-    return (v < 0x7fffffff) ?
-               (v < 0x7f) ? 1 :
-               (v < 0x7fff) ? 2 :
-               (v < 0x7fffff) ? 3 : 4
-           : (v < 0x7fffffffff) ? 5 :
-             (v < 0x7fffffffffff) ? 6 :
-             (v < 0x7fffffffffffff) ? 7
-           : (unsigned char)sizeof (long long);
+    if (v == 0) return 1;
+    if (v < 0) v = -v;
+    return bsr(v) / 8 + 1;
 }
 
 PropertyList::PropertySpace PropertyList::get_space(const Property &p)
@@ -289,9 +285,12 @@ bool PropertyRef::bool_value() const
 long long PropertyRef::int_value() const
 {
     if (ptype() == p_integer) {
-        long long v = 0;
-        int len = std::min(size(), (int)sizeof v);
-        memcpy(&v, val(), len);
+        long long v = *(long long *)val();
+        unsigned sz = size();
+        if (sz < 8) {
+            int shift =  8 * (8 - sz);
+            v = v << shift >> shift;
+        }
         return v;
     }
     throw Exception(property_type);
