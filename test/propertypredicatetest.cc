@@ -21,8 +21,8 @@ int main(int argc, char **argv)
 
         for (int i = 1; i < argc; i++) {
             Node &n = db.add_node(i);
-            n.set_property(Property(1, argv[i]));
-            n.set_property(Property(2, i));
+            n.set_property(1, argv[i]);
+            n.set_property(2, i);
         }
 
         // Look for name starting with 'a'
@@ -92,12 +92,12 @@ static void dump(const Graph &db, const Node &n)
 
 static std::string property_text(const PropertyIterator &i)
 {
-    switch (i->value().type()) {
+    switch (i->type()) {
         case t_novalue: return "no value";
-        case t_boolean: return i->value().bool_value() ? "T" : "F";
-        case t_integer: return std::to_string(i->value().int_value());
-        case t_string: return i->value().string_value();
-        case t_float: return std::to_string(i->value().float_value());
+        case t_boolean: return i->bool_value() ? "T" : "F";
+        case t_integer: return std::to_string(i->int_value());
+        case t_string: return i->string_value();
+        case t_float: return std::to_string(i->float_value());
         case t_time: return "<time value>";
         case t_blob: return "<blob value>";
     }

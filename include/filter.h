@@ -121,9 +121,8 @@ namespace Jarvis {
     Disposition PropertyFilter<Iter>::operator()(const Iter &i)
     {
         bool r = false;
-        Property p;
-        if (i->check_property(pp.id, p)) {
-            const PropertyValue &val = p.value();
+        Property val;
+        if (i->check_property(pp.id, val)) {
             switch (pp.op) {
                 case PropertyPredicate::dont_care: r = true; break;
                 case PropertyPredicate::eq: r = val == pp.v1; break;

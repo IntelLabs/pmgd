@@ -197,8 +197,8 @@ Jarvis::Property Jarvis::Node::get_property(StringID id) const
 Jarvis::PropertyIterator Jarvis::Node::get_properties() const
     { return _property_list.get_properties(); }
 
-void Jarvis::Node::set_property(const Property &p)
-    { _property_list.set_property(p); }
+void Jarvis::Node::set_property(StringID id, const Property &p)
+    { _property_list.set_property(id, p); }
 
 void Jarvis::Node::remove_property(StringID id)
     { _property_list.remove_property(id); }

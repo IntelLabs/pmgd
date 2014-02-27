@@ -68,13 +68,11 @@ namespace Jarvis {
 
 namespace Jarvis {
     class PropertyList;
-    class PropertyValueRef;
 
     class PropertyRef {
         uint8_t *_chunk;
         unsigned _offset;
 
-        friend class PropertyValueRef;
         friend class PropertyList;
         friend class PropertyListIterator;
 
@@ -92,17 +90,17 @@ namespace Jarvis {
         const uint8_t &type_size() const
             { return const_cast<PropertyRef *>(this)->type_size(); }
 
-        int type() const { return type_size() & 0xf; }
+        int ptype() const { return type_size() & 0xf; }
         int size() const { return type_size() >> 4; }
 
-        PropertyValue get_value() const;
+        Property get_value() const;
 
         bool check_space(unsigned size) const
             { return _offset + size + 3 <= chunk_size(); }
 
         bool next() { _offset += size() + 3; return not_done(); }
         bool not_done() const
-            { return _offset <= chunk_size() - 3 && type() != p_end; }
+            { return _offset <= chunk_size() - 3 && ptype() != p_end; }
 
         void set_id(StringID id) { this->get_id() = id; }
 
@@ -112,11 +110,11 @@ namespace Jarvis {
         void set_size(int new_size)
         {
             if (_offset + new_size + 3 < chunk_size() - 3)
-                PropertyRef(*this, new_size).free(type(), size() - (new_size + 3));
-            type_size() = uint8_t((new_size << 4) | type());
+                PropertyRef(*this, new_size).free(ptype(), size() - (new_size + 3));
+            type_size() = uint8_t((new_size << 4) | ptype());
         }
 
-        void set_value(const PropertyValue &);
+        void set_value(const Property &);
 
         void set_end() { set_id(0); type_size() = p_end; }
         void free() { type_size() &= 0xf0; /* keep size and clear type */ }
@@ -129,13 +127,6 @@ namespace Jarvis {
                 type_size() = uint8_t(size << 4) | p_unused;
         }
 
-        bool bool_value() const;
-        long long int_value() const;
-        std::string string_value() const;
-        double float_value() const;
-        Time time_value() const;
-        PropertyValue::blob_t blob_value() const;
-
         PropertyRef() : _chunk(0), _offset(0) { }
         PropertyRef(const PropertyList *l) : _chunk((uint8_t *)l), _offset(1) {}
         PropertyRef(const PropertyRef &p, unsigned size)
@@ -144,34 +135,25 @@ namespace Jarvis {
 
     public:
         StringID id() const { return const_cast<PropertyRef *>(this)->get_id(); }
-        PropertyValueRef value() const;
-        operator Property() const { return Property(id(), get_value()); }
-    };
+        operator Property() const { return get_value(); }
 
-    class PropertyValueRef {
-        const PropertyRef &p;
-    public:
-        PropertyValueRef(const PropertyRef &a) : p(a) { }
         PropertyType type() const
         {
-            assert(p.type() >= PropertyRef::p_novalue && p.type() <= PropertyRef::p_blob);
+            assert(ptype() >= p_novalue && ptype() <= p_blob);
             static constexpr PropertyType type_map[] = {
                 t_novalue, t_boolean, t_boolean, t_integer, t_float,
                 t_time, t_string, t_string, t_blob
             };
-            return type_map[p.type() - PropertyRef::p_novalue];
+            return type_map[ptype() - p_novalue];
         }
-        operator PropertyValue() const { return p.get_value(); }
-        bool bool_value() const { return p.bool_value(); };
-        long long int_value() const { return p.int_value(); };
-        std::string string_value() const { return p.string_value(); };
-        double float_value() const { return p.float_value(); };
-        Time time_value() const { return p.time_value(); };
-        PropertyValue::blob_t blob_value() const { return p.blob_value(); };
-    };
 
-    inline PropertyValueRef PropertyRef::value() const
-        { return PropertyValueRef(*this); }
+        bool bool_value() const;
+        long long int_value() const;
+        std::string string_value() const;
+        double float_value() const;
+        Time time_value() const;
+        Property::blob_t blob_value() const;
+    };
 
     typedef IteratorImpl<PropertyRef> PropertyIteratorImpl;
     class PropertyIterator : public Iterator<PropertyIteratorImpl> {
@@ -189,7 +171,7 @@ namespace Jarvis {
         bool find_property(StringID property, PropertyRef &p,
                            PropertySpace *space = 0) const;
         void find_space(PropertySpace &space) const;
-        static PropertySpace get_space(const PropertyValue &);
+        static PropertySpace get_space(const Property &);
         void follow_link(PropertyRef &) const;
 
     public:
@@ -197,7 +179,7 @@ namespace Jarvis {
         bool check_property(StringID property, Property &result) const;
         Property get_property(StringID id) const;
         PropertyIterator get_properties() const;
-        void set_property(const Property &);
+        void set_property(StringID id, const Property &);
         void remove_property(StringID name);
     };
 };
@@ -228,7 +210,7 @@ namespace Jarvis {
         bool check_property(StringID id, Property &result) const;
         Property get_property(StringID id) const;
         PropertyIterator get_properties() const;
-        void set_property(const Property &property);
+        void set_property(StringID id, const Property &property);
         void remove_property(StringID id);
     };
 

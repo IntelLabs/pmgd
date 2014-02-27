@@ -35,7 +35,7 @@ namespace Jarvis {
         bool exact() const { return _exact; }
         bool match(const PropertyRef &p) const;
         void set_pos(const PropertyRef &p) { _pos = p; }
-        bool set_property(const Property &);
+        bool set_property(StringID id, const Property &);
     };
 };
 
@@ -55,7 +55,7 @@ bool PropertyList::check_property(StringID id, Property &result) const
     if (!find_property(id, p))
         return false;
 
-    result = Property(id, p.get_value());
+    result = p.get_value();
     return true;
 }
 
@@ -66,7 +66,7 @@ Property PropertyList::get_property(StringID id) const
     if (!find_property(id, p))
         throw Exception(property_not_found);
 
-    return Property(id, p.get_value());
+    return p.get_value();
 }
 
 PropertyIterator PropertyList::get_properties() const
@@ -74,14 +74,14 @@ PropertyIterator PropertyList::get_properties() const
     return PropertyIterator(new PropertyListIterator(this));
 }
 
-void PropertyList::set_property(const Property &property)
+void PropertyList::set_property(StringID id, const Property &property)
 {
     PropertyRef pos;
-    PropertySpace space(get_space(property.value()));
+    PropertySpace space(get_space(property));
 
-    if (find_property(property.id(), pos, &space)) {
+    if (find_property(id, pos, &space)) {
         space.set_pos(pos);
-        if (space.set_property(property))
+        if (space.set_property(id, property))
             return;
         pos.free();
     }
@@ -91,7 +91,7 @@ void PropertyList::set_property(const Property &property)
         find_space(space);
     }
 
-    bool r = space.set_property(property);
+    bool r = space.set_property(id, property);
     assert(r);
 }
 
@@ -106,9 +106,9 @@ bool PropertyList::find_property(StringID id, PropertyRef &r,
                                  PropertySpace *space) const
 {
     PropertyRef p(this);
-    if (p.type() != PropertyRef::p_end) {
+    if (p.ptype() != PropertyRef::p_end) {
         do {
-            switch (p.type()) {
+            switch (p.ptype()) {
                 case PropertyRef::p_unused:
                     if (space != NULL && space->match(p)) {
                         // We try for exact fit. If we don't find it, use worst fit.
@@ -139,9 +139,9 @@ bool PropertyList::find_property(StringID id, PropertyRef &r,
 void PropertyList::find_space(PropertySpace &space) const
 {
     PropertyRef p = space.pos();
-    if (p.type() != PropertyRef::p_end) {
+    if (p.ptype() != PropertyRef::p_end) {
         do {
-            if (p.type() == PropertyRef::p_unused && space.match(p)) {
+            if (p.ptype() == PropertyRef::p_unused && space.match(p)) {
                 space.set_pos(p);
                 return;
             }
@@ -181,7 +181,7 @@ static constexpr unsigned char get_int_len(long long v)
            : (unsigned char)sizeof (long long);
 }
 
-PropertyList::PropertySpace PropertyList::get_space(const PropertyValue &p)
+PropertyList::PropertySpace PropertyList::get_space(const Property &p)
 {
     switch (p.type()) {
         case t_novalue: return 0;
@@ -199,30 +199,30 @@ PropertyList::PropertySpace PropertyList::get_space(const PropertyValue &p)
     throw Exception(internal_error);
 }
 
-bool PropertyList::PropertySpace::set_property(const Property &p)
+bool PropertyList::PropertySpace::set_property(StringID id, const Property &p)
 {
-    assert(_min == get_space(p.value())._min);
-    assert(_exact == get_space(p.value())._exact);
-    assert((_pos.type() == PropertyRef::p_end && _pos.check_space(_min))
+    assert(_min == get_space(p)._min);
+    assert(_exact == get_space(p)._exact);
+    assert((_pos.ptype() == PropertyRef::p_end && _pos.check_space(_min))
            || _pos.size() == _min
            || _pos.size() >= _min + 3
            || (!_exact && _pos.size() >= _min));
-    if (_pos.type() == PropertyRef::p_end || _pos.size() >= _min + 3) {
+    if (_pos.ptype() == PropertyRef::p_end || _pos.size() >= _min + 3) {
         _pos.set_size(_min);
-        _pos.set_id(p.id());
-        _pos.set_value(p.value());
+        _pos.set_id(id);
+        _pos.set_value(p);
         return true;
     }
     else if (_pos.size() == _min || !_exact) {
-        _pos.set_id(p.id());
-        _pos.set_value(p.value());
+        _pos.set_id(id);
+        _pos.set_value(p);
         return true;
     }
     else
         return false;
 }
 
-void PropertyRef::set_value(const PropertyValue &p)
+void PropertyRef::set_value(const Property &p)
 {
     assert(_offset <= chunk_size() - 3);
     uint8_t *val = &_chunk[_offset + 3];
@@ -278,7 +278,7 @@ void PropertyRef::set_value(const PropertyValue &p)
 
 bool PropertyRef::bool_value() const
 {
-    switch (type()) {
+    switch (ptype()) {
         case p_boolean_false: return false;
         case p_boolean_true: return true;
     }
@@ -288,7 +288,7 @@ bool PropertyRef::bool_value() const
 long long PropertyRef::int_value() const
 {
     const uint8_t *val = &_chunk[_offset + 3];
-    if (type() == p_integer) {
+    if (ptype() == p_integer) {
         long long v = 0;
         int len = std::min(size(), (int)sizeof v);
         memcpy(&v, val, len);
@@ -300,7 +300,7 @@ long long PropertyRef::int_value() const
 std::string PropertyRef::string_value() const
 {
     const uint8_t *val = &_chunk[_offset + 3];
-    switch (type()) {
+    switch (ptype()) {
         case p_string: return std::string((const char *)val, size());
         case p_string_ptr: throw Exception(not_implemented);
     }
@@ -310,7 +310,7 @@ std::string PropertyRef::string_value() const
 double PropertyRef::float_value() const
 {
     const uint8_t *val = &_chunk[_offset + 3];
-    if (type() == p_float)
+    if (ptype() == p_float)
         return *(double *)val;
     throw Exception(property_type);
 }
@@ -318,32 +318,32 @@ double PropertyRef::float_value() const
 Time PropertyRef::time_value() const
 {
     const uint8_t *val = &_chunk[_offset + 3];
-    if (type() == p_time)
+    if (ptype() == p_time)
         return *(Time *)val;
     throw Exception(property_type);
 }
 
-PropertyValue::blob_t PropertyRef::blob_value() const
+Property::blob_t PropertyRef::blob_value() const
 {
     //const uint8_t *val = &_chunk[_offset + 3];
-    if (type() == p_blob) {
+    if (ptype() == p_blob) {
         throw Exception(not_implemented);
     }
     throw Exception(property_type);
 }
 
-PropertyValue PropertyRef::get_value() const
+Property PropertyRef::get_value() const
 {
-    switch (type()) {
-        case p_novalue: return PropertyValue();
-        case p_boolean_false: return PropertyValue(false);
-        case p_boolean_true: return PropertyValue(true);
-        case p_integer: return PropertyValue(int_value());
-        case p_string: return PropertyValue(string_value());
-        case p_string_ptr: return PropertyValue(string_value());
-        case p_float: return PropertyValue(float_value());
-        case p_time: return PropertyValue(time_value());
-        case p_blob: return PropertyValue(blob_value());
+    switch (ptype()) {
+        case p_novalue: return Property();
+        case p_boolean_false: return Property(false);
+        case p_boolean_true: return Property(true);
+        case p_integer: return Property(int_value());
+        case p_string: return Property(string_value());
+        case p_string_ptr: return Property(string_value());
+        case p_float: return Property(float_value());
+        case p_time: return Property(time_value());
+        case p_blob: return Property(blob_value());
     }
 
     throw Exception(internal_error);

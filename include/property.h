@@ -14,7 +14,7 @@ namespace Jarvis {
         bool operator<(const Time &) const { throw Exception(not_implemented); }
     };
 
-    class PropertyValue {
+    class Property {
     public:
         struct blob_t {
             const void *value;
@@ -36,28 +36,28 @@ namespace Jarvis {
         void check(int t) const { if (_type != t) throw Exception(property_type); }
 
     public:
-        PropertyValue() : _type(t_novalue) { }
-        PropertyValue(const PropertyValue &);
-        PropertyValue(bool v) : _type(t_boolean), v_boolean(v) { }
-        PropertyValue(int v) : _type(t_integer), v_integer(v) { }
-        PropertyValue(long long v) : _type(t_integer), v_integer(v) { }
-        PropertyValue(const char *s) : _type(t_string), v_string(s) { }
-        PropertyValue(const char *s, std::size_t len)
+        Property() : _type(t_novalue) { }
+        Property(const Property &);
+        Property(bool v) : _type(t_boolean), v_boolean(v) { }
+        Property(int v) : _type(t_integer), v_integer(v) { }
+        Property(long long v) : _type(t_integer), v_integer(v) { }
+        Property(const char *s) : _type(t_string), v_string(s) { }
+        Property(const char *s, std::size_t len)
             : _type(t_string), v_string(s, len) { }
-        PropertyValue(const std::string str)
+        Property(const std::string str)
             : _type(t_string), v_string(str) { }
-        PropertyValue(double v) : _type(t_float), v_float(v) { }
-        PropertyValue(Time v) : _type(t_time), v_time(v) { }
-        PropertyValue(const blob_t &blob)
+        Property(double v) : _type(t_float), v_float(v) { }
+        Property(Time v) : _type(t_time), v_time(v) { }
+        Property(const blob_t &blob)
             : _type(t_blob), v_blob(blob) { }
-        PropertyValue(const void *blob, std::size_t size)
+        Property(const void *blob, std::size_t size)
             : _type(t_blob), v_blob(blob, size) { }
 
-        ~PropertyValue();
+        ~Property();
 
-        void operator=(const PropertyValue &);
+        void operator=(const Property &);
 
-        bool operator<(const PropertyValue &) const;
+        bool operator<(const Property &) const;
 
         PropertyType type() const { return _type; } 
         bool bool_value() const { check(t_boolean); return v_boolean; }
@@ -68,41 +68,30 @@ namespace Jarvis {
         blob_t blob_value() const { check(t_blob); return v_blob; }
     };
 
-    class Property {
-        StringID _id;
-        PropertyValue _value;
-
-    public:
-        Property() : _id(0) { }
-        Property(StringID id, PropertyValue value) : _id(id), _value(value) { }
-        StringID id() const { return _id; }
-        const PropertyValue &value() const { return _value; }
-    };
-
     struct PropertyPredicate {
         StringID id;
         enum op_t { dont_care,
                     eq, ne, gt, ge, lt, le,
                     gele, gelt, gtle, gtlt } op;
-        PropertyValue v1, v2;
+        Property v1, v2;
         PropertyPredicate() : id(0) { }
         PropertyPredicate(StringID i) : id(i), op(dont_care) { }
-        PropertyPredicate(StringID i, op_t o, const PropertyValue &v)
+        PropertyPredicate(StringID i, op_t o, const Property &v)
             : id(i), op(o), v1(v) { assert(o > dont_care && o <= le); }
         PropertyPredicate(StringID i, op_t o,
-                const PropertyValue &val1, const PropertyValue &val2)
+                const Property &val1, const Property &val2)
             : id(i), op(o), v1(val1), v2(val2)
             { assert(o >= gele); }
     };
 
-    inline bool operator==(const PropertyValue &a, const PropertyValue &b)
+    inline bool operator==(const Property &a, const Property &b)
         { return !(a < b && b < a); }
-    inline bool operator!=(const PropertyValue &a, const PropertyValue &b)
+    inline bool operator!=(const Property &a, const Property &b)
         { return !(a == b); }
-    inline bool operator>(const PropertyValue &a, const PropertyValue &b)
+    inline bool operator>(const Property &a, const Property &b)
         { return (b < a); }
-    inline bool operator<=(const PropertyValue &a, const PropertyValue &b)
+    inline bool operator<=(const Property &a, const Property &b)
         { return !(a > b); }
-    inline bool operator>=(const PropertyValue &a, const PropertyValue &b)
+    inline bool operator>=(const Property &a, const Property &b)
         { return !(a < b); }
 };

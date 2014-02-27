@@ -18,8 +18,8 @@ Jarvis::Property Jarvis::Edge::get_property(StringID id) const
 Jarvis::PropertyIterator Jarvis::Edge::get_properties() const
     { return _property_list.get_properties(); }
 
-void Jarvis::Edge::set_property(const Property &p)
-    { _property_list.set_property(p); }
+void Jarvis::Edge::set_property(StringID id, const Property &p)
+    { _property_list.set_property(id, p); }
 
 void Jarvis::Edge::remove_property(StringID id)
     { _property_list.remove_property(id); }

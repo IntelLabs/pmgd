@@ -27,7 +27,7 @@ namespace Jarvis {
         bool check_property(StringID property, Property &result) const;
         Property get_property(StringID property) const;
         PropertyIterator get_properties() const;
-        void set_property(const Property &);
+        void set_property(StringID id, const Property &);
         void remove_property(StringID name);
     };
 
@@ -37,8 +37,8 @@ namespace Jarvis {
         { return edge()->get_property(id); }
     inline PropertyIterator EdgeRef::get_properties() const
         { return edge()->get_properties(); }
-    inline void EdgeRef::set_property(const Property &property)
-        { return edge()->set_property(property); }
+    inline void EdgeRef::set_property(StringID id, const Property &property)
+        { return edge()->set_property(id, property); }
     inline void EdgeRef::remove_property(StringID id)
         { return edge()->remove_property(id); }
 };

@@ -1,7 +1,7 @@
 #include "property.h"
 #include "iterator.h"
 
-Jarvis::PropertyValue::PropertyValue(const PropertyValue &a)
+Jarvis::Property::Property(const Property &a)
     : _type(a._type)
 {
     switch (a._type) {
@@ -16,14 +16,14 @@ Jarvis::PropertyValue::PropertyValue(const PropertyValue &a)
     }
 }
 
-Jarvis::PropertyValue::~PropertyValue()
+Jarvis::Property::~Property()
 {
     if (_type == t_string) {
         v_string.std::string::~string();
     }
 }
 
-void Jarvis::PropertyValue::operator=(const PropertyValue &a)
+void Jarvis::Property::operator=(const Property &a)
 {
     if (_type == t_string)
         v_string.std::string::~string();
@@ -40,7 +40,7 @@ void Jarvis::PropertyValue::operator=(const PropertyValue &a)
     }
 }
 
-bool Jarvis::PropertyValue::operator<(const PropertyValue &a) const
+bool Jarvis::Property::operator<(const Property &a) const
 {
     check(a._type);
 

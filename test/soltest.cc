@@ -29,7 +29,7 @@ int main(int argc, char **argv)
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {
             Node &n = db.add_node(0);
-            n.set_property(Property(0, argv[i]));
+            n.set_property(0, argv[i]);
             if (prev != NULL)
                 db.add_edge(*prev, n, 0);
             prev = &n;
@@ -75,12 +75,12 @@ static void dump(const Graph &db, const Edge &e)
 
 static std::string property_text(const PropertyIterator &i)
 {
-    switch (i->value().type()) {
+    switch (i->type()) {
         case t_novalue: return "no value";
-        case t_boolean: return i->value().bool_value() ? "T" : "F";
-        case t_integer: return std::to_string(i->value().int_value());
-        case t_string: return i->value().string_value();
-        case t_float: return std::to_string(i->value().float_value());
+        case t_boolean: return i->bool_value() ? "T" : "F";
+        case t_integer: return std::to_string(i->int_value());
+        case t_string: return i->string_value();
+        case t_float: return std::to_string(i->float_value());
         case t_time: return "<time value>";
         case t_blob: return "<blob value>";
     }

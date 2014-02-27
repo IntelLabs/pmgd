@@ -91,7 +91,7 @@ double q6(Graph &db, Node &a, Node &b)
             double length = 0;
             EdgeIterator e = i->get_edges();
             while (e) {
-                length += e->get_property("weight").value().float_value();
+                length += e->get_property("weight").float_value();
                 e.next();
             }
             if (length < min_length)
@@ -116,7 +116,7 @@ Jarvis::Path q6a(Graph &db, Node &a, Node &b)
         double length;
         EdgeIterator e = i->get_edges();
         while (e) {
-            length += e->get_property("weight").value().float_value();
+            length += e->get_property("weight").float_value();
             e.next();
         }
         if (length < min_length) {
@@ -266,15 +266,15 @@ Jarvis::NodeIterator Jarvis::PathIteratorImplBase::end_nodes() const
     throw Exception(not_implemented);
 }
 
-Jarvis::PropertyValue::PropertyValue(const PropertyValue &a)
+Jarvis::Property::Property(const Property &a)
 {
 }
 
-Jarvis::PropertyValue::~PropertyValue()
+Jarvis::Property::~Property()
 {
 }
 
-bool Jarvis::PropertyValue::operator<(const PropertyValue &a) const
+bool Jarvis::Property::operator<(const Property &a) const
 {
     throw Exception(not_implemented);
 }
