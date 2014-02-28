@@ -24,6 +24,7 @@ namespace Jarvis {
     template <typename Impl> class Iterator {
     protected:
         Impl *_impl;
+        void done() { delete _impl; _impl = NULL; }
 
     public:
         typedef Impl Impl_type;
@@ -37,7 +38,6 @@ namespace Jarvis {
         }
 
         ~Iterator() { delete _impl; }
-        void done() { delete _impl; _impl = NULL; }
 
         operator bool() const { return _impl != NULL; }
         const Ref_type &operator*() const
