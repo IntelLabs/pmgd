@@ -41,9 +41,9 @@ int q1(Graph &db, Node &a, Node &b)
         int min_length;
     public:
         min_path() : min_length(0) { }
-        Disposition operator()(PathIterator &i) {
-            if (i->length() < min_length)
-                min_length = i->length();
+        Disposition operator()(const PathRef &p) {
+            if (p.length() < min_length)
+                min_length = p.length();
             return Jarvis::pass;
         }
         int get_length() { return min_length; }
@@ -63,7 +63,7 @@ int q1(Graph &db, Node &a, Node &b)
 int q1a(Graph &db, Node &a, Node &b)
 {
     return db.get_paths(a, b, false)
-               .filter([](PathIterator &) { return Jarvis::pass_stop; })
+               .filter([](const PathRef &) { return Jarvis::pass_stop; })
                ->length();
 }
 
@@ -75,7 +75,7 @@ int q1a(Graph &db, Node &a, Node &b)
 int q5(Graph &db, Node &a, Node &b)
 {
     return db.get_paths(a, b, false)
-               .filter([](PathIterator &) { return Jarvis::pass_stop; });
+               .filter([](const PathRef &) { return Jarvis::pass_stop; });
 }
 
 
@@ -87,9 +87,9 @@ double q6(Graph &db, Node &a, Node &b)
         double min_length;
     public:
         min_weighted_path() : min_length(0) { }
-        Disposition operator()(PathIterator &i) {
+        Disposition operator()(const PathRef &p) {
             double length = 0;
-            EdgeIterator e = i->get_edges();
+            EdgeIterator e = p.get_edges();
             while (e) {
                 length += e->get_property("weight").float_value();
                 e.next();
@@ -134,7 +134,7 @@ Jarvis::Path q6a(Graph &db, Node &a, Node &b)
 bool q4(Graph &db, Node &a, Node &b)
 {
     return bool(db.get_paths(a, b)
-                .filter([](PathIterator &) { return Jarvis::pass_stop; }));
+                .filter([](const PathRef &) { return Jarvis::pass_stop; }));
 }
 
 
@@ -143,8 +143,8 @@ bool q4(Graph &db, Node &a, Node &b)
 void q8(Graph &db, Node &a, Node &b, int N, void (*process)(Path &))
 {
     PathIterator i = db.get_paths(a, b)
-        .filter([N](PathIterator &i)
-            { return i->length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
+        .filter([N](const PathRef &p)
+            { return p.length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
 
     while (i) {
         //process(*i);
@@ -158,8 +158,8 @@ void q8(Graph &db, Node &a, Node &b, int N, void (*process)(Path &))
 NodeIterator q3(Graph &db, Node &a, int N)
 {
     return db.get_paths(a)
-        .filter([N](PathIterator &i)
-            { return i->length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; })
+        .filter([N](const PathRef &p)
+            { return p.length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; })
         .end_nodes();
 }
 
@@ -169,8 +169,8 @@ NodeIterator q3(Graph &db, Node &a, int N)
 NodeIterator q2(Graph &db, Node &a, int N)
 {
     return db.get_paths(a)
-        .filter([N](PathIterator &i)
-            { return i->length() < N ? Jarvis::pass : Jarvis::pass_stop; })
+        .filter([N](const PathRef &p)
+            { return p.length() < N ? Jarvis::pass : Jarvis::pass_stop; })
         .end_nodes();
 }
 
@@ -184,8 +184,8 @@ NodeIterator q2(Graph &db, Node &a, int N)
 void q3a(Graph &db, Node &a, int N, void (*process)(Node &))
 {
     PathIterator i = db.get_paths(a)
-        .filter([N](PathIterator &i)
-           { return i->length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
+        .filter([N](const PathRef &p)
+           { return p.length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
 
     while (i) {
         process(i->end_node());
@@ -199,8 +199,8 @@ void q3a(Graph &db, Node &a, int N, void (*process)(Node &))
 void q2a(Graph &db, Node &a, int N, void (*process)(Node &))
 {
     PathIterator i = db.get_paths(a)
-        .filter([N](PathIterator &i)
-            { return i->length() < N ? Jarvis::pass : Jarvis::pass_stop; });
+        .filter([N](const PathRef &p)
+            { return p.length() < N ? Jarvis::pass : Jarvis::pass_stop; });
 
     while (i) {
         process(i->end_node());

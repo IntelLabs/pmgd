@@ -8,18 +8,20 @@ namespace Jarvis {
     template <typename B>
     class IteratorFilter : public B::Impl_type {
     protected:
-        B *base_iter;
-        std::function<Disposition(B &)> func;
+        typename B::Impl_type *_base_impl;
+        std::function<Disposition(const typename B::Ref_type &)> func;
 
     private:
         bool _done;
 
+        void done() { delete _base_impl; _base_impl = NULL; }
+
         virtual bool _next() {
-            while (bool(*base_iter)) {
-                switch (func(*base_iter)) {
-                    case dont_pass: base_iter->next(); break;
+            while (bool(*_base_impl)) {
+                switch (func(_base_impl->operator*())) {
+                    case dont_pass: _base_impl->next(); break;
                     case pass: return true;
-                    case stop: base_iter->done(); return false;
+                    case stop: done(); return false;
                     case pass_stop: _done = true; return true;
                     default: throw Exception(not_implemented);
                 }
@@ -28,119 +30,181 @@ namespace Jarvis {
         }
 
     public:
-        IteratorFilter(B *i, std::function<Disposition(B &)> f)
-            : base_iter(i), func(f) { _next(); }
-        operator bool() const { return bool(*base_iter); }
+        IteratorFilter(typename B::Impl_type *i,
+                std::function<Disposition(const typename B::Ref_type &)> f)
+            : _base_impl(i), func(f) { _next(); }
+
+        operator bool() const { return _base_impl && bool(*_base_impl); }
+
         const typename B::Ref_type &operator*() const
-            { return (*base_iter).operator*(); }
+        {
+            if (_base_impl == NULL)
+                throw Exception(null_iterator);
+            return (*_base_impl).operator*();
+        }
+
         const typename B::Ref_type *operator->() const
-            { return (*base_iter).operator->(); }
-        typename B::Ref_type &operator*() { return (*base_iter).operator*(); }
-        typename B::Ref_type *operator->() { return (*base_iter).operator->(); }
+        {
+            if (_base_impl == NULL)
+                throw Exception(null_iterator);
+            return (*_base_impl).operator->();
+        }
+
+        typename B::Ref_type &operator*()
+        {
+            if (_base_impl == NULL)
+                throw Exception(null_iterator);
+            return (*_base_impl).operator*();
+        }
+
+        typename B::Ref_type *operator->()
+        {
+            if (_base_impl == NULL)
+                throw Exception(null_iterator);
+            return (*_base_impl).operator->();
+        }
 
         bool next()
         {
             if (_done) {
-                base_iter->done();
+                done();
                 return false;
             }
             else {
-                base_iter->next();
+                _base_impl->next();
                 return _next();
             }
         }
     };
 
-    template <typename Iter> class PropertyFilter {
-        const PropertyPredicate &pp;
+    template <typename Ref_type> class PropertyFilter {
+        const PropertyPredicate &_pp;
     public:
-        PropertyFilter(const PropertyPredicate &p) : pp(p) { }
-        Disposition operator()(const Iter &);
+        PropertyFilter(const PropertyPredicate &pp) : _pp(pp) { }
+        Disposition operator()(const Ref_type &);
     };
 
     class NodeIteratorFilter : public IteratorFilter<NodeIterator> {
     public:
-        NodeIteratorFilter(NodeIterator *i, std::function<Disposition(NodeIterator &)> f)
-            : IteratorFilter<NodeIterator>(i, f) { }
+        NodeIteratorFilter(NodeIterator::Impl_type *i,
+                std::function<Disposition(const NodeRef &)> f)
+            : IteratorFilter<NodeIterator>(i, f)
+        { }
     };
 
     class NodeIteratorPropertyFilter : public IteratorFilter<NodeIterator> {
     public:
-        NodeIteratorPropertyFilter(NodeIterator *i, const PropertyPredicate &pp)
-            : IteratorFilter<NodeIterator>(i, PropertyFilter<NodeIterator>(pp)) { }
+        NodeIteratorPropertyFilter(NodeIterator::Impl_type *i,
+                                   const PropertyPredicate &pp)
+            : IteratorFilter<NodeIterator>(i,
+                    PropertyFilter<NodeRef>(pp))
+        { }
     };
 
     class EdgeIteratorFilter : public IteratorFilter<EdgeIterator> {
     public:
-        EdgeIteratorFilter(EdgeIterator *i, std::function<Disposition(EdgeIterator &)> f)
-            : IteratorFilter<EdgeIterator>(i, f) { }
+        EdgeIteratorFilter(EdgeIterator::Impl_type *i,
+                std::function<Disposition(const EdgeRef &)> f)
+            : IteratorFilter<EdgeIterator>(i, f)
+        { }
     };
 
     class EdgeIteratorPropertyFilter : public IteratorFilter<EdgeIterator> {
     public:
-        EdgeIteratorPropertyFilter(EdgeIterator *i, const PropertyPredicate &pp)
-            : IteratorFilter<EdgeIterator>(i, PropertyFilter<EdgeIterator>(pp)) { }
+        EdgeIteratorPropertyFilter(EdgeIterator::Impl_type *i,
+                                   const PropertyPredicate &pp)
+            : IteratorFilter<EdgeIterator>(i,
+                    PropertyFilter<EdgeRef>(pp))
+        { }
     };
 
     class PropertyIteratorFilter : public IteratorFilter<PropertyIterator> {
     public:
-        PropertyIteratorFilter(PropertyIterator *i, std::function<Disposition(PropertyIterator &)> f)
-            : IteratorFilter<PropertyIterator>(i, f) { }
+        PropertyIteratorFilter(PropertyIterator::Impl_type *i,
+                std::function<Disposition(const PropertyRef &)> f)
+            : IteratorFilter<PropertyIterator>(i, f)
+        { }
     };
 
     class PathIteratorFilter : public IteratorFilter<PathIterator> {
-        using IteratorFilter<PathIterator>::base_iter;
+        using IteratorFilter<PathIterator>::_base_impl;
 
     public:
-        PathIteratorFilter(PathIterator *i, std::function<Disposition(PathIterator &)> f)
-            : IteratorFilter<PathIterator>(i, f) { }
+        PathIteratorFilter(PathIterator::Impl_type *i,
+                std::function<Disposition(const PathRef &)> f)
+            : IteratorFilter<PathIterator>(i, f)
+        { }
 
-        NodeIterator end_nodes() const { return base_iter->end_nodes(); }
+        NodeIterator end_nodes() const { return _base_impl->end_nodes(); }
     };
 
     inline NodeIterator NodeIterator::filter(const PropertyPredicate &pp)
-        { return NodeIterator(new NodeIteratorPropertyFilter(this, pp)); }
+    {
+        Impl_type *impl = _impl;
+        _impl = NULL;
+        return NodeIterator(new NodeIteratorPropertyFilter(impl, pp));
+    }
 
-    inline NodeIterator NodeIterator::filter(std::function<Disposition(NodeIterator &)> f)
-        { return NodeIterator(new NodeIteratorFilter(this, f)); }
+    inline NodeIterator NodeIterator::filter(std::function<Disposition(const Ref_type &)> f)
+    {
+        Impl_type *impl = _impl;
+        _impl = NULL;
+        return NodeIterator(new NodeIteratorFilter(impl, f));
+    }
 
     inline EdgeIterator EdgeIterator::filter(const PropertyPredicate &pp)
-        { return EdgeIterator(new EdgeIteratorPropertyFilter(this, pp)); }
+    {
+        Impl_type *impl = _impl;
+        _impl = NULL;
+        return EdgeIterator(new EdgeIteratorPropertyFilter(impl, pp));
+    }
 
-    inline EdgeIterator EdgeIterator::filter(std::function<Disposition(EdgeIterator &)> f)
-        { return EdgeIterator(new EdgeIteratorFilter(this, f)); }
+    inline EdgeIterator EdgeIterator::filter(std::function<Disposition(const Ref_type &)> f)
+    {
+        Impl_type *impl = _impl;
+        _impl = NULL;
+        return EdgeIterator(new EdgeIteratorFilter(impl, f));
+    }
 
-    inline PropertyIterator PropertyIterator::filter(std::function<Disposition(PropertyIterator &)> f)
-        { return PropertyIterator(new PropertyIteratorFilter(this, f)); }
+    inline PropertyIterator PropertyIterator::filter(std::function<Disposition(const Ref_type &)> f)
+    {
+        Impl_type *impl = _impl;
+        _impl = NULL;
+        return PropertyIterator(new PropertyIteratorFilter(impl, f));
+    }
 
-    inline PathIterator PathIterator::filter(std::function<Disposition(PathIterator &)> f)
-        { return PathIterator(new PathIteratorFilter(this, f)); }
+    inline PathIterator PathIterator::filter(std::function<Disposition(const Ref_type &)> f)
+    {
+        Impl_type *impl = _impl;
+        _impl = NULL;
+        return PathIterator(new PathIteratorFilter(impl, f));
+    }
 
 
-    template <typename Iter>
-    Disposition PropertyFilter<Iter>::operator()(const Iter &i)
+    template <typename Ref_type>
+    Disposition PropertyFilter<Ref_type>::operator()(const Ref_type &p)
     {
         bool r = false;
         Property val;
-        if (i->check_property(pp.id, val)) {
-            switch (pp.op) {
+        if (p.check_property(_pp.id, val)) {
+            switch (_pp.op) {
                 case PropertyPredicate::dont_care: r = true; break;
-                case PropertyPredicate::eq: r = val == pp.v1; break;
-                case PropertyPredicate::ne: r = val != pp.v1; break;
-                case PropertyPredicate::gt: r = val > pp.v1; break;
-                case PropertyPredicate::ge: r = val >= pp.v1; break;
-                case PropertyPredicate::lt: r = val < pp.v1; break;
-                case PropertyPredicate::le: r = val <= pp.v1; break;
-                case PropertyPredicate::gele: r = val >= pp.v1 && val <= pp.v2; break;
-                case PropertyPredicate::gelt: r = val >= pp.v1 && val < pp.v2; break;
-                case PropertyPredicate::gtle: r = val > pp.v1 && val <= pp.v2; break;
-                case PropertyPredicate::gtlt: r = val > pp.v1 && val < pp.v2; break;
+                case PropertyPredicate::eq: r = val == _pp.v1; break;
+                case PropertyPredicate::ne: r = val != _pp.v1; break;
+                case PropertyPredicate::gt: r = val > _pp.v1; break;
+                case PropertyPredicate::ge: r = val >= _pp.v1; break;
+                case PropertyPredicate::lt: r = val < _pp.v1; break;
+                case PropertyPredicate::le: r = val <= _pp.v1; break;
+                case PropertyPredicate::gele: r = val >= _pp.v1 && val <= _pp.v2; break;
+                case PropertyPredicate::gelt: r = val >= _pp.v1 && val < _pp.v2; break;
+                case PropertyPredicate::gtle: r = val > _pp.v1 && val <= _pp.v2; break;
+                case PropertyPredicate::gtlt: r = val > _pp.v1 && val < _pp.v2; break;
                 default: throw Exception(internal_error);
             }
         }
         return r ? pass : dont_pass;
     }
 
-    template Disposition PropertyFilter<NodeIterator>::operator()(const NodeIterator &);
-    template Disposition PropertyFilter<EdgeIterator>::operator()(const EdgeIterator &);
+    template Disposition PropertyFilter<NodeRef>::operator()(const NodeRef &);
+    template Disposition PropertyFilter<EdgeRef>::operator()(const EdgeRef &);
 };
