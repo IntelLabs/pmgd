@@ -54,7 +54,8 @@ namespace Jarvis {
 
 namespace Jarvis {
     class Node;
-    typedef IteratorImpl<Node> NodeIteratorImpl;
+    typedef Node NodeRef;
+    typedef IteratorImpl<NodeRef> NodeIteratorImpl;
 
     class NodeIterator : public Iterator<NodeIteratorImpl> {
     public:
@@ -62,7 +63,7 @@ namespace Jarvis {
             : Iterator<NodeIteratorImpl>(i) { }
 
         NodeIterator filter(const PropertyPredicate &pp);
-        NodeIterator filter(std::function<Disposition(NodeIterator &)> f);
+        NodeIterator filter(std::function<Disposition(const Ref_type &)> f);
     };
 };
 
@@ -161,7 +162,7 @@ namespace Jarvis {
         explicit PropertyIterator(PropertyIteratorImpl *i)
             : Iterator<PropertyIteratorImpl>(i) { }
 
-        PropertyIterator filter(std::function<Disposition(PropertyIterator &)> f);
+        PropertyIterator filter(std::function<Disposition(const Ref_type &)> f);
     };
 
     class PropertyList {
@@ -220,7 +221,7 @@ namespace Jarvis {
             : Iterator<IteratorImpl<EdgeRef>>(i) { }
 
         EdgeIterator filter(const PropertyPredicate &pp);
-        EdgeIterator filter(std::function<Disposition(EdgeIterator &)> f);
+        EdgeIterator filter(std::function<Disposition(const Ref_type &)> f);
     };
 };
 
@@ -257,7 +258,7 @@ namespace Jarvis {
         explicit PathIterator(PathIteratorImplBase *i)
             : Iterator<PathIteratorImplBase>(i) { }
 
-        PathIterator filter(std::function<Disposition(PathIterator &)> f);
+        PathIterator filter(std::function<Disposition(const Ref_type &)> f);
 
         NodeIterator end_nodes() const
             { if (!_impl) return NodeIterator(NULL); return _impl->end_nodes(); }
