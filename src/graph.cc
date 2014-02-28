@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <string.h>
 #include "graph.h"
 #include "node.h"
 #include "edge.h"
@@ -6,7 +7,7 @@
 #include "iterator.h"
 #include "os.h"
 
-class Jarvis::Graph::GraphImpl {
+class Jarvis::Graph::GraphImpl {    
     typedef FixedAllocator NodeTable;
     typedef FixedAllocator EdgeTable;
 
@@ -16,25 +17,47 @@ class Jarvis::Graph::GraphImpl {
     static const unsigned NODE_SIZE = 64;
     static const unsigned EDGE_SIZE = 32;
     static const unsigned GENERIC_ALLOC_SIZE = 32;
+    // 16, 32, 64, 128, 256 till variable
+    // ** Update Allocator.cc if this changes
+    static const unsigned NUM_FIXED_ALLOCATORS = 5;
 
     static constexpr char info_name[] = "graph.jdb";
 
-    static constexpr AllocatorInfo default_allocators[] = {
-        { "nodes.jdb", BASE_ADDRESS + REGION_SIZE, REGION_SIZE, NODE_SIZE },
-        { "edges.jdb", BASE_ADDRESS + 2*REGION_SIZE, REGION_SIZE, EDGE_SIZE },
-        { "pooh-bah.jdb", BASE_ADDRESS + 3*REGION_SIZE, REGION_SIZE, GENERIC_ALLOC_SIZE },
+    struct RegionInfo {
+        static const int REGION_NAME_LEN = 32;
+        char name[REGION_NAME_LEN];     ///< Region name
+        uint64_t addr;                  ///< Virtual address of region
+        size_t len;                     ///< Length in byte
     };
+
+#define REGION_ADDRESS(index) (BASE_ADDRESS + (index) * REGION_SIZE)
+    static constexpr RegionInfo default_regions[] = {
+        { "nodes.jdb", REGION_ADDRESS(1), REGION_SIZE },
+        { "edges.jdb", REGION_ADDRESS(2), REGION_SIZE },
+        { "pooh-bah.jdb", REGION_ADDRESS(3), NUM_FIXED_ALLOCATORS * REGION_SIZE },
+    };
+
+    static constexpr AllocatorInfo default_allocators[] = {
+        { 0, REGION_SIZE, 16 },
+        { 1*REGION_SIZE, REGION_SIZE, 32 },
+        { 2*REGION_SIZE, REGION_SIZE, 64 },
+        { 3*REGION_SIZE, REGION_SIZE, 128 },
+        { 4*REGION_SIZE, REGION_SIZE, 256 },
+    };
+#undef REGION_ADDRESS
 
     struct GraphInfo {
         uint64_t version;
 
         // node_table, edge_table, property_chunks
-        AllocatorInfo node_info;
-        AllocatorInfo edge_info;
-        AllocatorInfo allocator_info;
+        RegionInfo node_info;
+        RegionInfo edge_info;
+        RegionInfo allocator_info;
 
         // Transaction info
         // Lock table info
+        uint32_t num_fixed_allocators;
+        AllocatorInfo fixed_allocator_info[];
     };
 
     class GraphInit {
@@ -44,30 +67,61 @@ class Jarvis::Graph::GraphImpl {
 
     public:
         GraphInit(const char *name, int options);
-        bool create() { return _create; }
-        const AllocatorInfo &node_info() { return _info->node_info; }
-        const AllocatorInfo &edge_info() { return _info->edge_info; }
-        const AllocatorInfo &allocator_info() { return _info->allocator_info; }
+        bool create() const { return _create; }
+        const GraphInfo *info() const { return _info; }
+        const RegionInfo &node_info() const { return _info->node_info; }
+        const RegionInfo &edge_info() const { return _info->edge_info; }
+        const RegionInfo &allocator_info() const { return _info->allocator_info; }
+    };
+
+    class MapRegion : public os::MapRegion {
+    public:
+        MapRegion(const char *db_name, const RegionInfo &info, bool create)
+            : os::MapRegion(db_name, info.name, info.addr, info.len, create, create)
+        {}
     };
 
     // ** Order here is important: GraphInit MUST be first
     GraphInit _init;
 
+    // File-backed space
+    MapRegion _node_region;
+    MapRegion _edge_region;
+    MapRegion _allocator_region;
+
     NodeTable _node_table;
     EdgeTable _edge_table;
     // Other Fixed ones
-    Allocator _allocator;
     // Variable allocator
+    Allocator _allocator;
 
     // Transactions
     // Lock manager
 
+    AllocatorInfo allocator_info(const RegionInfo &info, uint32_t obj_size) const
+    {
+        // This returns with offset in region 0. The ones that 
+        // need specific offset are anyway stored explicitly in the
+        // GraphInfo struct
+        AllocatorInfo r = {0, info.len, obj_size, false};
+        return r;
+    }
 public:
     GraphImpl(const char *name, int options)
         : _init(name, options),
-          _node_table(name, _init.node_info(), _init.create()),
-          _edge_table(name, _init.edge_info(), _init.create()),
-          _allocator(name, _init.allocator_info(), _init.create())
+          _node_region(name, _init.info()->node_info, _init.create()),
+          _edge_region(name, _init.info()->edge_info, _init.create()),
+          _allocator_region(name, _init.info()->allocator_info, _init.create()),
+          _node_table(_init.node_info().addr,
+                      allocator_info(_init.node_info(), NODE_SIZE),
+                      _init.create()),
+          _edge_table(_init.edge_info().addr,
+                      allocator_info(_init.edge_info(), EDGE_SIZE),
+                      _init.create()),
+          _allocator(_init.allocator_info().addr,
+                     _init.info()->fixed_allocator_info,
+                     _init.info()->num_fixed_allocators,
+                     _init.create())
         { }
     NodeTable &node_table() { return _node_table; }
     EdgeTable &edge_table() { return _edge_table; }
@@ -102,6 +156,7 @@ Jarvis::Edge &Jarvis::Graph::add_edge(Node &src, Node &dest, StringID tag)
 
 
 constexpr char Jarvis::Graph::GraphImpl::info_name[];
+constexpr Jarvis::Graph::GraphImpl::RegionInfo Jarvis::Graph::GraphImpl::default_regions[];
 constexpr Jarvis::AllocatorInfo Jarvis::Graph::GraphImpl::default_allocators[];
 
 Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
@@ -118,14 +173,14 @@ Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
         _info->version = 1;
 
         // TODO replace static indexing
-        _info->node_info = default_allocators[0];
-        _info->edge_info = default_allocators[1];
-        _info->allocator_info = default_allocators[2];
-
+        _info->node_info = default_regions[0];
+        _info->edge_info = default_regions[1];
         // Other information
+        _info->allocator_info = default_regions[2];
+        _info->num_fixed_allocators = NUM_FIXED_ALLOCATORS;
+        memcpy(_info->fixed_allocator_info, default_allocators, sizeof default_allocators);
     }
 }
-
 
 namespace Jarvis {
     template <typename B, typename T>

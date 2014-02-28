@@ -20,13 +20,14 @@
 #include <assert.h>
 
 #include "exception.h"
-#include "os.h"
 #include "allocator.h"
 
 // See TODOs above
 #define TX_write(_pm, sz)
 #define TX_write3(_pm, val, sz)
 #define TX_log(ptr, size)
+
+using namespace Jarvis;
 
 /**
  * Allocator's header
@@ -35,7 +36,7 @@
  * it manages.  Uses types of known sizes instead of types such as
  * 'void *' to control layout.
  */
-struct Jarvis::FixedAllocator::RegionHeader {
+struct FixedAllocator::RegionHeader {
     uint64_t *tail_ptr;
     uint64_t *free_ptr;              ///< Beginning of free list 
     uint32_t size;                   ///< Object size
@@ -46,40 +47,40 @@ struct Jarvis::FixedAllocator::RegionHeader {
     int64_t num_allocated;
 };
 
-Jarvis::FixedAllocator::FixedAllocator(const char *db_name,
-                                       const AllocatorInfo &info, bool create)
-    : _region(db_name, info.name, info.addr, info.len, create, create),
-      _pm(reinterpret_cast<RegionHeader *>(info.addr))
+FixedAllocator::FixedAllocator(const uint64_t region_addr,
+        const AllocatorInfo &info, bool create)
+          : _pm(reinterpret_cast<RegionHeader *>(region_addr + info.offset))
 {
     // Start allocation at a natural boundary.  Assume object size is
     // a power of 2 of at least 8 bytes.
     assert(info.size > sizeof(uint64_t));
     assert(!(info.size & (info.size - 1)));
     _alloc_offset = ((unsigned)sizeof(RegionHeader) + info.size - 1) & ~(info.size - 1);
+    uint64_t start_addr = region_addr + info.offset;
 
     if (create) {
         _pm->free_ptr = NULL;
-        _pm->tail_ptr = (uint64_t *)(info.addr + _alloc_offset);
+        _pm->tail_ptr = (uint64_t *)(start_addr + _alloc_offset);
         _pm->size = info.size;
         _pm->zero = info.zero;
-        _pm->max_addr = info.addr + info.len;
+        _pm->max_addr = start_addr + info.len;
         _pm->num_allocated = 0;
 
         TX_write(_pm, sz);
     }
 }
 
-uint64_t Jarvis::FixedAllocator::get_id(const void *obj) const
+uint64_t FixedAllocator::get_id(const void *obj) const
 {
     return (((uint64_t)obj - (uint64_t)begin()) / _pm->size) + 1;
 }
 
-unsigned Jarvis::FixedAllocator::object_size() const
+unsigned FixedAllocator::object_size() const
 {
     return _pm->size;
 }
 
-void *Jarvis::FixedAllocator::alloc()
+void *FixedAllocator::alloc()
 {
     acquire_lock();
 
@@ -135,7 +136,7 @@ void *Jarvis::FixedAllocator::alloc()
  * A simple implementation that inserts the freed object at the
  * beginning of the free list.
  */
-void Jarvis::FixedAllocator::free(void *p)
+void FixedAllocator::free(void *p)
 {
     acquire_lock();
 
@@ -149,30 +150,30 @@ void Jarvis::FixedAllocator::free(void *p)
     release_lock();
 }
 
-void *Jarvis::FixedAllocator::begin() const
+void *FixedAllocator::begin() const
 {
     return (void *)((unsigned long)_pm + _alloc_offset);
 }
 
-const void *Jarvis::FixedAllocator::end() const
+const void *FixedAllocator::end() const
 {
     return _pm->tail_ptr;
 }
 
-void *Jarvis::FixedAllocator::next(const void *curr) const
+void *FixedAllocator::next(const void *curr) const
 {
     return (void *)((unsigned long)curr + _pm->size);
 }
 
-bool Jarvis::FixedAllocator::is_free(const void *curr) const
+bool FixedAllocator::is_free(const void *curr) const
 {
     return *(uint64_t *)curr & FREE_BIT;
 }
 
-void Jarvis::FixedAllocator::acquire_lock()
+void FixedAllocator::acquire_lock()
 {
 }
 
-void Jarvis::FixedAllocator::release_lock()
+void FixedAllocator::release_lock()
 {
 }

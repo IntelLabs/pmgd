@@ -1,8 +1,8 @@
 #pragma once
 
+#include <vector>
 #include <stddef.h>
 #include <stdint.h>
-#include "os.h"
 
 namespace Jarvis {
 
@@ -13,9 +13,7 @@ namespace Jarvis {
      * persistent memory.
      */
     struct AllocatorInfo {
-        static const int REGION_NAME_LEN = 32;
-        char name[REGION_NAME_LEN];     ///< Region name
-        uint64_t addr;                  ///< Virtual address of region
+        uint64_t offset;                ///< Offset from start of region
         size_t len;                     ///< Length in byte
         uint32_t size;                  ///< Object size in bytes, size <<< len
         bool zero;                      ///< Zero the region before use
@@ -36,9 +34,6 @@ namespace Jarvis {
     private:
         static const uint64_t FREE_BIT = 0x1;
 
-        // File-backed space
-        os::MapRegion _region;
-
         // Region of persistent memory
         struct RegionHeader;
         RegionHeader * const _pm;
@@ -57,8 +52,8 @@ namespace Jarvis {
         size_t _num_free_calls;
 
     public:
-        FixedAllocator(const char *db_name, const struct AllocatorInfo &info,
-                       bool create);
+        FixedAllocator(const uint64_t region_addr,
+                       const struct AllocatorInfo &info, bool create);
 
         // Primary allocator functions; serialized
         void *alloc();
@@ -75,11 +70,34 @@ namespace Jarvis {
         unsigned object_size() const;
     };
 
-    class Allocator : public FixedAllocator {
+    /** 
+     *  Generic allocator
+     *
+     *  This class should be used for graph components other than nodes,
+     *  edges and string table.
+     *
+     *  This encapsulates a few commonly used fixed size allocators and the
+     *  rest of alloc/free requests go to the variable allocator.
+     *
+     *  This object lives in DRAM. Since it doesn't know the number of 
+     *  fixed allocators that will be created in graph.cc, we use a 
+     *  vector here
+     */
+    class Allocator {
+        std::vector<FixedAllocator *> _fixed_allocators;
+
+        unsigned find_alloc_index(size_t size);
+
     public:
-        Allocator(const char *db_name, const struct AllocatorInfo &info,
-                  bool create)
-            : FixedAllocator(db_name, info, create)
-            { }
+        Allocator(const uint64_t region_addr,
+                  const struct AllocatorInfo fixed_info[], int count, bool create)
+                    : _fixed_allocators(count)
+        {
+            for (int i = 0; i < count; ++i) { 
+                _fixed_allocators[i] = new FixedAllocator(region_addr, fixed_info[i], create);
+            }
+        }
+        void *alloc(size_t size);
+        void free(void *addr, size_t size);
     };
 }
