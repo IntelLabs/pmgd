@@ -49,6 +49,14 @@ namespace Jarvis {
         Ref_type *operator->()
             { if (!_impl) throw Exception(null_iterator); return (*_impl).operator->(); }
         void next() { if (_impl) if (!_impl->next()) done(); }
+
+        void process(std::function<void(Ref_type &)> f)
+        {
+            while (operator bool()) {
+                f(operator*());
+                next();
+            }
+        }
     };
 };
 
