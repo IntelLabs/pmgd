@@ -5,6 +5,7 @@
 #include "edge.h"
 #include "allocator.h"
 #include "iterator.h"
+#include "TransactionManager.h"
 #include "os.h"
 
 class Jarvis::Graph::GraphImpl {    
@@ -13,12 +14,12 @@ class Jarvis::Graph::GraphImpl {
 
     static const size_t BASE_ADDRESS = 0x10000000000;
     static const size_t REGION_SIZE = 0x10000000000;
-    static const unsigned INFO_SIZE = 4096;
     static const unsigned NODE_SIZE = 64;
     static const unsigned EDGE_SIZE = 32;
-    static const unsigned GENERIC_ALLOC_SIZE = 32;
+
     // 16, 32, 64, 128, 256 till variable
     // ** Update Allocator.cc if this changes
+    static const unsigned MAX_FIXED_ALLOCATORS = 16;
     static const unsigned NUM_FIXED_ALLOCATORS = 5;
 
     static constexpr char info_name[] = "graph.jdb";
@@ -47,18 +48,28 @@ class Jarvis::Graph::GraphImpl {
 #undef REGION_ADDRESS
 
     struct GraphInfo {
-        uint64_t version;
+        // transaction_info expects to be cacheline aligned.
+        // g++ currently supports an alignment of only up to 128 when
+        // using alignas (defined in C++11 standard).
+        struct alignas(128) {
+            uint64_t version;
 
-        // node_table, edge_table, property_chunks
-        RegionInfo node_info;
-        RegionInfo edge_info;
-        RegionInfo allocator_info;
+            // node_table, edge_table, property_chunks
+            RegionInfo node_info;
+            RegionInfo edge_info;
+            RegionInfo allocator_info;
+
+            uint32_t num_fixed_allocators;
+            AllocatorInfo fixed_allocator_info[MAX_FIXED_ALLOCATORS];
+        };
 
         // Transaction info
+        uint8_t transaction_info[TRANSACTION_INFO_SIZE];
+
         // Lock table info
-        uint32_t num_fixed_allocators;
-        AllocatorInfo fixed_allocator_info[];
     };
+
+    static const unsigned INFO_SIZE = sizeof(GraphInfo);
 
     class GraphInit {
         bool _create;
@@ -96,6 +107,8 @@ class Jarvis::Graph::GraphImpl {
     Allocator _allocator;
 
     // Transactions
+    TransactionManager _transaction_manager;
+
     // Lock manager
 
     AllocatorInfo allocator_info(const RegionInfo &info, uint32_t obj_size) const
@@ -121,8 +134,11 @@ public:
           _allocator(_init.allocator_info().addr,
                      _init.info()->fixed_allocator_info,
                      _init.info()->num_fixed_allocators,
+                     _init.create()),
+          _transaction_manager((void *)_init.info()->transaction_info,
                      _init.create())
         { }
+
     NodeTable &node_table() { return _node_table; }
     EdgeTable &edge_table() { return _edge_table; }
     Allocator &allocator() { return _allocator; }
@@ -168,6 +184,7 @@ Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
     // depending on whether the file existed or not
 
     // Set up the info structure
+    // TODO: clflush and pcommit after setting up the structure
     if (_create) {
         // Version info
         _info->version = 1;
@@ -179,6 +196,8 @@ Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
         _info->allocator_info = default_regions[2];
         _info->num_fixed_allocators = NUM_FIXED_ALLOCATORS;
         memcpy(_info->fixed_allocator_info, default_allocators, sizeof default_allocators);
+
+        // No need to zero transaction_info
     }
 }
 

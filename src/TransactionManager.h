@@ -55,8 +55,8 @@ namespace Jarvis {
         void *_tx_jend(int index);
 
     public:
-		TransactionManager(void *table, bool create);
-        ~TransactionManager();
+		TransactionManager(void *base_addr, bool create);
+        ~TransactionManager() {}
 
         TransactionHandle *alloc_transaction(void);
         void free_transaction(TransactionHandle *);
