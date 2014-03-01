@@ -63,7 +63,7 @@ namespace Jarvis {
 
             // Use when adding a new binary tree element
             // Since this sits in PM too, just give an init function
-            void init(StringID key, EdgeNodePair &pair, FixedAllocator &allocator)
+            void init(StringID key, EdgeNodePair &pair, Allocator &allocator)
             {
                 _key = key;
                 _list.init();
@@ -86,11 +86,11 @@ namespace Jarvis {
             }
 
             // Use when list exists
-            void add(const EdgeNodePair &pair, FixedAllocator &allocator)
+            void add(const EdgeNodePair &pair, Allocator &allocator)
             {
                 _list.add(pair, allocator);
             }
-            void remove(const EdgeNodePair &pair, FixedAllocator &allocator)
+            void remove(const EdgeNodePair &pair, Allocator &allocator)
             {
                 _list.remove(pair, allocator);
             }
@@ -113,9 +113,9 @@ namespace Jarvis {
         // this doesn't need a header, just needs to make sure these 
         // data structures place their headers correctly
         void init() { _key_list.init(); }
-        static EdgeIndex *create(FixedAllocator &allocator)
+        static EdgeIndex *create(Allocator &allocator)
         {
-            EdgeIndex *edge_table = (EdgeIndex *)allocator.alloc();
+            EdgeIndex *edge_table = (EdgeIndex *)allocator.alloc(sizeof *edge_table);
             edge_table->init();
             return edge_table;
         }
@@ -123,13 +123,13 @@ namespace Jarvis {
         // TODO Could split pair into two things and then this would work
         // for strings also. Just provide multiple add methods with different
         // number and kinds of parameters
-        void add(const StringID key, Edge* edge, Node* node, FixedAllocator &allocator);
+        void add(const StringID key, Edge* edge, Node* node, Allocator &allocator);
         // For the iterator, give it head of PairList for the key
         const EdgePosition *get_first(StringID key);
         // For the iterator, give it head of the key list
         const KeyPosition *get_first() { return _key_list.begin(); }
         size_t num_elems() { return _key_list.num_elems(); }
         // This will remove the element based on edge pointer value
-        void remove(const StringID key, Edge* edge, Node* node, FixedAllocator& allocator);
+        void remove(const StringID key, Edge* edge, Node* node, Allocator& allocator);
     };
 }

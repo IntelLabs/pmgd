@@ -5,7 +5,7 @@ using namespace Jarvis;
 
 namespace Jarvis {
     void EdgeIndex::add(StringID key, Edge* edge, Node* node,
-            FixedAllocator &allocator)
+            Allocator &allocator)
     {
         EdgeIndexType newkey(key);
         // Create a pair to add in the node-edge list
@@ -45,7 +45,7 @@ namespace Jarvis {
     }
 
     void EdgeIndex::remove(StringID key, Edge* edge, Node* node, 
-            FixedAllocator &allocator)
+            Allocator &allocator)
     {
         EdgeIndexType newkey(key);
         // Create a pair to add in the node-edge list
