@@ -51,7 +51,7 @@ CLEANFILES += propertypredicatetest propertypredicatetest.o
 
 filtertest: filtertest.o $(LIB)
 	$(CC) -g -o $@ $< $(LIB)
-CLEANFILES += propertytest propertytest.o
+CLEANFILES += filtertest filtertest.o
 
 lib:
 	make -C ../src OPT=-g install
