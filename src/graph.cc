@@ -8,7 +8,7 @@
 #include "TransactionManager.h"
 #include "os.h"
 
-class Jarvis::Graph::GraphImpl {    
+class Jarvis::Graph::GraphImpl {
     typedef FixedAllocator NodeTable;
     typedef FixedAllocator EdgeTable;
 
@@ -16,10 +16,10 @@ class Jarvis::Graph::GraphImpl {
     static const size_t REGION_SIZE = 0x10000000000;
     static const unsigned NODE_SIZE = 64;
     static const unsigned EDGE_SIZE = 32;
+    static const unsigned INFO_SIZE = 4096;
 
     // 16, 32, 64, 128, 256 till variable
     // ** Update Allocator.cc if this changes
-    static const unsigned MAX_FIXED_ALLOCATORS = 16;
     static const unsigned NUM_FIXED_ALLOCATORS = 5;
 
     static constexpr char info_name[] = "graph.jdb";
@@ -33,9 +33,10 @@ class Jarvis::Graph::GraphImpl {
 
 #define REGION_ADDRESS(index) (BASE_ADDRESS + (index) * REGION_SIZE)
     static constexpr RegionInfo default_regions[] = {
-        { "nodes.jdb", REGION_ADDRESS(1), REGION_SIZE },
-        { "edges.jdb", REGION_ADDRESS(2), REGION_SIZE },
-        { "pooh-bah.jdb", REGION_ADDRESS(3), NUM_FIXED_ALLOCATORS * REGION_SIZE },
+        { "transaction.jdb", REGION_ADDRESS(1), TRANSACTION_REGION_SIZE },
+        { "nodes.jdb", REGION_ADDRESS(2), REGION_SIZE },
+        { "edges.jdb", REGION_ADDRESS(3), REGION_SIZE },
+        { "pooh-bah.jdb", REGION_ADDRESS(4), NUM_FIXED_ALLOCATORS * REGION_SIZE },
     };
 
     static constexpr AllocatorInfo default_allocators[] = {
@@ -48,41 +49,23 @@ class Jarvis::Graph::GraphImpl {
 #undef REGION_ADDRESS
 
     struct GraphInfo {
-        // transaction_info expects to be cacheline aligned.
-        // g++ currently supports an alignment of only up to 128 when
-        // using alignas (defined in C++11 standard).
-        struct alignas(128) {
-            uint64_t version;
+        uint64_t version;
 
-            // node_table, edge_table, property_chunks
-            RegionInfo node_info;
-            RegionInfo edge_info;
-            RegionInfo allocator_info;
+        RegionInfo transaction_info;
+        RegionInfo node_info;
+        RegionInfo edge_info;
+        RegionInfo allocator_info;
 
-            uint32_t num_fixed_allocators;
-            AllocatorInfo fixed_allocator_info[MAX_FIXED_ALLOCATORS];
-        };
-
-        // Transaction info
-        uint8_t transaction_info[TRANSACTION_INFO_SIZE];
-
-        // Lock table info
+        uint32_t num_fixed_allocators;
+        AllocatorInfo fixed_allocator_info[];
     };
 
-    static const unsigned INFO_SIZE = sizeof(GraphInfo);
+    struct GraphInit {
+        bool create;
+        os::MapRegion info_map;
+        GraphInfo *info;
 
-    class GraphInit {
-        bool _create;
-        os::MapRegion _info_map;
-        GraphInfo *_info;
-
-    public:
         GraphInit(const char *name, int options);
-        bool create() const { return _create; }
-        const GraphInfo *info() const { return _info; }
-        const RegionInfo &node_info() const { return _info->node_info; }
-        const RegionInfo &edge_info() const { return _info->edge_info; }
-        const RegionInfo &allocator_info() const { return _info->allocator_info; }
     };
 
     class MapRegion : public os::MapRegion {
@@ -96,51 +79,50 @@ class Jarvis::Graph::GraphImpl {
     GraphInit _init;
 
     // File-backed space
+    MapRegion _transaction_region;
     MapRegion _node_region;
     MapRegion _edge_region;
     MapRegion _allocator_region;
 
+    TransactionManager _transaction_manager;
     NodeTable _node_table;
     EdgeTable _edge_table;
-    // Other Fixed ones
-    // Variable allocator
     Allocator _allocator;
-
-    // Transactions
-    TransactionManager _transaction_manager;
-
-    // Lock manager
 
     AllocatorInfo allocator_info(const RegionInfo &info, uint32_t obj_size) const
     {
-        // This returns with offset in region 0. The ones that 
-        // need specific offset are anyway stored explicitly in the
-        // GraphInfo struct
+        // This returns an offset of 0. The AllocatorInfo structs that
+        // need a non-zero offset are stored explicitly in the
+        // GraphInfo struct.
         AllocatorInfo r = {0, info.len, obj_size, false};
         return r;
     }
+
 public:
     GraphImpl(const char *name, int options)
         : _init(name, options),
-          _node_region(name, _init.info()->node_info, _init.create()),
-          _edge_region(name, _init.info()->edge_info, _init.create()),
-          _allocator_region(name, _init.info()->allocator_info, _init.create()),
-          _node_table(_init.node_info().addr,
-                      allocator_info(_init.node_info(), NODE_SIZE),
-                      _init.create()),
-          _edge_table(_init.edge_info().addr,
-                      allocator_info(_init.edge_info(), EDGE_SIZE),
-                      _init.create()),
-          _allocator(_init.allocator_info().addr,
-                     _init.info()->fixed_allocator_info,
-                     _init.info()->num_fixed_allocators,
-                     _init.create()),
-          _transaction_manager((void *)_init.info()->transaction_info,
-                     _init.create())
+          _transaction_region(name, _init.info->transaction_info, _init.create),
+          _node_region(name, _init.info->node_info, _init.create),
+          _edge_region(name, _init.info->edge_info, _init.create),
+          _allocator_region(name, _init.info->allocator_info, _init.create),
+          _transaction_manager(_init.info->transaction_info.addr,
+                               _init.info->transaction_info.len,
+                               _init.create),
+          _node_table(_init.info->node_info.addr,
+                      allocator_info(_init.info->node_info, NODE_SIZE),
+                      _init.create),
+          _edge_table(_init.info->edge_info.addr,
+                      allocator_info(_init.info->edge_info, EDGE_SIZE),
+                      _init.create),
+          _allocator(_init.info->allocator_info.addr,
+                     _init.info->fixed_allocator_info,
+                     _init.info->num_fixed_allocators,
+                     _init.create)
         { }
 
     NodeTable &node_table() { return _node_table; }
     EdgeTable &edge_table() { return _edge_table; }
+    TransactionManager &transaction_manager() { return _transaction_manager; }
     Allocator &allocator() { return _allocator; }
 };
 
@@ -176,28 +158,24 @@ constexpr Jarvis::Graph::GraphImpl::RegionInfo Jarvis::Graph::GraphImpl::default
 constexpr Jarvis::AllocatorInfo Jarvis::Graph::GraphImpl::default_allocators[];
 
 Jarvis::Graph::GraphImpl::GraphInit::GraphInit(const char *name, int options)
-    : _create(options & Create),
-      _info_map(name, info_name, BASE_ADDRESS, INFO_SIZE, _create, false),
-      _info(reinterpret_cast<GraphInfo *>(BASE_ADDRESS))
+    : create(options & Create),
+      info_map(name, info_name, BASE_ADDRESS, INFO_SIZE, create, false),
+      info(reinterpret_cast<GraphInfo *>(BASE_ADDRESS))
 {
-    // _create was modified by _info_map constructor
+    // create was modified by _info_map constructor
     // depending on whether the file existed or not
-
-    // Set up the info structure
-    // TODO: clflush and pcommit after setting up the structure
-    if (_create) {
-        // Version info
-        _info->version = 1;
+    if (create) {
+        // For a new graph, initialize the info structure
+        info->version = 1;
 
         // TODO replace static indexing
-        _info->node_info = default_regions[0];
-        _info->edge_info = default_regions[1];
-        // Other information
-        _info->allocator_info = default_regions[2];
-        _info->num_fixed_allocators = NUM_FIXED_ALLOCATORS;
-        memcpy(_info->fixed_allocator_info, default_allocators, sizeof default_allocators);
-
-        // No need to zero transaction_info
+        info->transaction_info = default_regions[0];
+        info->node_info = default_regions[1];
+        info->edge_info = default_regions[2];
+        info->allocator_info = default_regions[3];
+        info->num_fixed_allocators = NUM_FIXED_ALLOCATORS;
+        memcpy(info->fixed_allocator_info, default_allocators, sizeof default_allocators);
+        // TODO: clflush and pcommit after setting up the structure
     }
 }
 

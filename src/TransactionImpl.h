@@ -67,7 +67,7 @@ namespace Jarvis {
             static void flush_range(void *ptr, size_t len) { }
 
             // roll-back the transaction 
-            static bool recover_tx(TransactionHandle *) { return true; }
+            static bool recover_tx(const TransactionHandle &) { return true; }
 
     };
 };
