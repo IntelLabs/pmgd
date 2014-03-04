@@ -48,7 +48,6 @@ namespace Jarvis {
 
     public:
         TransactionManager(uint64_t region_addr, uint64_t region_size, bool create);
-        ~TransactionManager() {}
 
         TransactionHandle alloc_transaction();
         void free_transaction(const TransactionHandle &);

@@ -7,7 +7,7 @@ namespace Jarvis {
     class TransactionImpl;
 
     class Transaction {
-        TransactionImpl *impl;
+        TransactionImpl *_impl;
 
         void *operator new(std::size_t);
 
