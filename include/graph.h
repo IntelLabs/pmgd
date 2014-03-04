@@ -6,11 +6,13 @@
 #include "iterator.h"
 
 namespace Jarvis {
+    class GraphImpl;
+
     typedef uint64_t NodeID;
     typedef uint64_t EdgeID;
 
     class Graph {
-        class GraphImpl;
+        friend class Transaction;
         GraphImpl *_impl;
 
         Graph(const Graph &);
