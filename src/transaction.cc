@@ -5,12 +5,7 @@
 #include "TransactionImpl.h"
 #include "TransactionManager.h"
 #include "GraphImpl.h"
-
-#define clflush(addr)
-#define pcommit()
-#define memory_barrier() // Instruct compiler not to re-order
-#define cmpxchg(ptr, oldval, newval) ({ *(ptr) = newval; oldval; })
-#define atomic_inc(val) (++val)
+#include "arch.h"
 
 using namespace Jarvis;
 

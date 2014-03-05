@@ -2,11 +2,7 @@
 #include "TransactionManager.h"
 #include "TransactionImpl.h"
 #include "exception.h"
-
-#define clflush(addr)
-#define pcommit()
-#define cmpxchg(ptr, oldval, newval) ({ *(ptr) = newval; oldval; })
-#define atomic_inc(val) (++val)
+#include "arch.h"
 
 using namespace Jarvis;
 
@@ -69,11 +65,11 @@ void TransactionManager::recover(void) {
 
 TransactionHandle TransactionManager::alloc_transaction()
 {
-    uint32_t tx_id = atomic_inc(_cur_tx_id);
+    uint32_t tx_id = atomic_inc(_cur_tx_id) + 1;
 
     for (int i = 0; i < MAX_TRANSACTIONS; i++) {
         TransactionHdr *hdr = &_tx_table[i];
-        if (hdr->tx_id == 0 && cmpxchg(&hdr->tx_id, 0, tx_id) == 0) {
+        if (hdr->tx_id == 0 && cmpxchg(hdr->tx_id, 0u, tx_id)) {
             clflush(hdr); pcommit();
             return TransactionHandle(tx_id, i, tx_jbegin(i), tx_jend(i));
         }
