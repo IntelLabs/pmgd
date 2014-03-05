@@ -24,7 +24,11 @@ int main(int argc, char **argv)
     bool create = (argc > 1);
 
     try {
+        // create graph outside transactions
         Graph db("solgraph", create ? Graph::Create : Graph::ReadOnly);
+
+        // add nodes and edges in a transaction
+        Transaction tx(db);
 
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {
@@ -42,6 +46,8 @@ int main(int argc, char **argv)
         for (EdgeIterator i = db.get_edges(); i; i.next()) {
             dump(db, *i);
         }
+
+        tx.commit();
     }
     catch (Exception e) {
         print_exception(stdout, e);

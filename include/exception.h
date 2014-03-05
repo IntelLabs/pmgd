@@ -13,6 +13,8 @@ namespace Jarvis {
 
             e_tx_recovery_failed,
             e_tx_alloc_failed,
+            e_tx_small_journal,
+            e_tx_aborted,
 
             e_not_implemented = 100,
             e_internal_error,

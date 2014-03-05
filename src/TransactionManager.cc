@@ -2,93 +2,82 @@
 #include "TransactionManager.h"
 #include "TransactionImpl.h"
 #include "exception.h"
-
-#define clflush(addr)
-#define pcommit()
-#define cmpxchg(ptr, oldval, newval) ({ *(ptr) = newval; oldval; })
-#define atomic_inc(val) (++val)
+#include "arch.h"
 
 using namespace Jarvis;
 
-TransactionManager::TransactionManager(void *base_addr, bool create)
+TransactionManager::TransactionManager(
+        uint64_t region_addr, uint64_t region_size, bool create)
 {
-    _tx_table = static_cast<TransactionHdr *>(base_addr);
-    _journal_addr = (uint8_t *)_tx_table + TRANSACTION_TABLE_SIZE;
+    if (region_size < TRANSACTION_REGION_SIZE)
+        throw Exception(internal_error);
+
+    _tx_table = reinterpret_cast<TransactionHdr *>(region_addr);
+    _journal_addr = reinterpret_cast<void *>(region_addr + TRANSACTION_TABLE_SIZE);
 
     if (create)
-        _reset_table();
+        reset_table();
     else
-        _recover();
+        recover();
 
     _cur_tx_id = 0;
 }
 
-void *TransactionManager::_tx_jbegin(int index)
+void *TransactionManager::tx_jbegin(int index)
 {
     // TODO: check that index is less than MAX_TRANSACTIONS
     // Each entry in the tx-table maps to a unique extent in the journal
     return static_cast<uint8_t *>(_journal_addr) + (index * JOURNAL_EXTENT);
 }
 
-void *TransactionManager::_tx_jend(int index)
+void *TransactionManager::tx_jend(int index)
 {
     return static_cast<uint8_t *>(_journal_addr) + ((index+1) * JOURNAL_EXTENT);
 }
 
-void TransactionManager::_reset_table(void)
+void TransactionManager::reset_table(void)
 {
     for (int i = 0; i < MAX_TRANSACTIONS; i++)
     {
         TransactionHdr *hdr = &_tx_table[i];
         hdr->tx_id = 0;
-        hdr->jbegin = _tx_jbegin(i);
-        hdr->jend = _tx_jend(i);
+        hdr->jbegin = tx_jbegin(i);
+        hdr->jend = tx_jend(i);
         clflush(hdr);
     }
     pcommit();
 }
 
-void TransactionManager::_recover(void) {
+void TransactionManager::recover(void) {
     // create a Transaction(tx) object for each in_use entry and
     // call tx.abort (with no locks)
     for (int i = 0; i < MAX_TRANSACTIONS; i++) {
         TransactionHdr *hdr = &_tx_table[i];
-        if (hdr->tx_id == 0) continue;
-
-        TransactionHandle *handle = new TransactionHandle(
-                hdr->tx_id, i, hdr->jbegin, hdr->jend);
-        if (!handle)
-            throw Exception(bad_alloc);
-
-        if (TransactionImpl::recover_tx(handle) == false)
-            throw Exception(tx_recovery_failed);
+        if (hdr->tx_id != 0) {
+            TransactionHandle handle(hdr->tx_id, i, hdr->jbegin, hdr->jend);
+            TransactionImpl::recover_tx(handle);
+        }
     }
-    _reset_table(); // If successful, reset the journal
+    reset_table(); // If successful, reset the journal
 }
 
-TransactionHandle *TransactionManager::alloc_transaction(void)
+TransactionHandle TransactionManager::alloc_transaction()
 {
-    uint32_t tx_id = atomic_inc(_cur_tx_id);
+    uint32_t tx_id = atomic_inc(_cur_tx_id) + 1;
 
     for (int i = 0; i < MAX_TRANSACTIONS; i++) {
         TransactionHdr *hdr = &_tx_table[i];
-        if (hdr->tx_id == 0 && cmpxchg(&hdr->tx_id, 0, tx_id) == 0) {
+        if (hdr->tx_id == 0 && cmpxchg(hdr->tx_id, 0u, tx_id)) {
             clflush(hdr); pcommit();
-            TransactionHandle *handle = new TransactionHandle(
-                            tx_id, i, _tx_jbegin(i), _tx_jend(i));
-            return handle;
+            return TransactionHandle(tx_id, i, tx_jbegin(i), tx_jend(i));
         }
     }
     throw Exception(tx_alloc_failed);
-    return NULL;
 }
 
-void TransactionManager::free_transaction(TransactionHandle *handle)
+void TransactionManager::free_transaction(const TransactionHandle &handle)
 {
-    if (handle) {
-        TransactionHdr *hdr = &_tx_table[handle->get_index()];
-        hdr->tx_id = 0;
-        clflush(hdr); pcommit(); // no need of pcommit ?
-    }
+    TransactionHdr *hdr = &_tx_table[handle.index];
+    hdr->tx_id = 0;
+    clflush(hdr); pcommit(); // no need of pcommit ?
 }
-

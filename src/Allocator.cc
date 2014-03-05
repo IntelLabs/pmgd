@@ -3,16 +3,9 @@
 #include "exception.h"
 #include "os.h"
 #include "allocator.h"
+#include "arch.h"
 
 using namespace Jarvis;
-
-static inline unsigned bsr(uint64_t value)
-{
-    uint64_t r;
-    // Find the index of the highest bit = 1
-    asm("bsr %1,%0" : "=r"(r) : "r"(value));
-    return (unsigned)r;
-}
 
 unsigned Allocator::find_alloc_index(size_t size)
 {

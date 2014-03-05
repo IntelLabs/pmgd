@@ -10,13 +10,14 @@ CLEANFILES :=
 SRC := graph.cc node.cc edge.cc property.cc stringid.cc \
        EdgeIndex.cc \
        PropertyList.cc FixedAllocator.cc Allocator.cc \
-	   TransactionManager.cc linux.cc
+       TransactionManager.cc transaction.cc linux.cc
 
 # Translates source file names to object file names
 OBJS := $(patsubst %.cc, %.o, $(SRC))
 
 INCLUDES := -I../include
 OPT ?= -O2
+PM := $(shell if ! grep pcommit /proc/cpuinfo; then echo "-DNOPM"; fi)
 
 FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
           -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics
@@ -24,7 +25,7 @@ FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
 WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
           -Wformat=2 -Wno-parentheses -Wno-conversion
 
-CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) -MP -MMD
+CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
 
 install: $(TARGET)
 	$(call print,INSTALL,$(INSTALLPATH))
