@@ -53,12 +53,10 @@ void TransactionManager::recover(void) {
     // call tx.abort (with no locks)
     for (int i = 0; i < MAX_TRANSACTIONS; i++) {
         TransactionHdr *hdr = &_tx_table[i];
-        if (hdr->tx_id == 0) continue;
-
-        TransactionHandle handle(hdr->tx_id, i, hdr->jbegin, hdr->jend);
-
-        if (TransactionImpl::recover_tx(handle) == false)
-            throw Exception(tx_recovery_failed);
+        if (hdr->tx_id != 0) {
+            TransactionHandle handle(hdr->tx_id, i, hdr->jbegin, hdr->jend);
+            TransactionImpl::recover_tx(handle);
+        }
     }
     reset_table(); // If successful, reset the journal
 }

@@ -22,13 +22,14 @@ namespace Jarvis {
 
             std::stack<Lock *> _locks;
 
-            void log_je(JournalEntry *je, void *src, uint8_t len);
+            void log_je(void *src, size_t len);
             void release_locks();
             void finalize_commit();
-            void abort();
             void rollback();
+            static void rollback(const TransactionHandle &h,
+                                 const JournalEntry *jend);
 
-            TransactionId tx_id();
+            TransactionId tx_id() { return _tx_handle.id; }
             JournalEntry *jbegin()
                 { return static_cast<JournalEntry *>(_tx_handle.jbegin); }
             JournalEntry *jend()
@@ -62,7 +63,7 @@ namespace Jarvis {
             void write_nolog(void *dst, void *src, size_t len) { }
 
 
-            void commit();
+            void commit() { _committed = true; }
 
             // get current transaction
             static TransactionImpl *get_tx() { return _per_thread_tx; }
@@ -71,6 +72,6 @@ namespace Jarvis {
             static void flush_range(void *ptr, size_t len);
 
             // roll-back the transaction
-            static bool recover_tx(const TransactionHandle &);
+            static void recover_tx(const TransactionHandle &);
     };
 };

@@ -23,6 +23,8 @@ Transaction::~Transaction()
 void Transaction::commit()
 {
     _impl->commit();
+    delete _impl;
+    _impl = NULL;
 }
 
 
@@ -50,17 +52,22 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
     : _db(db), _committed(false),
       _tx_handle(db->transaction_manager().alloc_transaction())
 {
+    if (_per_thread_tx != NULL) {
+        db->transaction_manager().free_transaction(_tx_handle);
+        throw Exception(not_implemented); // nested exception
+    }
+
     _jcur = jbegin();
     _per_thread_tx = this; // Install per-thread TX
 }
 
 TransactionImpl::~TransactionImpl()
 {
-    if (_committed == true) {
+    if (_committed) {
         finalize_commit();
         printf("TX(%d) committed !\n", tx_id());
     } else {
-        rollback();
+        rollback(_tx_handle, _jcur);
         printf("TX(%d) aborted\n", tx_id());
     }
     release_locks();
@@ -72,14 +79,12 @@ TransactionImpl::~TransactionImpl()
 }
 
 
-inline TransactionId TransactionImpl::tx_id() { return _tx_handle.id; }
-
 // TODO
 void TransactionImpl::acquire_readlock(Lock *lptr)
 {
 #if 0
-    if (lptr->acquire_readlock(LOCK_TIMEOUT) == false)
-        this->abort();
+    if (!lptr->acquire_readlock(LOCK_TIMEOUT))
+        throw Exception(e_deadlock);
     _locks.push(lptr);
 #endif
 }
@@ -88,8 +93,8 @@ void TransactionImpl::acquire_readlock(Lock *lptr)
 void TransactionImpl::acquire_writelock(Lock *lptr)
 {
 #if 0
-    if (lptr->acquire_writelock(LOCK_TIMEOUT) == false)
-        this->abort();
+    if (!lptr->acquire_writelock(LOCK_TIMEOUT))
+        throw Exception(e_deadlock);
     _locks.push(lptr);
 #endif
 }
@@ -105,59 +110,39 @@ void TransactionImpl::release_locks()
 #endif
 }
 
-void TransactionImpl::log_je(JournalEntry *je, void *src_ptr, uint8_t len)
+void TransactionImpl::log_je(void *src_ptr, size_t len)
 {
-    je->len = len;
-    je->addr = src_ptr;
-    memcpy(&je->data[0], je->addr, je->len);
+    _jcur->len = uint8_t(len);
+    _jcur->addr = src_ptr;
+    memcpy(&_jcur->data[0], src_ptr, len);
     memory_barrier();
-    je->tx_id = tx_id();
-    clflush(je->addr); pcommit();
+    _jcur->tx_id = tx_id();
+    clflush(src_ptr); pcommit();
+    _jcur++;
 }
 
 // The last record in the journal is fixed as the COMMIT record.
 void TransactionImpl::log(void *ptr, size_t len)
 {
-    size_t je_entries = (len + JE_MAX_LEN) / JE_MAX_LEN;
+    assert(len > 0);
+    size_t je_entries = (len + JE_MAX_LEN - 1) / JE_MAX_LEN;
 
-    if (_jcur + je_entries >= jend() - 1) {
-        throw Exception(tx_small_journal); return;
-    }
+    if (_jcur + je_entries >= jend() - 1)
+        throw Exception(tx_small_journal);
 
     // TODO: Acquire lock to support multiple threads in a transaction
-    for (; _jcur < _jcur+je_entries-1; _jcur++) {
-        log_je(_jcur, ptr, JE_MAX_LEN);
-        ptr = static_cast<char *>(ptr) + _jcur->len;
+    for (unsigned i = 0; i < je_entries - 1; i++) {
+        log_je(ptr, JE_MAX_LEN);
+        ptr = static_cast<char *>(ptr) + JE_MAX_LEN;
     }
 
-    log_je(_jcur, ptr, static_cast<uint8_t>(len % JE_MAX_LEN));
-    _jcur++;
+    log_je(ptr, len % JE_MAX_LEN);
 }
 
 void TransactionImpl::finalize_commit()
 {
     for (JournalEntry *je = jbegin(); je < _jcur; je++) clflush(je);
     pcommit();
-}
-
-void TransactionImpl::rollback()
-{
-    for (JournalEntry *je = jbegin(); je < _jcur; je++) {
-        memcpy(je->addr, &je->data[0], je->len);
-        clflush(je->addr);
-    }
-    pcommit();
-}
-
-void TransactionImpl::commit()
-{
-    _committed = true;
-}
-
-void TransactionImpl::abort()
-{
-    _committed = false;
-    throw Exception(tx_aborted);
 }
 
 // flush a range and pcommit
@@ -168,25 +153,28 @@ void TransactionImpl::flush_range(void *ptr, size_t len)
 // static function to allow recovery from TransactionManager.
 // There are no real TransactionImpl objects at recovery time.
 // The last record in the journal is fixed as the COMMIT record.
-bool TransactionImpl::recover_tx(const TransactionHandle &h)
+void TransactionImpl::recover_tx(const TransactionHandle &h)
 {
-    uint32_t tx_id = h.id;
+    TransactionId tx_id = h.id;
     JournalEntry *jend = static_cast<JournalEntry *>(h.jend);
+    JournalEntry *jcommit = jend - 1;
 
-    JournalEntry *jcommit = --jend;
-    if (jcommit->tx_id == tx_id && jcommit->type == JE_COMMIT_MARKER)
-        return true;
+    if (!(jcommit->tx_id == tx_id && jcommit->type == JE_COMMIT_MARKER)) {
+        // COMMIT record not found. Rollback !
+        rollback(h, jend);
+    }
+}
 
-    // COMMIT record not found. Rollback !
+void TransactionImpl::rollback(const TransactionHandle &h,
+                               const JournalEntry *jend)
+{
     JournalEntry *jbegin = static_cast<JournalEntry *>(h.jbegin);
 
     for (JournalEntry *je = jbegin; je < jend; je++) {
-        if (je->tx_id != tx_id)
+        if (je->tx_id != h.id)
             break;
         memcpy(je->addr, &je->data[0], je->len);
         clflush(je->addr);
     }
     pcommit();
-
-    return true;
 }
