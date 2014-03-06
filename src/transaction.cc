@@ -65,17 +65,14 @@ TransactionImpl::~TransactionImpl()
 {
     if (_committed) {
         finalize_commit();
-        printf("TX(%d) committed !\n", tx_id());
     } else {
         rollback(_tx_handle, _jcur);
-        printf("TX(%d) aborted\n", tx_id());
     }
     release_locks();
 
     TransactionManager *tx_manager = &_db->transaction_manager();
     tx_manager->free_transaction(_tx_handle);
     _per_thread_tx = NULL; // Un-install per-thread TX
-    printf("Transaction ended\n");
 }
 
 
@@ -161,18 +158,21 @@ void TransactionImpl::recover_tx(const TransactionHandle &h)
 
     if (!(jcommit->tx_id == tx_id && jcommit->type == JE_COMMIT_MARKER)) {
         // COMMIT record not found. Rollback !
-        rollback(h, jend);
+        rollback(h, jcommit);
     }
 }
 
 void TransactionImpl::rollback(const TransactionHandle &h,
                                const JournalEntry *jend)
 {
+    JournalEntry *je;
     JournalEntry *jbegin = static_cast<JournalEntry *>(h.jbegin);
 
-    for (JournalEntry *je = jbegin; je < jend; je++) {
-        if (je->tx_id != h.id)
-            break;
+    // find the last valid journal entry
+    for (je = jbegin; je < jend && je->tx_id == h.id; je++);
+
+    // rollback in the reverse order
+    while (je-- > jbegin) {
         memcpy(je->addr, &je->data[0], je->len);
         clflush(je->addr);
     }
