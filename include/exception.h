@@ -11,6 +11,7 @@ namespace Jarvis {
             e_property_type,
             e_property_not_found,
 
+            e_no_transaction,
             e_tx_recovery_failed,
             e_tx_alloc_failed,
             e_tx_small_journal,

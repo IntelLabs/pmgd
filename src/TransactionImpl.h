@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stack>
 #include "TransactionManager.h"
+#include "exception.h"
 
 namespace Jarvis {
     class GraphImpl;
@@ -25,7 +26,6 @@ namespace Jarvis {
             void log_je(void *src, size_t len);
             void release_locks();
             void finalize_commit();
-            void rollback();
             static void rollback(const TransactionHandle &h,
                                  const JournalEntry *jend);
 
@@ -66,7 +66,12 @@ namespace Jarvis {
             void commit() { _committed = true; }
 
             // get current transaction
-            static TransactionImpl *get_tx() { return _per_thread_tx; }
+            static inline TransactionImpl *get_tx()
+            {
+                if (_per_thread_tx == NULL)
+                    throw Exception(no_transaction);
+                return _per_thread_tx;
+            }
 
             // flush a range and pcommit
             static void flush_range(void *ptr, size_t len);
