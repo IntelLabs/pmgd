@@ -21,7 +21,8 @@ ifneq ($(findstring s,$(MAKEFLAGS)),)
 endif
 
 all: lib apitest alloctest soltest nodeedgetest listtest edgeindextest \
-     propertytest propertypredicatetest filtertest txtest
+     propertytest propertypredicatetest filtertest txtest \
+     dumpgraph
 
 apitest: apitest.o
 	$(CC) -o $@ $<
@@ -71,6 +72,11 @@ txtest: txtest.o $(LIB)
 	$(call print,LINK,$@)
 	$(CC) -g -o $@ $< $(LIB)
 CLEANFILES += txtest txtest.o
+
+dumpgraph: dumpgraph.o $(LIB)
+	$(call print,LINK,$@)
+	$(CC) -g -o $@ $< $(LIB)
+CLEANFILES += dumpgraph dumpgraph.o
 
 lib:
 	make -C ../src OPT=$(OPT) install
