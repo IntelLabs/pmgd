@@ -19,6 +19,8 @@ int main(int argc, char **argv)
     try {
         Graph db("ppgraph", create ? Graph::Create : Graph::ReadOnly);
 
+        Transaction tx(db);
+
         for (int i = 1; i < argc; i++) {
             Node &n = db.add_node(i);
             n.set_property(1, argv[i]);
@@ -60,6 +62,7 @@ int main(int argc, char **argv)
         dump(db, db.get_nodes()
             .filter(PropertyPredicate(2, PropertyPredicate::gele, 2, 5)));
 
+        tx.commit();
     }
     catch (Exception e) {
         print_exception(stdout, e);
