@@ -1,19 +1,9 @@
 /*
  * TODOs
  * - Write random data in regions in debug mode
- * - Where do calls to fences go?
- * - Remove TX_* macros when transactions are implemented
  * - lock init in constructor actually?
  * - signature checking?
  * - throw an exception instead of returning NULL
- * - rearrange fields so that we minimize calls to TX infrastructure
- *       Better to log a little more data if it means fewer calls
- * - fix TX code and review with Sanjay, for instance:
- *       If transaction A allocates node A and then transaction B
- *       allocates node B and then transaction B commits and then
- *       transaction A aborts, the unwind of transaction A will free
- *       node B.  The same problem happens with either the free list
- *       or the tail_ptr.
  */
 
 #include <stddef.h>
@@ -21,11 +11,7 @@
 
 #include "exception.h"
 #include "allocator.h"
-
-// See TODOs above
-#define TX_write(_pm, sz)
-#define TX_write3(_pm, val, sz)
-#define TX_log(ptr, size)
+#include "TransactionImpl.h"
 
 using namespace Jarvis;
 
@@ -66,7 +52,7 @@ FixedAllocator::FixedAllocator(const uint64_t region_addr,
         _pm->max_addr = start_addr + info.len;
         _pm->num_allocated = 0;
 
-        TX_write(_pm, sz);
+        TransactionImpl::flush_range(_pm, _pm->size);
     }
 }
 
@@ -82,50 +68,37 @@ unsigned FixedAllocator::object_size() const
 
 void *FixedAllocator::alloc()
 {
-    acquire_lock();
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    tx->acquire_writelock(NULL);
+
+    // RegionHeader(_pm) is only 40 bytes.
+    // Log the entire structure in a single log-entry.
+    tx->log(_pm, sizeof(*_pm));
 
     uint64_t *p;
-
     if (_pm->free_ptr != NULL) {
         /* We found an object on the free list */
-
         p = _pm->free_ptr;
 
-        TX_log(_pm->free_ptr, sizeof(_pm->free_ptr));
-        TX_log(*p, sizeof(uint64_t));
-        TX_log(_pm->num_allocated, sizeof(_pm->num_allocated));
+        // Log the 8-byte freelist pointer in the allocated object.
+        tx->log(p, sizeof(uint64_t));
 
         *p &= ~FREE_BIT;
-
         _pm->free_ptr = (uint64_t *)*_pm->free_ptr;
-
-        if (_pm->zero)
-            TX_write3(p, 0, _pm->size);
-
-        _pm->num_allocated++;
-
-        release_lock();
-
-        return p;
     }
-    if (((uint64_t)_pm->tail_ptr + _pm->size) > _pm->max_addr)
-        throw Exception(bad_alloc);
+    else
+    {
+        if (((uint64_t)_pm->tail_ptr + _pm->size) > _pm->max_addr)
+            throw Exception(bad_alloc);
 
-    /* Free list exhausted, we are growing our pool of objects by one */
-
-    p = _pm->tail_ptr;
-
-    TX_log(_pm->tail_ptr, sizeof(_pm->tail_ptr));
-    TX_log(_pm->num_allocated, sizeof(_pm->num_allocated));
-
-    _pm->tail_ptr = (uint64_t *)((uint64_t)_pm->tail_ptr + _pm->size);
+        /* Free list exhausted, we are growing our pool of objects by one */
+        p = _pm->tail_ptr;
+        _pm->tail_ptr = (uint64_t *)((uint64_t)_pm->tail_ptr + _pm->size);
+    }
 
     if (_pm->zero)
-        TX_write3(p, 0, _pm->size);
-
+        tx->memset_nolog(p, 0, _pm->size);
     _pm->num_allocated++;
-
-    release_lock();
 
     return p;
 }
@@ -138,16 +111,15 @@ void *FixedAllocator::alloc()
  */
 void FixedAllocator::free(void *p)
 {
-    acquire_lock();
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    tx->acquire_writelock(NULL);
 
-    TX_log(_pm->free_ptr, sizeof(_pm->free_ptr));
-    TX_log(_pm->num_allocated, sizeof(_pm->num_allocated));
+    tx->log(_pm, sizeof(*_pm));
+    tx->log(p, sizeof(uint64_t));
 
     *(uint64_t *)p = (uint64_t)_pm->free_ptr | FREE_BIT;
     _pm->free_ptr = (uint64_t *)p;
     _pm->num_allocated--;
-
-    release_lock();
 }
 
 void *FixedAllocator::begin() const
@@ -168,12 +140,4 @@ void *FixedAllocator::next(const void *curr) const
 bool FixedAllocator::is_free(const void *curr) const
 {
     return *(uint64_t *)curr & FREE_BIT;
-}
-
-void FixedAllocator::acquire_lock()
-{
-}
-
-void FixedAllocator::release_lock()
-{
 }

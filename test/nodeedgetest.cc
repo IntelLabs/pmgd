@@ -25,6 +25,8 @@ int main(int argc, char **argv)
     try {
         Graph db("nodeedgegraph", create ? Graph::Create : Graph::ReadOnly);
 
+        Transaction tx(db);
+
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {
             Node &n = db.add_node(0);
@@ -43,6 +45,8 @@ int main(int argc, char **argv)
         for (EdgeIterator i = db.get_edges(); i; i.next()) {
             dump(db, *i);
         }
+
+        tx.commit();
     }
     catch (Exception e) {
         print_exception(stdout, e);

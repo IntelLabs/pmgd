@@ -41,12 +41,6 @@ namespace Jarvis {
         // Offset from the region's base where objects start
         unsigned _alloc_offset;
 
-        // Serialize access to the allocator
-        //spin_lock_t _lock;
-
-        void acquire_lock();
-        void release_lock();
-
         // Stats
         size_t _num_alloc_calls;
         size_t _num_free_calls;

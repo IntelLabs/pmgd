@@ -1,5 +1,5 @@
 /*
- * This test checks Jarvis property lists
+ * Test for Jarvis transactions
  */
 
 #include <stdio.h>
@@ -11,29 +11,67 @@ static void dump(const Graph &db, const Node &n);
 static void dump(const Graph &db, const Edge &n);
 static std::string property_text(const PropertyIterator &i);
 static int print_exception(FILE *s, Exception& e);
+static void dump(Graph &db);
+static void dump_no_tx(Graph &db);
+static void modify(Graph &db, int argc, char **argv, bool commit);
 
 int main(int argc, char **argv)
 {
     bool create = (argc > 1);
 
     try {
-        Graph db("propertygraph", create ? Graph::Create : Graph::ReadOnly);
+        // create graph outside transactions
+        Graph db("txgraph", create ? Graph::Create : Graph::ReadOnly);
+        modify(db, argc, argv, true);
+        modify(db, argc, argv, false);
+    }
+    catch (Exception e) {
+        print_exception(stdout, e);
+    }
+    return 0;
+}
 
+static void modify(Graph &db, int argc, char **argv, bool commit)
+{
+    if (commit)
+        printf("\nCOMMIT TEST\n");
+    else
+        printf("\nABORT TEST\n");
+
+    try {
+        // add nodes and edges in a transaction
         Transaction tx(db);
 
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {
             Node &n = db.add_node(0);
-            n.set_property(1, argv[i]);
-            n.set_property(2, i + 16ll);
-            if (prev != NULL) {
-                Edge &e = db.add_edge(*prev, n, 0);
-                e.set_property(3, prev->get_property(1).string_value());
-                e.set_property(4, n.get_property(1).string_value());
-            }
+            n.set_property(0, argv[i]);
+            if (prev != NULL)
+                db.add_edge(*prev, n, 0);
             prev = &n;
         }
 
+        if (commit) {
+            tx.commit();
+        }
+        else {
+            printf("BEFORE ABORT:\n");
+            dump_no_tx(db);
+        }
+    }
+    catch (Exception e) {
+        print_exception(stdout, e);
+    }
+    if (commit)
+        printf("AFTER COMMIT:\n");
+    else
+        printf("AFTER ABORT:\n");
+    dump(db);
+}
+
+static void dump_no_tx(Graph &db)
+{
+    try {
         for (NodeIterator i = db.get_nodes(); i; i.next()) {
             dump(db, *i);
         }
@@ -41,14 +79,28 @@ int main(int argc, char **argv)
         for (EdgeIterator i = db.get_edges(); i; i.next()) {
             dump(db, *i);
         }
+    }
+    catch (Exception e) {
+        print_exception(stdout, e);
+    }
+}
 
+static void dump(Graph &db)
+{
+    try {
+        Transaction tx(db);
+        for (NodeIterator i = db.get_nodes(); i; i.next()) {
+            dump(db, *i);
+        }
+
+        for (EdgeIterator i = db.get_edges(); i; i.next()) {
+            dump(db, *i);
+        }
         tx.commit();
     }
     catch (Exception e) {
         print_exception(stdout, e);
     }
-
-    return 0;
 }
 
 static void dump(const Graph &db, const Node &n)

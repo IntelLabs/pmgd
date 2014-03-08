@@ -18,6 +18,8 @@ int main(int argc, char **argv)
     try {
         Graph db("filtergraph", create ? Graph::Create : Graph::ReadOnly);
 
+        Transaction tx(db);
+
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {
             Node &n = db.add_node(i);
@@ -98,6 +100,8 @@ int main(int argc, char **argv)
                         printf("  %s: %lld\n", id.c_str(), val);
                     });
             });
+
+        tx.commit();
     }
     catch (Exception e) {
         print_exception(stdout, e);
