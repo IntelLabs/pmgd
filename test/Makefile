@@ -5,6 +5,7 @@ LIB := ../lib/jarvis.lib
 CLEANFILES :=
 
 INCLUDES := -I../include -I../src
+OPT ?= -g
 
 FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
           -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics
@@ -12,7 +13,7 @@ FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
 WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
           -Wformat=2 -Wno-parentheses -Wno-conversion
 
-CFLAGS := --std=c++11 $(INCLUDES) $(FFLAGS) $(WFLAGS) -DSTUBS -g
+CFLAGS := --std=c++11 $(INCLUDES) $(FFLAGS) $(WFLAGS) -DSTUBS $(OPT)
 
 all: lib apitest alloctest soltest nodeedgetest listtest edgeindextest \
      propertytest propertypredicatetest filtertest txtest
@@ -26,11 +27,11 @@ alloctest: alloctest.o $(LIB)
 CLEANFILES += alloctest alloctest.o
 
 soltest: soltest.o $(LIB)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += soltest soltest.o
 
 nodeedgetest: nodeedgetest.o $(LIB)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += nodeedgetest nodeedgetest.o
 
 listtest: listtest.o
@@ -42,15 +43,15 @@ edgeindextest: edgeindextest.o
 CLEANFILES += edgeindextest edgeindextest.o
 
 propertytest: propertytest.o $(LIB)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += propertytest propertytest.o
 
 propertypredicatetest: propertypredicatetest.o $(LIB)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += propertypredicatetest propertypredicatetest.o
 
 filtertest: filtertest.o $(LIB)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += filtertest filtertest.o
 
 txtest: txtest.o $(LIB)
@@ -58,7 +59,7 @@ txtest: txtest.o $(LIB)
 CLEANFILES += txtest txtest.o
 
 lib:
-	make -C ../src OPT=-g install
+	make -C ../src OPT=$(OPT) install
 
 clean:
 	$(call print,CLEAN)
