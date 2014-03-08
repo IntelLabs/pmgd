@@ -21,7 +21,7 @@ namespace Jarvis {
     class PropertyListIterator : public PropertyIteratorImpl {
         PropertyRef _cur;
     public:
-        PropertyListIterator(const PropertyList *l) : _cur(l) { }
+        PropertyListIterator(const PropertyList *l) : _cur(l) { _cur._next(); }
         operator bool() const { return _cur.not_done(); }
         const PropertyRef &operator*() const { return _cur; }
         const PropertyRef *operator->() const { return &_cur; }
@@ -294,14 +294,15 @@ void PropertyRef::set_size(int new_size)
     type_size() = uint8_t((new_size << 4) | ptype());
 }
 
-bool PropertyRef::next()
+bool PropertyRef::_next()
 {
     while (1) {
-        _offset += size() + 3;
         if (!not_done())
             return false;
-        if (ptype() == p_unused)
+        if (ptype() == p_unused) {
+            _offset += size() + 3;
             continue;
+        }
         if (ptype() == p_link)
             follow_link();
         return true;

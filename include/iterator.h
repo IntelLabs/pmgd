@@ -112,7 +112,8 @@ namespace Jarvis {
         bool check_space(unsigned size) const
             { return _offset + size + 3 <= chunk_size(); }
 
-        bool next();
+        bool _next();
+        bool next() { _offset += size() + 3; return _next(); }
         bool not_done() const
             { return _offset <= chunk_size() - 3 && ptype() != p_end; }
 
