@@ -34,8 +34,8 @@ nodeedgetest: nodeedgetest.o $(LIB)
 	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += nodeedgetest nodeedgetest.o
 
-listtest: listtest.o
-	$(CC) -o $@ $< ../lib/jarvis.lib
+listtest: listtest.o $(LIB)
+	$(CC) -o $@ $< $(LIB)
 CLEANFILES += listtest listtest.o
 
 edgeindextest: edgeindextest.o
