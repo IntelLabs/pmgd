@@ -1,16 +1,22 @@
 #include <string>
 #include "stringid.h"
 #include "exception.h"
+#include "StringTable.h"
+#include "TransactionImpl.h"
+#include "GraphImpl.h"
 
 Jarvis::StringID::StringID(const char *s)
 {
     if (s == NULL)
         _id = 0;
-    else
-        throw Exception(not_implemented);
+    else {
+        TransactionImpl *tx = TransactionImpl::get_tx();
+        _id = tx->get_db()->string_table().get(s);
+    }
 }
 
 std::string Jarvis::StringID::name() const
 {
-    return std::to_string(_id);
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    return tx->get_db()->string_table().get(_id);
 }
