@@ -401,12 +401,11 @@ bool PropertyRef::bool_value() const
 long long PropertyRef::int_value() const
 {
     if (ptype() == p_integer) {
-        long long v = *(long long *)val();
         unsigned sz = size();
-        if (sz < 8) {
-            int shift =  8 * (8 - sz);
-            v = v << shift >> shift;
-        }
+        unsigned shift = unsigned(sizeof (long long)) - sz;
+        long long v = *(long long *)(val() - shift);
+        if (sz < sizeof (long long))
+            v >>= CHAR_BIT * shift;
         return v;
     }
     throw Exception(property_type);
