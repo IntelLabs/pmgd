@@ -30,6 +30,16 @@ namespace Jarvis {
         bool next() { return _cur.next(); }
     };
 
+
+    // The PropertySpace class contains a space requirement,
+    // determined from the type and value of the property to
+    // be stored, and a PropertyRef, which (if set) refers to
+    // suitable unused space in the property list.
+    // The _exact flag is set if the property value to be stored
+    // is an inline string, which must be stored in a space that
+    // exactly matches the length of the string. All other
+    // property values can be stored in a space that exceeds the
+    // space required.
     class PropertyList::PropertySpace {
         unsigned char _min;
         bool _exact;
@@ -116,6 +126,14 @@ void PropertyList::remove_property(StringID id)
         p.free();
 }
 
+
+// Search the property list for the specified property id.
+// If it is found, return a reference to the property in r.
+// If the space parameter is non-null, also look for space
+// that matches the space requirement.
+// If the property is not found, and space is non-null, set
+// r to the end of the list, so that the caller can resume
+// searching for space where this function left off.
 bool PropertyList::find_property(StringID id, PropertyRef &r,
                                  PropertySpace *space) const
 {
@@ -154,6 +172,10 @@ break2:
     return false;
 }
 
+
+// Search for space suitable to meet the specified space requirement.
+// Set the pos member of the space parameter to the space found.
+// If no suitable space is found, allocate a new chunk and link to it.
 void PropertyList::find_space(PropertySpace &space, Allocator &allocator) const
 {
     PropertyRef p = space.pos();
@@ -192,6 +214,14 @@ void PropertyList::find_space(PropertySpace &space, Allocator &allocator) const
     }
 }
 
+// Make_space is called when we need to add a link from the
+// current chunk to a new chunk and there isn't space for a
+// link in the current chunk.
+// The parameter q refers to the beginning of the new chunk.
+// Make_space moves some properties from this chunk to the
+// new one. It sets *this to refer the beginning of the space
+// freed up for the link, and sets q to the beginning of free
+// space in the new chunk.
 void PropertyRef::make_space(PropertyRef &q)
 {
     PropertyRef p;
@@ -214,6 +244,8 @@ void PropertyRef::make_space(PropertyRef &q)
     this->type_size() = p_end;
 }
 
+// Determine the minimum number of bytes required to store
+// the specified value.
 static int get_int_len(long long v)
 {
     if (v == 0) return 1;
@@ -221,6 +253,8 @@ static int get_int_len(long long v)
     return bsr(v) / CHAR_BIT + 1;
 }
 
+
+// Determine the number of bytes required to store the referenced value.
 int PropertyRef::get_space() const
 {
     switch (ptype()) {
@@ -237,11 +271,15 @@ int PropertyRef::get_space() const
     }
 }
 
+
+// Determine whether the space referred by p to is suitable.
 bool PropertyList::PropertySpace::match(const PropertyRef &p) const
 {
     return p.size() == _min || (!_exact && p.size() >= _min + 3);
 }
 
+
+// Determine the number of bytes required to store the property value.
 PropertyList::PropertySpace PropertyList::get_space(const Property &p)
 {
     switch (p.type()) {
@@ -260,6 +298,10 @@ PropertyList::PropertySpace PropertyList::get_space(const Property &p)
     }
 }
 
+
+// Store the property in the space referred to by _pos.
+// The caller should have found suitable space.
+// The asserts verify that this was done correctly.
 bool PropertyList::PropertySpace::set_property(StringID id, const Property &p,
                                                Allocator &allocator)
 {
@@ -284,6 +326,10 @@ bool PropertyList::PropertySpace::set_property(StringID id, const Property &p,
         return false;
 }
 
+
+// Add a new property to the end of the property list, by
+// setting the size to the specified size and marking the
+// following space as the new end.
 void PropertyRef::set_size(int new_size)
 {
     assert(ptype() == p_end);
@@ -294,6 +340,9 @@ void PropertyRef::set_size(int new_size)
     type_size() = uint8_t((new_size << 4) | ptype());
 }
 
+
+// Advance the reference to the next property, returning false if
+// there isn't one.
 bool PropertyRef::_next()
 {
     while (1) {
@@ -309,6 +358,12 @@ bool PropertyRef::_next()
     }
 }
 
+
+// Store a link to the next chunk in the space referred to.
+// If there are 3 or more bytes more space than is required,
+// put the excess prior to the link, marked as unused.
+// If there are less than 3 bytes excess, put the excess
+// after the link, where it will be ignored.
 void PropertyRef::set_link(PropertyList *p_chunk)
 {
     int unused_size = int(chunk_size()) - _offset - (3 + int(sizeof p_chunk));
@@ -324,6 +379,8 @@ void PropertyRef::set_link(PropertyList *p_chunk)
     *(PropertyList **)val() = p_chunk;
 }
 
+
+// Store the property value in the space referred to.
 void PropertyRef::set_value(const Property &p, Allocator &allocator)
 {
     assert(_offset <= chunk_size() - 3);
@@ -389,6 +446,10 @@ void PropertyRef::set_blob(const void *value, std::size_t size,
     v->size = uint32_t(size);
 }
 
+
+// The following functions return the value of the referenced property,
+// throwing an exception if the type of the property doesn't match that
+// requested.
 bool PropertyRef::bool_value() const
 {
     switch (ptype()) {
@@ -446,6 +507,8 @@ Property::blob_t PropertyRef::blob_value() const
     throw Exception(property_type);
 }
 
+
+// Return the value of the referenced property.
 Property PropertyRef::get_value() const
 {
     switch (ptype()) {
