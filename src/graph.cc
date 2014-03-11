@@ -15,7 +15,6 @@ static const size_t BASE_ADDRESS = 0x10000000000;
 static const size_t REGION_SIZE = 0x10000000000;
 static const unsigned NODE_SIZE = 64;
 static const unsigned EDGE_SIZE = 32;
-static const unsigned INFO_SIZE = 4096;
 
 static constexpr char info_name[] = "graph.jdb";
 
@@ -48,12 +47,29 @@ const AllocatorInfo GraphImpl::default_allocators[] = {
 const size_t GraphImpl::NUM_FIXED_ALLOCATORS
         = sizeof default_allocators / sizeof default_allocators[0];
 
-#define REGION_ADDRESS(index) (BASE_ADDRESS + (index) * REGION_SIZE)
+#define ADDRESS(region) (region##_ADDRESS)
+#define SIZE(region) (region##_SIZE)
+#define NEXT(region) (ADDRESS(region) + SIZE(region))
+
+// Set individual addresses so they can be set at different sizes when needed
+static const size_t INFO_ADDRESS = BASE_ADDRESS;
+static const unsigned INFO_SIZE = 4096;
+static const size_t TRANSACTIONTABLE_ADDRESS = NEXT(INFO);
+static const unsigned TRANSACTIONTABLE_SIZE = TRANSACTION_REGION_SIZE;
+
+// Node, edge tables kept TB aligned
+static const size_t NODETABLE_ADDRESS = BASE_ADDRESS + REGION_SIZE;
+static const size_t NODETABLE_SIZE = REGION_SIZE;
+static const size_t EDGETABLE_ADDRESS = NEXT(NODETABLE);
+static const size_t EDGETABLE_SIZE = REGION_SIZE;
+static const size_t ALLOCATORS_ADDRESS = NEXT(EDGETABLE);
+static const size_t ALLOCATORS_SIZE = GraphImpl::NUM_FIXED_ALLOCATORS * REGION_SIZE;
+
 const GraphImpl::RegionInfo GraphImpl::default_regions[] = {
-    { "transaction.jdb", REGION_ADDRESS(1), TRANSACTION_REGION_SIZE },
-    { "nodes.jdb", REGION_ADDRESS(2), REGION_SIZE },
-    { "edges.jdb", REGION_ADDRESS(3), REGION_SIZE },
-    { "pooh-bah.jdb", REGION_ADDRESS(4), NUM_FIXED_ALLOCATORS * REGION_SIZE },
+    { "transaction.jdb", ADDRESS(TRANSACTIONTABLE), SIZE(TRANSACTIONTABLE)},
+    { "nodes.jdb", ADDRESS(NODETABLE), SIZE(NODETABLE) },
+    { "edges.jdb", ADDRESS(EDGETABLE), SIZE(EDGETABLE) },
+    { "pooh-bah.jdb", ADDRESS(ALLOCATORS), SIZE(ALLOCATORS) },
 };
 
 AllocatorInfo GraphImpl::allocator_info(const RegionInfo &info,
@@ -143,7 +159,6 @@ GraphImpl::GraphImpl(const char *name, int options)
                  _init.create)
 {
 }
-
 
 namespace Jarvis {
     template <typename B, typename T>

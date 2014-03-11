@@ -29,7 +29,6 @@ namespace Jarvis {
 
         static const RegionInfo default_regions[];
         static const AllocatorInfo default_allocators[];
-        static const size_t NUM_FIXED_ALLOCATORS;
 
         // ** Order here is important: GraphInit MUST be first
         GraphInit _init;
@@ -49,6 +48,9 @@ namespace Jarvis {
                                      uint32_t obj_size) const;
 
     public:
+        // Needed for other size calculations outside GraphImpl
+        static const size_t NUM_FIXED_ALLOCATORS;
+
         GraphImpl(const char *name, int options);
         TransactionManager &transaction_manager() { return _transaction_manager; }
         NodeTable &node_table() { return _node_table; }
