@@ -1,5 +1,4 @@
 #include <stddef.h>
-#include <assert.h>
 #include <string.h> // for memcpy
 #include "exception.h"
 #include "iterator.h"

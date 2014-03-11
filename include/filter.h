@@ -199,7 +199,7 @@ namespace Jarvis {
                 case PropertyPredicate::gelt: r = val >= _pp.v1 && val < _pp.v2; break;
                 case PropertyPredicate::gtle: r = val > _pp.v1 && val <= _pp.v2; break;
                 case PropertyPredicate::gtlt: r = val > _pp.v1 && val < _pp.v2; break;
-                default: throw Exception(internal_error);
+                default: assert(0);
             }
         }
         return r ? pass : dont_pass;

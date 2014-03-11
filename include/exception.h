@@ -18,7 +18,6 @@ namespace Jarvis {
             e_tx_aborted,
 
             e_not_implemented = 100,
-            e_internal_error,
         };
 
         // Which exception

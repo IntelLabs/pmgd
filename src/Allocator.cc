@@ -1,5 +1,5 @@
-
 #include <stddef.h>
+#include <assert.h>
 #include "exception.h"
 #include "os.h"
 #include "allocator.h"
@@ -28,9 +28,8 @@ void Allocator::free(void *addr, size_t size)
 {
     // TODO This restriction will go away when we have the variable
     // allocator
-    if (size < _fixed_allocators[0]->object_size() ||
-        size > _fixed_allocators[_fixed_allocators.size() - 1]->object_size())
-        throw Exception(internal_error);
+    assert(size >= _fixed_allocators[0]->object_size() &&
+        size <= _fixed_allocators[_fixed_allocators.size() - 1]->object_size());
     unsigned index = find_alloc_index(size);
     return _fixed_allocators[index]->free(addr);
 }

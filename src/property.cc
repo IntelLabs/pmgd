@@ -12,7 +12,7 @@ Jarvis::Property::Property(const Property &a)
         case t_float: v_float = a.v_float; break;
         case t_time: v_time = a.v_time; break;
         case t_blob: v_blob = a.v_blob; break;
-        default: throw Exception(internal_error);
+        default: assert(0);
     }
 }
 
@@ -36,7 +36,7 @@ void Jarvis::Property::operator=(const Property &a)
         case t_float: v_float = a.v_float; break;
         case t_time: v_time = a.v_time; break;
         case t_blob: v_blob = a.v_blob; break;
-        default: throw Exception(internal_error);
+        default: assert(0);
     }
 }
 
@@ -52,7 +52,6 @@ bool Jarvis::Property::operator<(const Property &a) const
         case t_float: return v_float < a.v_float;
         case t_time: return v_time < a.v_time;
         case t_blob: return false; // no ordering
+        default: assert(0);
     }
-
-    throw Exception(internal_error);
 }

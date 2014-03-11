@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <assert.h>
 #include "TransactionManager.h"
 #include "TransactionImpl.h"
 #include "exception.h"
@@ -9,8 +10,7 @@ using namespace Jarvis;
 TransactionManager::TransactionManager(
         uint64_t region_addr, uint64_t region_size, bool create)
 {
-    if (region_size < TRANSACTION_REGION_SIZE)
-        throw Exception(internal_error);
+    assert(region_size == TRANSACTION_REGION_SIZE);
 
     _tx_table = reinterpret_cast<TransactionHdr *>(region_addr);
     _journal_addr = reinterpret_cast<void *>(region_addr + TRANSACTION_TABLE_SIZE);

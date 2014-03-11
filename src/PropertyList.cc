@@ -195,8 +195,8 @@ PropertyList::PropertySpace PropertyList::get_space(const Property &p)
         case t_float: return sizeof (double);
         case t_time: return sizeof (Time);
         case t_blob: return sizeof (void *);
+        default: assert(0);
     }
-    throw Exception(internal_error);
 }
 
 bool PropertyList::PropertySpace::set_property(StringID id, const Property &p)
@@ -272,7 +272,7 @@ void PropertyRef::set_value(const Property &p)
             break;
         }
         default:
-            throw Exception(internal_error);
+            assert(0);
     }
 }
 
@@ -344,7 +344,6 @@ Property PropertyRef::get_value() const
         case p_float: return Property(float_value());
         case p_time: return Property(time_value());
         case p_blob: return Property(blob_value());
+        default: assert(0);
     }
-
-    throw Exception(internal_error);
 }

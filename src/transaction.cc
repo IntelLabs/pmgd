@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <assert.h>
 #include <string.h>
 #include <thread>
 #include "transaction.h"
