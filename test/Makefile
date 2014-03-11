@@ -22,7 +22,7 @@ endif
 
 all: lib apitest alloctest soltest nodeedgetest listtest edgeindextest \
      propertytest propertypredicatetest propertychunktest filtertest txtest \
-     dumpgraph
+     stringtabletest dumpgraph
 
 apitest: apitest.o
 	$(CC) -o $@ $<
@@ -77,6 +77,10 @@ txtest: txtest.o $(LIB)
 	$(call print,LINK,$@)
 	$(CC) -g -o $@ $< $(LIB)
 CLEANFILES += txtest txtest.o
+
+stringtabletest: stringtabletest.o $(LIB)
+	$(CC) -g -o $@ $< $(LIB)
+CLEANFILES += stringtabletest stringtabletest.o
 
 dumpgraph: dumpgraph.o $(LIB)
 	$(call print,LINK,$@)

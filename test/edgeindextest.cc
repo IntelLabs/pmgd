@@ -74,15 +74,15 @@ int main()
     cout << "Step 3: Testing the index\n";
     EdgeIndex *edge_table = EdgeIndex::create(allocator1);
 
-    edge_table->add(20, entry1.key(), entry1.value(), allocator1);
+    edge_table->add("tag20", entry1.key(), entry1.value(), allocator1);
 
-    edge_table->add(20, entry3.key(), entry3.value(), allocator1);
-    edge_table->add(10, entry2.key(), entry2.value(), allocator1);
+    edge_table->add("tag20", entry3.key(), entry3.value(), allocator1);
+    edge_table->add("tag10", entry2.key(), entry2.value(), allocator1);
 
-    edge_table->remove(10, entry2.key(), entry2.value(), allocator1);
-    edge_table->remove(20, entry3.key(), entry3.value(), allocator1);
-    edge_table->remove(20, entry1.key(), entry1.value(), allocator1);
-    edge_table->add(20, entry2.key(), entry2.value(), allocator1);
+    edge_table->remove("tag10", entry2.key(), entry2.value(), allocator1);
+    edge_table->remove("tag20", entry3.key(), entry3.value(), allocator1);
+    edge_table->remove("tag20", entry1.key(), entry1.value(), allocator1);
+    edge_table->add("tag20", entry2.key(), entry2.value(), allocator1);
 
     return 0;
 }

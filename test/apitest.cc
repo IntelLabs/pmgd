@@ -13,7 +13,6 @@
  * This test contains stubs for any Jarvis functions that are
  * not inline, so it should not be linked against jarvis.lib.
  *
- * Compile with g++-4.8 -std=c++11 -I ../include apitest.cc
  */
 
 #include "jarvis.h"
