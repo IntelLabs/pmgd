@@ -218,7 +218,7 @@ static int get_int_len(long long v)
 {
     if (v == 0) return 1;
     if (v < 0) v = -v;
-    return bsr(v) / 8 + 1;
+    return bsr(v) / CHAR_BIT + 1;
 }
 
 int PropertyRef::get_space() const
