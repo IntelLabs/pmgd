@@ -2,9 +2,9 @@ CC := g++-4.8
 RM := rm -f
 
 LIB := ../lib/jarvis.lib
-CLEANFILES :=
+CLEANFILES := $(LIB)
 
-INCLUDES := -I../include -I../src
+INCLUDES := -I../include
 OPT ?= -g
 
 FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
