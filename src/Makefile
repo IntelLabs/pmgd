@@ -2,6 +2,7 @@ CC := g++-4.8
 AR := ar
 CP := cp -a
 RM := rm -f
+ECHO := echo
 
 TARGET := jarvis.lib
 INSTALLPATH := ../lib
@@ -26,6 +27,10 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
           -Wformat=2 -Wno-parentheses -Wno-conversion
 
 CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
+
+ifneq ($(findstring s,$(MAKEFLAGS)),)
+    print = @$(ECHO) -e "\033[00;34m" [$(1)] $(2)"\033[00;00m"
+endif
 
 install: $(TARGET)
 	$(call print,INSTALL,$(INSTALLPATH))
