@@ -23,7 +23,7 @@ static int print_exception(FILE *s, Exception& e)
 
 int main()
 {
-    vector<string> strings = { 
+    vector<string> strings = {
         "name", "id", "first-name", "last-name",
         "timestamp", "url", "description", "country",
         "address", "location", "street", "city",
@@ -45,21 +45,23 @@ int main()
         "directed-by", "produced-by", "filename", "review",
         "critique", "editor", "advisor", "professor",
         "wrote", "reviewer", "note", "belongs-to",
-        "son", "middle-initial", "mother", "father",  // repeating last two for match test
+        "son", "middle-initial", "mother", "father", // repeating last two for match test
+        "transaction-datumtest", "envoy\xc3\xa9", "re\xc3\xa7u", // For > 16, UTF testing
     };
+
     try {
         Graph db("stringtablegraph", Graph::Create);
 
         Transaction tx(db);
         cout << "Add and read\n";
         for (size_t i = 0; i < strings.size(); ++i) {
-            StringID s(strings[i].c_str());
-            cout << "String: " << s.name() << ", id: " << s.id() << "\n";
-        }
-        cout << "\nTesting even strings\n";
-        for (size_t i = 0; i < strings.size(); i+=2) {
-            StringID s(strings[i].c_str());
-            cout << "String: " << s.name() << ", id: " << s.id() << "\n";
+            try {
+                StringID s(strings[i].c_str());
+                cout << "String: " << s.name() << ", id: " << s.id() << "\n";
+            }
+            catch (Exception e) {
+                print_exception(stdout, e);
+            }
         }
     }
     catch (Exception e) {

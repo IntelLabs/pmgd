@@ -58,7 +58,6 @@ static const unsigned INFO_SIZE = 4096;
 static const size_t TRANSACTIONTABLE_ADDRESS = NEXT(INFO);
 static const unsigned TRANSACTIONTABLE_SIZE = TRANSACTION_REGION_SIZE;
 static const size_t STRINGTABLE_ADDRESS = NEXT(TRANSACTIONTABLE);
-// ** This will include the NULL character
 // Belongs here to make sure info header contains the
 // correct "obj_size"
 static const int MAX_STRINGID_CHARLEN = 16;

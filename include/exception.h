@@ -17,6 +17,8 @@ namespace Jarvis {
             e_tx_small_journal,
             e_tx_aborted,
 
+            e_invalid_id,
+
             e_not_implemented = 100,
         };
 

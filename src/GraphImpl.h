@@ -51,7 +51,6 @@ namespace Jarvis {
                                      uint32_t obj_size) const;
 
     public:
-        // Needed for other size calculations outside GraphImpl
         static const size_t NUM_FIXED_ALLOCATORS;
 
         GraphImpl(const char *name, int options);

@@ -12,7 +12,6 @@
  *
  * This test contains stubs for any Jarvis functions that are
  * not inline, so it should not be linked against jarvis.lib.
- *
  */
 
 #include "jarvis.h"
