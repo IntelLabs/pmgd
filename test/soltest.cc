@@ -51,6 +51,7 @@ int main(int argc, char **argv)
     }
     catch (Exception e) {
         print_exception(stdout, e);
+        return 1;
     }
 
     return 0;

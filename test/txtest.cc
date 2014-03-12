@@ -27,6 +27,7 @@ int main(int argc, char **argv)
     }
     catch (Exception e) {
         print_exception(stdout, e);
+        exit(1);
     }
     return 0;
 }
@@ -61,6 +62,7 @@ static void modify(Graph &db, int argc, char **argv, bool commit)
     }
     catch (Exception e) {
         print_exception(stdout, e);
+        exit(1);
     }
     if (commit)
         printf("AFTER COMMIT:\n");
@@ -82,6 +84,7 @@ static void dump_no_tx(Graph &db)
     }
     catch (Exception e) {
         print_exception(stdout, e);
+        exit(1);
     }
 }
 
@@ -100,6 +103,7 @@ static void dump(Graph &db)
     }
     catch (Exception e) {
         print_exception(stdout, e);
+        exit(1);
     }
 }
 
