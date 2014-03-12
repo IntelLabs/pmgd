@@ -39,6 +39,8 @@ namespace Jarvis {
             TransactionImpl(GraphImpl *db, int options);
             ~TransactionImpl();
 
+            GraphImpl *get_db() const { return _db; }
+
             void acquire_readlock(Lock *lptr);
             void acquire_writelock(Lock *lptr);
 

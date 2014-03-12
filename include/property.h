@@ -41,6 +41,7 @@ namespace Jarvis {
         Property(bool v) : _type(t_boolean), v_boolean(v) { }
         Property(int v) : _type(t_integer), v_integer(v) { }
         Property(long long v) : _type(t_integer), v_integer(v) { }
+        Property(unsigned long long v) : _type(t_integer), v_integer(v) { }
         Property(const char *s) : _type(t_string), v_string(s) { }
         Property(const char *s, std::size_t len)
             : _type(t_string), v_string(s, len) { }

@@ -76,6 +76,7 @@ namespace Jarvis {
 };
 
 namespace Jarvis {
+    class Allocator;
     class PropertyList;
 
     class PropertyRef {
@@ -84,6 +85,8 @@ namespace Jarvis {
 
         friend class PropertyList;
         friend class PropertyListIterator;
+
+        struct BlobRef;
 
         enum { p_unused, p_end, p_link,
                p_novalue, p_boolean_false, p_boolean_true,
@@ -104,10 +107,13 @@ namespace Jarvis {
 
         Property get_value() const;
 
+        uint8_t *val() const { return &_chunk[_offset + 3]; }
+
         bool check_space(unsigned size) const
             { return _offset + size + 3 <= chunk_size(); }
 
-        bool next() { _offset += size() + 3; return not_done(); }
+        bool _next();
+        bool next() { _offset += size() + 3; return _next(); }
         bool not_done() const
             { return _offset <= chunk_size() - 3 && ptype() != p_end; }
 
@@ -116,15 +122,11 @@ namespace Jarvis {
         void set_type(int type)
             { type_size() = uint8_t((type_size() & 0xf0) | type); }
 
-        void set_size(int new_size)
-        {
-            if (_offset + new_size + 3 < chunk_size() - 3)
-                PropertyRef(*this, new_size).free(ptype(), size() - (new_size + 3));
-            type_size() = uint8_t((new_size << 4) | ptype());
-        }
-
-        void set_value(const Property &);
-
+        void set_size(int new_size);
+        void set_value(const Property &, Allocator &);
+        void set_link(PropertyList *p_chunk);
+        void set_blob(const void *value, std::size_t size,
+                      Allocator &allocator);
         void set_end() { set_id(0); type_size() = p_end; }
         void free() { type_size() &= 0xf0; /* keep size and clear type */ }
 
@@ -135,6 +137,11 @@ namespace Jarvis {
             else
                 type_size() = uint8_t(size << 4) | p_unused;
         }
+
+        void follow_link() { *this = *(PropertyList **)val(); }
+
+        void make_space(PropertyRef &);
+        int get_space() const;
 
         PropertyRef() : _chunk(0), _offset(0) { }
         PropertyRef(const PropertyList *l) : _chunk((uint8_t *)l), _offset(1) {}
@@ -174,14 +181,15 @@ namespace Jarvis {
     };
 
     class PropertyList {
+        static constexpr unsigned chunk_size = 64;
+
         uint8_t _chunk0[];
 
         class PropertySpace;
         bool find_property(StringID property, PropertyRef &p,
                            PropertySpace *space = 0) const;
-        void find_space(PropertySpace &space) const;
+        void find_space(PropertySpace &space, Allocator &) const;
         static PropertySpace get_space(const Property &);
-        void follow_link(PropertyRef &) const;
 
     public:
         void init(std::size_t size);

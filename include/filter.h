@@ -32,7 +32,8 @@ namespace Jarvis {
     public:
         IteratorFilter(typename B::Impl_type *i,
                 std::function<Disposition(const typename B::Ref_type &)> f)
-            : _base_impl(i), func(f) { _next(); }
+            : _base_impl(i), func(f), _done(false)
+            { _next(); }
 
         operator bool() const { return _base_impl && bool(*_base_impl); }
 

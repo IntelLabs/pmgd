@@ -2,45 +2,60 @@
  * This test checks Jarvis property lists
  */
 
-#include <stdio.h>
 #include "jarvis.h"
 
 using namespace Jarvis;
 
 static void dump(const Graph &db, const Node &n);
-static void dump(const Graph &db, const Edge &n);
 static std::string property_text(const PropertyIterator &i);
 static int print_exception(FILE *s, Exception& e);
 
 int main(int argc, char **argv)
 {
-    bool create = (argc > 1);
-
     try {
-        Graph db("propertygraph", create ? Graph::Create : Graph::ReadOnly);
+        Graph db("propertychunkgraph", Graph::Create);
 
         Transaction tx(db);
 
-        Node *prev = 0;
-        for (int i = 1; i < argc; i++) {
-            Node &n = db.add_node(0);
-            n.set_property(1, argv[i]);
-            n.set_property(2, i + 16ll);
-            n.set_property(3, -(1ull<<(i*4)));
-            n.set_property(4, "this is a very long string");
-            if (prev != NULL) {
-                Edge &e = db.add_edge(*prev, n, 0);
-                e.set_property(3, prev->get_property(1).string_value());
-                e.set_property(4, n.get_property(1).string_value());
-            }
-            prev = &n;
-        }
+        Node &n1 = db.add_node(0);
+        n1.set_property(1, "14 char string");
+        n1.set_property(2, "14 char string");
+        n1.set_property(6, "this is a really long string");
+
+        Node &n2 = db.add_node(0);
+        n2.set_property(1, "14 char string");
+        n2.set_property(2, "14 char string");
+        n2.set_property(3, true);
+        n2.set_property(4, true);
+        n2.set_property(5, true);
+        n2.set_property(6, true);
+
+        Node &n3 = db.add_node(0);
+        n3.set_property(1, "14 char string");
+        n3.set_property(2, "14 char string");
+        n3.set_property(3, "8 char s");
+        n3.set_property(6, true);
+
+        Node &n4 = db.add_node(0);
+        n4.set_property(1, "14 char string");
+        n4.set_property(2, "15  char string");
+        n4.set_property(3, "7 char s");
+        n4.set_property(6, true);
+
+        Node &n5 = db.add_node(0);
+        n5.set_property(1, "14 char string");
+        n5.set_property(2, "14 char string");
+        n5.set_property(3, "short1");
+        n5.set_property(6, "short2");
+        n5.set_property(7, "this is another really long string");
+
+        Node &n6 = db.add_node(0);
+        n6.set_property(1, "14 char string");
+        n6.set_property(3, "8 char s");
+        n6.set_property(2, "15  char string");
+        n6.set_property(6, true);
 
         for (NodeIterator i = db.get_nodes(); i; i.next()) {
-            dump(db, *i);
-        }
-
-        for (EdgeIterator i = db.get_edges(); i; i.next()) {
             dump(db, *i);
         }
 
@@ -68,15 +83,6 @@ static void dump(const Graph &db, const Node &n)
     }
 }
 
-static void dump(const Graph &db, const Edge &e)
-{
-    printf("Edge %lu: n%lu -> n%lu\n", db.get_id(e),
-           db.get_id(e.get_source()), db.get_id(e.get_destination()));
-    for (PropertyIterator i = e.get_properties(); i; i.next()) {
-        printf("  %s: %s\n", i->id().name().c_str(), property_text(i).c_str());
-    }
-}
-
 static std::string property_text(const PropertyIterator &i)
 {
     switch (i->type()) {
@@ -88,7 +94,7 @@ static std::string property_text(const PropertyIterator &i)
         case t_time: return "<time value>";
         case t_blob: return "<blob value>";
     }
-    throw Jarvis::Exception(property_type);
+    throw Exception(property_type);
 }
 
 static int print_exception(FILE *s, Exception& e)
