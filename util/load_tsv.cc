@@ -10,16 +10,16 @@ using namespace Jarvis;
 
 static Node &get_node(Graph &db, long long id);
 
-void load(Graph &db, const char *filename)
+void load_tsv(Graph &db, const char *filename)
 {
     FILE *f = fopen(filename, "r");
     if (f == NULL)
         throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
 
-    load(db, f);
+    load_tsv(db, f);
 }
 
-void load(Graph &db, FILE *f)
+void load_tsv(Graph &db, FILE *f)
 {
     char buf[500];
     while (fgets(buf, sizeof buf, f) != NULL) {

@@ -8,10 +8,10 @@ TARGET := jarvis-util.lib
 INSTALLPATH := ../lib
 CLEANFILES := 
 
-SRC := exception.cc text.cc dump.cc load.cc
+SRC := exception.cc text.cc dump.cc load_tsv.cc loader.y scanner.l
 
 # Translates source file names to object file names
-OBJS := $(patsubst %.cc, %.o, $(SRC))
+OBJS := $(patsubst %.cc,%.o, $(patsubst %.y,%.o, $(patsubst %.l,%.o, $(SRC))))
 
 INCLUDES := -I../include
 OPT ?= -O2
@@ -19,7 +19,7 @@ OPT ?= -O2
 FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
           -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics
 
-WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
+WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings
           -Wformat=2 -Wno-parentheses -Wno-conversion
 
 CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) -MP -MMD
@@ -45,5 +45,14 @@ clean:
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
+scanner.cc: scanner.l
+	$(call print,LEX,$<)
+	flex $(LFLAGS) -o$@ --header-file=$*.hh $<
+
+loader.cc: loader.y
+	$(call print,YACC,$<)
+	bison $(YFLAGS) -d -o $@ $<
+
 DEPS := $(OBJS:%.o=%.d)
 -include $(DEPS)
+loader.cc scanner.cc: Makefile
