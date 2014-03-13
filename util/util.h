@@ -16,3 +16,6 @@ extern void dump(Jarvis::Graph &db, const Jarvis::Edge &n, FILE *f = stdout);
 
 extern void dump(Jarvis::Graph &db, Jarvis::NodeIterator i, FILE *f = stdout);
 extern void dump(Jarvis::Graph &db, Jarvis::EdgeIterator i, FILE *f = stdout);
+
+extern void load(Jarvis::Graph &db, const char *filename);
+extern void load(Jarvis::Graph &db, FILE *f);

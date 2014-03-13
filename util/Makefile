@@ -8,7 +8,7 @@ TARGET := jarvis-util.lib
 INSTALLPATH := ../lib
 CLEANFILES := 
 
-SRC := exception.cc text.cc dump.cc
+SRC := exception.cc text.cc dump.cc load.cc
 
 # Translates source file names to object file names
 OBJS := $(patsubst %.cc, %.o, $(SRC))
