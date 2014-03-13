@@ -18,6 +18,22 @@ void dump_edges(Graph &db, FILE *f)
     }
 }
 
+void dump(Graph &db, NodeIterator i, FILE *f)
+{
+    while (i) {
+        dump(db, *i, f);
+        i.next();
+    }
+}
+
+void dump(Graph &db, EdgeIterator i, FILE *f)
+{
+    while (i) {
+        dump(db, *i, f);
+        i.next();
+    }
+}
+
 void dump(Graph &db, const Node &n, FILE *f)
 {
     fprintf(f, "Node %lu:\n", db.get_id(n));
