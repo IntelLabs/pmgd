@@ -136,49 +136,52 @@ namespace Jarvis {
             : IteratorFilter<PathIterator>(i, f)
         { }
 
-        NodeIterator end_nodes() const { return _base_impl->end_nodes(); }
+        NodeIterator end_nodes() const
+        {
+            return _base_impl ? _base_impl->end_nodes() : NodeIterator(NULL);
+        }
     };
 
     inline NodeIterator NodeIterator::filter(const PropertyPredicate &pp)
     {
         Impl_type *impl = _impl;
         _impl = NULL;
-        return NodeIterator(new NodeIteratorPropertyFilter(impl, pp));
+        return NodeIterator(impl ? new NodeIteratorPropertyFilter(impl, pp) : NULL);
     }
 
     inline NodeIterator NodeIterator::filter(std::function<Disposition(const Ref_type &)> f)
     {
         Impl_type *impl = _impl;
         _impl = NULL;
-        return NodeIterator(new NodeIteratorFilter(impl, f));
+        return NodeIterator(impl ? new NodeIteratorFilter(impl, f) : NULL);
     }
 
     inline EdgeIterator EdgeIterator::filter(const PropertyPredicate &pp)
     {
         Impl_type *impl = _impl;
         _impl = NULL;
-        return EdgeIterator(new EdgeIteratorPropertyFilter(impl, pp));
+        return EdgeIterator(impl ? new EdgeIteratorPropertyFilter(impl, pp) : NULL);
     }
 
     inline EdgeIterator EdgeIterator::filter(std::function<Disposition(const Ref_type &)> f)
     {
         Impl_type *impl = _impl;
         _impl = NULL;
-        return EdgeIterator(new EdgeIteratorFilter(impl, f));
+        return EdgeIterator(impl ? new EdgeIteratorFilter(impl, f) : NULL);
     }
 
     inline PropertyIterator PropertyIterator::filter(std::function<Disposition(const Ref_type &)> f)
     {
         Impl_type *impl = _impl;
         _impl = NULL;
-        return PropertyIterator(new PropertyIteratorFilter(impl, f));
+        return PropertyIterator(impl ? new PropertyIteratorFilter(impl, f) : NULL);
     }
 
     inline PathIterator PathIterator::filter(std::function<Disposition(const Ref_type &)> f)
     {
         Impl_type *impl = _impl;
         _impl = NULL;
-        return PathIterator(new PathIteratorFilter(impl, f));
+        return PathIterator(impl ? new PathIteratorFilter(impl, f) : NULL);
     }
 
 
