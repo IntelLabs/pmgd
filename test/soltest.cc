@@ -1,12 +1,5 @@
 /*
  * This test checks Jarvis signs of life.
- *
- * Compile with:
- *     make -C ../src
- *     g++-4.8 -std=c++11 -I ../include soltest.cc ../lib/jarvis.lib
- *
- * To include stubs for as-yet unimplemented graph functions, use:
- *     g++-4.8 -std=c++11 -I ../include -DSTUBS soltest.cc ../lib/jarvis.lib
  */
 
 #include <stdio.h>

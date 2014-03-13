@@ -22,14 +22,16 @@ int main(int argc, char **argv)
 
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {
-            Node &n = db.add_node(i);
-            n.set_property(1, argv[i]);
-            n.set_property(2, i + 16);
-            n.set_property(3, 22 - i);
+            char tag[8] = {0};
+            sprintf(tag, "tag%d",i);
+            Node &n = db.add_node(tag);
+            n.set_property("id1", argv[i]);
+            n.set_property("id2", i + 16);
+            n.set_property("id3", 22 - i);
             if (prev != NULL) {
                 Edge &e = db.add_edge(*prev, n, 0);
-                e.set_property(3, prev->get_property(1).string_value());
-                e.set_property(4, n.get_property(1).string_value());
+                e.set_property("id3", prev->get_property("id1").string_value());
+                e.set_property("id4", n.get_property("id1").string_value());
             }
             prev = &n;
         }
@@ -38,7 +40,7 @@ int main(int argc, char **argv)
         printf("Nodes starting with 'a'\n");
         db.get_nodes()
             .filter([](const NodeRef &n) {
-                return n.get_property(1).string_value()[0] == 'a'
+                return n.get_property("id1").string_value()[0] == 'a'
                            ? pass : dont_pass;
             })
             .process([&db](Node &n) { dump(db, n); });
@@ -47,17 +49,17 @@ int main(int argc, char **argv)
         printf("Increment value of nodes starting with 'a'\n");
         db.get_nodes()
             .filter([](const NodeRef &n) {
-                return n.get_property(1).string_value()[0] == 'a'
+                return n.get_property("id1").string_value()[0] == 'a'
                            ? pass : dont_pass;
             })
             .process([&db](Node &n)
-                { n.set_property(2, n.get_property(2).int_value() + 1); });
+                { n.set_property("id2", n.get_property("id2").int_value() + 1); });
 
         // Look for name starting with 'a'
         printf("Nodes starting with 'a'\n");
         db.get_nodes()
             .filter([](const NodeRef &n) {
-                return n.get_property(1).string_value()[0] == 'a'
+                return n.get_property("id1").string_value()[0] == 'a'
                            ? pass : dont_pass;
             })
             .process([&db](Node &n) { dump(db, n); });
@@ -66,7 +68,7 @@ int main(int argc, char **argv)
         printf("Nodes with value less than 20\n");
         db.get_nodes()
             .filter([](const NodeRef &n) {
-                return n.get_property(2).int_value() < 20
+                return n.get_property("id2").int_value() < 20
                            ? pass : dont_pass;
             })
             .process([&db](Node &n) { dump(db, n); });
@@ -75,8 +77,8 @@ int main(int argc, char **argv)
         printf("Edges to or from a node starting with 'b'\n");
         db.get_edges()
             .filter([](const EdgeRef &e) {
-                return e.get_source().get_property(1).string_value()[0] == 'b'
-                       || e.get_destination().get_property(1).string_value()[0] == 'b'
+                return e.get_source().get_property("id1").string_value()[0] == 'b'
+                       || e.get_destination().get_property("id1").string_value()[0] == 'b'
                            ? pass : dont_pass;
             })
             .process([&db](EdgeRef &e) { dump(db, e); });

@@ -1,14 +1,6 @@
-/*
- * This test checks Jarvis signs of life.
- *
- * Compile with:
- *     make -C ../src
- *     g++-4.8 -std=c++11 -I ../include nodeedgetest.cc ../lib/jarvis.lib
- *
- * To include stubs for as-yet unimplemented graph functions, use:
- *     g++-4.8 -std=c++11 -I ../include -DSTUBS nodeedgetest.cc ../lib/jarvis.lib
+/**
+ *  Unit test for the node edge index
  */
-
 #include <stdio.h>
 #include "jarvis.h"
 
@@ -31,8 +23,8 @@ int main(int argc, char **argv)
         for (int i = 1; i < argc; i++) {
             Node &n = db.add_node(0);
             if (prev != NULL) {
-                db.add_edge(*prev, n, 0);
-                db.add_edge(*prev, n, 1);
+                db.add_edge(*prev, n, "tag0");
+                db.add_edge(*prev, n, "tag1");
             }
             prev = &n;
         }
@@ -83,7 +75,7 @@ static void dump(const Graph &db, const Node &n)
                 i->get_tag().name().c_str(), db.get_id(*i));
     }
     printf("All incoming edges with tag 1: \n");
-    for (EdgeIterator i = n.get_edges(INCOMING, 1); i; i.next()) {
+    for (EdgeIterator i = n.get_edges(INCOMING, "tag1"); i; i.next()) {
         printf("  <- n%lu (%s,e%lu)\n", db.get_id(i->get_source()),
                 i->get_tag().name().c_str(), db.get_id(*i));
     }

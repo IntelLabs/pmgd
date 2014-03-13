@@ -32,6 +32,7 @@ struct GraphImpl::GraphInfo {
     RegionInfo node_info;
     RegionInfo edge_info;
     RegionInfo allocator_info;
+    RegionInfo stringtable_info;
 
     uint32_t num_fixed_allocators;
     AllocatorInfo fixed_allocator_info[];
@@ -56,6 +57,13 @@ static const size_t INFO_ADDRESS = BASE_ADDRESS;
 static const unsigned INFO_SIZE = 4096;
 static const size_t TRANSACTIONTABLE_ADDRESS = NEXT(INFO);
 static const unsigned TRANSACTIONTABLE_SIZE = TRANSACTION_REGION_SIZE;
+static const size_t STRINGTABLE_ADDRESS = NEXT(TRANSACTIONTABLE);
+// Belongs here to make sure info header contains the
+// correct "obj_size"
+static const int MAX_STRINGID_CHARLEN = 16;
+// 12bits had fewest collisions in testing
+static const int MAX_STRINGIDS = 4096;
+static const size_t STRINGTABLE_SIZE = MAX_STRINGIDS * MAX_STRINGID_CHARLEN;
 
 // Node, edge tables kept TB aligned
 static const size_t NODETABLE_ADDRESS = BASE_ADDRESS + REGION_SIZE;
@@ -67,6 +75,7 @@ static const size_t ALLOCATORS_SIZE = GraphImpl::NUM_FIXED_ALLOCATORS * REGION_S
 
 const GraphImpl::RegionInfo GraphImpl::default_regions[] = {
     { "transaction.jdb", ADDRESS(TRANSACTIONTABLE), SIZE(TRANSACTIONTABLE)},
+    { "stringtable.jdb", ADDRESS(STRINGTABLE), SIZE(STRINGTABLE)},
     { "nodes.jdb", ADDRESS(NODETABLE), SIZE(NODETABLE) },
     { "edges.jdb", ADDRESS(EDGETABLE), SIZE(EDGETABLE) },
     { "pooh-bah.jdb", ADDRESS(ALLOCATORS), SIZE(ALLOCATORS) },
@@ -123,9 +132,10 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options)
 
         // TODO replace static indexing
         info->transaction_info = default_regions[0];
-        info->node_info = default_regions[1];
-        info->edge_info = default_regions[2];
-        info->allocator_info = default_regions[3];
+        info->stringtable_info = default_regions[1];
+        info->node_info = default_regions[2];
+        info->edge_info = default_regions[3];
+        info->allocator_info = default_regions[4];
         info->num_fixed_allocators = NUM_FIXED_ALLOCATORS;
         memcpy(info->fixed_allocator_info, default_allocators, sizeof default_allocators);
         // TODO: clflush and pcommit after setting up the structure
@@ -141,12 +151,17 @@ GraphImpl::MapRegion::MapRegion(
 GraphImpl::GraphImpl(const char *name, int options)
     : _init(name, options),
       _transaction_region(name, _init.info->transaction_info, _init.create),
+      _stringtable_region(name, _init.info->stringtable_info, _init.create),
       _node_region(name, _init.info->node_info, _init.create),
       _edge_region(name, _init.info->edge_info, _init.create),
       _allocator_region(name, _init.info->allocator_info, _init.create),
       _transaction_manager(_init.info->transaction_info.addr,
                            _init.info->transaction_info.len,
                            _init.create),
+      _string_table(_init.info->stringtable_info.addr,
+                    _init.info->stringtable_info.len,
+                    MAX_STRINGID_CHARLEN,
+                    _init.create),
       _node_table(_init.info->node_info.addr,
                   allocator_info(_init.info->node_info, NODE_SIZE),
                   _init.create),
