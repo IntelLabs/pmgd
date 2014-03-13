@@ -3,13 +3,9 @@
  */
 
 #include "jarvis.h"
+#include "../util/util.h"
 
 using namespace Jarvis;
-
-static void dump(const Graph &db, const Node &n);
-static void dump(const Graph &db, const Edge &n);
-static std::string property_text(const PropertyRef &i);
-static int print_exception(FILE *s, Exception& e);
 
 int main(int argc, char **argv)
 {
@@ -106,57 +102,9 @@ int main(int argc, char **argv)
         tx.commit();
     }
     catch (Exception e) {
-        print_exception(stdout, e);
+        print_exception(e);
         return 1;
     }
 
     return 0;
-}
-
-static void dump(const Graph &db, const Node &n)
-{
-    printf("Node %lu:\n", db.get_id(n));
-    n.get_properties()
-        .process([&db](PropertyRef &p) {
-            printf("  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
-        });
-    n.get_edges(OUTGOING, 0)
-        .process([&db](EdgeRef &e) {
-            printf("  -> n%lu (e%lu)\n",
-                   db.get_id(e.get_destination()), db.get_id(e));
-        });
-    n.get_edges(INCOMING, 0)
-        .process([&db](EdgeRef &e) {
-            printf("  <- n%lu (e%lu)\n",
-                   db.get_id(e.get_source()), db.get_id(e));
-        });
-}
-
-static void dump(const Graph &db, const Edge &e)
-{
-    printf("Edge %lu: n%lu -> n%lu\n", db.get_id(e),
-           db.get_id(e.get_source()), db.get_id(e.get_destination()));
-    e.get_properties()
-        .process([&db](PropertyRef &p) {
-            printf("  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
-        });
-}
-
-static std::string property_text(const PropertyRef &p)
-{
-    switch (p.type()) {
-        case t_novalue: return "no value";
-        case t_boolean: return p.bool_value() ? "T" : "F";
-        case t_integer: return std::to_string(p.int_value());
-        case t_string: return p.string_value();
-        case t_float: return std::to_string(p.float_value());
-        case t_time: return "<time value>";
-        case t_blob: return "<blob value>";
-    }
-    throw Exception(property_type);
-}
-
-static int print_exception(FILE *s, Exception& e)
-{
-    return fprintf(s, "[Exception] %s at %s:%d\n", e.name, e.file, e.line);
 }
