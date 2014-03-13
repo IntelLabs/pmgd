@@ -23,7 +23,7 @@ endif
 all: lib util apitest alloctest soltest nodeedgetest listtest edgeindextest \
      propertytest propertypredicatetest propertychunktest filtertest txtest \
      propertylisttest \
-     stringtabletest dumpgraph setproperty
+     stringtabletest dumpgraph loadgraph setproperty
 
 apitest: apitest.o
 	$(CC) -o $@ $<
@@ -92,6 +92,11 @@ dumpgraph: dumpgraph.o $(LIB)
 	$(call print,LINK,$@)
 	$(CC) -g -o $@ $< $(LIB)
 CLEANFILES += dumpgraph dumpgraph.o
+
+loadgraph: loadgraph.o $(LIB)
+	$(call print,LINK,$@)
+	$(CC) -g -o $@ $< $(LIB)
+CLEANFILES += loadgraph loadgraph.o
 
 setproperty: setproperty.o $(LIB)
 	$(call print,LINK,$@)
