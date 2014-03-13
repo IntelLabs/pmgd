@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string.h>
+#include "../include/jarvis.h"
 #include "../src/allocator.h"
 #include "../src/os.h"
 #include "../include/exception.h"
@@ -17,6 +18,9 @@ int main(int argc, char **argv)
 {
     std::cout << "Fixed-size allocator unit test\n\n";
     uint64_t start_addr;
+
+    Graph db("alloctestdummy", Graph::Create);
+    Transaction tx(db);
 
     struct AllocatorInfo info1;
     bool create1 = true;
@@ -75,6 +79,8 @@ int main(int argc, char **argv)
         std::cerr << "Test 7: failed: failure to generate an exception\n";
         exit(1);
     }
+
+    tx.commit();
 
     return 0;
 }
