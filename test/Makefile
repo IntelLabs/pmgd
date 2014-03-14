@@ -2,7 +2,7 @@ CC := g++-4.8
 RM := rm -f
 ECHO := echo
 
-LIB := ../lib/jarvis.lib
+LIB := ../lib/jarvis.lib ../lib/jarvis-util.lib
 CLEANFILES := $(LIB)
 
 INCLUDES := -I../include
@@ -20,7 +20,7 @@ ifneq ($(findstring s,$(MAKEFLAGS)),)
     print = @$(ECHO) -e "\033[00;34m" [$(1)] $(2)"\033[00;00m"
 endif
 
-all: lib apitest alloctest soltest nodeedgetest listtest edgeindextest \
+all: lib util apitest alloctest soltest nodeedgetest listtest edgeindextest \
      propertytest propertypredicatetest propertychunktest filtertest txtest \
      stringtabletest dumpgraph
 
@@ -90,10 +90,14 @@ CLEANFILES += dumpgraph dumpgraph.o
 lib:
 	make -C ../src OPT=$(OPT) install
 
+util:
+	make -C ../util OPT=$(OPT) install
+
 clean:
 	$(call print,CLEAN)
 	$(RM) $(CLEANFILES)
 	make -C ../src clean
+	make -C ../util clean
 
 %.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
