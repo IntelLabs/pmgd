@@ -67,7 +67,7 @@ extern int yyerror(Jarvis::Graph &, const char *);
 %token <s> QUOTED_STRING
 
 /* non-terminals with values */
-%type <n> node
+%type <n> node_id
 %type <s> property_id
 
 %destructor { delete $$; } STRING
@@ -76,11 +76,19 @@ extern int yyerror(Jarvis::Graph &, const char *);
 
 %%
 
-s:        edge
-        | s edge
+s:        node_or_edge
+        | s node_or_edge
         ;
 
-edge:     node properties node properties
+node_or_edge:
+          node ';'
+        | edge ';'
+        ;
+
+node:     node_id properties
+        ;
+
+edge:     node_id properties node_id properties
                   { current = db.add_edge(*$1, *$3, 0); }
               edge_properties
         ;
@@ -90,7 +98,7 @@ edge_properties:
         | ':' '{' propertylist '}'
         ;
 
-node:     INTEGER { $$ = current = get_node(db, $1); }
+node_id:  INTEGER { $$ = current = get_node(db, $1); }
         | STRING { $$ = current = get_node(db, $1); }
 
 properties:
