@@ -12,7 +12,24 @@ extern void yy_switch_to_buffer(YY_BUFFER_STATE);
 extern void yy_delete_buffer(YY_BUFFER_STATE);
 extern int yyparse(Jarvis::Graph &db);
 
-static Jarvis::Node *current_node;
+static class Current {
+    bool _is_node;
+    union {
+        Jarvis::Node *_node;
+        Jarvis::Edge *_edge;
+    };
+
+public:
+    Current() { }
+    Jarvis::Node *operator=(Jarvis::Node *n) { _is_node = true; _node = n; return n; }
+    void operator=(Jarvis::Edge &e) { _is_node = false; _edge = &e; }
+    void set_property(const char *id, const Jarvis::Property &p) {
+        if (_is_node)
+            _node->set_property(id, p);
+        else
+            _edge->set_property(id, p);
+    }
+} current;
 
 static Jarvis::Node *get_node(Jarvis::Graph &db, long long id);
 static Jarvis::Node *get_node(Jarvis::Graph &db, const char *id);
@@ -63,11 +80,18 @@ s:        edge
         | s edge
         ;
 
-edge:     node properties node properties { db.add_edge(*$1, *$3, 0); }
+edge:     node properties node properties
+                  { current = db.add_edge(*$1, *$3, 0); }
+              edge_properties
         ;
 
-node:    INTEGER { $$ = current_node = get_node(db, $1); }
-        | STRING { $$ = current_node = get_node(db, $1); }
+edge_properties:
+          /* empty */
+        | ':' '{' propertylist '}'
+        ;
+
+node:     INTEGER { $$ = current = get_node(db, $1); }
+        | STRING { $$ = current = get_node(db, $1); }
 
 properties:
           /* empty */
@@ -86,16 +110,16 @@ opt_comma:
 
 property:
           property_id '=' INTEGER
-              { current_node->set_property($1, $3); }
+              { current.set_property($1, $3); }
 
         | property_id '=' QUOTED_STRING
-              { current_node->set_property($1, $3); }
+              { current.set_property($1, $3); }
 
         | property_id '=' TRUE
-              { current_node->set_property($1, true); }
+              { current.set_property($1, true); }
 
         | property_id '=' FALSE
-              { current_node->set_property($1, false); }
+              { current.set_property($1, false); }
         ;
 
 property_id: STRING;
