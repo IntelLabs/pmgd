@@ -22,7 +22,7 @@ endif
 
 all: lib util apitest alloctest soltest nodeedgetest listtest edgeindextest \
      propertytest propertypredicatetest propertychunktest filtertest txtest \
-     stringtabletest dumpgraph
+     stringtabletest dumpgraph setproperty
 
 apitest: apitest.o
 	$(CC) -o $@ $<
@@ -86,6 +86,11 @@ dumpgraph: dumpgraph.o $(LIB)
 	$(call print,LINK,$@)
 	$(CC) -g -o $@ $< $(LIB)
 CLEANFILES += dumpgraph dumpgraph.o
+
+setproperty: setproperty.o $(LIB)
+	$(call print,LINK,$@)
+	$(CC) -g -o $@ $< $(LIB)
+CLEANFILES += setproperty setproperty.o
 
 lib:
 	make -C ../src OPT=$(OPT) install
