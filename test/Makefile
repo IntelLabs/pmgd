@@ -22,6 +22,7 @@ endif
 
 all: lib util apitest alloctest soltest nodeedgetest listtest edgeindextest \
      propertytest propertypredicatetest propertychunktest filtertest txtest \
+     propertylisttest \
      stringtabletest dumpgraph setproperty
 
 apitest: apitest.o
@@ -67,6 +68,11 @@ propertychunktest: propertychunktest.o $(LIB)
 	$(call print,LINK,$@)
 	$(CC) -g -o $@ $< $(LIB)
 CLEANFILES += propertychunktest propertychunktest.o
+
+propertylisttest: propertylisttest.o $(LIB)
+	$(call print,LINK,$@)
+	$(CC) -g -o $@ $< $(LIB)
+CLEANFILES += propertylisttest propertylisttest.o
 
 filtertest: filtertest.o $(LIB)
 	$(call print,LINK,$@)
