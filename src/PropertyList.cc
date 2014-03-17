@@ -339,6 +339,29 @@ bool PropertyList::PropertySpace::set_property(StringID id, const Property &p,
 }
 
 
+void PropertyRef::free()
+{
+    PropertyRef next(*this, size());
+    if (!next.not_done())
+        set_end();
+    else if (next.ptype() == p_unused) {
+        // if the next entry is already free, combine them
+        unsigned total_size = size() + next.size() + 3;
+        if (total_size <= 15)
+            type_size() = uint8_t(total_size << 4);
+        else {
+            unsigned new_size = total_size >= 18 ? 15 : total_size - 3;
+            unsigned new_next_size = total_size - 3 - new_size;
+            PropertyRef new_next(*this, new_size);
+            type_size() = uint8_t(new_size << 4 | p_unused);
+            new_next.type_size() = uint8_t(new_next_size << 4 | p_unused);
+        }
+    }
+    else
+        type_size() = uint8_t(size() << 4 | p_unused);
+}
+
+
 // Add a new property to the end of the property list, by
 // setting the size to the specified size and marking the
 // following space as the new end.

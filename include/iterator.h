@@ -129,16 +129,7 @@ namespace Jarvis {
         void set_blob(const void *value, std::size_t size,
                       Allocator &allocator);
         void set_end() { set_id(0); type_size() = p_end; }
-        void free() { type_size() &= 0xf0; /* keep size and clear type */ }
-
-        void free(int type, int size)
-        {
-            if (type == p_end)
-                type_size() = p_end;
-            else
-                type_size() = uint8_t(size << 4) | p_unused;
-        }
-
+        void free();
         void follow_link() { *this = *(PropertyList **)val(); }
 
         void make_space(PropertyRef &);
