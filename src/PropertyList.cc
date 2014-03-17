@@ -233,10 +233,11 @@ void PropertyRef::make_space(PropertyRef &q)
     *this = p;
 
     while (p.ptype() != p_end) {
-        q.set_size(p.get_space());
+        unsigned size = p.get_space();
+        q.set_size(size);
         q.set_id(p.id());
         q.set_type(p.ptype());
-        memcpy(q.val(), p.val(), size());
+        memcpy(q.val(), p.val(), size);
         q.next();
         p.next();
     }
