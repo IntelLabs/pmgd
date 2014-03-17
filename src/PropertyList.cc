@@ -58,7 +58,7 @@ namespace Jarvis {
         bool exact() const { return _exact; }
         bool match(const PropertyRef &p) const;
         void set_pos(const PropertyRef &p) { _pos = p; }
-        bool set_property(StringID id, const Property &, Allocator &);
+        void set_property(StringID id, const Property &, Allocator &);
     };
 };
 
@@ -106,20 +106,15 @@ void PropertyList::set_property(StringID id, const Property &property)
     PropertyRef pos;
     PropertySpace space(get_space(property));
 
-    if (find_property(id, pos, &space)) {
-        space.set_pos(pos);
-        if (space.set_property(id, property, allocator))
-            return;
+    if (find_property(id, pos, &space))
         pos.free();
-    }
 
     if (!space) {
         space.set_pos(pos);
         find_space(space, allocator);
     }
 
-    bool r = space.set_property(id, property, allocator);
-    assert(r);
+    space.set_property(id, property, allocator);
 }
 
 void PropertyList::remove_property(StringID id)
@@ -199,8 +194,6 @@ void PropertyList::find_space(PropertySpace &space, Allocator &allocator) const
     // We're at p_end. If there's not space in this chunk,
     // allocate another chunk.
     if (p.check_space(space.min())) {
-        PropertyRef next(p, space.min());
-        next.set_end();
         space.set_pos(p);
     }
     else {
@@ -314,28 +307,22 @@ PropertyList::PropertySpace PropertyList::get_space(const Property &p)
 // Store the property in the space referred to by _pos.
 // The caller should have found suitable space.
 // The asserts verify that this was done correctly.
-bool PropertyList::PropertySpace::set_property(StringID id, const Property &p,
+void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
                                                Allocator &allocator)
 {
     assert(_min == get_space(p)._min);
     assert(_exact == get_space(p)._exact);
+    assert(_pos._offset <= _pos.chunk_size() - 3);
     assert((_pos.ptype() == PropertyRef::p_end && _pos.check_space(_min))
            || _pos.size() == _min
            || _pos.size() >= _min + 3
            || (!_exact && _pos.size() >= _min));
-    if (_pos.ptype() == PropertyRef::p_end || _pos.size() >= _min + 3) {
+
+    if (_pos.ptype() == PropertyRef::p_end || _pos.size() >= _min + 3)
         _pos.set_size(_min);
-        _pos.set_id(id);
-        _pos.set_value(p, allocator);
-        return true;
-    }
-    else if (_pos.size() == _min || !_exact) {
-        _pos.set_id(id);
-        _pos.set_value(p, allocator);
-        return true;
-    }
-    else
-        return false;
+
+    _pos.set_id(id);
+    _pos.set_value(p, allocator);
 }
 
 
