@@ -276,7 +276,10 @@ int PropertyRef::get_space() const
 // Determine whether the space referred by p to is suitable.
 bool PropertyList::PropertySpace::match(const PropertyRef &p) const
 {
-    return p.size() == _min || (!_exact && p.size() >= _min + 3);
+    if (_exact)
+        return p.size() == _min || p.size() >= _min + 3;
+    else
+        return p.size() >= _min;
 }
 
 
