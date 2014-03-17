@@ -149,7 +149,7 @@ bool PropertyList::find_property(StringID id, PropertyRef &r,
                 if (space != NULL && space->match(p)) {
                     // We try for exact fit. If we don't find it, use worst fit.
                     bool exact = p.size() == space->min();
-                    if (!space || exact || p.size() > space->pos().size())
+                    if (!*space || exact || p.size() > space->pos().size())
                         space->set_pos(p);
                     // If we got an exact fit, quit looking.
                     if (exact)
