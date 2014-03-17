@@ -333,12 +333,21 @@ bool PropertyList::PropertySpace::set_property(StringID id, const Property &p,
 // following space as the new end.
 void PropertyRef::set_size(int new_size)
 {
-    assert(ptype() == p_end);
-    int unused_size = chunk_size() - _offset - (3 + new_size);
-    assert(unused_size >= 0);
-    if (unused_size >= 3)
-        PropertyRef(*this, new_size).type_size() = p_end;
-    type_size() = uint8_t((new_size << 4) | ptype());
+    if (ptype() == p_end) {
+        int unused_size = (chunk_size() - _offset) - (3 + new_size);
+        assert(unused_size >= 0);
+        if (unused_size >= 3) {
+            PropertyRef next(*this, new_size);
+            next.type_size() = p_end;
+        }
+    }
+    else {
+        int unused_size = size() - new_size;
+        assert (unused_size >= 3);
+        PropertyRef next(*this, new_size);
+        next.type_size() = uint8_t((unused_size - 3) << 4 | p_unused);
+    }
+    type_size() = uint8_t(new_size << 4);
 }
 
 
