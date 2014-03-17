@@ -21,7 +21,10 @@ namespace Jarvis {
     class PropertyListIterator : public PropertyIteratorImpl {
         PropertyRef _cur;
     public:
-        PropertyListIterator(const PropertyList *l) : _cur(l) { _cur._next(); }
+        PropertyListIterator(const PropertyList *l)
+            : _cur(l)
+            { _cur.skip_to_next(); }
+
         operator bool() const { return _cur.not_done(); }
         const PropertyRef &operator*() const { return _cur; }
         const PropertyRef *operator->() const { return &_cur; }
@@ -138,10 +141,8 @@ bool PropertyList::find_property(StringID id, PropertyRef &r,
                                  PropertySpace *space) const
 {
     PropertyRef p(this);
-    while (1) {
+    while (p.not_done()) {
         switch (p.ptype()) {
-            case PropertyRef::p_end:
-                goto break2;
             case PropertyRef::p_link:
                 p.follow_link();
                 continue;
@@ -163,10 +164,9 @@ bool PropertyList::find_property(StringID id, PropertyRef &r,
                 }
                 break;
         }
-        if (!p.next())
-            break;
+        p.skip();
     }
-break2:
+
     if (space != NULL)
         r = p;
     return false;
@@ -179,13 +179,21 @@ break2:
 void PropertyList::find_space(PropertySpace &space, Allocator &allocator) const
 {
     PropertyRef p = space.pos();
-    if (p.ptype() != PropertyRef::p_end) {
-        do {
-            if (p.ptype() == PropertyRef::p_unused && space.match(p)) {
-                space.set_pos(p);
-                return;
-            }
-        } while (p.next());
+    while (p.not_done()) {
+        switch (p.ptype()) {
+            case PropertyRef::p_link:
+                p.follow_link();
+                continue;
+            case PropertyRef::p_unused:
+                if (space.match(p)) {
+                    space.set_pos(p);
+                    return;
+                }
+                break;
+            default:
+                break;
+        }
+        p.skip();
     }
 
     // We're at p_end. If there's not space in this chunk,
@@ -228,18 +236,18 @@ void PropertyRef::make_space(PropertyRef &q)
     p._chunk = _chunk;
     p._offset = 1;
     while (p._offset + p.size() + 3 <= chunk_size() - (3 + sizeof (PropertyList *)))
-        p.next();
+        p.skip();
 
     *this = p;
 
-    while (p.ptype() != p_end) {
+    while (p.not_done()) {
         unsigned size = p.get_space();
         q.set_size(size);
         q.set_id(p.id());
         q.set_type(p.ptype());
         memcpy(q.val(), p.val(), size);
-        q.next();
-        p.next();
+        q.skip();
+        p.skip();
     }
 
     this->type_size() = p_end;
@@ -356,19 +364,21 @@ void PropertyRef::set_size(int new_size)
 
 // Advance the reference to the next property, returning false if
 // there isn't one.
-bool PropertyRef::_next()
+bool PropertyRef::skip_to_next()
 {
-    while (1) {
-        if (!not_done())
-            return false;
-        if (ptype() == p_unused) {
-            _offset += size() + 3;
-            continue;
+    while (not_done()) {
+        switch (ptype()) {
+            case p_link:
+                follow_link();
+                continue;
+            case p_unused:
+                break;
+            default:
+                return true;
         }
-        if (ptype() == p_link)
-            follow_link();
-        return true;
+        skip();
     }
+    return false;
 }
 
 
