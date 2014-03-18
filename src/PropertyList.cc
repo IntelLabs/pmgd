@@ -21,7 +21,10 @@ namespace Jarvis {
     class PropertyListIterator : public PropertyIteratorImpl {
         PropertyRef _cur;
     public:
-        PropertyListIterator(const PropertyList *l) : _cur(l) { _cur._next(); }
+        PropertyListIterator(const PropertyList *l)
+            : _cur(l)
+            { _cur.skip_to_next(); }
+
         operator bool() const { return _cur.not_done(); }
         const PropertyRef &operator*() const { return _cur; }
         const PropertyRef *operator->() const { return &_cur; }
@@ -55,7 +58,7 @@ namespace Jarvis {
         bool exact() const { return _exact; }
         bool match(const PropertyRef &p) const;
         void set_pos(const PropertyRef &p) { _pos = p; }
-        bool set_property(StringID id, const Property &, Allocator &);
+        void set_property(StringID id, const Property &, Allocator &);
     };
 };
 
@@ -103,20 +106,15 @@ void PropertyList::set_property(StringID id, const Property &property)
     PropertyRef pos;
     PropertySpace space(get_space(property));
 
-    if (find_property(id, pos, &space)) {
-        space.set_pos(pos);
-        if (space.set_property(id, property, allocator))
-            return;
+    if (find_property(id, pos, &space))
         pos.free();
-    }
 
     if (!space) {
         space.set_pos(pos);
         find_space(space, allocator);
     }
 
-    bool r = space.set_property(id, property, allocator);
-    assert(r);
+    space.set_property(id, property, allocator);
 }
 
 void PropertyList::remove_property(StringID id)
@@ -138,10 +136,8 @@ bool PropertyList::find_property(StringID id, PropertyRef &r,
                                  PropertySpace *space) const
 {
     PropertyRef p(this);
-    while (1) {
+    while (p.not_done()) {
         switch (p.ptype()) {
-            case PropertyRef::p_end:
-                goto break2;
             case PropertyRef::p_link:
                 p.follow_link();
                 continue;
@@ -149,7 +145,7 @@ bool PropertyList::find_property(StringID id, PropertyRef &r,
                 if (space != NULL && space->match(p)) {
                     // We try for exact fit. If we don't find it, use worst fit.
                     bool exact = p.size() == space->min();
-                    if (!space || exact || p.size() > space->pos().size())
+                    if (!*space || exact || p.size() > space->pos().size())
                         space->set_pos(p);
                     // If we got an exact fit, quit looking.
                     if (exact)
@@ -163,10 +159,9 @@ bool PropertyList::find_property(StringID id, PropertyRef &r,
                 }
                 break;
         }
-        if (!p.next())
-            break;
+        p.skip();
     }
-break2:
+
     if (space != NULL)
         r = p;
     return false;
@@ -179,20 +174,26 @@ break2:
 void PropertyList::find_space(PropertySpace &space, Allocator &allocator) const
 {
     PropertyRef p = space.pos();
-    if (p.ptype() != PropertyRef::p_end) {
-        do {
-            if (p.ptype() == PropertyRef::p_unused && space.match(p)) {
-                space.set_pos(p);
-                return;
-            }
-        } while (p.next());
+    while (p.not_done()) {
+        switch (p.ptype()) {
+            case PropertyRef::p_link:
+                p.follow_link();
+                continue;
+            case PropertyRef::p_unused:
+                if (space.match(p)) {
+                    space.set_pos(p);
+                    return;
+                }
+                break;
+            default:
+                break;
+        }
+        p.skip();
     }
 
     // We're at p_end. If there's not space in this chunk,
     // allocate another chunk.
     if (p.check_space(space.min())) {
-        PropertyRef next(p, space.min());
-        next.set_end();
         space.set_pos(p);
     }
     else {
@@ -228,17 +229,18 @@ void PropertyRef::make_space(PropertyRef &q)
     p._chunk = _chunk;
     p._offset = 1;
     while (p._offset + p.size() + 3 <= chunk_size() - (3 + sizeof (PropertyList *)))
-        p.next();
+        p.skip();
 
     *this = p;
 
-    while (p.ptype() != p_end) {
-        q.set_size(p.get_space());
+    while (p.not_done()) {
+        unsigned size = p.get_space();
+        q.set_size(size);
         q.set_id(p.id());
         q.set_type(p.ptype());
-        memcpy(q.val(), p.val(), size());
-        q.next();
-        p.next();
+        memcpy(q.val(), p.val(), size);
+        q.skip();
+        p.skip();
     }
 
     this->type_size() = p_end;
@@ -275,7 +277,10 @@ int PropertyRef::get_space() const
 // Determine whether the space referred by p to is suitable.
 bool PropertyList::PropertySpace::match(const PropertyRef &p) const
 {
-    return p.size() == _min || (!_exact && p.size() >= _min + 3);
+    if (_exact)
+        return p.size() == _min || p.size() >= _min + 3;
+    else
+        return p.size() >= _min;
 }
 
 
@@ -302,28 +307,45 @@ PropertyList::PropertySpace PropertyList::get_space(const Property &p)
 // Store the property in the space referred to by _pos.
 // The caller should have found suitable space.
 // The asserts verify that this was done correctly.
-bool PropertyList::PropertySpace::set_property(StringID id, const Property &p,
+void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
                                                Allocator &allocator)
 {
     assert(_min == get_space(p)._min);
     assert(_exact == get_space(p)._exact);
+    assert(_pos._offset <= _pos.chunk_size() - 3);
     assert((_pos.ptype() == PropertyRef::p_end && _pos.check_space(_min))
            || _pos.size() == _min
            || _pos.size() >= _min + 3
            || (!_exact && _pos.size() >= _min));
-    if (_pos.ptype() == PropertyRef::p_end || _pos.size() >= _min + 3) {
+
+    if (_pos.ptype() == PropertyRef::p_end || _pos.size() >= _min + 3)
         _pos.set_size(_min);
-        _pos.set_id(id);
-        _pos.set_value(p, allocator);
-        return true;
-    }
-    else if (_pos.size() == _min || !_exact) {
-        _pos.set_id(id);
-        _pos.set_value(p, allocator);
-        return true;
+
+    _pos.set_id(id);
+    _pos.set_value(p, allocator);
+}
+
+
+void PropertyRef::free()
+{
+    PropertyRef next(*this, size());
+    if (!next.not_done())
+        set_end();
+    else if (next.ptype() == p_unused) {
+        // if the next entry is already free, combine them
+        unsigned total_size = size() + next.size() + 3;
+        if (total_size <= 15)
+            type_size() = uint8_t(total_size << 4);
+        else {
+            unsigned new_size = total_size >= 18 ? 15 : total_size - 3;
+            unsigned new_next_size = total_size - 3 - new_size;
+            PropertyRef new_next(*this, new_size);
+            type_size() = uint8_t(new_size << 4 | p_unused);
+            new_next.type_size() = uint8_t(new_next_size << 4 | p_unused);
+        }
     }
     else
-        return false;
+        type_size() = uint8_t(size() << 4 | p_unused);
 }
 
 
@@ -332,30 +354,41 @@ bool PropertyList::PropertySpace::set_property(StringID id, const Property &p,
 // following space as the new end.
 void PropertyRef::set_size(int new_size)
 {
-    assert(ptype() == p_end);
-    int unused_size = chunk_size() - _offset - (3 + new_size);
-    assert(unused_size >= 0);
-    if (unused_size >= 3)
-        PropertyRef(*this, new_size).type_size() = p_end;
-    type_size() = uint8_t((new_size << 4) | ptype());
+    if (ptype() == p_end) {
+        int unused_size = (chunk_size() - _offset) - (3 + new_size);
+        assert(unused_size >= 0);
+        if (unused_size >= 3) {
+            PropertyRef next(*this, new_size);
+            next.type_size() = p_end;
+        }
+    }
+    else {
+        int unused_size = size() - new_size;
+        assert (unused_size >= 3);
+        PropertyRef next(*this, new_size);
+        next.type_size() = uint8_t((unused_size - 3) << 4 | p_unused);
+    }
+    type_size() = uint8_t(new_size << 4);
 }
 
 
 // Advance the reference to the next property, returning false if
 // there isn't one.
-bool PropertyRef::_next()
+bool PropertyRef::skip_to_next()
 {
-    while (1) {
-        if (!not_done())
-            return false;
-        if (ptype() == p_unused) {
-            _offset += size() + 3;
-            continue;
+    while (not_done()) {
+        switch (ptype()) {
+            case p_link:
+                follow_link();
+                continue;
+            case p_unused:
+                break;
+            default:
+                return true;
         }
-        if (ptype() == p_link)
-            follow_link();
-        return true;
+        skip();
     }
+    return false;
 }
 
 

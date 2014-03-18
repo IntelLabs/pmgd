@@ -9,52 +9,61 @@ using namespace Jarvis;
 
 int main(int argc, char **argv)
 {
+    srand(unsigned(time(0)));
+
+    int node_count = argc > 1 ? atoi(argv[1]) : 1000;
+    int edge_count = node_count - 1;
+
     try {
         Graph db("propertychunkgraph", Graph::Create);
 
-        Transaction tx(db);
+        Node **nodes = new Node *[node_count + 1];
 
-        Node &n1 = db.add_node(0);
-        n1.set_property("id1", "14 char string");
-        n1.set_property("id2", "14 char string");
-        n1.set_property("id6", "this is a really long string");
+        for (int i = 1; i <= node_count; i++) {
+            Transaction tx(db);
+            Node &n = db.add_node(0);
 
-        Node &n2 = db.add_node(0);
-        n2.set_property("id1", "14 char string");
-        n2.set_property("id2", "14 char string");
-        n2.set_property("id3", true);
-        n2.set_property("id4", true);
-        n2.set_property("id5", true);
-        n2.set_property("id6", true);
+            printf("Node %d:\n", i);
 
-        Node &n3 = db.add_node(0);
-        n3.set_property("id1", "14 char string");
-        n3.set_property("id2", "14 char string");
-        n3.set_property("id3", "8 char s");
-        n3.set_property("id6", true);
+            int id = 0;
+            int total_size = 0;
+            while (total_size < 44 + 64) {
+                id++;
+                int size = rand() % 16;
+                total_size += size + 3;
+                std::string s("123456789abcdef", size);
+                n.set_property(std::to_string(id).c_str(), s);
+                printf("  %d: %s\n", id, s.c_str());
+            }
 
-        Node &n4 = db.add_node(0);
-        n4.set_property("id1", "14 char string");
-        n4.set_property("id2", "15  char string");
-        n4.set_property("id3", "7 char s");
-        n4.set_property("id6", true);
+            if (i < node_count)
+                printf("  -> n%d (e%d)\n", i+1, i);
+            if (i > 1)
+                printf("  <- n%d (e%d)\n", i-1, i-1);
+            nodes[i] = &n;
 
-        Node &n5 = db.add_node(0);
-        n5.set_property("id1", "14 char string");
-        n5.set_property("id2", "14 char string");
-        n5.set_property("id3", "short1");
-        n5.set_property("id6", "short2");
-        n5.set_property("id7", "this is another really long string");
+            tx.commit();
+        }
 
-        Node &n6 = db.add_node(0);
-        n6.set_property("id1", "14 char string");
-        n6.set_property("id3", "8 char s");
-        n6.set_property("id2", "15  char string");
-        n6.set_property("id6", true);
+        for (int i = 1; i <= edge_count; i++) {
+            Transaction tx(db);
+            Edge &e = db.add_edge(*nodes[i], *nodes[i+1], 0);
 
-        dump_nodes(db);
+            printf("Edge %d: n%d -> n%d\n", i, i, i+1);
 
-        tx.commit();
+            int id = 0;
+            int total_size = 0;
+            while (total_size < 44 + 64) {
+                id++;
+                int size = rand() % 16;
+                total_size += size + 3;
+                std::string s("123456789abcdef", size);
+                e.set_property(std::to_string(id).c_str(), s);
+                printf("  %d: %s\n", id, s.c_str());
+            }
+
+            tx.commit();
+        }
     }
     catch (Exception e) {
         print_exception(e);
