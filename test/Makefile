@@ -11,7 +11,7 @@ OPT ?= -g
 FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
           -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics
 
-WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
+WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
           -Wformat=2 -Wno-parentheses -Wno-conversion
 
 CFLAGS := --std=c++11 $(INCLUDES) $(FFLAGS) $(WFLAGS) -DSTUBS $(OPT)
