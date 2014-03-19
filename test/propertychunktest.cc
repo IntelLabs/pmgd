@@ -9,10 +9,13 @@ using namespace Jarvis;
 
 int main(int argc, char **argv)
 {
-    srand(unsigned(time(0)));
-
     int node_count = argc > 1 ? atoi(argv[1]) : 1000;
     int edge_count = node_count - 1;
+    unsigned seed = argc > 2 ? strtoull(argv[2], 0, 10) : unsigned(time(0));
+
+    printf("node_count = %d, seed = %u\n", node_count, seed);
+
+    srand(seed);
 
     try {
         Graph db("propertychunkgraph", Graph::Create);
