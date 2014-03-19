@@ -78,6 +78,7 @@ namespace Jarvis {
 namespace Jarvis {
     class Allocator;
     class PropertyList;
+    class TransactionImpl;
 
     class PropertyRef {
         uint8_t *_chunk;
@@ -125,11 +126,11 @@ namespace Jarvis {
 
         void set_size(int new_size);
         void set_value(const Property &, Allocator &);
-        void set_link(PropertyList *p_chunk);
+        void set_link(PropertyList *p_chunk, TransactionImpl *);
         void set_blob(const void *value, std::size_t size,
                       Allocator &allocator);
-        void set_end() { set_id(0); type_size() = p_end; }
-        void free();
+        void set_end(TransactionImpl *);
+        void free(TransactionImpl *);
         void follow_link() { *this = *(PropertyList **)val(); }
 
         void make_space(PropertyRef &);
@@ -180,7 +181,8 @@ namespace Jarvis {
         class PropertySpace;
         bool find_property(StringID property, PropertyRef &p,
                            PropertySpace *space = 0) const;
-        void find_space(PropertySpace &space, Allocator &) const;
+        void find_space(PropertySpace &space, TransactionImpl *,
+                        Allocator &) const;
         static PropertySpace get_space(const Property &);
 
     public:

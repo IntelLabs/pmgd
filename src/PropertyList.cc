@@ -58,7 +58,8 @@ namespace Jarvis {
         bool exact() const { return _exact; }
         bool match(const PropertyRef &p) const;
         void set_pos(const PropertyRef &p) { _pos = p; }
-        void set_property(StringID id, const Property &, Allocator &);
+        void set_property(StringID id, const Property &,
+                          TransactionImpl *, Allocator &);
     };
 };
 
@@ -68,9 +69,12 @@ void PropertyList::init(size_t size)
     // Size must be at least 12: 1 byte for the size, 3 bytes for
     // the property info (id and type), and 8 bytes for a link.
     assert(size >= 12 && size <= 255);
+
+    // This is called only for a newly allocated property chunk,
+    // so no logging is required.
     _chunk0[0] = uint8_t(size);
     PropertyRef p(this);
-    p.set_end();
+    p.set_end(NULL);
 }
 
 bool PropertyList::check_property(StringID id, Property &result) const
@@ -107,21 +111,21 @@ void PropertyList::set_property(StringID id, const Property &property)
     PropertySpace space(get_space(property));
 
     if (find_property(id, pos, &space))
-        pos.free();
+        pos.free(tx);
 
     if (!space) {
         space.set_pos(pos);
-        find_space(space, allocator);
+        find_space(space, tx, allocator);
     }
 
-    space.set_property(id, property, allocator);
+    space.set_property(id, property, tx, allocator);
 }
 
 void PropertyList::remove_property(StringID id)
 {
     PropertyRef p;
     if (find_property(id, p))
-        p.free();
+        p.free(TransactionImpl::get_tx());
 }
 
 
@@ -171,7 +175,8 @@ bool PropertyList::find_property(StringID id, PropertyRef &r,
 // Search for space suitable to meet the specified space requirement.
 // Set the pos member of the space parameter to the space found.
 // If no suitable space is found, allocate a new chunk and link to it.
-void PropertyList::find_space(PropertySpace &space, Allocator &allocator) const
+void PropertyList::find_space(PropertySpace &space, TransactionImpl *tx,
+                              Allocator &allocator) const
 {
     PropertyRef p = space.pos();
     while (p.not_done()) {
@@ -210,7 +215,7 @@ void PropertyList::find_space(PropertySpace &space, Allocator &allocator) const
         if (!p.check_space(sizeof p_chunk))
             p.make_space(q);
 
-        p.set_link(p_chunk);
+        p.set_link(p_chunk, tx);
         space.set_pos(q);
     }
 }
@@ -242,8 +247,6 @@ void PropertyRef::make_space(PropertyRef &q)
         q.skip();
         p.skip();
     }
-
-    this->type_size() = p_end;
 }
 
 // Determine the minimum number of bytes required to store
@@ -308,6 +311,7 @@ PropertyList::PropertySpace PropertyList::get_space(const Property &p)
 // The caller should have found suitable space.
 // The asserts verify that this was done correctly.
 void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
+                                               TransactionImpl *tx,
                                                Allocator &allocator)
 {
     assert(_min == get_space(p)._min);
@@ -318,6 +322,14 @@ void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
            || _pos.size() >= _min + 3
            || (!_exact && _pos.size() >= _min));
 
+    int log_size = _min + 3;
+    if (_pos.ptype() == PropertyRef::p_end
+            ? _pos._offset + _min + 3 <= _pos.chunk_size() - 3
+            : _pos.size() >= _min + 3)
+        log_size += 3;
+
+    tx->log(&_pos._chunk[_pos._offset], log_size);
+
     if (_pos.ptype() == PropertyRef::p_end || _pos.size() >= _min + 3)
         _pos.set_size(_min);
 
@@ -326,32 +338,41 @@ void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
 }
 
 
-void PropertyRef::free()
+void PropertyRef::free(TransactionImpl *tx)
 {
     PropertyRef next(*this, size());
     if (!next.not_done())
-        set_end();
+        set_end(tx);
     else if (next.ptype() == p_unused) {
         // if the next entry is already free, combine them
         unsigned total_size = size() + next.size() + 3;
         if (total_size <= 15)
-            type_size() = uint8_t(total_size << 4);
+            tx->write(&type_size(), uint8_t(total_size << 4));
         else {
             unsigned new_size = total_size >= 18 ? 15 : total_size - 3;
             unsigned new_next_size = total_size - 3 - new_size;
             PropertyRef new_next(*this, new_size);
+            tx->log_range(&type_size(), &new_next.type_size());
             type_size() = uint8_t(new_size << 4 | p_unused);
             new_next.type_size() = uint8_t(new_next_size << 4 | p_unused);
         }
     }
     else
-        type_size() = uint8_t(size() << 4 | p_unused);
+        tx->write(&type_size(), uint8_t(size() << 4 | p_unused));
 }
 
+void PropertyRef::set_end(TransactionImpl *tx)
+{
+    if (tx != NULL)
+        tx->log_range(&get_id(), &type_size());
+    set_id(0);
+    type_size() = p_end;
+}
 
-// Add a new property to the end of the property list, by
-// setting the size to the specified size and marking the
-// following space as the new end.
+// Insert a new property in the property list.
+// If the new property is being added at the end,
+// mark the following space as the new end,
+// otherwise, mark the following space as unused.
 void PropertyRef::set_size(int new_size)
 {
     if (ptype() == p_end) {
@@ -397,11 +418,12 @@ bool PropertyRef::skip_to_next()
 // put the excess prior to the link, marked as unused.
 // If there are less than 3 bytes excess, put the excess
 // after the link, where it will be ignored.
-void PropertyRef::set_link(PropertyList *p_chunk)
+void PropertyRef::set_link(PropertyList *p_chunk, TransactionImpl *tx)
 {
-    int unused_size = int(chunk_size()) - _offset - (3 + int(sizeof p_chunk));
+    unsigned remaining_size = chunk_size() - _offset;
+    int unused_size = int(remaining_size) - (3 + int(sizeof p_chunk));
     assert(unused_size >= 0 && unused_size <= 3 + 15);
-    assert(ptype() == p_end);
+    tx->log(&_chunk[_offset], remaining_size);
     if (unused_size >= 3) {
         set_id(0);
         type_size() = uint8_t((unused_size - 3) << 4) | p_unused;
