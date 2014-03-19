@@ -3,14 +3,20 @@
 #include "jarvis.h"
 #include "../util/util.h"
 
+struct yy_params {
+    Jarvis::Graph &db;
+    std::function<void(Jarvis::Node &)> node_func;
+    std::function<void(Jarvis::Edge &)> edge_func;
+};
+
 extern int yylex();
-extern int yyerror(Jarvis::Graph &, const char *);
+extern int yyerror(yy_params, const char *);
 
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 extern YY_BUFFER_STATE yy_create_buffer(FILE *, int size);
 extern void yy_switch_to_buffer(YY_BUFFER_STATE);
 extern void yy_delete_buffer(YY_BUFFER_STATE);
-extern int yyparse(Jarvis::Graph &db);
+extern int yyparse(yy_params);
 
 static class Current {
     bool _is_node;
@@ -31,14 +37,16 @@ public:
     }
 } current;
 
-static Jarvis::Node *get_node(Jarvis::Graph &db, long long id);
-static Jarvis::Node *get_node(Jarvis::Graph &db, const char *id);
+static Jarvis::Node *get_node(Jarvis::Graph &db, long long id,
+                              std::function<void(Jarvis::Node &)> node_func);
+static Jarvis::Node *get_node(Jarvis::Graph &db, const char *id,
+                              std::function<void(Jarvis::Node &)> node_func);
 %}
 
 /* Causes parser to generate more detailed error messages for syntax errors. */
 %error-verbose
 
-%parse-param { Jarvis::Graph &db }
+%parse-param { yy_params params }
 
 /* Note: because this is a union, no object types with constructors may
  * be used, so all object types are referenced with pointers.
@@ -89,7 +97,12 @@ node:     node_id properties
         ;
 
 edge:     node_id properties node_id properties
-                  { current = db.add_edge(*$1, *$3, 0); }
+              {
+                  Jarvis::Edge &edge = params.db.add_edge(*$1, *$3, 0);
+                  if (params.edge_func)
+                      params.edge_func(edge);
+                  current = edge;
+              }
               edge_properties
         ;
 
@@ -98,8 +111,8 @@ edge_properties:
         | ':' '{' propertylist '}'
         ;
 
-node_id:  INTEGER { $$ = current = get_node(db, $1); }
-        | STRING { $$ = current = get_node(db, $1); }
+node_id:  INTEGER { $$ = current = get_node(params.db, $1, params.node_func); }
+        | STRING { $$ = current = get_node(params.db, $1, params.node_func); }
 
 properties:
           /* empty */
@@ -140,27 +153,41 @@ static const char ID[] = "id";
 
 #undef Exception
 
-void load(Graph &db, const char *filename)
+void load(Graph &db, const char *filename,
+          std::function<void(Node &)> node_func,
+          std::function<void(Edge &)> edge_func)
 {
     FILE *f = fopen(filename, "r");
     if (f == NULL)
         throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
 
-    load(db, f);
+    load(db, f, node_func, edge_func);
 }
 
-void load(Graph &db, FILE *f)
+void load(Graph &db, FILE *f,
+          std::function<void(Node &)> node_func,
+          std::function<void(Edge &)> edge_func)
 {
+    class buffer_t {
+        YY_BUFFER_STATE _buffer;
+    public:
+        buffer_t(FILE *f)
+        {
+            _buffer = yy_create_buffer(f, 500);
+            yy_switch_to_buffer(_buffer);
+        }
+
+        ~buffer_t() { yy_delete_buffer(_buffer); }
+    } buffer(f);
     Transaction tx(db);
-    YY_BUFFER_STATE buffer = yy_create_buffer(f, 500);
-    yy_switch_to_buffer(buffer);
-    try { yyparse(db); } catch (...) { }
-    yy_delete_buffer(buffer);
+    yy_params params = { db, node_func, edge_func };
+    yyparse(params);
     tx.commit();
 }
 
 
-static Node *get_node(Graph &db, long long id)
+static Node *get_node(Graph &db, long long id,
+                      std::function<void(Node &)> node_func)
 {
 #if 0
     // This API not available yet
@@ -179,10 +206,13 @@ static Node *get_node(Graph &db, long long id)
     // Node not found; add it
     Node &node = db.add_node(0);
     node.set_property(ID, id);
+    if (node_func)
+        node_func(node);
     return &node;
 }
 
-static Node *get_node(Graph &db, const char *id)
+static Node *get_node(Graph &db, const char *id,
+                      std::function<void(Node &)> node_func)
 {
 #if 0
     // This API not available yet
@@ -201,10 +231,12 @@ static Node *get_node(Graph &db, const char *id)
     // Node not found; add it
     Node &node = db.add_node(0);
     node.set_property(ID, id);
+    if (node_func)
+        node_func(node);
     return &node;
 }
 
-int yyerror(Jarvis::Graph &, const char *err)
+int yyerror(yy_params, const char *err)
 {
     printf("err %s\n", err);
     throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
