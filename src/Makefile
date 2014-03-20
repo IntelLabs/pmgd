@@ -23,8 +23,8 @@ PM := $(shell if ! grep pcommit /proc/cpuinfo; then echo "-DNOPM"; fi)
 FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
           -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics
 
-WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wconversion
-          -Wformat=2 -Wno-parentheses -Wno-conversion
+WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
+          -Wno-parentheses -Wno-conversion
 
 CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
 
