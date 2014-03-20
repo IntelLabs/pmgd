@@ -61,15 +61,17 @@ namespace Jarvis {
             // List should get a default constructor which is fine
             EdgeIndexType(StringID key): _key(key), _list() {}
 
-            // Use when adding a new binary tree element
             // Since this sits in PM too, just give an init function
-            void init(StringID key, EdgeNodePair &pair, Allocator &allocator)
+            void init(StringID key, Allocator &allocator)
             {
                 _key = key;
                 _list.init();
-                _list.add(pair, allocator);
+                // This will flush the key and the list header which is inlined
+                TransactionImpl::flush_range(this, sizeof *this);
             }
 
+            // This is used inside add() for the data structure. That value
+            // then gets flushed in there. So no need to log here
             EdgeIndexType& operator= (const EdgeIndexType &src)
             {
                 _key = src._key;
@@ -105,7 +107,8 @@ namespace Jarvis {
         // since there shouldn't be too many tags per node. Eventually
         // we can make this adaptive.
         // The second element is how the pairs will be organized.
-        // Choosing a simple list for that for now
+        // Choosing a simple list for that too since all pairs are always
+        // traversed
         List<EdgeIndexType> _key_list;
 
     public:
@@ -120,9 +123,6 @@ namespace Jarvis {
             return edge_table;
         }
 
-        // TODO Could split pair into two things and then this would work
-        // for strings also. Just provide multiple add methods with different
-        // number and kinds of parameters
         void add(const StringID key, Edge* edge, Node* node, Allocator &allocator);
         // For the iterator, give it head of PairList for the key
         const EdgePosition *get_first(StringID key);
