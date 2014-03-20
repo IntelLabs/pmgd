@@ -3,12 +3,13 @@
  */
 #include <stdio.h>
 #include "jarvis.h"
+#include "../util/util.h"
 
 using namespace Jarvis;
 
-static void dump(const Graph &db, const Node &n);
-static void dump(const Graph &db, const Edge &e);
-static int print_exception(FILE *s, Exception& e);
+// Specialized function defined here instead of util::dump. This has to
+// test the various iterator options for Node::get_edges()
+static void test_get_edges(const Graph &db, const Node &n);
 
 int main(int argc, char **argv)
 {
@@ -30,7 +31,7 @@ int main(int argc, char **argv)
         }
 
         for (NodeIterator i = db.get_nodes(); i; i.next()) {
-            dump(db, *i);
+            test_get_edges(db, *i);
         }
 
         // Just for verification if all covered
@@ -41,14 +42,14 @@ int main(int argc, char **argv)
         tx.commit();
     }
     catch (Exception e) {
-        print_exception(stdout, e);
+        print_exception(e);
         return 1;
     }
 
     return 0;
 }
 
-static void dump(const Graph &db, const Node &n)
+static void test_get_edges(const Graph &db, const Node &n)
 {
     NodeID my_id = db.get_id(n);
     printf("Node %lu:\n", my_id);
@@ -80,16 +81,4 @@ static void dump(const Graph &db, const Node &n)
                 i->get_tag().name().c_str(), db.get_id(*i));
     }
     printf("\n");
-}
-
-static void dump(const Graph &db, const Edge &e)
-{
-    printf("Edge %lu, tag %s: n%lu -> n%lu\n", db.get_id(e),
-            e.get_tag().name().c_str(),
-            db.get_id(e.get_source()), db.get_id(e.get_destination()));
-}
-
-static int print_exception(FILE *s, Exception& e)
-{
-    return fprintf(s, "[Exception] %s at %s:%d\n", e.name, e.file, e.line);
 }

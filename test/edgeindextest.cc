@@ -7,6 +7,7 @@
 #include "../src/os.h"
 #include "../src/allocator.h"
 #include "../src/EdgeIndex.h"
+#include "../util/util.h"
 
 using namespace Jarvis;
 using namespace std;
@@ -23,11 +24,6 @@ static constexpr AllocatorInfo default_allocators[] = {
     { 3*REGION_SIZE, REGION_SIZE, 128 },
     { 4*REGION_SIZE, REGION_SIZE, 256 },
 };
-
-static int print_exception(FILE *s, Exception& e)
-{
-    return fprintf(s, "[Exception] %s at %s:%d\n", e.name, e.file, e.line);
-}
 
 int main()
 {
@@ -95,7 +91,7 @@ int main()
         edge_table->add("tag20", entry2.key(), entry2.value(), allocator1);
     }
     catch (Exception e) {
-        print_exception(stdout, e);
+        print_exception(e);
     }
 
     return 0;

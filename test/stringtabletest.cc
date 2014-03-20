@@ -10,16 +10,12 @@
 #include <chrono>
 #include <ctime>
 #include "jarvis.h"
+#include "../util/util.h"
 
 using namespace std;
 using namespace std::chrono;
 
 using namespace Jarvis;
-
-static int print_exception(FILE *s, Exception& e)
-{
-    return fprintf(s, "[Exception] %s at %s:%d\n", e.name, e.file, e.line);
-}
 
 int main()
 {
@@ -60,12 +56,12 @@ int main()
                 cout << "String: " << s.name() << ", id: " << s.id() << "\n";
             }
             catch (Exception e) {
-                print_exception(stdout, e);
+                print_exception(e);
             }
         }
     }
     catch (Exception e) {
-        print_exception(stdout, e);
+        print_exception(e);
     }
 
     return 0;
