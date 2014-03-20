@@ -61,8 +61,10 @@ uint16_t StringTable::get(const char *name)
         char *dest = _pm + offset;
         // Check if the slot is unoccupied.
         if (*dest == 0) {
-            memcpy(dest, name, length);
-            TransactionImpl::flush_range(dest, length);
+            // Ok to acquire transaction object here again (after StringID)
+            // cause this is not a frequented branch
+            TransactionImpl *tx = TransactionImpl::get_tx();
+            tx->write_nolog(dest, (void *)name, length);
             // Found an empty slot to copy string. Therefore,
             // no need for further string comparison.
             break;
