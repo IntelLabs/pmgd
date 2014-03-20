@@ -43,20 +43,24 @@ namespace Jarvis {
     // exactly matches the length of the string. All other
     // property values can be stored in a space that exceeds the
     // space required.
+    // The _new_chunk flag indicates whether the space referred to is
+    // in a new chunk, and thus doesn't need to be logged.
     class PropertyList::PropertySpace {
         unsigned char _min;
         bool _exact;
+        bool _new_chunk;
         PropertyRef _pos;
 
     public:
         PropertySpace(int m, bool e = false)
-            : _min((unsigned char)m), _exact(e), _pos()
+            : _min((unsigned char)m), _exact(e), _new_chunk(false), _pos()
             { }
         operator bool() const { return _pos; }
         const PropertyRef &pos() const { return _pos; }
         int min() const { return _min; }
         bool exact() const { return _exact; }
         bool match(const PropertyRef &p) const;
+        void set_new() { _new_chunk = true; }
         void set_pos(const PropertyRef &p) { _pos = p; }
         void set_property(StringID id, const Property &,
                           TransactionImpl *, Allocator &);
@@ -217,6 +221,7 @@ void PropertyList::find_space(PropertySpace &space, TransactionImpl *tx,
 
         p.set_link(p_chunk, tx);
         space.set_pos(q);
+        space.set_new();
     }
 }
 
@@ -328,13 +333,17 @@ void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
             : _pos.size() >= _min + 3)
         log_size += 3;
 
-    tx->log(&_pos._chunk[_pos._offset], log_size);
+    if (!_new_chunk)
+        tx->log(&_pos._chunk[_pos._offset], log_size);
 
     if (_pos.ptype() == PropertyRef::p_end || _pos.size() >= _min + 3)
         _pos.set_size(_min);
 
     _pos.set_id(id);
     _pos.set_value(p, allocator);
+
+    if (_new_chunk)
+        TransactionImpl::flush_range(_pos._chunk, _pos.chunk_size());
 }
 
 
