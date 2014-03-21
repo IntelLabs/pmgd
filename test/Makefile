@@ -51,7 +51,7 @@ CLEANFILES += listtest listtest.o
 
 edgeindextest: edgeindextest.o
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< ../lib/jarvis.lib
+	$(CC) -o $@ $< $(LIB)
 CLEANFILES += edgeindextest edgeindextest.o
 
 propertytest: propertytest.o $(LIB)
