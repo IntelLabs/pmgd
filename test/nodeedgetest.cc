@@ -71,7 +71,7 @@ static void test_get_edges(const Graph &db, const Node &n)
                 i->get_tag().name().c_str(), db.get_id(*i));
     }
     printf("All outgoing edges with tag 0: \n");
-    for (EdgeIterator i = n.get_edges(OUTGOING, 0); i; i.next()) {
+    for (EdgeIterator i = n.get_edges(OUTGOING, "tag0"); i; i.next()) {
         printf("  -> n%lu (%s,e%lu)\n", db.get_id(i->get_destination()),
                 i->get_tag().name().c_str(), db.get_id(*i));
     }
