@@ -42,6 +42,13 @@ static inline void memory_barrier() // Instruct compiler not to re-order
     asm volatile ("" : : : "memory");
 }
 
+static inline void sfence()
+{
+#ifndef NOPM
+    asm("sfence" : : : "memory");
+#endif
+}
+
 static inline void clflush(void *addr)
 {
 #ifndef NOPM

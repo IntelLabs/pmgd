@@ -143,9 +143,35 @@ void TransactionImpl::finalize_commit()
     pcommit();
 }
 
-// flush a range and pcommit
+template<typename T>
+static inline T align_low(T var, size_t sz)
+{
+    return (T)((uint64_t)var & ~(sz-1));
+}
+
+template<typename T>
+static inline T align_high(T var, size_t sz)
+{
+    return (T)(((uint64_t)var + (sz-1)) & ~(sz-1));
+}
+
 void TransactionImpl::flush_range(void *ptr, size_t len)
 {
+    // align the input
+    ptr = align_low(ptr, 64);
+    // adjust the size to flush
+    len = align_high(len + ((size_t)ptr & (64-1)), 64);
+
+    char *addr, *eptr;
+    for (addr = (char *)ptr, eptr = (char *)ptr+len; addr < eptr; addr += 64)
+        clflush(addr);
+    sfence();
+}
+
+void TransactionImpl::persistent_barrier()
+{
+    // fence the previous clflushes; pcommit; fence the pcommit.
+    sfence(); pcommit(); sfence();
 }
 
 // static function to allow recovery from TransactionManager.
