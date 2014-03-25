@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include <stack>
 #include "TransactionManager.h"
 #include "exception.h"
@@ -46,24 +47,45 @@ namespace Jarvis {
 
             // log data; user performs the writes
             void log(void *ptr, size_t len);
+ 
+            // log data; base to base+end
+            template <typename T>
+            void log_range(void *base, T *end)
+                { log(base, (char *)(end + 1) - (char *)base); }
 
             // log old_val and write new_val
             template <typename T>
-                void write(T *ptr, T new_val) { }
+                void write(T *ptr, T new_val)
+            {
+                log(ptr, sizeof(T));
+                *ptr = new_val;
+            }
 
             // log dst and overwrite with src
-            void write(void *dst, void *src, size_t len) { }
+            void write(void *dst, void *src, size_t len)
+            {
+                log(src, len);
+                memcpy(dst, src, len);
+            }
 
             // memset without logging
-            void memset_nolog(void *ptr, uint8_t val, size_t len) { }
+            void memset_nolog(void *ptr, uint8_t val, size_t len)
+                { throw Exception(not_implemented); }
 
             // write new_val without logging
             template <typename T>
-                void write_nolog(T *ptr, T new_val) { }
+            void write_nolog(T *ptr, T new_val)
+            {
+                *ptr = new_val;
+                flush_range(ptr, sizeof *ptr);
+            }
 
             // write without logging
-            void write_nolog(void *dst, void *src, size_t len) { }
-
+            void write_nolog(void *dst, void *src, size_t len)
+            {
+                memcpy(dst, src, len);
+                flush_range(dst, len);
+            }
 
             void commit() { _committed = true; }
 
