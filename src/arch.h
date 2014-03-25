@@ -42,6 +42,13 @@ static inline void memory_barrier() // Instruct compiler not to re-order
     asm volatile ("" : : : "memory");
 }
 
+asm (
+    ".macro clflushopt mem\n\t"
+    ".byte 0x66\n\t"
+    "clflush \\mem\n\t"
+    ".endm\n\t"
+);
+
 static inline void sfence()
 {
 #ifndef NOPM
@@ -52,7 +59,7 @@ static inline void sfence()
 static inline void clflush(void *addr)
 {
 #ifndef NOPM
-    asm("clflushopt" : : : "memory");
+    asm("clflushopt \"%0\"" : "+m"(*(char *)addr));
 #endif
 }
 
