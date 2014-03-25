@@ -6,7 +6,9 @@
 #include "edge.h"
 #include "allocator.h"
 #include "iterator.h"
+#include "TransactionImpl.h"
 #include "TransactionManager.h"
+#include "arch.h"
 #include "os.h"
 
 using namespace Jarvis;
@@ -138,7 +140,7 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options)
         info->allocator_info = default_regions[4];
         info->num_fixed_allocators = NUM_FIXED_ALLOCATORS;
         memcpy(info->fixed_allocator_info, default_allocators, sizeof default_allocators);
-        // TODO: clflush and pcommit after setting up the structure
+        TransactionImpl::flush_range(info, sizeof *info);
     }
 }
 
@@ -173,6 +175,7 @@ GraphImpl::GraphImpl(const char *name, int options)
                  _init.info->num_fixed_allocators,
                  _init.create)
 {
+    persistent_barrier();
 }
 
 namespace Jarvis {
