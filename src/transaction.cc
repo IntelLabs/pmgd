@@ -135,7 +135,7 @@ void TransactionImpl::log(void *ptr, size_t len)
     }
 
     log_je(ptr, len % JE_MAX_LEN);
-    persistent_barrier();
+    persistent_barrier(31);
 }
 
 void TransactionImpl::finalize_commit()
@@ -143,14 +143,14 @@ void TransactionImpl::finalize_commit()
     // Flush (and make durable) dirty in-place data pointed to by log entries
     for (JournalEntry *je = jbegin(); je < _jcur; je++)
         clflush(je->addr);
-    persistent_barrier();
+    persistent_barrier(34);
 
     // Log the commit record
     JournalEntry *jcommit = jend() - 1;
     jcommit->type = JE_COMMIT_MARKER;
     jcommit->tx_id = tx_id();
     clflush(jcommit);
-    persistent_barrier();
+    persistent_barrier(37);
 }
 
 template<typename T>
@@ -204,5 +204,5 @@ void TransactionImpl::rollback(const TransactionHandle &h,
         memcpy(je->addr, &je->data[0], je->len);
         clflush(je->addr);
     }
-    persistent_barrier();
+    persistent_barrier(40);
 }
