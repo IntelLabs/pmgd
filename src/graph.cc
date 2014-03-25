@@ -30,11 +30,11 @@ struct GraphImpl::RegionInfo {
 struct GraphImpl::GraphInfo {
     uint64_t version;
 
+    RegionInfo stringtable_info;
     RegionInfo transaction_info;
     RegionInfo node_info;
     RegionInfo edge_info;
     RegionInfo allocator_info;
-    RegionInfo stringtable_info;
 
     uint32_t num_fixed_allocators;
     AllocatorInfo fixed_allocator_info[];
@@ -54,25 +54,28 @@ const size_t GraphImpl::NUM_FIXED_ALLOCATORS
 #define SIZE(region) (region##_SIZE)
 #define NEXT(region) (ADDRESS(region) + SIZE(region))
 
+#define ALIGN(addr, alignment) (((addr) + (alignment) - 1) & ~((alignment) - 1))
+
 // Set individual addresses so they can be set at different sizes when needed
 static const size_t INFO_ADDRESS = BASE_ADDRESS;
 static const unsigned INFO_SIZE = 4096;
-static const size_t TRANSACTIONTABLE_ADDRESS = NEXT(INFO);
-static const unsigned TRANSACTIONTABLE_SIZE = TRANSACTION_REGION_SIZE;
-static const size_t STRINGTABLE_ADDRESS = NEXT(TRANSACTIONTABLE);
 // Belongs here to make sure info header contains the
 // correct "obj_size"
 static const int MAX_STRINGID_CHARLEN = 16;
 // 12bits had fewest collisions in testing
 static const int MAX_STRINGIDS = 4096;
+static const size_t STRINGTABLE_ADDRESS = NEXT(INFO);
 static const size_t STRINGTABLE_SIZE = MAX_STRINGIDS * MAX_STRINGID_CHARLEN;
 
+static const size_t TRANSACTIONTABLE_ADDRESS = ALIGN(NEXT(STRINGTABLE), 0x200000);
+static const unsigned TRANSACTIONTABLE_SIZE = ALIGN(TRANSACTION_REGION_SIZE, 0x200000);
+
 // Node, edge tables kept TB aligned
-static const size_t NODETABLE_ADDRESS = BASE_ADDRESS + REGION_SIZE;
+static const size_t NODETABLE_ADDRESS = ALIGN(NEXT(TRANSACTIONTABLE), REGION_SIZE);
 static const size_t NODETABLE_SIZE = REGION_SIZE;
-static const size_t EDGETABLE_ADDRESS = NEXT(NODETABLE);
+static const size_t EDGETABLE_ADDRESS = ALIGN(NEXT(NODETABLE), REGION_SIZE);
 static const size_t EDGETABLE_SIZE = REGION_SIZE;
-static const size_t ALLOCATORS_ADDRESS = NEXT(EDGETABLE);
+static const size_t ALLOCATORS_ADDRESS = ALIGN(NEXT(EDGETABLE), REGION_SIZE);
 static const size_t ALLOCATORS_SIZE = GraphImpl::NUM_FIXED_ALLOCATORS * REGION_SIZE;
 
 const GraphImpl::RegionInfo GraphImpl::default_regions[] = {

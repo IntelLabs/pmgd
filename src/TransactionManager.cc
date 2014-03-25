@@ -10,7 +10,7 @@ using namespace Jarvis;
 TransactionManager::TransactionManager(
         uint64_t region_addr, uint64_t region_size, bool create)
 {
-    assert(region_size == TRANSACTION_REGION_SIZE);
+    assert(region_size >= TRANSACTION_REGION_SIZE);
 
     _tx_table = reinterpret_cast<TransactionHdr *>(region_addr);
     _journal_addr = reinterpret_cast<void *>(region_addr + TRANSACTION_TABLE_SIZE);
