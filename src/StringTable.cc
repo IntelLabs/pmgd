@@ -18,8 +18,14 @@ StringTable::StringTable(const uint64_t region_addr, size_t len,
     assert((num_entries & (num_entries - 1)) == 0 );
     assert(num_entries <= (1 << 16));
 
-    if (create)
+    if (create) {
+        // StringTable has to surely be zeroed out.
+        // TODO Remove this in case PMFS or any other memory management
+        // layer ensures that.
         memset(_pm, 0, len);
+        // Cannot use write_nolog() since this is graph init time
+        TransactionImpl::flush_range(_pm, len);
+    }
 }
 
 // Implementation of a 16-bit Fowler-Noll-Vo FNV-1a hash function.
