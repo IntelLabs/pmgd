@@ -52,7 +52,7 @@ FixedAllocator::FixedAllocator(const uint64_t region_addr,
         _pm->max_addr = start_addr + info.len;
         _pm->num_allocated = 0;
 
-        TransactionImpl::flush_range(_pm, _pm->size);
+        TransactionImpl::flush_range(_pm, sizeof(*_pm));
     }
 }
 
