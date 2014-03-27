@@ -68,7 +68,7 @@ TransactionHandle TransactionManager::alloc_transaction()
         TransactionHdr *hdr = &_tx_table[i];
         if (hdr->tx_id == 0 && cmpxchg(hdr->tx_id, 0u, tx_id)) {
             clflush(hdr);
-            persistent_barrier(); // Is this required?
+            persistent_barrier(21); // Is this required?
             return TransactionHandle(tx_id, i, tx_jbegin(i), tx_jend(i));
         }
     }
@@ -80,5 +80,5 @@ void TransactionManager::free_transaction(const TransactionHandle &handle)
     TransactionHdr *hdr = &_tx_table[handle.index];
     hdr->tx_id = 0;
     clflush(hdr);
-    persistent_barrier(); // Is this required?
+    persistent_barrier(24); // Is this required?
 }

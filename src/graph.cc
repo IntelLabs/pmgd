@@ -14,7 +14,7 @@
 using namespace Jarvis;
 
 static const size_t BASE_ADDRESS = 0x10000000000;
-static const size_t REGION_SIZE = 0x10000000000;
+static const size_t REGION_SIZE = 0x08000000;
 static const unsigned NODE_SIZE = 64;
 static const unsigned EDGE_SIZE = 32;
 
@@ -178,7 +178,7 @@ GraphImpl::GraphImpl(const char *name, int options)
                  _init.info->num_fixed_allocators,
                  _init.create)
 {
-    persistent_barrier();
+    persistent_barrier(11);
 }
 
 namespace Jarvis {

@@ -47,6 +47,23 @@ asm (
     ".byte 0x66\n\t"
     "clflush \\mem\n\t"
     ".endm\n\t"
+
+    ".macro mysfence param\n\t"
+    ".byte 0x66\n\t"
+    "lfence\n\t"
+    "mov \\param, %al\n\t"
+    ".endm\n\t"
+
+    ".macro mypcommit param\n\t"
+    ".byte 0x66\n\t"
+    "sfence\n\t"
+    "mov \\param, %al\n\t"
+    ".endm\n\t"
+
+    ".macro mymemset\n\t"
+    ".byte 0x66\n\t"
+    "mfence\n\t"
+    ".endm\n\t"
 );
 
 static inline void clflush(void *addr)
@@ -56,11 +73,15 @@ static inline void clflush(void *addr)
 #endif
 }
 
-static inline void persistent_barrier()
+static inline void persistent_barrier(uint8_t param)
 {
-#ifndef NOPM
-    asm("sfence" : : : "memory");
-    asm("pcommit" : : : "memory");
-    asm("sfence" : : : "memory");
+#if defined(HSPM)
+    asm volatile ("mysfence %0"  : : "N"(param));
+    asm volatile ("mypcommit %0" : : "N"(param+1));
+    asm volatile ("mysfence %0"  : : "N"(param+2));
+#elif !defined(NOPM)
+    asm volatile ("sfence" : : : "memory");
+    asm volatile ("pcommit" : : : "memory");
+    asm volatile ("sfence" : : : "memory");
 #endif
 }
