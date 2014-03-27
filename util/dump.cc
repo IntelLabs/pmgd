@@ -36,7 +36,7 @@ void dump(Graph &db, EdgeIterator i, FILE *f)
 
 void dump(Graph &db, const Node &n, FILE *f)
 {
-    fprintf(f, "Node %lu:\n", db.get_id(n));
+    fprintf(f, "Node %lu #%s:\n", db.get_id(n), n.get_tag().name().c_str());
     n.get_properties()
         .process([&db,&f](PropertyRef &p) {
             fprintf(f, "  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
@@ -55,8 +55,9 @@ void dump(Graph &db, const Node &n, FILE *f)
 
 void dump(Graph &db, const Edge &e, FILE *f)
 {
-    fprintf(f, "Edge %lu: n%lu -> n%lu\n", db.get_id(e),
-           db.get_id(e.get_source()), db.get_id(e.get_destination()));
+    fprintf(f, "Edge %lu #%s: n%lu -> n%lu\n",
+            db.get_id(e), e.get_tag().name().c_str(),
+            db.get_id(e.get_source()), db.get_id(e.get_destination()));
     e.get_properties()
         .process([&db,&f](PropertyRef &p) {
             fprintf(f, "  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
