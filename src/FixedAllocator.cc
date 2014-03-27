@@ -23,14 +23,14 @@ using namespace Jarvis;
  * 'void *' to control layout.
  */
 struct FixedAllocator::RegionHeader {
+    // Keep following fields together for easy logging
     uint64_t *tail_ptr;
-    uint64_t *free_ptr;              ///< Beginning of free list 
-    uint32_t size;                   ///< Object size
-    uint32_t zero;                   ///< Zero region before use
-    uint64_t max_addr;               ///< tail_ptr < max_addr (always)
-
+    uint64_t *free_ptr;              ///< Beginning of free list
     // Stats
     int64_t num_allocated;
+    uint64_t max_addr;               ///< tail_ptr < max_addr (always)
+    uint32_t size;                   ///< Object size
+    uint32_t zero;                   ///< Zero region before use
 };
 
 FixedAllocator::FixedAllocator(const uint64_t region_addr,
@@ -52,7 +52,7 @@ FixedAllocator::FixedAllocator(const uint64_t region_addr,
         _pm->max_addr = start_addr + info.len;
         _pm->num_allocated = 0;
 
-        TransactionImpl::flush_range(_pm, _pm->size);
+        TransactionImpl::flush_range(_pm, sizeof(*_pm));
     }
 }
 
@@ -71,9 +71,7 @@ void *FixedAllocator::alloc()
     TransactionImpl *tx = TransactionImpl::get_tx();
     tx->acquire_writelock(NULL);
 
-    // RegionHeader(_pm) is only 40 bytes.
-    // Log the entire structure in a single log-entry.
-    tx->log(_pm, sizeof(*_pm));
+    tx->log_range(&_pm->tail_ptr, &_pm->num_allocated);
 
     uint64_t *p;
     if (_pm->free_ptr != NULL) {
@@ -114,7 +112,7 @@ void FixedAllocator::free(void *p)
     TransactionImpl *tx = TransactionImpl::get_tx();
     tx->acquire_writelock(NULL);
 
-    tx->log(_pm, sizeof(*_pm));
+    tx->log_range(&_pm->free_ptr, &_pm->num_allocated);
     tx->log(p, sizeof(uint64_t));
 
     *(uint64_t *)p = (uint64_t)_pm->free_ptr | FREE_BIT;
