@@ -66,12 +66,12 @@ CLEANFILES += propertypredicatetest propertypredicatetest.o
 
 propertychunktest: propertychunktest.o $(LIB)
 	$(call print,LINK,$@)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += propertychunktest propertychunktest.o
 
 propertylisttest: propertylisttest.o $(LIB)
 	$(call print,LINK,$@)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -static -o $@ $< $(LIB)
 CLEANFILES += propertylisttest propertylisttest.o
 
 filtertest: filtertest.o $(LIB)
@@ -81,26 +81,26 @@ CLEANFILES += filtertest filtertest.o
 
 txtest: txtest.o $(LIB)
 	$(call print,LINK,$@)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += txtest txtest.o
 
 stringtabletest: stringtabletest.o $(LIB)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += stringtabletest stringtabletest.o
 
 dumpgraph: dumpgraph.o $(LIB)
 	$(call print,LINK,$@)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += dumpgraph dumpgraph.o
 
 loadgraph: loadgraph.o $(LIB)
 	$(call print,LINK,$@)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += loadgraph loadgraph.o
 
 setproperty: setproperty.o $(LIB)
 	$(call print,LINK,$@)
-	$(CC) -g -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIB)
 CLEANFILES += setproperty setproperty.o
 
 lib:

@@ -18,14 +18,14 @@ std::string property_text(const Property &p)
     }
 }
 
-std::string property_text(const PropertyIterator &i)
+std::string property_text(const PropertyRef &p)
 {
-    switch (i->type()) {
+    switch (p.type()) {
         case t_novalue: return "no value";
-        case t_boolean: return i->bool_value() ? "T" : "F";
-        case t_integer: return std::to_string(i->int_value());
-        case t_string: return i->string_value();
-        case t_float: return std::to_string(i->float_value());
+        case t_boolean: return p.bool_value() ? "T" : "F";
+        case t_integer: return std::to_string(p.int_value());
+        case t_string: return p.string_value();
+        case t_float: return std::to_string(p.float_value());
         case t_time: return "<time value>";
         case t_blob: return "<blob value>";
         default: throw Exception(property_type);

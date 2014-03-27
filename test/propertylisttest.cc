@@ -9,8 +9,19 @@ using namespace Jarvis;
 
 int main(int argc, char **argv)
 {
-    int count = argc > 1 ? atoi(argv[1]) : 1000;
-    unsigned seed = argc > 2 ? strtoull(argv[2], 0, 10) : unsigned(time(0));
+    const char *db_name = "propertylistgraph";
+    int count = 1000;
+    unsigned seed = unsigned(time(0));
+
+    int argi = 1;
+
+    if (argi < argc && !isdigit(argv[argi][0]))
+        db_name = argv[argi++];
+    if (argi < argc)
+        count = atoi(argv[argi++]);
+    if (argi < argc)
+        seed = strtoull(argv[argi++], 0, 10);
+
     unsigned id_limit = count > 50000 ? 26*26 : 26;
 
     printf("count = %d, seed = %u\n", count, seed);
@@ -18,7 +29,7 @@ int main(int argc, char **argv)
     srand(seed);
 
     try {
-        Graph db("propertylistgraph", Graph::Create);
+        Graph db(db_name, Graph::Create);
 
         Transaction tx(db);
         Node &n = db.add_node(0);

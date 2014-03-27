@@ -29,8 +29,8 @@ false                   { return FALSE; }
 
 {NUMBER}                { return cvt_int(); }
 "\""[^"\n]*"\""         { return cvt_string(true); }
-[-a-zA-Z0-9.~!@#$%_]+   { return cvt_string(false); }
-[{}=,:;]                { return yytext[0]; }
+[-a-zA-Z0-9.~!@$%_]+    { return cvt_string(false); }
+[{}=,:;#]               { return yytext[0]; }
 .                       { return ERROR; }
 
 %%

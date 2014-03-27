@@ -18,7 +18,7 @@ OBJS := $(patsubst %.cc, %.o, $(SRC))
 
 INCLUDES := -I../include
 OPT ?= -O2
-PM := $(shell if ! grep pcommit /proc/cpuinfo; then echo "-DNOPM"; fi)
+PM ?= $(shell if ! grep pcommit /proc/cpuinfo; then echo "-DNOPM"; fi)
 
 FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
           -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics

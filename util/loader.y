@@ -38,8 +38,10 @@ public:
 } current;
 
 static Jarvis::Node *get_node(Jarvis::Graph &db, long long id,
+                              Jarvis::StringID *tag,
                               std::function<void(Jarvis::Node &)> node_func);
 static Jarvis::Node *get_node(Jarvis::Graph &db, const char *id,
+                              Jarvis::StringID *tag,
                               std::function<void(Jarvis::Node &)> node_func);
 %}
 
@@ -58,6 +60,7 @@ static Jarvis::Node *get_node(Jarvis::Graph &db, const char *id,
     long long i;
     char *s;
     Jarvis::Node *n;
+    Jarvis::StringID *id;
 }
 
 %{
@@ -75,12 +78,14 @@ extern int yyerror(Jarvis::Graph &, const char *);
 %token <s> QUOTED_STRING
 
 /* non-terminals with values */
-%type <n> node_id
+%type <n> node
+%type <id> tag
 %type <s> property_id
 
 %destructor { delete $$; } STRING
 %destructor { delete $$; } QUOTED_STRING
 %destructor { delete $$; } property_id
+%destructor { delete $$; } tag
 
 %%
 
@@ -89,30 +94,45 @@ s:        node_or_edge
         ;
 
 node_or_edge:
-          node ';'
-        | edge ';'
+          node_def ';'
+        | edge_def ';'
         ;
 
-node:     node_id properties
+node_def:     node properties
         ;
 
-edge:     node_id properties node_id properties
+edge_def: node properties node properties
+              ':' tag
+              {
+                  Jarvis::Edge &edge = params.db.add_edge(*$1, *$3, *$6);
+                  if (params.edge_func)
+                      params.edge_func(edge);
+                  current = edge;
+              }
+              edge_properties
+        | node properties node properties
               {
                   Jarvis::Edge &edge = params.db.add_edge(*$1, *$3, 0);
                   if (params.edge_func)
                       params.edge_func(edge);
                   current = edge;
               }
-              edge_properties
         ;
 
 edge_properties:
           /* empty */
-        | ':' '{' propertylist '}'
+        | '{' propertylist '}'
         ;
 
-node_id:  INTEGER { $$ = current = get_node(params.db, $1, params.node_func); }
-        | STRING { $$ = current = get_node(params.db, $1, params.node_func); }
+node:     INTEGER tag
+              { $$ = current = get_node(params.db, $1, $2, params.node_func); }
+        | STRING tag
+              { $$ = current = get_node(params.db, $1, $2, params.node_func); }
+        ;
+
+tag :     /* empty */ { $$ = new Jarvis::StringID(0); }
+        | '#' STRING { $$ = new Jarvis::StringID($2); }
+        ;
 
 properties:
           /* empty */
@@ -186,7 +206,7 @@ void load(Graph &db, FILE *f,
 }
 
 
-static Node *get_node(Graph &db, long long id,
+static Node *get_node(Graph &db, long long id, Jarvis::StringID *tag,
                       std::function<void(Node &)> node_func)
 {
 #if 0
@@ -204,14 +224,14 @@ static Node *get_node(Graph &db, long long id,
 #endif
 
     // Node not found; add it
-    Node &node = db.add_node(0);
+    Node &node = db.add_node(*tag);
     node.set_property(ID, id);
     if (node_func)
         node_func(node);
     return &node;
 }
 
-static Node *get_node(Graph &db, const char *id,
+static Node *get_node(Graph &db, const char *id, Jarvis::StringID *tag,
                       std::function<void(Node &)> node_func)
 {
 #if 0
@@ -229,7 +249,7 @@ static Node *get_node(Graph &db, const char *id,
 #endif
 
     // Node not found; add it
-    Node &node = db.add_node(0);
+    Node &node = db.add_node(*tag);
     node.set_property(ID, id);
     if (node_func)
         node_func(node);
