@@ -32,7 +32,7 @@ void Transaction::commit()
 // TransactionImpl definitions
 
 // 64B Journal entries
-const static uint8_t JE_MAX_LEN = 51;
+const static uint8_t JE_MAX_LEN = 48;
 const static uint8_t JE_COMMIT_MARKER = 0x77;
 
 struct TransactionImpl::JournalEntry {
