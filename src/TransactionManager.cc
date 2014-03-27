@@ -45,7 +45,6 @@ void TransactionManager::reset_table(void)
         hdr->jend = tx_jend(i);
         clflush(hdr);
     }
-    pcommit();
 }
 
 void TransactionManager::recover(void) {
