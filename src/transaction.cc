@@ -167,8 +167,6 @@ static inline T align_high(T var, size_t sz)
 
 void TransactionImpl::flush_range(void *ptr, size_t len)
 {
-    // align the input
-    ptr = align_low(ptr, 64);
     // adjust the size to flush
     len = align_high(len + ((size_t)ptr & (64-1)), 64);
 
