@@ -71,9 +71,7 @@ void *FixedAllocator::alloc()
     TransactionImpl *tx = TransactionImpl::get_tx();
     tx->acquire_writelock(NULL);
 
-    // RegionHeader(_pm) is only 40 bytes.
-    // Log the entire structure in a single log-entry.
-    tx->log(_pm, sizeof(*_pm));
+    tx->log_range(&_pm->tail_ptr, &_pm->num_allocated);
 
     uint64_t *p;
     if (_pm->free_ptr != NULL) {
@@ -114,7 +112,7 @@ void FixedAllocator::free(void *p)
     TransactionImpl *tx = TransactionImpl::get_tx();
     tx->acquire_writelock(NULL);
 
-    tx->log(_pm, sizeof(*_pm));
+    tx->log_range(&_pm->free_ptr, &_pm->num_allocated);
     tx->log(p, sizeof(uint64_t));
 
     *(uint64_t *)p = (uint64_t)_pm->free_ptr | FREE_BIT;
