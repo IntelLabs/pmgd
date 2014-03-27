@@ -18,8 +18,14 @@ StringTable::StringTable(const uint64_t region_addr, size_t len,
     assert((num_entries & (num_entries - 1)) == 0 );
     assert(num_entries <= (1 << 16));
 
-    if (create)
+    if (create) {
+        // StringTable has to surely be zeroed out.
+        // TODO Remove this in case PMFS or any other memory management
+        // layer ensures that.
         memset(_pm, 0, len);
+        // Cannot use write_nolog() since this is graph init time
+        TransactionImpl::flush_range(_pm, len);
+    }
 }
 
 // Implementation of a 16-bit Fowler-Noll-Vo FNV-1a hash function.
@@ -61,8 +67,10 @@ uint16_t StringTable::get(const char *name)
         char *dest = _pm + offset;
         // Check if the slot is unoccupied.
         if (*dest == 0) {
-            memcpy(dest, name, length);
-            TransactionImpl::flush_range(dest, length);
+            // Ok to acquire transaction object here again (after StringID)
+            // cause this is not a frequented branch
+            TransactionImpl *tx = TransactionImpl::get_tx();
+            tx->write_nolog(dest, (void *)name, length);
             // Found an empty slot to copy string. Therefore,
             // no need for further string comparison.
             break;
