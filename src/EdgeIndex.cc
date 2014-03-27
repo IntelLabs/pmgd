@@ -20,8 +20,6 @@ namespace Jarvis {
             // First create an entry for this key with the simple constructor
             // EdgeIndexType ptr
             ptr = _key_list.add(newkey, allocator);
-            // Initialize the second data structure mapped to 'key'
-            ptr->init(key, allocator);
         }
 
         // Logging done inside add

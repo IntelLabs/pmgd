@@ -29,14 +29,13 @@ namespace Jarvis {
 
     public:
         // Constructor for temporary objects. No need to log.
-        List() { _list = NULL; }
+        List() { _list = NULL; _num_elems = 0; }
+
         // The variables above should just get mapped to the right area
-        // and init will be called only the first time. 
-        void init()
-        {
-            _list = NULL;
-            _num_elems = 0;
-        }
+        // and init will be called only the first time.
+        // Called as part of node creation. Will be flushed when
+        // new node is flushed.
+        void init() { *this = List(); }
 
         T* add(const T &value, Allocator &allocator);
         void remove(const T &value, Allocator &allocator);

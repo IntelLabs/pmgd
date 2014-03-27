@@ -61,15 +61,6 @@ namespace Jarvis {
             // List should get a default constructor which is fine
             EdgeIndexType(StringID key): _key(key), _list() {}
 
-            // Since this sits in PM too, just give an init function
-            void init(StringID key, Allocator &allocator)
-            {
-                _key = key;
-                _list.init();
-                // This will flush the key and the list header which is inlined
-                TransactionImpl::flush_range(this, sizeof *this);
-            }
-
             // This is used inside add() for the data structure. That value
             // then gets flushed in there. So no need to log here
             EdgeIndexType& operator= (const EdgeIndexType &src)
