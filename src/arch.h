@@ -49,13 +49,6 @@ asm (
     ".endm\n\t"
 );
 
-static inline void sfence()
-{
-#ifndef NOPM
-    asm("sfence" : : : "memory");
-#endif
-}
-
 static inline void clflush(void *addr)
 {
 #ifndef NOPM
@@ -63,9 +56,11 @@ static inline void clflush(void *addr)
 #endif
 }
 
-static inline void pcommit()
+static inline void persistent_barrier()
 {
 #ifndef NOPM
+    asm("sfence" : : : "memory");
     asm("pcommit" : : : "memory");
+    asm("sfence" : : : "memory");
 #endif
 }

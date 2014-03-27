@@ -101,8 +101,6 @@ namespace Jarvis {
             // persistent_barrier to ensure the flushed data is durable.
             static void flush_range(void *ptr, size_t len);
 
-            static void persistent_barrier();
-
             // roll-back the transaction
             static void recover_tx(const TransactionHandle &);
     };

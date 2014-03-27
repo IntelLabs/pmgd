@@ -175,12 +175,6 @@ void TransactionImpl::flush_range(void *ptr, size_t len)
         clflush(addr);
 }
 
-void TransactionImpl::persistent_barrier()
-{
-    // fence the previous clflushes; pcommit; fence the pcommit.
-    sfence(); pcommit(); sfence();
-}
-
 // static function to allow recovery from TransactionManager.
 // There are no real TransactionImpl objects at recovery time.
 // The last record in the journal is fixed as the COMMIT record.
