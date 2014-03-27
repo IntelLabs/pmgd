@@ -45,8 +45,8 @@ int main(int argc, char **argv)
 
         Transaction tx(db);
 
-        NodeRef *node;
-        EdgeRef *edge;
+        NodeRef *node = NULL;
+        EdgeRef *edge = NULL;
         if (use_node)
             node = &*db.get_nodes()
                 .filter([id](const NodeRef &n) {
