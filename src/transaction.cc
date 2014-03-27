@@ -32,7 +32,7 @@ void Transaction::commit()
 // TransactionImpl definitions
 
 // 64B Journal entries
-const static uint8_t JE_MAX_LEN = 51;
+const static uint8_t JE_MAX_LEN = 48;
 const static uint8_t JE_COMMIT_MARKER = 0x77;
 
 struct TransactionImpl::JournalEntry {
@@ -115,7 +115,7 @@ void TransactionImpl::log_je(void *src_ptr, size_t len)
     memcpy(&_jcur->data[0], src_ptr, len);
     memory_barrier();
     _jcur->tx_id = tx_id();
-    clflush(src_ptr); pcommit();
+    clflush(_jcur);
     _jcur++;
 }
 
@@ -135,17 +135,44 @@ void TransactionImpl::log(void *ptr, size_t len)
     }
 
     log_je(ptr, len % JE_MAX_LEN);
+    persistent_barrier();
 }
 
 void TransactionImpl::finalize_commit()
 {
-    for (JournalEntry *je = jbegin(); je < _jcur; je++) clflush(je);
-    pcommit();
+    // Flush (and make durable) dirty in-place data pointed to by log entries
+    for (JournalEntry *je = jbegin(); je < _jcur; je++)
+        clflush(je->addr);
+    persistent_barrier();
+
+    // Log the commit record
+    JournalEntry *jcommit = jend() - 1;
+    jcommit->type = JE_COMMIT_MARKER;
+    jcommit->tx_id = tx_id();
+    clflush(jcommit);
+    persistent_barrier();
 }
 
-// flush a range and pcommit
+template<typename T>
+static inline T align_low(T var, size_t sz)
+{
+    return (T)((uint64_t)var & ~(sz-1));
+}
+
+template<typename T>
+static inline T align_high(T var, size_t sz)
+{
+    return (T)(((uint64_t)var + (sz-1)) & ~(sz-1));
+}
+
 void TransactionImpl::flush_range(void *ptr, size_t len)
 {
+    // adjust the size to flush
+    len = align_high(len + ((size_t)ptr & (64-1)), 64);
+
+    char *addr, *eptr;
+    for (addr = (char *)ptr, eptr = (char *)ptr+len; addr < eptr; addr += 64)
+        clflush(addr);
 }
 
 // static function to allow recovery from TransactionManager.
@@ -177,5 +204,5 @@ void TransactionImpl::rollback(const TransactionHandle &h,
         memcpy(je->addr, &je->data[0], je->len);
         clflush(je->addr);
     }
-    pcommit();
+    persistent_barrier();
 }

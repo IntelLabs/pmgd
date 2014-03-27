@@ -42,16 +42,25 @@ static inline void memory_barrier() // Instruct compiler not to re-order
     asm volatile ("" : : : "memory");
 }
 
+asm (
+    ".macro clflushopt mem\n\t"
+    ".byte 0x66\n\t"
+    "clflush \\mem\n\t"
+    ".endm\n\t"
+);
+
 static inline void clflush(void *addr)
 {
 #ifndef NOPM
-    asm("clflushopt" : : : "memory");
+    asm("clflushopt \"%0\"" : "+m"(*(char *)addr));
 #endif
 }
 
-static inline void pcommit()
+static inline void persistent_barrier()
 {
 #ifndef NOPM
+    asm("sfence" : : : "memory");
     asm("pcommit" : : : "memory");
+    asm("sfence" : : : "memory");
 #endif
 }
