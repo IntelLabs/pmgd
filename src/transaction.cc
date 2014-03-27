@@ -175,7 +175,6 @@ void TransactionImpl::flush_range(void *ptr, size_t len)
     char *addr, *eptr;
     for (addr = (char *)ptr, eptr = (char *)ptr+len; addr < eptr; addr += 64)
         clflush(addr);
-    sfence();
 }
 
 void TransactionImpl::persistent_barrier()
