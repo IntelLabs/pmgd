@@ -2,7 +2,7 @@ CC := g++-4.8
 RM := rm -f
 ECHO := echo
 
-LIB := ../lib/jarvis.lib ../lib/jarvis-util.lib
+LIB := ../lib/jarvis-util.lib ../lib/jarvis.lib
 CLEANFILES := $(LIB)
 
 INCLUDES := -I../include
