@@ -7,6 +7,7 @@
 
 extern std::string property_text(const Jarvis::Property &i);
 extern std::string property_text(const Jarvis::PropertyIterator &i);
+template <typename T> std::string tag_text(const T &n);
 
 extern void print_exception(const Jarvis::Exception &e, FILE *f = stdout);
 

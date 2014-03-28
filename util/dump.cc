@@ -36,27 +36,27 @@ void dump(Graph &db, EdgeIterator i, FILE *f)
 
 void dump(Graph &db, const Node &n, FILE *f)
 {
-    fprintf(f, "Node %lu #%s:\n", db.get_id(n), n.get_tag().name().c_str());
+    fprintf(f, "Node %lu%s:\n", db.get_id(n), tag_text(n).c_str());
     n.get_properties()
         .process([&db,&f](PropertyRef &p) {
             fprintf(f, "  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
         });
-    n.get_edges(OUTGOING, 0)
+    n.get_edges(OUTGOING)
         .process([&db,&f](EdgeRef &e) {
-            fprintf(f, "  -> n%lu (e%lu)\n",
-                   db.get_id(e.get_destination()), db.get_id(e));
+            fprintf(f, " %s -> n%lu (e%lu)\n", tag_text(e).c_str(),
+                    db.get_id(e.get_destination()), db.get_id(e));
         });
-    n.get_edges(INCOMING, 0)
+    n.get_edges(INCOMING)
         .process([&db,&f](EdgeRef &e) {
-            fprintf(f, "  <- n%lu (e%lu)\n",
-                   db.get_id(e.get_source()), db.get_id(e));
+            fprintf(f, " %s <- n%lu (e%lu)\n", tag_text(e).c_str(),
+                    db.get_id(e.get_source()), db.get_id(e));
         });
 }
 
 void dump(Graph &db, const Edge &e, FILE *f)
 {
-    fprintf(f, "Edge %lu #%s: n%lu -> n%lu\n",
-            db.get_id(e), e.get_tag().name().c_str(),
+    fprintf(f, "Edge %lu%s: n%lu -> n%lu\n",
+            db.get_id(e), tag_text(e).c_str(),
             db.get_id(e.get_source()), db.get_id(e.get_destination()));
     e.get_properties()
         .process([&db,&f](PropertyRef &p) {

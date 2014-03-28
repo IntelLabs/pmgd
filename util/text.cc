@@ -31,3 +31,16 @@ std::string property_text(const PropertyRef &p)
         default: throw Exception(property_type);
     }
 }
+
+template <typename T>
+std::string tag_text(const T &n)
+{
+    std::string tag = n.get_tag().name();
+    if (tag != "")
+        tag = " #" + tag;
+    return tag;
+}
+
+template std::string tag_text<Node>(const Node &);
+template std::string tag_text<Edge>(const Edge &);
+template std::string tag_text<EdgeRef>(const EdgeRef &);
