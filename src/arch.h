@@ -69,7 +69,7 @@ asm (
 static inline void clflush(void *addr)
 {
 #ifndef NOPM
-    asm("clflushopt \"%0\"" : "+m"(*(char *)addr));
+    asm("clflushopt \"%0\"" : "+m"(*(char *)addr) : : "memory");
 #endif
 }
 
