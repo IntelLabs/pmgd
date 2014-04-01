@@ -96,7 +96,24 @@ int main(int argc, char **argv)
         }
     }
     catch (Exception e) {
-        print_exception(e);
+        if (e.num == Exception::e_null_iterator) {
+            printf("%s %s not found.\n"
+                   "%ss are identified by a property named \"id\",\n"
+                   "which may be an integer or a string.\n",
+                   use_node ? "Node" : "Edge",
+                   id,
+                   use_node ? "Node" : "Edge");
+        }
+        else if (e.num == Exception::e_property_not_found) {
+            printf("Some %s did not have an \"id\" property.\n"
+                   "%ss are identified by a property named \"id\",\n"
+                   "which may be an integer or a string.\n",
+                   use_node ? "node" : "edge",
+                   use_node ? "Node" : "Edge");
+        }
+        else {
+            print_exception(e);
+        }
         return 1;
     }
 
