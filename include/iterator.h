@@ -93,53 +93,65 @@ namespace Jarvis {
                p_novalue, p_boolean_false, p_boolean_true,
                p_integer, p_float, p_time, p_string, p_string_ptr, p_blob };
 
-        unsigned chunk_size() const { return _chunk[0]; }
+        unsigned chunk_end() const { return _chunk[0]; }
+        unsigned chunk_size() const { return chunk_end() + 1; }
 
-        StringID &get_id() { return *(StringID *)(&_chunk[_offset]); }
-
-        operator bool() const { return _offset != 0; }
-
-        uint8_t &type_size() { return _chunk[_offset+2]; }
+        uint8_t &type_size() { return _chunk[_offset]; }
         const uint8_t &type_size() const
             { return const_cast<PropertyRef *>(this)->type_size(); }
+        unsigned ptype() const { return type_size() & 0xf; }
+        unsigned size() const { return type_size() >> 4; }
 
-        int ptype() const { return type_size() & 0xf; }
-        int size() const { return type_size() >> 4; }
+        PropertyList *&link()
+        {
+            assert(ptype() == p_link);
+            assert(_offset == chunk_end() - sizeof (PropertyList *));
+            return *(PropertyList **)(&_chunk[_offset+1]);
+        }
+
+        StringID &get_id()
+        {
+            assert(ptype() >= p_novalue && ptype() <= p_blob);
+            assert(size() >= 2);
+            return *(StringID *)(&_chunk[_offset+1]);
+        }
+
+        uint8_t *val() const
+        {
+            assert(ptype() >= p_novalue && ptype() <= p_blob);
+            assert(size() >= 3);
+            return &_chunk[_offset + 3];
+        }
 
         Property get_value() const;
 
-        uint8_t *val() const { return &_chunk[_offset + 3]; }
-
-        bool check_space(unsigned size) const
-            { return _offset + size + 3 <= chunk_size(); }
+        unsigned free_space() const;
 
         bool skip_to_next();
-        void skip() { _offset += size() + 3; }
+        void skip() { _offset += size() + 1; }
         bool next() { skip(); return skip_to_next(); }
         bool not_done() const
-            { return _offset <= chunk_size() - 3 && ptype() != p_end; }
+            { return _offset <= chunk_end() && ptype() != p_end; }
 
         void set_id(StringID id) { this->get_id() = id; }
+        void set_type(int type) { type_size() = uint8_t(size() << 4 | type); }
 
-        void set_type(int type)
-            { type_size() = uint8_t((type_size() & 0xf0) | type); }
-
-        void set_size(int new_size);
+        void set_size(unsigned old_size, unsigned new_size);
         void set_value(const Property &, Allocator &);
         void set_link(PropertyList *p_chunk, TransactionImpl *);
         void set_blob(const void *value, std::size_t size,
                       Allocator &allocator);
-        void set_end(TransactionImpl *);
         void free(TransactionImpl *);
-        void follow_link() { *this = *(PropertyList **)val(); }
+        void follow_link() { *this = PropertyRef(link()); }
 
         void make_space(PropertyRef &);
-        int get_space() const;
 
         PropertyRef() : _chunk(0), _offset(0) { }
-        PropertyRef(const PropertyList *l) : _chunk((uint8_t *)l), _offset(1) {}
+        explicit PropertyRef(const PropertyList *list)
+            : _chunk((uint8_t *)list), _offset(1)
+            {}
         PropertyRef(const PropertyRef &p, unsigned size)
-            : _chunk(p._chunk), _offset(p._offset + size + 3)
+            : _chunk(p._chunk), _offset(p._offset + size)
             { assert(_offset <= chunk_size()); }
 
     public:
@@ -181,9 +193,9 @@ namespace Jarvis {
         class PropertySpace;
         bool find_property(StringID property, PropertyRef &p,
                            PropertySpace *space = 0) const;
-        void find_space(PropertySpace &space, TransactionImpl *,
-                        Allocator &) const;
-        static PropertySpace get_space(const Property &);
+        bool find_space(PropertySpace &space, PropertyRef &start) const;
+        void add_chunk(PropertyRef &end, TransactionImpl *, Allocator &);
+        static unsigned get_space(const Property &);
 
     public:
         void init(std::size_t size);
