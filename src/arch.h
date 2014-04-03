@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 template <typename T>
 static inline bool cmpxchg(volatile T &m, T old_val, T new_val)
 {
