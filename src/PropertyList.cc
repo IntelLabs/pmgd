@@ -339,8 +339,9 @@ void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
         tx->log(&_pos._chunk[_pos._offset], log_size);
     }
 
-    _pos.set_size(_size, _req);
-    _pos.set_value(p, allocator);
+    if (_size > _req)
+        _pos.set_size(_size, _req);
+    _pos.set_value(p, _req, allocator);
     _pos.set_id(id);
 
     if (_new_chunk)
@@ -357,30 +358,25 @@ void PropertyRef::free(TransactionImpl *tx)
         tx->write(&type_size(), uint8_t(size() << 4 | p_unused));
 }
 
-// Insert a new property in the property list.
+// Carve out space for a new property in the property list.
 // If the new property is being added at the end,
 // mark the following space as the new end,
 // otherwise, mark the following space as unused.
-// The sizes passed in are the overall size; the
-// size stored is one less.
 void PropertyRef::set_size(unsigned old_size, unsigned new_size)
 {
-    assert(old_size >= new_size);
+    assert(old_size > new_size);
     unsigned unused_size = old_size - new_size;
-    if (unused_size > 0) {
-        PropertyRef next(*this, new_size);
-        if (old_size == chunk_size() - _offset)
-            next.type_size() = p_end;
-        else {
-            while (unused_size > 16) {
-                next.type_size() = uint8_t(15 << 4 | p_unused);
-                next.skip();
-                unused_size -= 16;
-            }
-            next.type_size() = uint8_t((unused_size - 1) << 4 | p_unused);
+    PropertyRef next(*this, new_size);
+    if (old_size == chunk_size() - _offset)
+        next.type_size() = p_end;
+    else {
+        while (unused_size > 16) {
+            next.type_size() = uint8_t(15 << 4 | p_unused);
+            next.skip();
+            unused_size -= 16;
         }
+        next.type_size() = uint8_t((unused_size - 1) << 4 | p_unused);
     }
-    type_size() = uint8_t((new_size - 1) << 4);
 }
 
 
@@ -425,54 +421,57 @@ void PropertyRef::set_link(PropertyList *p_chunk, TransactionImpl *tx)
 
 
 // Store the property value in the space referred to.
-void PropertyRef::set_value(const Property &p, Allocator &allocator)
+void PropertyRef::set_value(const Property &p, unsigned size,
+                            Allocator &allocator)
 {
     assert(_offset <= chunk_end());
+    unsigned type;
     switch (p.type()) {
         case t_novalue:
-            set_type(p_novalue);
+            type = p_novalue;
             break;
         case t_boolean:
-            set_type(p.bool_value() ? p_boolean_true : p_boolean_false);
+            type = p.bool_value() ? p_boolean_true : p_boolean_false;
             break;
         case t_integer: {
             long long v = p.int_value();
-            assert(size() == get_int_len(v) + 2);
-            set_type(p_integer);
-            memcpy(val(), &v, size() - 2);
+            assert(size == get_int_len(v) + 3);
+            memcpy(val(), &v, size - 3);
+            type = p_integer;
             break;
         }
         case t_string: {
             std::string value = p.string_value();
             size_t len = value.length();
             if (len <= 13) {
-                set_type(p_string);
                 if (len > 0)
                     memcpy(val(), value.data(), len);
+                type = p_string;
             }
             else {
-                set_type(p_string_ptr);
                 set_blob(value.data(), len, allocator);
+                type = p_string_ptr;
             }
             break;
         }
         case t_float:
-            set_type(p_float);
             *(double *)val() = p.float_value();
+            type = p_float;
             break;
         case t_time:
-            set_type(p_time);
             *(Time *)val() = p.time_value();
+            type = p_time;
             break;
         case t_blob: {
             Property::blob_t value = p.blob_value();
-            set_type(p_blob);
             set_blob(value.value, value.size, allocator);
+            type = p_blob;
             break;
         }
         default:
             assert(0);
     }
+    type_size() = uint8_t((size - 1) << 4 | type);
 }
 
 void PropertyRef::set_blob(const void *value, std::size_t size,
