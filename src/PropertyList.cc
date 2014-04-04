@@ -256,16 +256,17 @@ void PropertyRef::make_space(PropertyRef &q)
 
     while (p.not_done()) {
         if (p.ptype() != p_unused) {
-            unsigned size = p.size() + 1;
-            q.set_size(q.chunk_end() - q._offset, size);
-            q.set_type(p.ptype());
-            q.set_id(p.id());
-            if (size > 3)
-                memcpy(q.val(), p.val(), size - 3);
+            q.copy(p);
             q.skip();
         }
         p.skip();
     }
+    q.type_size() = p_end;
+}
+
+inline void PropertyRef::copy(const PropertyRef &p)
+{
+    memcpy(&_chunk[_offset], &p._chunk[p._offset], p.size() + 1);
 }
 
 
@@ -368,7 +369,7 @@ void PropertyRef::set_size(unsigned old_size, unsigned new_size)
     unsigned unused_size = old_size - new_size;
     if (unused_size > 0) {
         PropertyRef next(*this, new_size);
-        if (old_size == chunk_end() - _offset)
+        if (old_size == chunk_size() - _offset)
             next.type_size() = p_end;
         else {
             while (unused_size > 16) {
@@ -480,6 +481,7 @@ void PropertyRef::set_blob(const void *value, std::size_t size,
     if (size > UINT_MAX) throw Exception(not_implemented);
     void *p = allocator.alloc(size);
     memcpy(p, value, size);
+    TransactionImpl::flush_range(p, size);
     BlobRef *v = (BlobRef *)val();
     v->value = p;
     v->size = uint32_t(size);

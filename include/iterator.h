@@ -145,6 +145,7 @@ namespace Jarvis {
         void follow_link() { *this = PropertyRef(link()); }
 
         void make_space(PropertyRef &);
+        void copy(const PropertyRef &);
 
         PropertyRef() : _chunk(0), _offset(0) { }
         explicit PropertyRef(const PropertyList *list)
