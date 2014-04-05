@@ -101,6 +101,7 @@ namespace Jarvis {
             { return const_cast<PropertyRef *>(this)->type_size(); }
         unsigned ptype() const { return type_size() & 0xf; }
         unsigned size() const { return type_size() >> 4; }
+        uint8_t *val() const { return &_chunk[_offset + 3]; }
 
         PropertyList *&link()
         {
@@ -116,13 +117,6 @@ namespace Jarvis {
             return *(StringID *)(&_chunk[_offset+1]);
         }
 
-        uint8_t *val() const
-        {
-            assert(ptype() >= p_novalue && ptype() <= p_blob);
-            assert(size() >= 3);
-            return &_chunk[_offset + 3];
-        }
-
         Property get_value() const;
 
         unsigned free_space() const;
@@ -134,10 +128,9 @@ namespace Jarvis {
             { return _offset <= chunk_end() && ptype() != p_end; }
 
         void set_id(StringID id) { this->get_id() = id; }
-        void set_type(int type) { type_size() = uint8_t(size() << 4 | type); }
 
         void set_size(unsigned old_size, unsigned new_size);
-        void set_value(const Property &, Allocator &);
+        void set_value(const Property &, unsigned size, Allocator &);
         void set_link(PropertyList *p_chunk, TransactionImpl *);
         void set_blob(const void *value, std::size_t size,
                       Allocator &allocator);
@@ -145,6 +138,7 @@ namespace Jarvis {
         void follow_link() { *this = PropertyRef(link()); }
 
         void make_space(PropertyRef &);
+        void copy(const PropertyRef &);
 
         PropertyRef() : _chunk(0), _offset(0) { }
         explicit PropertyRef(const PropertyList *list)
