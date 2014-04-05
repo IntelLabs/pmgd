@@ -4,6 +4,7 @@
 
 #include "jarvis.h"
 #include "../util/util.h"
+#include "../util/annotate.h"
 
 using namespace Jarvis;
 
@@ -31,8 +32,11 @@ int main(int argc, char **argv)
     try {
         Graph db(db_name, Graph::Create);
 
+        annotate("Start transaction");
         Transaction tx(db);
+        annotate("Add node");
         Node &n = db.add_node(0);
+        annotate("Commit transaction");
         tx.commit();
 
         unsigned max_id = 0;
@@ -48,7 +52,9 @@ int main(int argc, char **argv)
             Property value;
             int type = rand() % 10;
             if (type < 1) {
-                printf("%s D\n", id_str);
+                std::string s = std::string(id_str) + " D";
+                printf("%s\n", s.c_str());
+                annotate(s);
                 Transaction tx(db);
                 n.remove_property(id_str);
                 tx.commit();
@@ -70,7 +76,9 @@ int main(int argc, char **argv)
                 value = Property("abcdefghijklmnopq", size);
             }
 
-            printf("%s = %s\n", id_str, property_text(value).c_str());
+            std::string s = std::string(id_str) + " = " + property_text(value);
+            printf("%s\n", s.c_str());
+            annotate(s);
             Transaction tx(db);
             n.set_property(id_str, value);
             tx.commit();
