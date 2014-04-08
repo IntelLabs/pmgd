@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <string>
 
 // Issue the CPUID instruction with special parameters, for use with Hypersim.
 static inline int cpuid(uint32_t a, uint32_t b = 0, uint32_t c = 0,
