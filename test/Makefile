@@ -24,7 +24,8 @@ endif
 TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          propertytest propertypredicatetest propertychunktest filtertest \
          txtest propertylisttest \
-         stringtabletest dumpgraph loadgraph setproperty load_tsv_test
+         stringtabletest dumpgraph loadgraph setproperty load_tsv_test \
+		 avltest
 
 OBJS := $(TESTS:%=%.o)
 
@@ -97,6 +98,10 @@ setproperty: setproperty.o $(LIB)
 load_tsv_test: load_tsv_test.o $(LIB) util
 	$(call print,LNK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIB)
+
+avltest: avltest.o $(LIB)
+	$(call print,LINK,$@)
+	$(CC) -o $@ $< $(LIB)
 
 lib:
 	make -C ../src OPT=$(OPT) install
