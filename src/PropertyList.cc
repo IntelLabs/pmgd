@@ -293,7 +293,7 @@ static unsigned get_int_len(long long v)
 {
     if (v == 0) return 1;
     if (v < 0) v = -v;
-    return bsr(v) / CHAR_BIT + 1;
+    return (bsr(v) + 1) / CHAR_BIT + 1;
 }
 
 
