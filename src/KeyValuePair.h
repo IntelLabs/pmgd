@@ -5,7 +5,7 @@ namespace Jarvis {
         KeyType _key;
         ValueType _value;
 
-        public:
+    public:
         KeyValuePair(const KeyType& k, const ValueType& v)
         {
             _key = k;
@@ -14,6 +14,11 @@ namespace Jarvis {
         bool operator==(const KeyValuePair& val2) const
         {
             return (_key == val2._key);
+        }
+        void operator=(const long value)
+        {
+            _key = (KeyType)value;
+            _value = (ValueType)value;
         }
         bool operator<(const KeyValuePair& val2) const
         {
@@ -27,6 +32,7 @@ namespace Jarvis {
         void set_key(const KeyType &k) { _key = k; }
         void set_value(const ValueType &v) { _value = v; }
         const KeyType &key() const { return _key; }
+        ValueType &value() { return _value; }
         const ValueType &value() const { return _value; }
     };
 }
