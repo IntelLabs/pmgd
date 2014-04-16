@@ -22,31 +22,31 @@ static constexpr AllocatorInfo default_allocators[] = {
     { 4*REGION_SIZE, REGION_SIZE, 256 },
 };
 
-void print_recursive(AvlTree<int> &tree, AvlTree<int>::AvlTreeNode *node,
+void print_recursive(AvlTree<int,int> &tree, AvlTree<int,int>::AvlTreeNode *node,
                      char side, int rec_depth)
 {
     if (node == NULL)
         return;
     for (int i = 0; i < rec_depth; ++i)
         cout << " ";
-    cout << side << ":" << *tree.data(node) << "[" << tree.height(node) << "]\n";
+    cout << side << ":" << *tree.key(node) << "[" << tree.height(node) << "]\n";
     print_recursive(tree, tree.left(node), 'L', rec_depth + 1);
     print_recursive(tree, tree.right(node), 'R', rec_depth + 1);
 }
 
-void print(AvlTree<int> &tree)
+void print(AvlTree<int,int> &tree)
 {
     print_recursive(tree, tree.begin(), 'C', 0);
     cout << endl;
 }
 
-void print_node(AvlTree<int> &tree, AvlTree<int>::AvlTreeNode *curr)
+void print_node(AvlTree<int,int> &tree, AvlTree<int,int>::AvlTreeNode *curr)
 {
     if (curr == NULL) {
         cout << "Empty\n";
         return;
     }
-    cout << "Data: " << *tree.data(curr) << "\n";
+    cout << "key: " << *tree.key(curr) << "\n";
 }
 
 int main()
@@ -72,7 +72,7 @@ int main()
         os::MapRegion region1(".", "region1", start_addr, info1.len, create1, create1);
         Allocator allocator1(start_addr, info_arr, NUM_FIXED_ALLOCATORS, create1);
         
-        AvlTree<int> tree;
+        AvlTree<int,int> tree;
         int insert_vals[] = {5, 5, 10, 15, 20, 25, 1, 4, 30, 35, 40, 45, 50,
             12, 17, 60, 70, 70, 55, 19};
         int num_inserted = 18 + 2;
@@ -86,35 +86,35 @@ int main()
         print_node(tree, tree.find(find_val));
         find_val = 50;
         print_node(tree, tree.find(find_val));
-
-        set<AvlTree<int>::AvlTreeNode *> r;
+/*
+        set<AvlTree<int,int>::AvlTreeNode *> r;
         int min = 10, max = 25;
         tree.find_range(r, min, max, true);
         cout << "Items in range: " << min << "-" << max << ", inclusive:\n";
-        for (set<AvlTree<int>::AvlTreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
+        for (set<AvlTree<int,int>::AvlTreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
             print_node(tree, *it);
 
         r.clear();
         min = 12; max = 60;
         tree.find_range(r, min, max, true);
         cout << "Items in range: " << min << "-" << max << ", inclusive:\n";
-        for (set<AvlTree<int>::AvlTreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
+        for (set<AvlTree<int,int>::AvlTreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
             print_node(tree, *it);
 
         r.clear();
         min = 55; max = 70;
         tree.find_range(r, min, max, true);
         cout << "Items in range: " << min << "-" << max << ", inclusive:\n";
-        for (set<AvlTree<int>::AvlTreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
+        for (set<AvlTree<int,int>::AvlTreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
             print_node(tree, *it);
 
         r.clear();
         min = 1; max = 70;
         tree.find_range(r, min, max, false);
         cout << "Items in range: " << min << "-" << max << ", inclusive:\n";
-        for (set<AvlTree<int>::AvlTreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
+        for (set<AvlTree<int,int>::AvlTreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
             print_node(tree, *it);
-
+*/
         cout << "Testing remove\n";
         int remove_vals[] = {55, 55, 60, 45, 40, 15, 17, 10};
         int num_removed = 8;
