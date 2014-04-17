@@ -75,6 +75,15 @@ int main(int argc, char **argv)
             else
                 edge->set_property(property, p);
         }
+        else if (argi < argc) {
+            const char *property = argv[argi++];
+            printf("remove %s\n", property);
+
+            if (use_node)
+                node->remove_property(property);
+            else
+                edge->remove_property(property);
+        }
         else {
             char property[17], value[40];
             while (scanf("%17s = %40[^\n]", property, value) == 2) {
