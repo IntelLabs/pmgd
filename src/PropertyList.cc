@@ -14,7 +14,7 @@ using namespace Jarvis;
 
 namespace Jarvis {
     struct __attribute((packed)) PropertyRef::BlobRef {
-        const void *value;
+        void *value;
         uint32_t size;
     };
 
@@ -349,6 +349,11 @@ void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
 
 void PropertyRef::free(TransactionImpl *tx)
 {
+    if (ptype() == p_string_ptr || ptype() == p_blob) {
+        Allocator &allocator = tx->get_db()->allocator();
+        BlobRef *v = (BlobRef *)val();
+        allocator.free(v->value, v->size);
+    }
     PropertyRef next(*this, size() + 1);
     if (!next.not_done())
         tx->write(&type_size(), uint8_t(p_end));
