@@ -14,7 +14,7 @@ FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
 WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
           -Wformat=2 -Wno-parentheses -Wno-conversion
 
-CFLAGS := --std=c++11 $(INCLUDES) $(FFLAGS) $(WFLAGS) -DSTUBS $(OPT) \
+CFLAGS := --std=c++11 $(INCLUDES) $(FFLAGS) $(WFLAGS) $(OPT) \
           $(PM) -MP -MMD
 
 ifneq ($(findstring s,$(MAKEFLAGS)),)
