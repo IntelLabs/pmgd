@@ -14,7 +14,7 @@ using namespace Jarvis;
 
 namespace Jarvis {
     struct __attribute((packed)) PropertyRef::BlobRef {
-        const void *value;
+        void *value;
         uint32_t size;
     };
 
@@ -291,8 +291,8 @@ unsigned PropertyRef::free_space() const
 // the specified value.
 static unsigned get_int_len(long long v)
 {
+    if (v < 0) v = -v - 1;
     if (v == 0) return 1;
-    if (v < 0) v = -v;
     return (bsr(v) + 1) / CHAR_BIT + 1;
 }
 
@@ -328,29 +328,32 @@ void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
     assert(_size >= _req);
     assert(_pos.free_space() >= _size);
 
-    if (!_new_chunk) {
-        unsigned log_size;
-        if (_size == _req)
-            log_size = _req;
-        else if (_size - _req > 16 && _size < _pos.chunk_size() - _pos._offset)
-            log_size = _size - (_size - _req) % 16 + 1;
-        else
-            log_size = _req + 1;
+    unsigned log_size = _size > _req ? _req + 1 : _req;
+
+    if (!_new_chunk)
         tx->log(&_pos._chunk[_pos._offset], log_size);
-    }
 
     if (_size > _req)
         _pos.set_size(_size, _req);
     _pos.set_value(p, _req, allocator);
     _pos.set_id(id);
 
-    if (_new_chunk)
-        TransactionImpl::flush_range(_pos._chunk, _pos.chunk_size());
+    if (_new_chunk) {
+        // Flush from the beginning of the chunk because the
+        // chunk initialization code depends on us doing it
+        // (to avoid redundant flushes).
+        TransactionImpl::flush_range(_pos._chunk, _pos._offset + log_size);
+    }
 }
 
 
 void PropertyRef::free(TransactionImpl *tx)
 {
+    if (ptype() == p_string_ptr || ptype() == p_blob) {
+        Allocator &allocator = tx->get_db()->allocator();
+        BlobRef *v = (BlobRef *)val();
+        allocator.free(v->value, v->size);
+    }
     PropertyRef next(*this, size() + 1);
     if (!next.not_done())
         tx->write(&type_size(), uint8_t(p_end));
@@ -364,18 +367,16 @@ void PropertyRef::free(TransactionImpl *tx)
 // otherwise, mark the following space as unused.
 void PropertyRef::set_size(unsigned old_size, unsigned new_size)
 {
-    assert(old_size > new_size);
-    unsigned unused_size = old_size - new_size;
     PropertyRef next(*this, new_size);
     if (old_size == chunk_size() - _offset)
         next.type_size() = p_end;
     else {
-        while (unused_size > 16) {
-            next.type_size() = uint8_t(15 << 4 | p_unused);
-            next.skip();
-            unused_size -= 16;
-        }
-        next.type_size() = uint8_t((unused_size - 1) << 4 | p_unused);
+        PropertyRef p = *this;
+        unsigned unused_size = 0;
+        while ((unused_size += p.size() + 1) < new_size)
+            p.skip();
+        if (unused_size > new_size)
+            next.type_size() = (unused_size - new_size - 1) << 4 | p_unused;
     }
 }
 
