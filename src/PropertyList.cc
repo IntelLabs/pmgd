@@ -291,8 +291,8 @@ unsigned PropertyRef::free_space() const
 // the specified value.
 static unsigned get_int_len(long long v)
 {
+    if (v < 0) v = -v - 1;
     if (v == 0) return 1;
-    if (v < 0) v = -v;
     return (bsr(v) + 1) / CHAR_BIT + 1;
 }
 
