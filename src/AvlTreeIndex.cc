@@ -1,5 +1,7 @@
 #include <string.h>    // For memset
-#include "AvlTree.h"
+#include "AvlTreeIndex.h"
+#include "node.h"
+#include "List.h"
 
 using namespace Jarvis;
 
@@ -8,9 +10,9 @@ using namespace Jarvis;
 // the parent of hinge that will call this function
 // Also called rotate_with_right
 template <typename K, typename V>
-typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::left_rotate(AvlTree<K,V>::AvlTreeNode *hinge)
+typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::left_rotate(AvlTreeIndex<K,V>::TreeNode *hinge)
 {
-    AvlTreeNode *new_root = hinge->right;
+    TreeNode *new_root = hinge->right;
     hinge->right = new_root->left;
     hinge->height = max(height(hinge->left), height(hinge->right)) + 1;
     new_root->left = hinge;
@@ -25,9 +27,9 @@ typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::left_rotate(AvlTree<K,V>::AvlT
 // the parent of hinge that will call this function
 // Also called rotate_with_left
 template <typename K, typename V>
-typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::right_rotate(AvlTree<K,V>::AvlTreeNode *hinge)
+typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::right_rotate(AvlTreeIndex<K,V>::TreeNode *hinge)
 {
-    AvlTreeNode *new_root = hinge->left;
+    TreeNode *new_root = hinge->left;
     hinge->left = new_root->right;
     hinge->height = max(height(hinge->left), height(hinge->right)) + 1;
     new_root->right = hinge;
@@ -45,7 +47,7 @@ typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::right_rotate(AvlTree<K,V>::Avl
    Also called double left
 */
 template <typename K, typename V>
-typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::leftright_rotate(AvlTree<K,V>::AvlTreeNode *hinge)
+typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::leftright_rotate(AvlTreeIndex<K,V>::TreeNode *hinge)
 {
     hinge->right = right_rotate(hinge->right);
     return left_rotate(hinge);
@@ -59,18 +61,18 @@ typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::leftright_rotate(AvlTree<K,V>:
    Also called double right  
 */   
 template <typename K, typename V>
-typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::rightleft_rotate(AvlTree<K,V>::AvlTreeNode *hinge)
+typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::rightleft_rotate(AvlTreeIndex<K,V>::TreeNode *hinge)
 {
     hinge->left = left_rotate(hinge->left);
     return right_rotate(hinge);
 }
 
 template <typename K, typename V>
-typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::add_recursive(AvlTree<K,V>::AvlTreeNode *curr,
-                                                const K &key, V **r, Allocator &allocator)
+typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::add_recursive(AvlTreeIndex<K,V>::TreeNode *curr,
+                                                const K &key, V *&r, Allocator &allocator)
 {
     if (curr == NULL) {
-        AvlTreeNode *temp = (AvlTreeNode *)allocator.alloc(sizeof(AvlTreeNode));
+        TreeNode *temp = (TreeNode *)allocator.alloc(sizeof(TreeNode));
         temp->key = key;
         // While we do not set the value part here, zero it out
         // to make sure the caller can know that this was a new node.
@@ -79,11 +81,11 @@ typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::add_recursive(AvlTree<K,V>::Av
         temp->left = NULL;
         temp->right = NULL;
         _num_elems++;
-        *r = &(temp->value);
+        r = &(temp->value);
         return temp;
     }
     if (key == curr->key) {
-        *r = &(curr->value);
+        r = &(curr->value);
         return curr;
     }
     else if (key < curr->key) {
@@ -110,25 +112,26 @@ typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::add_recursive(AvlTree<K,V>::Av
 }
 
 template <typename K, typename V>
-V *AvlTree<K,V>::add(const K &key, Allocator &allocator)
+V *AvlTreeIndex<K,V>::add(const K &key, Allocator &allocator)
 {
     V *r = NULL;
-    _tree = add_recursive(_tree, key, &r, allocator);
+    _tree = add_recursive(_tree, key, r, allocator);
     return r;
 }
 
 template <typename K, typename V>
-typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::remove_recursive(AvlTree<K,V>::AvlTreeNode *curr,
+typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::remove_recursive(AvlTreeIndex<K,V>::TreeNode *curr,
                                                 K &key, Allocator &allocator)
 {
     if (curr == NULL) {
         return NULL;
     }
     if (key == curr->key) {
-        // If no children, just free and return
+        // If no children or just one child, just free given node and return
+        // non-empty child or NULL
         if (curr->left == NULL || curr->right == NULL) {
             _num_elems--;
-            AvlTreeNode *temp = curr->left != NULL ? curr->left : curr->right;
+            TreeNode *temp = curr->left != NULL ? curr->left : curr->right;
             allocator.free(curr, sizeof *curr);
             // This nodes and its own childrens' heights won't get affected
             // by this step. So return a level up where the parent will be go
@@ -140,7 +143,7 @@ typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::remove_recursive(AvlTree<K,V>:
         // predecessor will then be the actual deleted node.
         // But we will have to run delete again and traverse again cause
         // the heights and rotations need to be done correctly.
-        AvlTreeNode *to_replace = find_max(curr->left);
+        TreeNode *to_replace = find_max(curr->left);
         // This node will never be NULL.
         curr->key = to_replace->key;
         curr->left = remove_recursive(curr->left, to_replace->key, allocator);
@@ -174,18 +177,18 @@ typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::remove_recursive(AvlTree<K,V>:
 }
 
 template <typename K, typename V>
-void AvlTree<K,V>::remove(K &key, Allocator &allocator)
+void AvlTreeIndex<K,V>::remove(K &key, Allocator &allocator)
 {
     _tree = remove_recursive(_tree, key, allocator);
 }
 
 template <typename K, typename V>
-typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::find(const K &key)
+V *AvlTreeIndex<K,V>::find(const K &key)
 {
-    AvlTreeNode *curr = _tree;
+    TreeNode *curr = _tree;
     while (curr != NULL) {
         if (key == curr->key)
-            return curr;
+            return &(curr->value);
         else if (key < curr->key)
             curr = curr->left;
         else
@@ -195,8 +198,7 @@ typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::find(const K &key)
 }
 
 // Explicitly instantiate any types that might be required
-template class AvlTree<int,int>;
-#include "node.h"
-#include "List.h"
-template class AvlTree<long long,List<const Node*>>;
-template class AvlTree<bool,List<const Node*>>;
+template class AvlTreeIndex<int,int>;
+template class AvlTreeIndex<long long,List<Node *>>;
+template class AvlTreeIndex<bool,List<Node *>>;
+template class AvlTreeIndex<double,List<Node *>>;

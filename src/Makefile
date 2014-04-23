@@ -12,7 +12,7 @@ SRC := graph.cc node.cc edge.cc property.cc stringid.cc \
        EdgeIndex.cc \
        PropertyList.cc StringTable.cc FixedAllocator.cc Allocator.cc \
        TransactionManager.cc transaction.cc linux.cc \
-       AvlTree.cc IndexManager.cc Index.cc
+       AvlTreeIndex.cc IndexManager.cc Index.cc
 
 # Translates source file names to object file names
 OBJS := $(patsubst %.cc, %.o, $(SRC))

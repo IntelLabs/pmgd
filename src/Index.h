@@ -1,17 +1,19 @@
 #pragma once
 #include "property.h"
-#include "allocator.h"
-#include "node.h"
+#include "iterator.h"
 
 namespace Jarvis {
+    class Node;
+    class Allocator;
+
     // Base class for all the property value indices
     class Index {
-    protected:
         PropertyType _ptype;
     public:
         void init(PropertyType ptype);
-        void add(const Property &p, const Node *n, Allocator &allocator);
-        void remove(const Property &p, const Node *n, Allocator &allocator);
-        // Find functions will be for the iterators
+        void add(const Property &p, Node *n, Allocator &allocator);
+        void remove(const Property &p, Node *n, Allocator &allocator);
+
+        NodeIterator get_nodes(const PropertyPredicate &pp);
     };
 }

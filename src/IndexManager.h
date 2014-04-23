@@ -4,11 +4,12 @@
 #include "property.h"
 #include "allocator.h"
 #include "List.h"
-#include "AvlTree.h"
+#include "AvlTreeIndex.h"
 #include "KeyValuePair.h"
 #include "node.h"
 #include "edge.h"
 #include "Index.h"
+#include "iterator.h"
 
 namespace Jarvis {
     class Index;
@@ -27,12 +28,8 @@ namespace Jarvis {
         // Use a base Index class here since the template types for the
         // actual ADTs are known only at the time of creation.
         // A chunklist for storing the above K,V pair
-        typedef ChunkList<StringID, Index *, 128> PropertyIdADT;
-        typedef ChunkList<StringID, PropertyIdADT, 128> TagPropMap;
-
-        // For the actual property value indices
-        typedef AvlTree<long long,List<const Node*>> NodeIntIndex;
-        typedef AvlTree<bool,List<const Node*>> NodeBoolIndex;
+        typedef ChunkList<StringID, Index *, 128> IndexList;
+        typedef ChunkList<StringID, IndexList, 128> TagList;
 
         // A pair for the node or edge tag that will have multiple property
         // indexes
@@ -40,17 +37,17 @@ namespace Jarvis {
         // TODO It might make sense to inline the first chunk in the index
         // page mapped from graph.cc to avoid the first pointer chase beyond
         // the same page.
-        TagPropMap *_tag_prop_map;
+        TagList *_tag_prop_map;
 
         bool _create;
         bool _initialized;
 
-        PropertyIdADT *add_tag_index(int node_or_edge,
+        IndexList *add_tag_index(int node_or_edge,
                                      StringID tag,
                                      Allocator &allocator);
     public:
         IndexManager(const uint64_t region_addr, bool create)
-            : _tag_prop_map(reinterpret_cast<TagPropMap *>(region_addr)),
+            : _tag_prop_map(reinterpret_cast<TagList *>(region_addr)),
                 _create(create), _initialized(false)
         {
             _tag_prop_map[0].init();
@@ -81,10 +78,13 @@ namespace Jarvis {
         // the set_property state. We cannot wait until first set_property
         // since the user might just want to query based on tag and
         // not set any property until then.
-        bool add_node(const Node *n, Allocator &allocator);
+        bool add_node(Node *n, Allocator &allocator);
 
         // This is called from set_property
         bool add_node(StringID property_id, const Property &p,
-                        const Node *n, Allocator &allocator);
+                        Node *n, Allocator &allocator);
+
+        Index *get_index(StringID tag, const PropertyPredicate &pp);
+        NodeIterator get_nodes(StringID tag);
     };
 }

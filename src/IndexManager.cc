@@ -3,14 +3,19 @@
 
 using namespace Jarvis;
 
-IndexManager::PropertyIdADT *IndexManager::add_tag_index(int node_or_edge,
+// For the actual property value indices
+typedef AvlTreeIndex<long long,List<Node *>> NodeIntIndex;
+typedef AvlTreeIndex<double,List<Node *>> NodeFloatIndex;
+typedef AvlTreeIndex<bool,List<Node *>> NodeBoolIndex;
+
+IndexManager::IndexList *IndexManager::add_tag_index(int node_or_edge,
                                            StringID tag,
                                            Allocator &allocator)
 {
     // TODO Check if this is even needed
     if (!_initialized)
         init(allocator);
-    PropertyIdADT *tag_entry = _tag_prop_map[node_or_edge - 1].add(tag, allocator);
+    IndexList *tag_entry = _tag_prop_map[node_or_edge - 1].add(tag, allocator);
     tag_entry->init();
     // If there is no other property id entry for this tag, make that
     // 0th entry be an entry for NO property id (represented by 0). So
@@ -40,7 +45,7 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
     // which will get returned to us and then we can add a new
     // property ID there. If not, this add_tag_index function will
     // allocate it and create an entry with id 0 for default.
-    PropertyIdADT *tag_entry = _tag_prop_map[node_or_edge - 1].find(tag);
+    IndexList *tag_entry = _tag_prop_map[node_or_edge - 1].find(tag);
     if (!tag_entry)
         tag_entry = add_tag_index(node_or_edge, tag, allocator);
 
@@ -55,12 +60,16 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
                 (*prop_idx)->init(t_integer);
                 break;
             case t_float:
+                *prop_idx = (Index *)allocator.alloc(sizeof(NodeFloatIndex));
+                (*prop_idx)->init(t_float);
                 break;
-            case t_novalue:
+            case t_boolean:
+                *prop_idx = (Index *)allocator.alloc(sizeof(NodeBoolIndex));
+                (*prop_idx)->init(t_boolean);
                 break;
             case t_time:
-            case t_boolean:
             case t_string:
+            case t_novalue:
                 throw Exception(not_implemented);
             case t_blob:
                 throw Exception(property_type);
@@ -68,7 +77,7 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
     }
 }
 
-bool IndexManager::add_node(const Node *n, Allocator &allocator)
+bool IndexManager::add_node(Node *n, Allocator &allocator)
 {
     assert(n != NULL);
     // Untagged nodes can be indexed only because of properties. Not
@@ -77,7 +86,7 @@ bool IndexManager::add_node(const Node *n, Allocator &allocator)
         return false;
     // Traverse the two chunklists <tag,propADT> and <propid,indexADT>
     // to get to the Index* which is where this Node* needs to be added
-    PropertyIdADT *tag_entry = _tag_prop_map[0].find(n->get_tag());
+    IndexList *tag_entry = _tag_prop_map[0].find(n->get_tag());
     // Check first if that tag index exists. Since we are indexing
     // all nodes/edges based on their tags, create an entry if it
     // doesn't exist.
@@ -94,21 +103,21 @@ bool IndexManager::add_node(const Node *n, Allocator &allocator)
     // TODO: Tree is unnecessary and Node* needs better arrangement for
     // quick search and remove operations
     bool value = true;
-    List<const Node *> *list = idx->add(value, allocator);
+    List<Node *> *list = idx->add(value, allocator);
     list->add(n, allocator);
 
     return true;
 }
 
 bool IndexManager::add_node(StringID property_id, const Property &p,
-                            const Node *n, Allocator &allocator)
+                            Node *n, Allocator &allocator)
 {
     // This might be quite redundant. This function is called from
     // node.set_property() and it is very unlikely that n will be null.
     assert(n != NULL);
     // Traverse the two chunklists <tag,propADT> and <propid,indexADT>
     // to get to the Index* which is where this Node* needs to be added
-    PropertyIdADT *tag_entry = _tag_prop_map[0].find(n->get_tag());
+    IndexList *tag_entry = _tag_prop_map[0].find(n->get_tag());
     // Check first if that tag index exists. Since we add every new tag
     // to our tag index, this shouldn't happen.
     if (!tag_entry)
@@ -123,4 +132,39 @@ bool IndexManager::add_node(StringID property_id, const Property &p,
     idx->add(p, n, allocator);
     
     return true;
+}
+
+Index *IndexManager::get_index(StringID tag, const PropertyPredicate &pp)
+{
+    // Traverse the two chunklists <tag,propADT> and <propid,indexADT>
+    // to get to the Index* which is where this Node* needs to be added
+    IndexList *tag_entry = _tag_prop_map[0].find(tag);
+    // Check first if that tag index exists. Since we add every new tag
+    // to our tag index, this shouldn't happen.
+    if (!tag_entry)
+        throw Exception(invalid_id);
+    // Since we will not have range support yet, only the equal relation
+    // is valid
+    if (pp.op != PropertyPredicate::eq)
+        throw Exception(not_implemented);
+    
+    // Now get the generic pointer and let Index class handle the specific
+    // property datatype.
+    // If property had not been indexed, this will be null.
+    return ((Index *)*(tag_entry->find(pp.id)));
+}
+
+NodeIterator IndexManager::get_nodes(StringID tag)
+{
+    // Traverse the two chunklists <tag,propADT> and <propid,indexADT>
+    // to get to the Index* which is where this Node* needs to be added
+    IndexList *tag_entry = _tag_prop_map[0].find(tag);
+    // Check first if that tag index exists. Since we add every new tag
+    // to our tag index, this shouldn't happen.
+    if (!tag_entry)
+        throw Exception(invalid_id);
+    
+    Index *prop0_idx = (Index *)*(tag_entry->find(0));
+    // This index can never be null cause we create it for each non-zero tag
+    return prop0_idx->get_nodes(PropertyPredicate(0, PropertyPredicate::eq, true));
 }

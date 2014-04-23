@@ -44,6 +44,6 @@ namespace Jarvis {
         void remove(Edge &edge);
 
         enum { NODE=1, EDGE=2 };
-        void create_index(int node_or_edge, StringID tag, StringID property_id, const PropertyType p);
+        void create_index(int node_or_edge, StringID tag, StringID property_id, const PropertyType ptype);
     };
 };

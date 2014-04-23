@@ -10,6 +10,8 @@
 #include "TransactionManager.h"
 #include "arch.h"
 #include "os.h"
+#include "Index.h"
+#include "filter.h"
 
 using namespace Jarvis;
 
@@ -129,10 +131,10 @@ Edge &Graph::add_edge(Node &src, Node &dest, StringID tag)
 }
 
 void Graph::create_index(int node_or_edge, StringID tag,
-                         StringID property_id, const PropertyType p)
+                         StringID property_id, const PropertyType ptype)
 {
     _impl->index_manager().create_index(node_or_edge, tag,
-                                        property_id, p, _impl->allocator());
+                                        property_id, ptype, _impl->allocator());
 }
 
 GraphImpl::GraphInit::GraphInit(const char *name, int options)
@@ -276,6 +278,23 @@ void Graph_Iterator<B, T>::_skip()
 NodeIterator Graph::get_nodes()
 {
     return NodeIterator(new Graph_NodeIterator(_impl->node_table()));
+}
+
+NodeIterator Graph::get_nodes(StringID tag)
+{
+    if (tag.id() == 0)
+        throw Exception(invalid_id);
+    else
+        return _impl->index_manager().get_nodes(tag);
+}
+
+NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp)
+{
+    Index *index = _impl->index_manager().get_index(tag, pp);
+    if (index)
+        return index->get_nodes(pp);
+    else
+        return get_nodes(tag).filter(pp); // TODO Causes re-lookup of tag
 }
 
 EdgeIterator Graph::get_edges()
