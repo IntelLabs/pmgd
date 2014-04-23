@@ -1,3 +1,4 @@
+#include <string.h>    // For memset
 #include "AvlTree.h"
 
 using namespace Jarvis;
@@ -66,11 +67,14 @@ typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::rightleft_rotate(AvlTree<K,V>:
 
 template <typename K, typename V>
 typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::add_recursive(AvlTree<K,V>::AvlTreeNode *curr,
-                                                K &key, V **r, Allocator &allocator)
+                                                const K &key, V **r, Allocator &allocator)
 {
     if (curr == NULL) {
         AvlTreeNode *temp = (AvlTreeNode *)allocator.alloc(sizeof(AvlTreeNode));
         temp->key = key;
+        // While we do not set the value part here, zero it out
+        // to make sure the caller can know that this was a new node.
+        memset(&temp->value, 0, sizeof(V));
         temp->height = 0;
         temp->left = NULL;
         temp->right = NULL;
@@ -106,7 +110,7 @@ typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::add_recursive(AvlTree<K,V>::Av
 }
 
 template <typename K, typename V>
-V *AvlTree<K,V>::add(K &key, Allocator &allocator)
+V *AvlTree<K,V>::add(const K &key, Allocator &allocator)
 {
     V *r = NULL;
     _tree = add_recursive(_tree, key, &r, allocator);
@@ -192,3 +196,7 @@ typename AvlTree<K,V>::AvlTreeNode *AvlTree<K,V>::find(const K &key)
 
 // Explicitly instantiate any types that might be required
 template class AvlTree<int,int>;
+#include "node.h"
+#include "List.h"
+template class AvlTree<long long,List<const Node*>>;
+template class AvlTree<bool,List<const Node*>>;

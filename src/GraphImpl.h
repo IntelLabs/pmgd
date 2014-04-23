@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include "graph.h"
 #include "allocator.h"
+#include "IndexManager.h"
 #include "TransactionManager.h"
 #include "os.h"
 #include "StringTable.h"
@@ -36,12 +37,16 @@ namespace Jarvis {
 
         // File-backed space
         MapRegion _transaction_region;
+        MapRegion _indexmanager_region;
         MapRegion _stringtable_region;
         MapRegion _node_region;
         MapRegion _edge_region;
         MapRegion _allocator_region;
 
+        // Even though the transaction file comes after index and string table
+        // the transaction object needs to go in first because of recovery.
         TransactionManager _transaction_manager;
+        IndexManager _index_manager;
         StringTable _string_table;
         NodeTable _node_table;
         EdgeTable _edge_table;
@@ -55,6 +60,7 @@ namespace Jarvis {
 
         GraphImpl(const char *name, int options);
         TransactionManager &transaction_manager() { return _transaction_manager; }
+        IndexManager &index_manager() { return _index_manager; }
         StringTable &string_table() { return _string_table; }
         NodeTable &node_table() { return _node_table; }
         EdgeTable &edge_table() { return _edge_table; }

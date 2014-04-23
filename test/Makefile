@@ -25,7 +25,7 @@ TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          propertytest propertypredicatetest propertychunktest filtertest \
          txtest propertylisttest \
          stringtabletest dumpgraph loadgraph setproperty load_tsv_test \
-		 avltest chunklisttest
+         avltest chunklisttest indextest
 
 OBJS := $(TESTS:%=%.o)
 
@@ -104,6 +104,10 @@ avltest: avltest.o $(LIB)
 	$(CC) -o $@ $< $(LIB)
 
 chunklisttest: chunklisttest.o $(LIB)
+	$(call print,LINK,$@)
+	$(CC) -o $@ $< $(LIB)
+
+indextest: indextest.o $(LIB)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIB)
 

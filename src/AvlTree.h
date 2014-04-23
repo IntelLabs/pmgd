@@ -1,6 +1,7 @@
 #pragma once
 #include "allocator.h"
 #include "KeyValuePair.h"
+#include "Index.h"
 
 // AVL Trees are very good for search which will hopefully be the
 // primary function when used for indexing. The balancing condition
@@ -11,13 +12,10 @@
 // Also, from some simple tests, it does seem like balancing starts
 // to become less frequent as the tree grows larger.
 
-// While most of our use of this tree will be with separate keys and values
-// just use one template parameter and pass the KeyValue data structure. That
-// way we can use these trees just to store singular entries with no values.
 namespace Jarvis {
     template<typename K, typename V> class AvlTree;
 
-    template<typename K, typename V> class AvlTree {
+    template<typename K, typename V> class AvlTree : public Index {
     public: // for testing
             // Max 32B size
             struct AvlTreeNode {
@@ -44,16 +42,17 @@ namespace Jarvis {
             AvlTreeNode *leftright_rotate(AvlTreeNode *hinge);
             AvlTreeNode *rightleft_rotate(AvlTreeNode *hinge);
             int max(int val1, int val2) { return (val1 > val2) ? val1 : val2; }
-            AvlTreeNode *add_recursive(AvlTreeNode *curr, K &data, V**r, Allocator &allocator);
+            AvlTreeNode *add_recursive(AvlTreeNode *curr, const K &data, V**r, Allocator &allocator);
             AvlTreeNode *remove_recursive(AvlTreeNode *curr, K &data, Allocator &allocator);
 
     public:
             AvlTree() : _tree(NULL), _num_elems(0) {}
+            void init() { *this = AvlTree(); }
             size_t num_elems() { return _num_elems; }
             // We could use a key value pair in the tree struct and return a pointer to
             // that but technically, the user shouldn't be allowed to modify anything
             // other than what goes in the value area.
-            V *add(K &key, Allocator &allocator);
+            V *add(const K &key, Allocator &allocator);
             // In most cases, remove will remove the tree node, in cases where user
             // wants to modify the value, it should be a find and modify, which
             // in cases where value becomes empty, could trigger a tree node delete

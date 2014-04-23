@@ -6,6 +6,8 @@
 #include "node.h"
 #include "edge.h"
 #include "EdgeIndex.h"
+#include "GraphImpl.h"
+#include "IndexManager.h"
 
 using namespace Jarvis;
 
@@ -197,7 +199,13 @@ Jarvis::PropertyIterator Jarvis::Node::get_properties() const
     { return _property_list.get_properties(); }
 
 void Jarvis::Node::set_property(StringID id, const Property &p)
-    { _property_list.set_property(id, p); }
+{
+    // Set this inside the index first. If for any reason, the index throws,
+    // this property won't get added to the node either.
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    tx->get_db()->index_manager().add_node(id, p, this, tx->get_db()->allocator());
+    _property_list.set_property(id, p);
+}
 
 void Jarvis::Node::remove_property(StringID id)
     { _property_list.remove_property(id); }
