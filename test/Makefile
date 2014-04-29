@@ -117,15 +117,18 @@ lib:
 util:
 	make -C ../util OPT=$(OPT) install
 
-clean:
-	$(call print,CLEAN)
-	$(RM) $(CLEANFILES)
-	make -C ../src clean
-	make -C ../util clean
-
 %.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 DEPS := $(OBJS:%.o=%.d)
 -include $(DEPS)
+
+CLEANFILES += $(DEPS)
+
+clean:
+	$(call print,CLEAN)
+	$(RM) $(CLEANFILES)
+	make -C ../src clean
+	make -C ../util clean
+

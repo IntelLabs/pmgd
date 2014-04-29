@@ -11,8 +11,9 @@ CLEANFILES :=
 SRC := graph.cc node.cc edge.cc property.cc stringid.cc \
        EdgeIndex.cc \
        PropertyList.cc StringTable.cc FixedAllocator.cc Allocator.cc \
-       TransactionManager.cc transaction.cc linux.cc \
-       AvlTreeIndex.cc IndexManager.cc Index.cc
+       TransactionManager.cc transaction.cc \
+       AvlTreeIndex.cc IndexManager.cc Index.cc \
+       linux.cc
 
 # Translates source file names to object file names
 OBJS := $(patsubst %.cc, %.o, $(SRC))
