@@ -16,6 +16,7 @@ setproperty
 soltest
 stringtabletest
 txtest
+load_tsv_test
 allocgraph
 apigraph
 dumpgraph
@@ -32,3 +33,4 @@ setproperty
 solgraph
 stringtablegraph
 txgraph
+load_tsv_graph

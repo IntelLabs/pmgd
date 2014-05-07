@@ -24,7 +24,7 @@ endif
 TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          propertytest propertypredicatetest propertychunktest filtertest \
          txtest propertylisttest \
-         stringtabletest dumpgraph loadgraph setproperty
+         stringtabletest dumpgraph loadgraph setproperty load_tsv_test
 
 OBJS := $(TESTS:%=%.o)
 
@@ -92,6 +92,10 @@ loadgraph: loadgraph.o $(LIB)
 
 setproperty: setproperty.o $(LIB)
 	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(LIB)
+
+load_tsv_test: load_tsv_test.o $(LIB) util
+	$(call print,LNK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIB)
 
 lib:
