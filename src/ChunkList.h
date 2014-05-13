@@ -5,14 +5,11 @@
 #include "KeyValuePair.h"
 
 namespace Jarvis {
-    template<typename K, typename V, unsigned CHUNK_SIZE> class ChunkList;
-
     // List of chunks. Size passed at creation time. The number of
     // objects of type T per chunk will obviously depend on the size
     // of this chunk - (current number of elements in the chunk + a
     // pointer to the next chunk)
     template <typename K, typename V, unsigned CHUNK_SIZE> class ChunkList {
-        //struct __attribute((packed)) ChunkListType {
         struct ChunkListType {
             ChunkListType *next; // Pointer to next chunk
             uint16_t occupants;  // Bitmask to indicate filled spots in a chunk
@@ -22,12 +19,15 @@ namespace Jarvis {
         };
         static const unsigned MAX_PER_CHUNK =
             (CHUNK_SIZE - sizeof (ChunkListType)) / sizeof(KeyValuePair<K,V>);
+        static_assert(MAX_PER_CHUNK > 0 && MAX_PER_CHUNK <= 16,
+                      "Incorrect chunk size");
 
         ChunkListType *_head;      // First chunk
         size_t _num_elems;         // This is total so far
 
         const ChunkListType* begin() const { return _head; }
 
+        // The unit test that needs printing access etc.
         friend class ChunkListTest;
 
     public:
@@ -68,8 +68,7 @@ namespace Jarvis {
             while (elems < curr->num_elems) {
                 // Check if there is a 1 at the bit position being tested.
                 // If the value is non-zero, there is, else not
-                int elem_idx = curr->occupants & bit_pos;
-                if (elem_idx != 0) { // non-empty slot
+                if (curr->occupants & bit_pos) { // non-empty slot
                     // elems is following the indexing since it is incremented
                     // after this check.
                     if (key == curr->data[curr_slot].key())
@@ -107,7 +106,9 @@ namespace Jarvis {
             empty_chunk->data[empty_slot].set_key(key);
             ++empty_chunk->num_elems;
             empty_chunk->occupants |= mask;
-            return &(empty_chunk->data[empty_slot].value());
+            // Do a placement new here to make sure value is initialized
+            V *value_space = &(empty_chunk->data[empty_slot].value());
+            return new (value_space) V();
         }
         else { // Need a new chunk
             curr = (ChunkListType *)allocator.alloc(CHUNK_SIZE);
@@ -122,8 +123,10 @@ namespace Jarvis {
             else {
                 prev->next = curr;
             }
+            // Do a placement new here to make sure value is initialized
+            V *value_space = &(curr->data[0].value());
+            return new (value_space) V();
         }
-        return &(curr->data[0].value());
     }
 
     template <typename K, typename V,unsigned CHUNK_SIZE>
@@ -138,13 +141,11 @@ namespace Jarvis {
             while (elems < curr->num_elems) {
                 // Check if there is a 1 at the bit position being tested.
                 // If the value is non-zero, there is, else not
-                int elem_idx = curr->occupants & bit_pos;
-                if (elem_idx != 0) { // non-empty slot
+                if (curr->occupants & bit_pos) { // non-empty slot
                     if (key == curr->data[curr_slot].key()) {
                         --_num_elems;
                         --curr->num_elems;
                         curr->occupants &= (~bit_pos);
-                        printf("Bitmask after removing key: 0x%x\n", curr->occupants);
                         if (curr->num_elems == 0) {
                             // Need to free this chunk
                             if (prev == NULL)
@@ -180,8 +181,7 @@ namespace Jarvis {
             while (elems < curr->num_elems) {
                 // Check if there is a 1 at the bit position being tested.
                 // If the value is non-zero, there is, else not
-                int elem_idx = curr->occupants & bit_pos;
-                if (elem_idx != 0) { // non-empty slot
+                if (curr->occupants & bit_pos) { // non-empty slot
                     if (key == curr->data[curr_slot].key())
                         return &(curr->data[curr_slot].value());
                     elems++;

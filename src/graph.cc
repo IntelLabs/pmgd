@@ -283,14 +283,14 @@ NodeIterator Graph::get_nodes()
 NodeIterator Graph::get_nodes(StringID tag)
 {
     if (tag.id() == 0)
-        throw Exception(invalid_id);
+        return get_nodes();
     else
         return _impl->index_manager().get_nodes(tag);
 }
 
 NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp)
 {
-    Index *index = _impl->index_manager().get_index(tag, pp);
+    Index *index = _impl->index_manager().get_index(NODE, tag, pp.id);
     if (index)
         return index->get_nodes(pp);
     else
