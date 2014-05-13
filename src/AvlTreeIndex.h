@@ -38,7 +38,7 @@ namespace Jarvis {
         TreeNode *rightleft_rotate(TreeNode *hinge);
         int max(int val1, int val2) { return (val1 > val2) ? val1 : val2; }
         TreeNode *add_recursive(TreeNode *curr, const K &data, V*&r, Allocator &allocator);
-        TreeNode *remove_recursive(TreeNode *curr, K &data, Allocator &allocator);
+        TreeNode *remove_recursive(TreeNode *curr, const K &data, Allocator &allocator);
 
         int height(TreeNode *node)
         {
@@ -69,7 +69,7 @@ namespace Jarvis {
         // might cause value to become empty, hence triggering a tree node delete.
         // That would mean a repeat search for the node but I don't see another
         // cleaner option. 
-        void remove(K &key, Allocator &allocator);
+        void remove(const K &key, Allocator &allocator);
 
         V *find(const K &key);
     };

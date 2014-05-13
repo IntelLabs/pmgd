@@ -121,7 +121,7 @@ V *AvlTreeIndex<K,V>::add(const K &key, Allocator &allocator)
 
 template <typename K, typename V>
 typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::remove_recursive(AvlTreeIndex<K,V>::TreeNode *curr,
-                                                K &key, Allocator &allocator)
+                                                const K &key, Allocator &allocator)
 {
     if (curr == NULL) {
         return NULL;
@@ -177,7 +177,7 @@ typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::remove_recursive(AvlTre
 }
 
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::remove(K &key, Allocator &allocator)
+void AvlTreeIndex<K,V>::remove(const K &key, Allocator &allocator)
 {
     _tree = remove_recursive(_tree, key, allocator);
 }

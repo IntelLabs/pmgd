@@ -13,6 +13,8 @@ namespace Jarvis {
         void init(PropertyType ptype);
         void add(const Property &p, Node *n, Allocator &allocator);
         void remove(const Property &p, Node *n, Allocator &allocator);
+        void check_type(const PropertyType ptype)
+         { if (_ptype != ptype) throw Exception(property_type); }
 
         NodeIterator get_nodes(const PropertyPredicate &pp);
     };

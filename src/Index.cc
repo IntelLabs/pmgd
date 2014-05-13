@@ -13,22 +13,13 @@ void Index::init(PropertyType ptype)
 {
     switch(ptype) {
         case t_integer:
-            {
-                LongValueIndex *idx = (LongValueIndex *)this;
-                idx->init();
-            }
+            static_cast<LongValueIndex *>(this)->init();
             break;
         case t_float:
-            {
-                FloatValueIndex *idx = (FloatValueIndex *)this;
-                idx->init();
-            }
+            static_cast<FloatValueIndex *>(this)->init();
             break;
         case t_boolean:
-            {
-                BoolValueIndex *idx = (BoolValueIndex *)this;
-                idx->init();
-            }
+            static_cast<BoolValueIndex *>(this)->init();
             break;
         case t_time:
         case t_string:
@@ -45,37 +36,79 @@ void Index::add(const Property &p, Node *n, Allocator &allocator)
 {
     if (_ptype != p.type())
         throw Exception(property_type);
+
+    // TODO: Tree is unnecessary and Node* needs better arrangement for
+    // quick search and remove operations
+    List<Node*> *dest = NULL;
+
+    switch(_ptype) {
+        case t_integer:
+            dest = static_cast<LongValueIndex *>(this)->add(p.int_value(),
+                                                            allocator);
+            break;
+        case t_float:
+            dest = static_cast<FloatValueIndex *>(this)->add(p.float_value(),
+                                                             allocator);
+            break;
+        case t_boolean:
+            dest = static_cast<BoolValueIndex *>(this)->add(p.bool_value(),
+                                                            allocator);
+            break;
+        case t_time:
+        case t_string:
+        case t_novalue:
+            throw Exception(not_implemented);
+        case t_blob:
+        default:
+            throw Exception(property_type);
+    }
+    // dest will never be null since it gets allocated at the add time.
+    if (dest->num_elems() == 0)
+        dest->init();
+    dest->add(n, allocator);
+}
+
+void Index::remove(const Property &p, Node *n, Allocator &allocator)
+{
+    if (_ptype != p.type())
+        throw Exception(property_type);
+
+    List<Node*> *dest;
     switch(_ptype) {
         case t_integer:
             {
-                LongValueIndex *prop_idx = (LongValueIndex *)this;
-                List<Node*> *dest = prop_idx->add(p.int_value(), allocator) ;                
-                if (dest->num_elems() == 0)
-                    dest->init();
-                dest->add(n, allocator);
+                LongValueIndex *prop_idx = static_cast<LongValueIndex *>(this);
+                dest = prop_idx->find(p.int_value());
+                if (dest) {
+                    dest->remove(n, allocator);
+                    // TODO: Re-traversal of tree.
+                    if (dest->num_elems() == 0)
+                        prop_idx->remove(p.int_value(), allocator);
+                }
             }
             break;
         case t_float:
             {
-                FloatValueIndex *prop_idx = (FloatValueIndex *)this;
-                List<Node*> *dest = prop_idx->add(p.float_value(), allocator) ;                
-                if (dest->num_elems() == 0)
-                    dest->init();
-                dest->add(n, allocator);
+                FloatValueIndex *prop_idx = static_cast<FloatValueIndex *>(this);
+                dest = prop_idx->find(p.float_value());
+                if (dest) {
+                    dest->remove(n, allocator);
+                    // TODO: Re-traversal of tree.
+                    if (dest->num_elems() == 0)
+                        prop_idx->remove(p.float_value(), allocator);
+                }
             }
             break;
         case t_boolean:
             {
-                BoolValueIndex *prop_idx = (BoolValueIndex *)this;
-                // Now retrieve the list where node pointers are getting added
-                // This particular property only has one value = true and should
-                // be the first and only node in the tree.
-                // TODO: Tree is unnecessary and Node* needs better arrangement for
-                // quick search and remove operations
-                List<Node*> *dest = prop_idx->add(p.bool_value(), allocator) ;                
-                if (dest->num_elems() == 0)
-                    dest->init();
-                dest->add(n, allocator);
+                BoolValueIndex *prop_idx = static_cast<BoolValueIndex *>(this);
+                dest = prop_idx->find(p.bool_value());
+                if (dest) {
+                    dest->remove(n, allocator);
+                    // TODO: Re-traversal of tree.
+                    if (dest->num_elems() == 0)
+                        prop_idx->remove(p.float_value(), allocator);
+                }
             }
             break;
         case t_time:
@@ -110,6 +143,11 @@ namespace Jarvis {
 
 NodeIterator Index::get_nodes(const PropertyPredicate &pp)
 {
+    // Since we will not have range support yet, only the equal relation
+    // is valid
+    if (pp.op != PropertyPredicate::eq)
+        throw Exception(not_implemented);
+
     // TODO: Only handling eq case right now and the check has
     // already been done when this is called. Use value v1 from pp.
     const Property &p = pp.v1;
@@ -120,20 +158,20 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp)
     switch(_ptype) {
         case t_integer:
             {
-                LongValueIndex *prop_idx = (LongValueIndex *)this;
-                list = prop_idx->find(p.int_value()) ;                
+                LongValueIndex *prop_idx = static_cast<LongValueIndex *>(this);
+                list = prop_idx->find(p.int_value());
             }
             break;
         case t_float:
             {
-                FloatValueIndex *prop_idx = (FloatValueIndex *)this;
-                list = prop_idx->find(p.float_value()) ;                
+                FloatValueIndex *prop_idx = static_cast<FloatValueIndex *>(this);
+                list = prop_idx->find(p.float_value());
             }
             break;
         case t_boolean:
             {
-                BoolValueIndex *idx = (BoolValueIndex *)this;
-                list = idx->find(p.bool_value());
+                BoolValueIndex *prop_idx = static_cast<BoolValueIndex *>(this);
+                list = prop_idx->find(p.bool_value());
             }
             break;
         case t_time:
@@ -148,9 +186,4 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp)
         return NodeIterator(NULL);
     else
         return NodeIterator(new NodeIndexIteratorImpl(list));
-}
-
-void Index::remove(const Property &p, Node *n, Allocator &allocator)
-{
-    return;
 }

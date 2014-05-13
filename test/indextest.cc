@@ -63,20 +63,50 @@ int main(int argc, char **argv)
         dump_nodes(db);
         dump_edges(db);
 
-        printf("Trying iterator with tag and property\n");
+        printf("## Trying iterator with tag tag1 and property id1:1612\n");
         PropertyPredicate pp("id1", PropertyPredicate::eq, 1612);
         for (NodeIterator i = db.get_nodes("tag1", pp); i; i.next()) {
             printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
-        printf("Trying iterator with just tag\n");
+        printf("## Test set_property involving a remove and add\n");
+        nodes[1]->set_property("id1", 2433);
+        printf("Property id1 for node 1: %lld\n", nodes[1]->get_property("id1").int_value());
+
+        printf("## Trying iterator with tag tag1 and property id1:1612 after changing value of one node\n");
+        for (NodeIterator i = db.get_nodes("tag1", pp); i; i.next()) {
+            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
+        }
+
+        printf("## Trying iterator with tag tag1 and property id1:2433 after changing value of one node\n");
+        pp.v1 = 2433;
+        for (NodeIterator i = db.get_nodes("tag1", pp); i; i.next()) {
+            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
+        }
+
+        printf("## Trying iterator with just tag\n");
         for (NodeIterator i = db.get_nodes("tag1"); i; i.next()) {
             printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
         }
 
-        printf("Trying iterator with tag and float prop\n");
+        printf("## Trying iterator with tag and float prop\n");
         PropertyPredicate ppf("id1", PropertyPredicate::eq, 31.57);
         for (NodeIterator i = db.get_nodes("tag2", ppf); i; i.next()) {
+            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("\tConfirming searched prop value: %lf\n", i->get_property("id1").float_value());
+        }
+
+        printf("## Trying NULL iterator with missing property\n");
+        ppf.v1 = 34.8;
+        for (NodeIterator i = db.get_nodes("tag2", ppf); i; i.next()) {
+            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+        }
+
+        printf("## Trying NULL iterator with tag3\n");
+        for (NodeIterator i = db.get_nodes("tag3"); i; i.next()) {
             printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
         }
         

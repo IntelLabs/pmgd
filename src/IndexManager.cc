@@ -149,3 +149,20 @@ NodeIterator IndexManager::get_nodes(StringID tag)
     // This index can never be null cause we create it for each non-zero tag
     return prop0_idx->get_nodes(PropertyPredicate(0, PropertyPredicate::eq, true));
 }
+
+bool IndexManager::remove_node(StringID property_id, const Property &p,
+                            Node *n, Allocator &allocator)
+{
+    // This might be quite redundant. This function is called from
+    // node.set_property() and it is very unlikely that n will be null.
+    assert(n != NULL);
+
+    Index *idx = get_index(Graph::NODE, n->get_tag(), property_id);
+
+    // If property had not been indexed, this will be null.
+    if (!idx)
+        return false;
+    idx->remove(p, n, allocator);
+   
+    return true;
+}
