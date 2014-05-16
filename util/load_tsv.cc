@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "jarvis.h"
 #include "../util/util.h"
 
@@ -15,7 +16,7 @@ void load_tsv(Graph &db, const char *filename,
               std::function<void(Node &)> node_func,
               std::function<void(Edge &)> edge_func)
 {
-    FILE *f = fopen(filename, "r");
+    FILE *f = strcmp(filename, "-") == 0 ? stdin : fopen(filename, "r");
     if (f == NULL)
         throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
 
