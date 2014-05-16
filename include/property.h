@@ -86,7 +86,7 @@ namespace Jarvis {
     };
 
     inline bool operator==(const Property &a, const Property &b)
-        { return !(a < b && b < a); }
+        { return (!(a < b) && !(b < a)); }
     inline bool operator!=(const Property &a, const Property &b)
         { return !(a == b); }
     inline bool operator>(const Property &a, const Property &b)
