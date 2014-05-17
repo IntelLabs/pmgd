@@ -35,6 +35,8 @@ namespace Jarvis {
             : _base_impl(i), func(f), _done(false)
             { _next(); }
 
+        ~IteratorFilter() { delete _base_impl; }
+
         operator bool() const { return _base_impl && bool(*_base_impl); }
 
         const typename B::Ref_type &operator*() const

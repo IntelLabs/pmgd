@@ -18,7 +18,7 @@ void dump_edges(Graph &db, FILE *f)
     }
 }
 
-void dump(Graph &db, NodeIterator i, FILE *f)
+void dump(Graph &db, NodeIterator &i, FILE *f)
 {
     while (i) {
         dump(db, *i, f);
@@ -26,7 +26,23 @@ void dump(Graph &db, NodeIterator i, FILE *f)
     }
 }
 
-void dump(Graph &db, EdgeIterator i, FILE *f)
+void dump(Graph &db, NodeIterator &&i, FILE *f)
+{
+    while (i) {
+        dump(db, *i, f);
+        i.next();
+    }
+}
+
+void dump(Graph &db, EdgeIterator &i, FILE *f)
+{
+    while (i) {
+        dump(db, *i, f);
+        i.next();
+    }
+}
+
+void dump(Graph &db, EdgeIterator &&i, FILE *f)
 {
     while (i) {
         dump(db, *i, f);
