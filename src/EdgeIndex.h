@@ -7,39 +7,9 @@
 #include "exception.h"
 #include "node.h"
 #include "edge.h"
+#include "KeyValuePair.h"
 
 namespace Jarvis {
-    template <typename KeyType, typename ValueType> class KeyValuePair {
-        KeyType _key;
-        ValueType _value;
-
-    public:
-        KeyValuePair(const KeyType& k, const ValueType& v)
-        {
-            _key = k;
-            _value = v;
-        }
-
-        bool operator== (const KeyValuePair& val2) const
-        {
-            return (_key == val2._key);
-        }
-        bool operator< (const KeyValuePair& val2) const
-        {
-            return (_key < val2._key);
-        }
-
-        void set(const KeyType &k, const ValueType &v)
-        {
-            _key = k;
-            _value = v;
-        }
-        void set_key(const KeyType &k) { _key = k; }
-        void set_value(const ValueType &v) { _value = v; }
-        const KeyType &key() const { return _key; }
-        const ValueType &value() const { return _value; }
-    };
-
     // This class sits in PM. No DRAM image. So create a pointer 
     // and typecast
     class EdgeIndex {
@@ -69,11 +39,11 @@ namespace Jarvis {
                 _list = src._list;
                 return *this;
             }
-            bool operator== (const EdgeIndexType& val2) const
+            bool operator==(const EdgeIndexType& val2) const
             {
                 return (_key == val2._key);
             }
-            bool operator< (const EdgeIndexType& val2) const
+            bool operator<(const EdgeIndexType& val2) const
             {
                 return (_key < val2._key);
             }

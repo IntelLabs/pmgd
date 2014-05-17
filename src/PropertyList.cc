@@ -98,15 +98,18 @@ PropertyIterator PropertyList::get_properties() const
     return PropertyIterator(new PropertyListIterator(this));
 }
 
-void PropertyList::set_property(StringID id, const Property &property)
+void PropertyList::set_property(StringID id, const Property &new_value,
+                                Property &old_value)
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
     Allocator &allocator = tx->get_db()->allocator();
     PropertyRef pos;
-    PropertySpace space(get_space(property) + 3);
+    PropertySpace space(get_space(new_value) + 3);
 
-    if (find_property(id, pos, &space))
+    if (find_property(id, pos, &space)) {
+        old_value = Property(pos);
         pos.free(tx);
+    }
 
     if (space.size() == 0) {
         if (!find_space(space, pos)) {
@@ -116,7 +119,7 @@ void PropertyList::set_property(StringID id, const Property &property)
         }
     }
 
-    space.set_property(id, property, tx, allocator);
+    space.set_property(id, new_value, tx, allocator);
 }
 
 void PropertyList::remove_property(StringID id)

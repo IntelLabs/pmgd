@@ -196,7 +196,8 @@ namespace Jarvis {
         bool check_property(StringID property, Property &result) const;
         Property get_property(StringID id) const;
         PropertyIterator get_properties() const;
-        void set_property(StringID id, const Property &);
+        void set_property(StringID id, const Property &new_value,
+                          Property &old_value);
         void remove_property(StringID name);
     };
 };

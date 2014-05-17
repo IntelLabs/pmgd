@@ -10,6 +10,8 @@
 #include "TransactionManager.h"
 #include "arch.h"
 #include "os.h"
+#include "Index.h"
+#include "filter.h"
 
 using namespace Jarvis;
 
@@ -30,8 +32,9 @@ struct GraphImpl::RegionInfo {
 struct GraphImpl::GraphInfo {
     uint64_t version;
 
-    RegionInfo stringtable_info;
     RegionInfo transaction_info;
+    RegionInfo indexmanager_info;
+    RegionInfo stringtable_info;
     RegionInfo node_info;
     RegionInfo edge_info;
     RegionInfo allocator_info;
@@ -59,12 +62,14 @@ const size_t GraphImpl::NUM_FIXED_ALLOCATORS
 // Set individual addresses so they can be set at different sizes when needed
 static const size_t INFO_ADDRESS = BASE_ADDRESS;
 static const unsigned INFO_SIZE = 4096;
+static const size_t INDEXMANAGER_ADDRESS = NEXT(INFO);
+static const unsigned INDEXMANAGER_SIZE = 4096;
 // Belongs here to make sure info header contains the
 // correct "obj_size"
 static const int MAX_STRINGID_CHARLEN = 16;
 // 12bits had fewest collisions in testing
 static const int MAX_STRINGIDS = 4096;
-static const size_t STRINGTABLE_ADDRESS = NEXT(INFO);
+static const size_t STRINGTABLE_ADDRESS = NEXT(INDEXMANAGER);
 static const size_t STRINGTABLE_SIZE = MAX_STRINGIDS * MAX_STRINGID_CHARLEN;
 
 static const size_t TRANSACTIONTABLE_ADDRESS = ALIGN(NEXT(STRINGTABLE), 0x200000);
@@ -80,6 +85,7 @@ static const size_t ALLOCATORS_SIZE = GraphImpl::NUM_FIXED_ALLOCATORS * REGION_S
 
 const GraphImpl::RegionInfo GraphImpl::default_regions[] = {
     { "transaction.jdb", ADDRESS(TRANSACTIONTABLE), SIZE(TRANSACTIONTABLE)},
+    { "indexmanager.jdb", ADDRESS(INDEXMANAGER), SIZE(INDEXMANAGER)},
     { "stringtable.jdb", ADDRESS(STRINGTABLE), SIZE(STRINGTABLE)},
     { "nodes.jdb", ADDRESS(NODETABLE), SIZE(NODETABLE) },
     { "edges.jdb", ADDRESS(EDGETABLE), SIZE(EDGETABLE) },
@@ -111,6 +117,7 @@ Node &Graph::add_node(StringID tag)
 {
     Node *node = (Node *)_impl->node_table().alloc();
     node->init(tag, _impl->node_table().object_size(), _impl->allocator());
+    _impl->index_manager().add_node(node, _impl->allocator());
     return *node;
 }
 
@@ -123,6 +130,12 @@ Edge &Graph::add_edge(Node &src, Node &dest, StringID tag)
     return *edge;
 }
 
+void Graph::create_index(int node_or_edge, StringID tag,
+                         StringID property_id, const PropertyType ptype)
+{
+    _impl->index_manager().create_index(node_or_edge, tag,
+                                        property_id, ptype, _impl->allocator());
+}
 
 GraphImpl::GraphInit::GraphInit(const char *name, int options)
     : create(options & Graph::Create),
@@ -137,10 +150,11 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options)
 
         // TODO replace static indexing
         info->transaction_info = default_regions[0];
-        info->stringtable_info = default_regions[1];
-        info->node_info = default_regions[2];
-        info->edge_info = default_regions[3];
-        info->allocator_info = default_regions[4];
+        info->indexmanager_info = default_regions[1];
+        info->stringtable_info = default_regions[2];
+        info->node_info = default_regions[3];
+        info->edge_info = default_regions[4];
+        info->allocator_info = default_regions[5];
         info->num_fixed_allocators = NUM_FIXED_ALLOCATORS;
         memcpy(info->fixed_allocator_info, default_allocators, sizeof default_allocators);
         TransactionImpl::flush_range(info, sizeof *info);
@@ -156,6 +170,7 @@ GraphImpl::MapRegion::MapRegion(
 GraphImpl::GraphImpl(const char *name, int options)
     : _init(name, options),
       _transaction_region(name, _init.info->transaction_info, _init.create),
+      _indexmanager_region(name, _init.info->indexmanager_info, _init.create),
       _stringtable_region(name, _init.info->stringtable_info, _init.create),
       _node_region(name, _init.info->node_info, _init.create),
       _edge_region(name, _init.info->edge_info, _init.create),
@@ -163,6 +178,7 @@ GraphImpl::GraphImpl(const char *name, int options)
       _transaction_manager(_init.info->transaction_info.addr,
                            _init.info->transaction_info.len,
                            _init.create),
+      _index_manager(_init.info->indexmanager_info.addr, _init.create),
       _string_table(_init.info->stringtable_info.addr,
                     _init.info->stringtable_info.len,
                     MAX_STRINGID_CHARLEN,
@@ -262,6 +278,23 @@ void Graph_Iterator<B, T>::_skip()
 NodeIterator Graph::get_nodes()
 {
     return NodeIterator(new Graph_NodeIterator(_impl->node_table()));
+}
+
+NodeIterator Graph::get_nodes(StringID tag)
+{
+    if (tag.id() == 0)
+        return get_nodes();
+    else
+        return _impl->index_manager().get_nodes(tag);
+}
+
+NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp)
+{
+    Index *index = _impl->index_manager().get_index(NODE, tag, pp.id);
+    if (index)
+        return index->get_nodes(pp);
+    else
+        return get_nodes(tag).filter(pp); // TODO Causes re-lookup of tag
 }
 
 EdgeIterator Graph::get_edges()

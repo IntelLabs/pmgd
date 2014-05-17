@@ -6,6 +6,8 @@
 #include "node.h"
 #include "edge.h"
 #include "EdgeIndex.h"
+#include "GraphImpl.h"
+#include "IndexManager.h"
 
 using namespace Jarvis;
 
@@ -196,8 +198,27 @@ Jarvis::Property Jarvis::Node::get_property(StringID id) const
 Jarvis::PropertyIterator Jarvis::Node::get_properties() const
     { return _property_list.get_properties(); }
 
-void Jarvis::Node::set_property(StringID id, const Property &p)
-    { _property_list.set_property(id, p); }
+void Jarvis::Node::set_property(StringID id, const Property &new_value)
+{
+    // We have to first remove the old property from an existing index,
+    // if any and then add new one. So use the fact that property_list.set_property
+    // already searches for the old value and pass it to the index.
+    Property old_value;
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    Index *index = tx->get_db()->index_manager().get_index(Graph::NODE, _tag, id);
+    if (index) {
+        // This call throws if the types don't match for an
+        // existing index.
+        index->check_type(new_value.type());
+        _property_list.set_property(id, new_value, old_value);
+        // TODO: actual properties with no_value type not handled here.
+        if (old_value.type() != t_novalue)
+            index->remove(old_value, this, tx->get_db()->allocator());
+        index->add(new_value, this, tx->get_db()->allocator());
+    }
+    else
+        _property_list.set_property(id, new_value, old_value);
+}
 
 void Jarvis::Node::remove_property(StringID id)
     { _property_list.remove_property(id); }

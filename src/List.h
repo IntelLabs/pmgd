@@ -25,6 +25,8 @@ namespace Jarvis {
         friend class NodeEdgeIteratorImpl;
         friend class EdgeIndexType;
         friend class EdgeIndex;
+
+        friend class NodeIndexIteratorImpl;
         const ListType* begin() const { return _list; }
 
     public:

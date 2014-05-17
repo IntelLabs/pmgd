@@ -24,7 +24,8 @@ endif
 TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          propertytest propertypredicatetest propertychunktest filtertest \
          txtest propertylisttest \
-         stringtabletest dumpgraph loadgraph setproperty load_tsv_test
+         stringtabletest dumpgraph loadgraph setproperty load_tsv_test \
+         avltest chunklisttest indextest
 
 OBJS := $(TESTS:%=%.o)
 
@@ -98,17 +99,23 @@ load_tsv_test: load_tsv_test.o $(LIB) util
 	$(call print,LNK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIB)
 
+avltest: avltest.o $(LIB)
+	$(call print,LINK,$@)
+	$(CC) -o $@ $< $(LIB)
+
+chunklisttest: chunklisttest.o $(LIB)
+	$(call print,LINK,$@)
+	$(CC) -o $@ $< $(LIB)
+
+indextest: indextest.o $(LIB)
+	$(call print,LINK,$@)
+	$(CC) -o $@ $< $(LIB)
+
 lib:
 	make -C ../src OPT=$(OPT) install
 
 util:
 	make -C ../util OPT=$(OPT) install
-
-clean:
-	$(call print,CLEAN)
-	$(RM) $(CLEANFILES)
-	make -C ../src clean
-	make -C ../util clean
 
 %.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
@@ -116,3 +123,12 @@ clean:
 
 DEPS := $(OBJS:%.o=%.d)
 -include $(DEPS)
+
+CLEANFILES += $(DEPS)
+
+clean:
+	$(call print,CLEAN)
+	$(RM) $(CLEANFILES)
+	make -C ../src clean
+	make -C ../util clean
+
