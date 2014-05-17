@@ -111,7 +111,7 @@ Jarvis::Path q6a(Graph &db, Node &a, Node &b)
     Jarvis::Path path;
     double min_length;
     for (PathIterator i = db.get_paths(a, b); i; i.next()) {
-        double length;
+        double length = 0;
         EdgeIterator e = i->get_edges();
         while (e) {
             length += e->get_property("weight").float_value();
