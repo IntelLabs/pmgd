@@ -74,14 +74,11 @@ typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::add_recursive(AvlTreeIn
     if (curr == NULL) {
         TreeNode *temp = (TreeNode *)allocator.alloc(sizeof(TreeNode));
         temp->key = key;
-        // While we do not set the value part here, zero it out
-        // to make sure the caller can know that this was a new node.
-        memset(&temp->value, 0, sizeof(V));
+        r = new (&temp->value) V();
         temp->height = 0;
         temp->left = NULL;
         temp->right = NULL;
         _num_elems++;
-        r = &(temp->value);
         return temp;
     }
     if (key == curr->key) {
@@ -146,6 +143,7 @@ typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::remove_recursive(AvlTre
         TreeNode *to_replace = find_max(curr->left);
         // This node will never be NULL.
         curr->key = to_replace->key;
+        curr->value = to_replace->value;
         curr->left = remove_recursive(curr->left, to_replace->key, allocator);
         return curr;
     }
