@@ -2,20 +2,26 @@
 #include "AvlTreeIndex.h"
 #include "List.h"
 #include "exception.h"
+#include "TransactionImpl.h"
 
 using namespace Jarvis;
 
 void Index::init(PropertyType ptype)
 {
+    unsigned size = 0;
+
     switch(ptype) {
         case t_integer:
             static_cast<LongValueIndex *>(this)->init();
+            size = sizeof(LongValueIndex);
             break;
         case t_float:
             static_cast<FloatValueIndex *>(this)->init();
+            size = sizeof(FloatValueIndex);
             break;
         case t_boolean:
             static_cast<BoolValueIndex *>(this)->init();
+            size = sizeof(BoolValueIndex);
             break;
         case t_time:
         case t_string:
@@ -26,6 +32,13 @@ void Index::init(PropertyType ptype)
             throw Exception(property_type);
     }
     _ptype = ptype;
+
+    // The AvlTreeIndex init() is specifically kept without any TX
+    // flush right now since it is always used from within the parent
+    // class Index and we can just flush the entire data struct from
+    // here.
+    // TODO: Make sure this is the right way to do this.
+    TransactionImpl::flush_range(this, size);
 }
 
 void Index::add(const Property &p, Node *n, Allocator &allocator)
@@ -59,6 +72,10 @@ void Index::add(const Property &p, Node *n, Allocator &allocator)
             throw Exception(property_type);
     }
     // dest will never be null since it gets allocated at the add time.
+    // The List->init() function does not do a transaction flush but
+    // we are going to add an element right after before the transaction
+    // gets over and that should do the right logging of the very same
+    // elements that get modified in init().
     if (dest->num_elems() == 0)
         dest->init();
     dest->add(n, allocator);
