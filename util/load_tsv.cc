@@ -7,7 +7,7 @@
 
 using namespace Jarvis;
 
-#define ID "id"
+static const char ID[] = "id";
 
 static Node &get_node(Graph &db, long long id,
                       std::function<void(Node &)> node_func);
