@@ -7,7 +7,7 @@
 
 using namespace Jarvis;
 
-#define ID "id"
+static const char ID[] = "id";
 
 static Node &get_node(Graph &db, long long id,
                       std::function<void(Node &)> node_func);
@@ -28,6 +28,11 @@ void load_tsv(Graph &db, FILE *f,
               std::function<void(Edge &)> edge_func)
 {
     char buf[500];
+
+    Transaction tx(db);
+    db.create_index(Graph::NODE, 0, ID, PropertyType::t_integer);
+    tx.commit();
+
     while (fgets(buf, sizeof buf, f) != NULL) {
         long long a, b;
         if (sscanf(buf, "%lld %lld", &a, &b) != 2)

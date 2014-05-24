@@ -171,6 +171,7 @@ property_id: STRING;
 using namespace Jarvis;
 
 static const char ID[] = "id";
+static bool index_created = false;
 
 #undef Exception
 
@@ -210,9 +211,13 @@ void load(Graph &db, FILE *f,
 static Node *get_node(Graph &db, long long id, Jarvis::StringID *tag,
                       std::function<void(Node &)> node_func)
 {
-    // This API not available yet
-    NodeIterator nodes = db.get_nodes(0,
-                             PropertyPredicate(ID, PropertyPredicate::eq, id));
+    if (!index_created) {
+        db.create_index(Graph::NODE, 0, ID, PropertyType::t_integer);
+        index_created = true;
+    }
+
+    NodeIterator nodes
+        = db.get_nodes(0, PropertyPredicate(ID, PropertyPredicate::eq, id));
     if (nodes) return &*nodes;
 
     // Node not found; add it
@@ -226,9 +231,13 @@ static Node *get_node(Graph &db, long long id, Jarvis::StringID *tag,
 static Node *get_node(Graph &db, const char *id, Jarvis::StringID *tag,
                       std::function<void(Node &)> node_func)
 {
-    // This API not available yet
-    NodeIterator nodes = db.get_nodes(0,
-                             PropertyPredicate(ID, PropertyPredicate::eq, id));
+    if (!index_created) {
+        db.create_index(Graph::NODE, 0, ID, PropertyType::t_string);
+        index_created = true;
+    }
+
+    NodeIterator nodes
+        = db.get_nodes(0, PropertyPredicate(ID, PropertyPredicate::eq, id));
     if (nodes) return &*nodes;
 
     // Node not found; add it
