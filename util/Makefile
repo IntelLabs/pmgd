@@ -8,7 +8,7 @@ TARGET := jarvis-util.lib
 INSTALLPATH := ../lib
 CLEANFILES := 
 
-SRC := exception.cc text.cc dump.cc load_tsv.cc loader.y scanner.l
+SRC := exception.cc text.cc dump.cc load_tsv.cc load_gson.cc loader.y scanner.l
 
 # Translates source file names to object file names
 OBJS := $(patsubst %.cc,%.o, $(patsubst %.y,%.o, $(patsubst %.l,%.o, $(SRC))))
