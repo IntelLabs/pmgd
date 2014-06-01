@@ -46,16 +46,23 @@ struct TransactionImpl::JournalEntry {
 };
 
 thread_local TransactionImpl *TransactionImpl::_per_thread_tx = NULL;
+thread_local std::stack<TransactionImpl *> _tx_stack;
 
 static const uint32_t LOCK_TIMEOUT = 7;
 
 TransactionImpl::TransactionImpl(GraphImpl *db, int options)
-    : _db(db), _committed(false),
+    : _db(db), _tx_type(options), _committed(false),
       _tx_handle(db->transaction_manager().alloc_transaction())
 {
+    // nested transaction
     if (_per_thread_tx != NULL) {
-        db->transaction_manager().free_transaction(_tx_handle);
-        throw Exception(not_implemented); // nested exception
+        if (_tx_type & Transaction::Independent) {
+            _tx_stack.push(_per_thread_tx);
+            _per_thread_tx = NULL;
+        } else {
+            db->transaction_manager().free_transaction(_tx_handle);
+            throw Exception(not_implemented);
+        }
     }
 
     _jcur = jbegin();
@@ -73,7 +80,14 @@ TransactionImpl::~TransactionImpl()
 
     TransactionManager *tx_manager = &_db->transaction_manager();
     tx_manager->free_transaction(_tx_handle);
-    _per_thread_tx = NULL; // Un-install per-thread TX
+
+    if (!_tx_stack.empty()) {
+        assert(_tx_type & Transaction::Independent);
+        _per_thread_tx = _tx_stack.top(); // nested transactions
+        _tx_stack.pop();
+    } else {
+        _per_thread_tx = NULL; // un-install per-thread tx
+    }
 }
 
 

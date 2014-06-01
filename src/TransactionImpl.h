@@ -17,6 +17,7 @@ namespace Jarvis {
             static thread_local TransactionImpl *_per_thread_tx;
 
             GraphImpl *_db;
+            int _tx_type;
             bool _committed;
 
             TransactionHandle _tx_handle;
