@@ -5,10 +5,6 @@
 
 using namespace Jarvis;
 
-typedef AvlTreeIndex<long long,List<Node *>> LongValueIndex;
-typedef AvlTreeIndex<double,List<Node *>> FloatValueIndex;
-typedef AvlTreeIndex<bool,List<Node *>> BoolValueIndex;
-
 void Index::init(PropertyType ptype)
 {
     switch(ptype) {

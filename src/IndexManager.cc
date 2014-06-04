@@ -6,11 +6,6 @@
 
 using namespace Jarvis;
 
-// For the actual property value indices
-typedef AvlTreeIndex<long long,List<Node *>> NodeIntIndex;
-typedef AvlTreeIndex<double,List<Node *>> NodeFloatIndex;
-typedef AvlTreeIndex<bool,List<Node *>> NodeBoolIndex;
-
 IndexManager::IndexList *IndexManager::add_tag_index(int node_or_edge,
                                            StringID tag,
                                            Allocator &allocator)
@@ -25,7 +20,7 @@ IndexManager::IndexList *IndexManager::add_tag_index(int node_or_edge,
     if (tag_entry->num_elems() == 0 && !(tag == 0)) {
         // All we need is one value in the tree. Hopefully we will have different
         // type of data structure options eventually.
-        Index *prop0_idx = (Index *)allocator.alloc(sizeof(NodeBoolIndex));
+        Index *prop0_idx = (Index *)allocator.alloc(sizeof(BoolValueIndex));
         prop0_idx->init(t_boolean);
         Index **value = tag_entry->add(0, allocator);
         *value = prop0_idx;
@@ -55,15 +50,15 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
     if (*prop_idx == NULL) {
         switch(ptype) {
             case t_integer:
-                *prop_idx = (Index *)allocator.alloc(sizeof(NodeIntIndex));
+                *prop_idx = (Index *)allocator.alloc(sizeof(LongValueIndex));
                 (*prop_idx)->init(t_integer);
                 break;
             case t_float:
-                *prop_idx = (Index *)allocator.alloc(sizeof(NodeFloatIndex));
+                *prop_idx = (Index *)allocator.alloc(sizeof(FloatValueIndex));
                 (*prop_idx)->init(t_float);
                 break;
             case t_boolean:
-                *prop_idx = (Index *)allocator.alloc(sizeof(NodeBoolIndex));
+                *prop_idx = (Index *)allocator.alloc(sizeof(BoolValueIndex));
                 (*prop_idx)->init(t_boolean);
                 break;
             case t_time:
@@ -94,7 +89,7 @@ bool IndexManager::add_node(Node *n, Allocator &allocator)
     // TODO: Perhaps use t_novalue in this case instead of boolean.
     // TODO: Tree is unnecessary and Node* needs better arrangement for
     // quick search and remove operations
-    NodeBoolIndex *idx = (NodeBoolIndex *)*(tag_entry->find(0));
+    BoolValueIndex *idx = (BoolValueIndex *)*(tag_entry->find(0));
     // Now retrieve the list where node pointers are getting added
     // This particular property only has one value = true and should
     // be the first and only node in the tree.
