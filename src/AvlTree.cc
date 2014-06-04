@@ -253,8 +253,8 @@ V *AvlTree<K,V>::find(const K &key)
 
 // Explicitly instantiate any types that might be required
 template class AvlTree<int, int>;
-template class AvlTree<long long, List<Node *>>;
-template class AvlTree<bool, List<Node *>>;
-template class AvlTree<double, List<Node *>>;
-template class AvlTree<Time, List<Node *>>;
-template class AvlTree<IndexString, List<Node *>>;
+template class AvlTree<long long, List<void *>>;
+template class AvlTree<bool, List<void *>>;
+template class AvlTree<double, List<void *>>;
+template class AvlTree<Time, List<void *>>;
+template class AvlTree<IndexString, List<void *>>;

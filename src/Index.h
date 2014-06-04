@@ -14,9 +14,9 @@ namespace Jarvis {
     public:
         Index(PropertyType ptype) : _ptype(ptype) {}
 
-        void add(const Property &p, Node *n, GraphImpl *db);
-        void remove(const Property &p, Node *n, GraphImpl *db);
-        void update(GraphImpl *db, Node *n, const Property &new_value,
+        void add(const Property &p, void *n, GraphImpl *db);
+        void remove(const Property &p, void *n, GraphImpl *db);
+        void update(GraphImpl *db, void *n, const Property &new_value,
                     const Property &old_value);
         void check_type(const PropertyType ptype)
             { if (_ptype != ptype) throw Exception(PropertyTypeMismatch); }

@@ -245,21 +245,21 @@ namespace Jarvis {
     // and we can accommodate edges easily too.
     class Index_NodeIteratorImplBase : public NodeIteratorImplIntf {
     protected:
-        ListTraverser<Node *> _list_it;
+        ListTraverser<void *> _list_it;
     public:
-        Index_NodeIteratorImplBase(List<Node *> *l) : _list_it(l) { }
+        Index_NodeIteratorImplBase(List<void *> *l) : _list_it(l) { }
 
-        Node &operator*() { return **_list_it; }
-        Node *operator->() { return *_list_it; }
-        Node &operator*() const { return **_list_it; }
-        Node *operator->() const { return *_list_it; }
+        Node &operator*() { return *(Node *)*_list_it; }
+        Node *operator->() { return (Node *)*_list_it; }
+        Node &operator*() const { return *(Node *)*_list_it; }
+        Node *operator->() const { return (Node *)*_list_it; }
         operator bool() const { return _list_it; }
         virtual bool next() = 0;
     };
 
     template <typename K>
     class IndexEq_NodeIteratorImpl : public Index_NodeIteratorImplBase {
-        typedef List<Node *> IndexValue;
+        typedef List<void *> IndexValue;
         typedef AvlTreeIndex<K, IndexValue> IndexNode;
     public:
         IndexEq_NodeIteratorImpl(IndexNode *tree, const K &key)
@@ -271,7 +271,7 @@ namespace Jarvis {
     // Handle gele, gelt, gtle, gtlt, le, lt.
     template <typename K>
     class IndexRange_NodeIteratorImpl : public Index_NodeIteratorImplBase {
-        typedef List<Node *> IndexValue;
+        typedef List<void *> IndexValue;
         typedef AvlTreeIndex<K, IndexValue> IndexNode;
         IndexNode *_tree;
         typename IndexNode::TreeNode *_curr;
@@ -335,7 +335,7 @@ namespace Jarvis {
     // Handle ge, gt, dont_care.
     template <typename K>
     class IndexRangeNomax_NodeIteratorImpl : public Index_NodeIteratorImplBase {
-        typedef List<Node *> IndexValue;
+        typedef List<void *> IndexValue;
         typedef AvlTreeIndex<K, IndexValue> IndexNode;
         IndexNode *_tree;
         typename IndexNode::TreeNode *_curr;
@@ -394,7 +394,7 @@ namespace Jarvis {
 
     template <typename K>
     class IndexRangeNeq_NodeIteratorImpl : public Index_NodeIteratorImplBase {
-        typedef List<Node *> IndexValue;
+        typedef List<void *> IndexValue;
         typedef AvlTreeIndex<K, IndexValue> IndexNode;
         IndexNode *_tree;
         K _neq;
@@ -442,7 +442,7 @@ namespace Jarvis {
     // Handle gele, gelt, gtle, gtlt, gt, ge.
     template <typename K>
     class IndexRangeReverse_NodeIteratorImpl : public Index_NodeIteratorImplBase {
-        typedef List<Node *> IndexValue;
+        typedef List<void *> IndexValue;
         typedef AvlTreeIndex<K, IndexValue> IndexNode;
         IndexNode *_tree;
         typename IndexNode::TreeNode *_curr;
@@ -504,7 +504,7 @@ namespace Jarvis {
     // Handle lt, le, dont_care
     template <typename K>
     class IndexRangeNomin_NodeIteratorImpl : public Index_NodeIteratorImplBase {
-        typedef List<Node *> IndexValue;
+        typedef List<void *> IndexValue;
         typedef AvlTreeIndex<K, IndexValue> IndexNode;
         IndexNode *_tree;
         typename IndexNode::TreeNode *_curr;
@@ -559,7 +559,7 @@ namespace Jarvis {
 
     template <typename K>
     class IndexRangeNeqReverse_NodeIteratorImpl : public Index_NodeIteratorImplBase {
-        typedef List<Node *> IndexValue;
+        typedef List<void *> IndexValue;
         typedef AvlTreeIndex<K, IndexValue> IndexNode;
         IndexNode *_tree;
         K _neq;
@@ -684,8 +684,8 @@ NodeIterator AvlTreeIndex<K,V>::get_nodes(const K &min, const K& max,
 }
 
 // Explicitly instantiate any types that might be required
-template class AvlTreeIndex<long long, List<Node *>>;
-template class AvlTreeIndex<bool, List<Node *>>;
-template class AvlTreeIndex<double, List<Node *>>;
-template class AvlTreeIndex<Time, List<Node *>>;
-template class AvlTreeIndex<IndexString, List<Node *>>;
+template class AvlTreeIndex<long long, List<void *>>;
+template class AvlTreeIndex<bool, List<void *>>;
+template class AvlTreeIndex<double, List<void *>>;
+template class AvlTreeIndex<Time, List<void *>>;
+template class AvlTreeIndex<IndexString, List<void *>>;

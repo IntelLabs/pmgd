@@ -62,12 +62,11 @@ namespace Jarvis {
     };
 
     // For the actual property value indices
-    class Node;
     class IndexString;
     template <class T> class List;
-    typedef AvlTreeIndex<long long, List<Node *>> LongValueIndex;
-    typedef AvlTreeIndex<double, List<Node *>> FloatValueIndex;
-    typedef AvlTreeIndex<bool, List<Node *>> BoolValueIndex;
-    typedef AvlTreeIndex<Time, List<Node *>> TimeValueIndex;
-    typedef AvlTreeIndex<IndexString, List<Node *>> StringValueIndex;
+    typedef AvlTreeIndex<long long, List<void *>> LongValueIndex;
+    typedef AvlTreeIndex<double, List<void *>> FloatValueIndex;
+    typedef AvlTreeIndex<bool, List<void *>> BoolValueIndex;
+    typedef AvlTreeIndex<Time, List<void *>> TimeValueIndex;
+    typedef AvlTreeIndex<IndexString, List<void *>> StringValueIndex;
 }

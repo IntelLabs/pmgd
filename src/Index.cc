@@ -9,7 +9,7 @@
 
 using namespace Jarvis;
 
-void Index::add(const Property &p, Node *n, GraphImpl *db)
+void Index::add(const Property &p, void *n, GraphImpl *db)
 {
     if (_ptype != p.type())
         throw Exception(PropertyTypeMismatch);
@@ -18,7 +18,7 @@ void Index::add(const Property &p, Node *n, GraphImpl *db)
 
     // TODO: Tree is unnecessary and Node* needs better arrangement for
     // quick search and remove operations
-    List<Node*> *dest = NULL;
+    List<void*> *dest = NULL;
 
     switch(_ptype) {
         case PropertyType::Integer:
@@ -58,14 +58,14 @@ void Index::add(const Property &p, Node *n, GraphImpl *db)
     dest->add(n, allocator);
 }
 
-void Index::remove(const Property &p, Node *n, GraphImpl *db)
+void Index::remove(const Property &p, void *n, GraphImpl *db)
 {
     if (_ptype != p.type())
         throw Exception(PropertyTypeMismatch);
 
     Allocator &allocator = db->allocator();
 
-    List<Node*> *dest;
+    List<void*> *dest;
     switch(_ptype) {
         case PropertyType::Integer:
             {
@@ -136,7 +136,7 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
     }
 }
 
-void Index::update(GraphImpl *db, Node *n, const Property &new_value,
+void Index::update(GraphImpl *db, void *n, const Property &new_value,
                    const Property &old_value)
 {
     // TODO: actual properties with no_value type not handled here.

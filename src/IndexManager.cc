@@ -96,7 +96,7 @@ bool IndexManager::add_node(Node *n, Allocator &allocator)
     // This particular property only has one value = true and should
     // be the first and only node in the tree.
     bool value = true;
-    List<Node *> *list = idx->add(value, allocator);
+    List<void *> *list = idx->add(value, allocator);
     list->add(n, allocator);
 
     return true;
