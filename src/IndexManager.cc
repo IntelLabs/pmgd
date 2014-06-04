@@ -72,17 +72,18 @@ void IndexManager::create_index(Graph::IndexType index_type, StringID tag,
     }
 }
 
-bool IndexManager::add_node(Node *n, Allocator &allocator)
+bool IndexManager::add(Graph::IndexType index_type, StringID tag, void *obj,
+                       Allocator &allocator)
 {
-    assert(n != NULL);
+    assert(obj != NULL);
 
-    if (n->get_tag() == 0)
+    if (tag == 0)
         return false;
 
     // Check first if that tag index exists. Since we are indexing
     // all nodes/edges based on their tags, create an entry if it
     // doesn't exist.
-    IndexList *tag_entry = add_tag_index(Graph::NodeIndex, n->get_tag(), allocator);
+    IndexList *tag_entry = add_tag_index(index_type, tag, allocator);
 
     // For now, add only to the no property list ==> index via tag
     // This entry should always exist since we add it explicitly when
@@ -97,10 +98,11 @@ bool IndexManager::add_node(Node *n, Allocator &allocator)
     // be the first and only node in the tree.
     bool value = true;
     List<void *> *list = idx->add(value, allocator);
-    list->add(n, allocator);
+    list->add(obj, allocator);
 
     return true;
 }
+
 
 Index *IndexManager::get_index(Graph::IndexType index_type, StringID tag,
                                StringID property_id, PropertyType ptype)
