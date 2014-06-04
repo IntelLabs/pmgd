@@ -60,6 +60,11 @@ namespace Jarvis {
         // not set any property until then.
         bool add_node(Node *n, Allocator &allocator);
 
+        void update(GraphImpl *db,
+                    Graph::IndexType index_type, StringID tag, void *obj,
+                    StringID id,
+                    const PropertyRef *old_value, const Property *new_value);
+
         Index *get_index(Graph::IndexType index_type, StringID tag,
                          StringID property_id,
                          PropertyType ptype = PropertyType(0));

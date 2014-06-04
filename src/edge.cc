@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include "edge.h"
+#include "graph.h"
 
 void Jarvis::Edge::init(Node &src, Node &dest, StringID tag, unsigned obj_size)
 {
@@ -19,10 +20,7 @@ Jarvis::PropertyIterator Jarvis::Edge::get_properties() const
     { return _property_list.get_properties(); }
 
 void Jarvis::Edge::set_property(StringID id, const Property &new_value)
-{
-    Property old_value;
-    _property_list.set_property(id, new_value, old_value);
-}
+    { _property_list.set_property(id, new_value, Graph::EdgeIndex, _tag, this); }
 
 void Jarvis::Edge::remove_property(StringID id)
     { _property_list.remove_property(id); }

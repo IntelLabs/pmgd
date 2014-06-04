@@ -96,6 +96,8 @@ namespace Jarvis {
 };
 
 namespace Jarvis {
+    class Node;
+    class Edge;
     class Allocator;
     class PropertyList;
     class TransactionImpl;
@@ -223,7 +225,7 @@ namespace Jarvis {
         Property get_property(StringID id) const;
         PropertyIterator get_properties() const;
         void set_property(StringID id, const Property &new_value,
-                          Property &old_value);
+                /*Graph::IndexType*/ int index_type, StringID tag, void *obj);
         void remove_property(StringID name);
     };
 };

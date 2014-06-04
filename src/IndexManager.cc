@@ -138,3 +138,31 @@ NodeIterator IndexManager::get_nodes(StringID tag)
     // a boolean property.
     return prop0_idx->get_nodes(PropertyPredicate(0, PropertyPredicate::Eq, true), NULL, false);
 }
+
+void IndexManager::update
+    (GraphImpl *db, Graph::IndexType index_type, StringID tag, void *obj,
+     StringID id, const PropertyRef *old_value, const Property *new_value)
+{
+    // get_index throws if the property type doesn't match the index.
+    PropertyType ptype = new_value ? new_value->type() : PropertyType(0);
+    Index *index = get_index(index_type, tag, id, ptype);
+
+    // Check if there is an index with this property id and tag = 0.
+    // This is a general all-tag index for certain properties such as loader id.
+    Index *gindex = get_index(Graph::IndexType(index_type), 0, id, ptype);
+
+    if (old_value != NULL && (index != NULL || gindex != NULL)) {
+        Property tmp(*old_value);
+        if (index)
+            index->remove(tmp, obj, db);
+        if (gindex)
+            gindex->remove(tmp, obj, db);
+    }
+
+    if (new_value != NULL) {
+        if (index)
+            index->add(*new_value, obj, db);
+        if (gindex)
+            gindex->add(*new_value, obj, db);
+    }
+}

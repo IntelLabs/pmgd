@@ -214,32 +214,7 @@ Jarvis::PropertyIterator Jarvis::Node::get_properties() const
     { return _property_list.get_properties(); }
 
 void Jarvis::Node::set_property(StringID id, const Property &new_value)
-{
-    // We have to first remove the old property from an existing index,
-    // if any and then add new one. So use the fact that property_list.set_property
-    // already searches for the old value and pass it to the index.
-    Property old_value;
-    TransactionImpl *tx = TransactionImpl::get_tx();
-    GraphImpl *db = tx->get_db();
-
-    // get_index returns NULL if the index doesn.t exist.
-    // get_index throws if the index exists and the index type doesn't
-    // match the property type.
-    // The call to get_index has to be made before the call to set_property,
-    // to ensure that set_property is not done if there is a type mismatch.
-    Index *index = db->index_manager().get_index(Graph::NodeIndex, _tag, id,
-                                                 new_value.type());
-    // Check if there is an index with this property id and tag = 0
-    // This is a general, all tag index for certain properties like loader id.
-    Index *gindex = db->index_manager().get_index(Graph::NodeIndex, 0, id,
-                                                  new_value.type());
-    _property_list.set_property(id, new_value, old_value);
-
-    if (index)
-        index->update(db, this, new_value, old_value);
-    if (gindex)
-        gindex->update(db, this, new_value, old_value);
-}
+    { _property_list.set_property(id, new_value, Graph::NodeIndex, _tag, this); }
 
 void Jarvis::Node::remove_property(StringID id)
     { _property_list.remove_property(id); }
