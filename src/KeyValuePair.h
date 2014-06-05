@@ -15,11 +15,6 @@ namespace Jarvis {
         {
             return (_key == val2._key);
         }
-        void operator=(const long value)
-        {
-            _key = (KeyType)value;
-            _value = (ValueType)value;
-        }
         bool operator<(const KeyValuePair& val2) const
         {
             return (_key < val2._key);
