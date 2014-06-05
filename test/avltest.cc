@@ -32,7 +32,7 @@ namespace Jarvis {
                     return;
                 for (int i = 0; i < rec_depth; ++i)
                     cout << " ";
-                cout << side << ":" << *tree.key(node) << "[" << tree.height(node) << "]\n";
+                cout << side << ":" << *tree.key(node) << "," << *tree.value(node) << " [" << tree.height(node) << "]\n";
                 print_recursive(tree, tree.left(node), 'L', rec_depth + 1);
                 print_recursive(tree, tree.right(node), 'R', rec_depth + 1);
             }
@@ -74,8 +74,10 @@ int main()
             12, 17, 60, 70, 70, 55, 19};
         int num_inserted = 18 + 2;
 
-        for (int i = 0; i < num_inserted; ++i)
-            tree.add(insert_vals[i], allocator1);
+        for (int i = 0; i < num_inserted; ++i) {
+            int *value = tree.add(insert_vals[i], allocator1);
+            *value = i + 1;
+        }
         cout << "Num elements: " << tree.num_elems() << "\n";
         test.print(tree);
 
@@ -85,35 +87,7 @@ int main()
         find_val = 50;
         value = tree.find(find_val);
         cout << "50: " << ((value == NULL) ? 0 : *value) << endl;
-        /*
-           set<AvlTreeIndex<int,int>::TreeNode *> r;
-           int min = 10, max = 25;
-           tree.find_range(r, min, max, true);
-           cout << "Items in range: " << min << "-" << max << ", inclusive:\n";
-           for (set<AvlTreeIndex<int,int>::TreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
-           print_node(tree, *it);
-
-           r.clear();
-           min = 12; max = 60;
-           tree.find_range(r, min, max, true);
-           cout << "Items in range: " << min << "-" << max << ", inclusive:\n";
-           for (set<AvlTreeIndex<int,int>::TreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
-           print_node(tree, *it);
-
-           r.clear();
-           min = 55; max = 70;
-           tree.find_range(r, min, max, true);
-           cout << "Items in range: " << min << "-" << max << ", inclusive:\n";
-           for (set<AvlTreeIndex<int,int>::TreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
-           print_node(tree, *it);
-
-           r.clear();
-           min = 1; max = 70;
-           tree.find_range(r, min, max, false);
-           cout << "Items in range: " << min << "-" << max << ", inclusive:\n";
-           for (set<AvlTreeIndex<int,int>::TreeNode *>::iterator it = r.begin(); it != r.end(); ++it)
-           print_node(tree, *it);
-           */
+ 
         cout << "Testing remove\n";
         int remove_vals[] = {55, 55, 60, 45, 40, 15, 17, 10};
         int num_removed = 8;

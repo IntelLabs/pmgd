@@ -73,4 +73,11 @@ namespace Jarvis {
 
         V *find(const K &key);
     };
+
+    // For the actual property value indices
+    class Node;
+    template <class T> class List;
+    typedef AvlTreeIndex<long long, List<Node *>> LongValueIndex;
+    typedef AvlTreeIndex<double, List<Node *>> FloatValueIndex;
+    typedef AvlTreeIndex<bool, List<Node *>> BoolValueIndex;
 }

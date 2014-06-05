@@ -19,7 +19,7 @@ namespace Jarvis {
     class IndexManager {
         static const unsigned TAGLIST_CHUNK_SIZE = 128;
         static const unsigned INDEXLIST_CHUNK_SIZE = 128;
-        
+
         // A pair for the property id being indexed and its corresponding
         // value tree.
         // Use a base Index class here since the template types for the
@@ -59,13 +59,7 @@ namespace Jarvis {
         // not set any property until then.
         bool add_node(Node *n, Allocator &allocator);
 
-        // This is called from set_property
-        bool add_node(StringID property_id, const Property &p,
-                        Node *n, Allocator &allocator);
-
         Index *get_index(int node_or_edge, StringID tag, StringID property_id);
         NodeIterator get_nodes(StringID tag);
-
-        bool remove_node(StringID property_id, const Property &p, Node *n, Allocator &allocator);
     };
 }
