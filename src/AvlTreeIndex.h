@@ -13,6 +13,7 @@
 // to become less frequent as the tree grows larger.
 
 namespace Jarvis {
+    class TransactionImpl;
     template<typename K, typename V> class AvlTreeIndex : public Index {
         struct TreeNode {
             // Weird ordering to avoid compiler rounding and easier logging
@@ -32,13 +33,15 @@ namespace Jarvis {
             return find_max(t->right);
         }
 
-        TreeNode *left_rotate(TreeNode *hinge);
-        TreeNode *right_rotate(TreeNode *hinge);
-        TreeNode *leftright_rotate(TreeNode *hinge);
-        TreeNode *rightleft_rotate(TreeNode *hinge);
+        TreeNode *left_rotate(TreeNode *hinge, TransactionImpl *tx);
+        TreeNode *right_rotate(TreeNode *hinge, TransactionImpl *tx);
+        TreeNode *leftright_rotate(TreeNode *hinge, TransactionImpl *tx);
+        TreeNode *rightleft_rotate(TreeNode *hinge, TransactionImpl *tx);
         int max(int val1, int val2) { return (val1 > val2) ? val1 : val2; }
-        TreeNode *add_recursive(TreeNode *curr, const K &data, V*&r, Allocator &allocator);
-        TreeNode *remove_recursive(TreeNode *curr, const K &data, Allocator &allocator);
+        TreeNode *add_recursive(TreeNode *curr, const K &data, V*&r,
+                                Allocator &allocator, TransactionImpl *tx);
+        TreeNode *remove_recursive(TreeNode *curr, const K &data,
+                                   Allocator &allocator, TransactionImpl *tx);
 
         int height(TreeNode *node)
         {

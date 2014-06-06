@@ -3,6 +3,7 @@
 #include <string.h>
 #include "allocator.h"
 #include "KeyValuePair.h"
+#include "TransactionImpl.h"
 
 namespace Jarvis {
     // List of chunks. Size passed at creation time. The number of
@@ -33,7 +34,11 @@ namespace Jarvis {
     public:
         // Constructor for temporary objects. No need to log.
         ChunkList()
-        { _head = NULL; _num_elems = 0; }
+        {
+            _head = NULL;
+            _num_elems = 0;
+            TransactionImpl::flush_range(this, sizeof *this);
+        }
 
         // The variables above should just get mapped to the right area
         // and init will be called only the first time.
@@ -60,6 +65,7 @@ namespace Jarvis {
         ChunkListType *prev = NULL, *curr = _head;
         ChunkListType *empty_chunk = NULL;
         unsigned empty_slot = 0;
+
         // This list is not sorted, so search till the end
         while (curr != NULL) {  // across chunks
             // Within a chunk
@@ -98,41 +104,48 @@ namespace Jarvis {
             curr = curr->next;
         }
 
+        TransactionImpl *tx = TransactionImpl::get_tx();
         // key not found
-        ++_num_elems;
         if (empty_chunk) {
             uint16_t mask = 1;
             mask <<= empty_slot;
-            empty_chunk->data[empty_slot].set_key(key);
+            tx->log_range(&empty_chunk->occupants, &empty_chunk->num_elems);
             ++empty_chunk->num_elems;
             empty_chunk->occupants |= mask;
-            // Do a placement new here to make sure value is initialized
-            V *value_space = &(empty_chunk->data[empty_slot].value());
-            return new (value_space) V();
+
+            curr = empty_chunk;
         }
         else { // Need a new chunk
             curr = (ChunkListType *)allocator.alloc(CHUNK_SIZE);
-            curr->data[0].set_key(key);
-            // Value portions will already be zeroed out
             curr->num_elems = 1;
             curr->occupants |= 1;
             curr->next = NULL;
-            if (prev == NULL) { // First ever chunk
-                _head = curr;
-            }
-            else {
-                prev->next = curr;
-            }
-            // Do a placement new here to make sure value is initialized
-            V *value_space = &(curr->data[0].value());
-            return new (value_space) V();
+            TransactionImpl::flush_range(curr, sizeof (ChunkListType));
+
+            if (prev == NULL) // First ever chunk
+                tx->write(&_head, curr);
+            else
+                tx->write(&(prev->next), curr);
+
+            empty_slot = 0;
         }
+        tx->write(&_num_elems, _num_elems + 1);
+
+        curr->data[empty_slot].set_key(key);
+        // Do a placement new here to make sure value is initialized
+        void *space = &(curr->data[empty_slot].value());
+        V *value = new (space) V();
+        TransactionImpl::flush_range(&curr->data[empty_slot], sizeof(KeyValuePair<K,V>));
+
+        return value;
     }
 
     template <typename K, typename V,unsigned CHUNK_SIZE>
     void ChunkList<K,V,CHUNK_SIZE>::remove(const K &key, Allocator &allocator)
     {
         ChunkListType *prev = NULL, *curr = _head;
+        TransactionImpl *tx = TransactionImpl::get_tx();
+
         // This list is not sorted, so search till the end
         while (curr != NULL) {  // across chunks
             // Within a chunk
@@ -143,15 +156,17 @@ namespace Jarvis {
                 // If the value is non-zero, there is, else not
                 if (curr->occupants & bit_pos) { // non-empty slot
                     if (key == curr->data[curr_slot].key()) {
-                        --_num_elems;
+                        tx->log_range(&curr->occupants, &curr->num_elems);
                         --curr->num_elems;
                         curr->occupants &= (~bit_pos);
+
+                        tx->write(&_num_elems, _num_elems - 1);
                         if (curr->num_elems == 0) {
                             // Need to free this chunk
                             if (prev == NULL)
-                                _head = curr->next;
+                                tx->write(&_head, curr->next);
                             else
-                                prev->next = curr->next;
+                                tx->write(&(prev->next), curr->next);
                             allocator.free(curr, CHUNK_SIZE);
                         } // No more elements in this chunk
                         return;
