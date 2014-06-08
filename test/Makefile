@@ -2,8 +2,8 @@ CC := g++-4.8
 RM := rm -f
 ECHO := echo
 
-LIB := ../lib/jarvis-util.lib ../lib/jarvis.lib
-CLEANFILES := $(LIB)
+LIBS := ../lib/jarvis-util.lib ../lib/jarvis.lib
+CLEANFILES := $(LIBS)
 
 INCLUDES := -I../include
 OPT ?= -O2
@@ -37,76 +37,76 @@ all: lib util $(TESTS)
 apitest: apitest.o
 	$(CC) -o $@ $<
 
-alloctest: alloctest.o $(LIB)
+alloctest: alloctest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
-soltest: soltest.o $(LIB)
+soltest: soltest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-nodeedgetest: nodeedgetest.o $(LIB)
+nodeedgetest: nodeedgetest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-listtest: listtest.o $(LIB)
+listtest: listtest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
-edgeindextest: edgeindextest.o
+edgeindextest: edgeindextest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
-propertytest: propertytest.o $(LIB)
+propertytest: propertytest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-propertypredicatetest: propertypredicatetest.o $(LIB)
+propertypredicatetest: propertypredicatetest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-propertychunktest: propertychunktest.o $(LIB)
+propertychunktest: propertychunktest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-propertylisttest: propertylisttest.o $(LIB)
+propertylisttest: propertylisttest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -static -o $@ $< $(LIB)
+	$(CC) $(OPT) -static -o $@ $< $(LIBS)
 
-filtertest: filtertest.o $(LIB)
+filtertest: filtertest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-txtest: txtest.o $(LIB)
+txtest: txtest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-stringtabletest: stringtabletest.o $(LIB)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+stringtabletest: stringtabletest.o $(LIBS)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-setproperty: setproperty.o $(LIB)
+setproperty: setproperty.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-load_tsv_test: load_tsv_test.o $(LIB) util
+load_tsv_test: load_tsv_test.o $(LIBS) util
 	$(call print,LNK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-load_gson_test: load_gson_test.o $(LIB) util
+load_gson_test: load_gson_test.o $(LIBS) util
 	$(call print,LNK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB) -ljsoncpp
+	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
-avltest: avltest.o $(LIB)
+avltest: avltest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
-chunklisttest: chunklisttest.o $(LIB)
+chunklisttest: chunklisttest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
-indextest: indextest.o $(LIB)
+indextest: indextest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
 lib:
 	make -C ../src OPT=$(OPT) install
