@@ -4,14 +4,18 @@ CP := cp -a
 RM := rm -f
 ECHO := echo
 
-TARGET := jarvis-util.lib
-INSTALLPATH := ../lib
+O := ..
+
+TARGET := $O/util/jarvis-util.lib
+INSTALLPATH := $O/lib
 CLEANFILES := 
 
 SRC := exception.cc text.cc dump.cc load_tsv.cc load_gson.cc loader.y scanner.l
 
 # Translates source file names to object file names
-OBJS := $(patsubst %.cc,%.o, $(patsubst %.y,%.o, $(patsubst %.l,%.o, $(SRC))))
+OBJS := $(patsubst %.cc,$O/util/%.o, \
+	$(patsubst %.y,$O/util/%.o,  \
+	$(patsubst %.l,$O/util/%.o, $(SRC))))
 
 INCLUDES := -I../include
 OPT ?= -O2
@@ -28,7 +32,7 @@ ifneq ($(findstring s,$(MAKEFLAGS)),)
     print = @$(ECHO) -e "\033[00;34m" [$(1)] $(2)"\033[00;00m"
 endif
 
-install: $(TARGET)
+install: $O/util $(TARGET)
 	$(call print,INSTALL,$(INSTALLPATH))
 	$(shell if ! test -d $(INSTALLPATH); then mkdir $(INSTALLPATH); fi)
 	$(CP) $(TARGET) $(INSTALLPATH)
@@ -41,15 +45,18 @@ clean:
 	$(call print,CLEAN)
 	$(RM) $(TARGET) $(OBJS) $(DEPS) $(CLEANFILES)
 
-%.o: %.cc $(MAKEFILE_LIST)
+$O/util:
+	mkdir -p $@
+
+$O/util/%.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-scanner.cc: scanner.l
+$O/util/scanner.cc: scanner.l
 	$(call print,LEX,$<)
 	flex $(LFLAGS) -o$@ --header-file=$*.hh $<
 
-loader.cc: loader.y
+$O/util/loader.cc: loader.y
 	$(call print,YACC,$<)
 	bison $(YFLAGS) -d -o $@ $<
 
