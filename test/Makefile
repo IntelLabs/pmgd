@@ -24,7 +24,8 @@ endif
 TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          propertytest propertypredicatetest propertychunktest filtertest \
          txtest propertylisttest \
-         stringtabletest dumpgraph loadgraph setproperty load_tsv_test \
+         stringtabletest dumpgraph loadgraph setproperty \
+         load_tsv_test load_gson_test \
          avltest chunklisttest indextest
 
 OBJS := $(TESTS:%=%.o)
@@ -98,6 +99,10 @@ setproperty: setproperty.o $(LIB)
 load_tsv_test: load_tsv_test.o $(LIB) util
 	$(call print,LNK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIB)
+
+load_gson_test: load_gson_test.o $(LIB) util
+	$(call print,LNK,$@)
+	$(CC) $(OPT) -o $@ $< $(LIB) -ljsoncpp
 
 avltest: avltest.o $(LIB)
 	$(call print,LINK,$@)

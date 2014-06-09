@@ -34,3 +34,8 @@ extern void load(Jarvis::Graph &db, const char *filename,
 extern void load(Jarvis::Graph &db, FILE *f,
                  std::function<void(Jarvis::Node &)> = NULL,
                  std::function<void(Jarvis::Edge &)> = NULL);
+
+extern void load_gson(Jarvis::Graph &db, const char *filename,
+                      std::function<void(Jarvis::Node &)> = NULL,
+                      std::function<void(Jarvis::Edge &)> = NULL);
+
