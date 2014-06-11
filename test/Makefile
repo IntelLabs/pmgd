@@ -24,7 +24,7 @@ endif
 TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          propertytest propertypredicatetest propertychunktest filtertest \
          txtest propertylisttest \
-         stringtabletest dumpgraph loadgraph setproperty \
+         stringtabletest setproperty \
          load_tsv_test load_gson_test \
          avltest chunklisttest indextest
 
@@ -82,14 +82,6 @@ txtest: txtest.o $(LIB)
 	$(CC) $(OPT) -o $@ $< $(LIB)
 
 stringtabletest: stringtabletest.o $(LIB)
-	$(CC) $(OPT) -o $@ $< $(LIB)
-
-dumpgraph: dumpgraph.o $(LIB)
-	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
-
-loadgraph: loadgraph.o $(LIB)
-	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIB)
 
 setproperty: setproperty.o $(LIB)

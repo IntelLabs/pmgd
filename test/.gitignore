@@ -2,11 +2,9 @@
 *.d
 alloctest
 apitest
-dumpgraph
 edgeindextest
 filtertest
 listtest
-loadgraph
 nodeedgetest
 propertychunktest
 propertylisttest
@@ -19,11 +17,9 @@ txtest
 load_tsv_test
 allocgraph
 apigraph
-dumpgraph
 edgeindexgraph
 filtergraph
 listgraph
-loadgraph
 nodeedgegraph
 propertychunkgraph
 propertylistgraph
