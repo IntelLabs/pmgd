@@ -8,7 +8,7 @@
 
 #undef Exception
 
-static const char ID_STR[] = "_id";
+static const char ID_STR[] = "jarvis.loader.id";
 
 using namespace Jarvis;
 

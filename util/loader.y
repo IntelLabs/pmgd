@@ -170,7 +170,7 @@ property_id: STRING;
 
 using namespace Jarvis;
 
-static const char ID[] = "id";
+static const char ID_STR[] = "jarvis.loader.id";
 static bool index_created = false;
 
 #undef Exception
@@ -212,17 +212,17 @@ static Node *get_node(Graph &db, long long id, Jarvis::StringID *tag,
                       std::function<void(Node &)> node_func)
 {
     if (!index_created) {
-        db.create_index(Graph::NODE, 0, ID, PropertyType::t_integer);
+        db.create_index(Graph::NODE, 0, ID_STR, PropertyType::t_integer);
         index_created = true;
     }
 
     NodeIterator nodes
-        = db.get_nodes(0, PropertyPredicate(ID, PropertyPredicate::eq, id));
+        = db.get_nodes(0, PropertyPredicate(ID_STR, PropertyPredicate::eq, id));
     if (nodes) return &*nodes;
 
     // Node not found; add it
     Node &node = db.add_node(*tag);
-    node.set_property(ID, id);
+    node.set_property(ID_STR, id);
     if (node_func)
         node_func(node);
     return &node;
@@ -232,17 +232,17 @@ static Node *get_node(Graph &db, const char *id, Jarvis::StringID *tag,
                       std::function<void(Node &)> node_func)
 {
     if (!index_created) {
-        db.create_index(Graph::NODE, 0, ID, PropertyType::t_string);
+        db.create_index(Graph::NODE, 0, ID_STR, PropertyType::t_string);
         index_created = true;
     }
 
     NodeIterator nodes
-        = db.get_nodes(0, PropertyPredicate(ID, PropertyPredicate::eq, id));
+        = db.get_nodes(0, PropertyPredicate(ID_STR, PropertyPredicate::eq, id));
     if (nodes) return &*nodes;
 
     // Node not found; add it
     Node &node = db.add_node(*tag);
-    node.set_property(ID, id);
+    node.set_property(ID_STR, id);
     if (node_func)
         node_func(node);
     return &node;

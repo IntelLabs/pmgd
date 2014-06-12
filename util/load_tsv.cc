@@ -7,7 +7,7 @@
 
 using namespace Jarvis;
 
-static const char ID[] = "id";
+static const char ID_STR[] = "jarvis.loader.id";
 
 static Node &get_node(Graph &db, long long id,
                       std::function<void(Node &)> node_func);
@@ -30,7 +30,7 @@ void load_tsv(Graph &db, FILE *f,
     char buf[500];
 
     Transaction tx(db);
-    db.create_index(Graph::NODE, 0, ID, PropertyType::t_integer);
+    db.create_index(Graph::NODE, 0, ID_STR, PropertyType::t_integer);
     tx.commit();
 
     while (fgets(buf, sizeof buf, f) != NULL) {
@@ -52,12 +52,12 @@ static Node &get_node(Graph &db, long long id,
                       std::function<void(Node &)> node_func)
 {
     NodeIterator nodes = db.get_nodes(0,
-                             PropertyPredicate(ID, PropertyPredicate::eq, id));
+                             PropertyPredicate(ID_STR, PropertyPredicate::eq, id));
     if (nodes) return *nodes;
 
     // Node not found; add it
     Node &node = db.add_node(0);
-    node.set_property(ID, id);
+    node.set_property(ID_STR, id);
     if (node_func)
         node_func(node);
     return node;
