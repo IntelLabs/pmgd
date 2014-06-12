@@ -80,16 +80,10 @@ namespace Jarvis {
     typedef IteratorImpl<NodeRef> NodeIteratorImpl;
 
     class NodeIterator : public Iterator<NodeIteratorImpl> {
-        friend class Graph;
-        friend class IndexManager;
-        friend class Index;
-        friend class PathIterator;
-        friend class PathIteratorFilter;
-
+    public:
         explicit NodeIterator(NodeIteratorImpl *i)
             : Iterator<NodeIteratorImpl>(i) { }
 
-    public:
         NodeIterator filter(const PropertyPredicate &pp);
         NodeIterator filter(std::function<Disposition(const Ref_type &)> f);
     };
@@ -192,12 +186,10 @@ namespace Jarvis {
 
     typedef IteratorImpl<PropertyRef> PropertyIteratorImpl;
     class PropertyIterator : public Iterator<PropertyIteratorImpl> {
-        friend class PropertyList;
-
+    public:
         explicit PropertyIterator(PropertyIteratorImpl *i)
             : Iterator<PropertyIteratorImpl>(i) { }
 
-    public:
         PropertyIterator filter(std::function<Disposition(const Ref_type &)> f);
     };
 
@@ -255,13 +247,10 @@ namespace Jarvis {
     };
 
     class EdgeIterator : public Iterator<IteratorImpl<EdgeRef>> {
-        friend class Graph;
-        friend class Node;
-
+    public:
         explicit EdgeIterator(IteratorImpl<EdgeRef> *i)
             : Iterator<IteratorImpl<EdgeRef>>(i) { }
 
-    public:
         EdgeIterator filter(const PropertyPredicate &pp);
         EdgeIterator filter(std::function<Disposition(const Ref_type &)> f);
     };
@@ -296,12 +285,10 @@ namespace Jarvis {
     };
 
     class PathIterator : public Iterator<PathIteratorImplBase> {
-        friend class Graph;
-
+    public:
         explicit PathIterator(PathIteratorImplBase *i)
             : Iterator<PathIteratorImplBase>(i) { }
 
-    public:
         PathIterator filter(std::function<Disposition(const Ref_type &)> f);
 
         NodeIterator end_nodes() const
