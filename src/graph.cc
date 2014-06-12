@@ -292,7 +292,7 @@ NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp)
 {
     Index *index = _impl->index_manager().get_index(NODE, tag, pp.id);
     if (index)
-        return index->get_nodes(pp);
+        return index->get_nodes(pp, &_impl->locale());
     else
         return get_nodes(tag).filter(pp); // TODO Causes re-lookup of tag
 }

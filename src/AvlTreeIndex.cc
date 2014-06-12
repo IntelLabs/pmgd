@@ -93,7 +93,7 @@ typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::add_recursive(AvlTreeIn
 {
     if (curr == NULL) {
         TreeNode *temp = (TreeNode *)allocator.alloc(sizeof(TreeNode));
-        temp->key = key;
+        new (&temp->key) K(key);
         r = new (&temp->value) V();
         temp->height = 0;
         temp->left = NULL;
@@ -166,6 +166,9 @@ typename AvlTreeIndex<K,V>::TreeNode *AvlTreeIndex<K,V>::remove_recursive(AvlTre
         // non-empty child or NULL
         if (curr->left == NULL || curr->right == NULL) {
             TreeNode *temp = curr->left != NULL ? curr->left : curr->right;
+            curr->key.~K();
+            // The value node gets destroyed by the caller.
+            // So the tree code doesn't need to free any pointers there.
             allocator.free(curr, sizeof *curr);
             tx->write(&_num_elems, _num_elems - 1);
             // This nodes and its own childrens' heights won't get affected
@@ -249,7 +252,8 @@ V *AvlTreeIndex<K,V>::find(const K &key)
 }
 
 // Explicitly instantiate any types that might be required
-template class AvlTreeIndex<int,int>;
-template class AvlTreeIndex<long long,List<Node *>>;
-template class AvlTreeIndex<bool,List<Node *>>;
-template class AvlTreeIndex<double,List<Node *>>;
+template class AvlTreeIndex<int, int>;
+template class AvlTreeIndex<long long, List<Node *>>;
+template class AvlTreeIndex<bool, List<Node *>>;
+template class AvlTreeIndex<double, List<Node *>>;
+template class AvlTreeIndex<IndexString, List<Node *>>;

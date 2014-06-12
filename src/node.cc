@@ -205,7 +205,8 @@ void Jarvis::Node::set_property(StringID id, const Property &new_value)
     // already searches for the old value and pass it to the index.
     Property old_value;
     TransactionImpl *tx = TransactionImpl::get_tx();
-    Index *index = tx->get_db()->index_manager().get_index(Graph::NODE, _tag, id);
+    GraphImpl *db = tx->get_db();
+    Index *index = db->index_manager().get_index(Graph::NODE, _tag, id);
     if (index) {
         // This call throws if the types don't match for an
         // existing index.
@@ -213,8 +214,8 @@ void Jarvis::Node::set_property(StringID id, const Property &new_value)
         _property_list.set_property(id, new_value, old_value);
         // TODO: actual properties with no_value type not handled here.
         if (old_value.type() != t_novalue)
-            index->remove(old_value, this, tx->get_db()->allocator());
-        index->add(new_value, this, tx->get_db()->allocator());
+            index->remove(old_value, this, db);
+        index->add(new_value, this, db);
     }
     else
         _property_list.set_property(id, new_value, old_value);

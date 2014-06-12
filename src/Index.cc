@@ -1,8 +1,11 @@
+#include <string>
 #include "Index.h"
 #include "AvlTreeIndex.h"
 #include "List.h"
 #include "exception.h"
 #include "TransactionImpl.h"
+#include "GraphImpl.h"
+#include "IndexString.h"
 
 using namespace Jarvis;
 
@@ -23,8 +26,11 @@ void Index::init(PropertyType ptype)
             static_cast<BoolValueIndex *>(this)->init();
             size = sizeof(BoolValueIndex);
             break;
-        case t_time:
         case t_string:
+            static_cast<StringValueIndex *>(this)->init();
+            size = sizeof(StringValueIndex);
+            break;
+        case t_time:
         case t_novalue:
             throw Exception(not_implemented);
         case t_blob:
@@ -37,14 +43,15 @@ void Index::init(PropertyType ptype)
     // flush right now since it is always used from within the parent
     // class Index and we can just flush the entire data struct from
     // here.
-    // TODO: Make sure this is the right way to do this.
     TransactionImpl::flush_range(this, size);
 }
 
-void Index::add(const Property &p, Node *n, Allocator &allocator)
+void Index::add(const Property &p, Node *n, GraphImpl *db)
 {
     if (_ptype != p.type())
         throw Exception(property_type);
+
+    Allocator &allocator = db->allocator();
 
     // TODO: Tree is unnecessary and Node* needs better arrangement for
     // quick search and remove operations
@@ -63,8 +70,13 @@ void Index::add(const Property &p, Node *n, Allocator &allocator)
             dest = static_cast<BoolValueIndex *>(this)->add(p.bool_value(),
                                                             allocator);
             break;
-        case t_time:
         case t_string:
+            {
+                TransientIndexString istr(p.string_value(), db->locale());
+                dest = static_cast<StringValueIndex *>(this)->add(istr, allocator);
+            }
+            break;
+        case t_time:
         case t_novalue:
             throw Exception(not_implemented);
         case t_blob:
@@ -81,10 +93,12 @@ void Index::add(const Property &p, Node *n, Allocator &allocator)
     dest->add(n, allocator);
 }
 
-void Index::remove(const Property &p, Node *n, Allocator &allocator)
+void Index::remove(const Property &p, Node *n, GraphImpl *db)
 {
     if (_ptype != p.type())
         throw Exception(property_type);
+
+    Allocator &allocator = db->allocator();
 
     List<Node*> *dest;
     switch(_ptype) {
@@ -124,8 +138,20 @@ void Index::remove(const Property &p, Node *n, Allocator &allocator)
                 }
             }
             break;
-        case t_time:
         case t_string:
+            {
+                TransientIndexString istr(p.string_value(), db->locale());
+                StringValueIndex *prop_idx = static_cast<StringValueIndex *>(this);
+                dest = prop_idx->find(istr);
+                if (dest) {
+                    dest->remove(n, allocator);
+                    // TODO: Re-traversal of tree.
+                    if (dest->num_elems() == 0)
+                        prop_idx->remove(istr, allocator);
+                }
+            }
+            break;
+        case t_time:
         case t_novalue:
             throw Exception(not_implemented);
         case t_blob:
@@ -154,7 +180,7 @@ namespace Jarvis {
     };
 }
 
-NodeIterator Index::get_nodes(const PropertyPredicate &pp)
+NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc)
 {
     // Since we will not have range support yet, only the equal relation
     // is valid
@@ -187,8 +213,14 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp)
                 list = prop_idx->find(p.bool_value());
             }
             break;
-        case t_time:
         case t_string:
+            {
+                TransientIndexString istr(p.string_value(), *loc);
+                StringValueIndex *prop_idx = static_cast<StringValueIndex *>(this);
+                list = prop_idx->find(istr);
+            }
+            break;
+        case t_time:
         case t_novalue:
             throw Exception(not_implemented);
         case t_blob:

@@ -61,8 +61,11 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
                 *prop_idx = (Index *)allocator.alloc(sizeof(BoolValueIndex));
                 (*prop_idx)->init(t_boolean);
                 break;
-            case t_time:
             case t_string:
+                *prop_idx = (Index *)allocator.alloc(sizeof(StringValueIndex));
+                (*prop_idx)->init(t_string);
+                break;
+            case t_time:
             case t_novalue:
                 throw Exception(not_implemented);
             case t_blob:
@@ -124,6 +127,8 @@ NodeIterator IndexManager::get_nodes(StringID tag)
     prop0_idx = get_index(Graph::NODE, tag, 0);
     if (!prop0_idx)
         return NodeIterator(NULL);
-    // This index can never be null cause we create it for each non-zero tag
-    return prop0_idx->get_nodes(PropertyPredicate(0, PropertyPredicate::eq, true));
+    // This index can never be null cause we create it for each non-zero tag.
+    // The second parameter here is the locale which we surely do not need for
+    // a boolean property.
+    return prop0_idx->get_nodes(PropertyPredicate(0, PropertyPredicate::eq, true), NULL);
 }

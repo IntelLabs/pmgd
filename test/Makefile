@@ -36,7 +36,7 @@ TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          txtest propertylisttest \
          stringtabletest setproperty \
          load_tsv_test load_gson_test \
-         avltest chunklisttest indextest
+         avltest chunklisttest indextest indexstringtest
 
 OBJS := $(TESTS:%=$(O_TEST)%.o)
 BINS := $(TESTS:%=$(O_TEST)%)
@@ -116,6 +116,10 @@ $(O_TEST)chunklisttest: $(O_TEST)chunklisttest.o $(LIBS)
 	$(CC) -o $@ $< $(LIBS)
 
 $(O_TEST)indextest: $(O_TEST)indextest.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) -o $@ $< $(LIBS)
+
+$(O_TEST)indexstringtest: $(O_TEST)indexstringtest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIBS)
 
