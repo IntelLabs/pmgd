@@ -11,6 +11,7 @@ using namespace Jarvis;
 static void dump(Graph &db);
 static void dump_no_tx(Graph &db);
 static void modify(Graph &db, int argc, char **argv, bool commit);
+static void modify_nested(Graph &db, int argc, char **argv);
 
 int main(int argc, char **argv)
 {
@@ -21,12 +22,28 @@ int main(int argc, char **argv)
         Graph db("txgraph", create ? Graph::Create : Graph::ReadOnly);
         modify(db, argc, argv, true);
         modify(db, argc, argv, false);
+        modify_nested(db, argc, argv);
     }
     catch (Exception e) {
         print_exception(e);
         exit(1);
     }
     return 0;
+}
+
+static void modify_nested(Graph &db, int argc, char **argv)
+{
+    try {
+        // Test nested independent transactions 
+        Transaction tx(db);
+        modify(db, argc, argv, true);
+        modify(db, argc, argv, false);
+        tx.commit();
+    }
+    catch (Exception e) {
+        print_exception(e);
+        exit(1);
+    }
 }
 
 static void modify(Graph &db, int argc, char **argv, bool commit)
@@ -37,8 +54,8 @@ static void modify(Graph &db, int argc, char **argv, bool commit)
         printf("\nABORT TEST\n");
 
     try {
-        // add nodes and edges in a transaction
-        Transaction tx(db);
+        // add nodes and edges in an independent transaction
+        Transaction tx(db, Transaction::Independent);
 
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {
@@ -83,7 +100,7 @@ static void dump_no_tx(Graph &db)
 static void dump(Graph &db)
 {
     try {
-        Transaction tx(db);
+        Transaction tx(db, Transaction::Independent);
         dump_nodes(db);
         dump_edges(db);
         tx.commit();
