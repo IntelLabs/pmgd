@@ -1,3 +1,4 @@
+#include <string.h>
 #include <stdio.h>
 #include <string>
 #include <assert.h>
@@ -11,6 +12,39 @@
 static const char ID_STR[] = "jarvis.loader.id";
 
 using namespace Jarvis;
+
+/* To support reading from a file or standard input */
+class input_t {
+    std::ifstream *_stream;
+
+public:
+    operator std::istream &() { return _stream ? *_stream : std::cin; }
+
+    input_t(const char *filename)
+    {
+        if (strcmp(filename, "-") == 0)
+            _stream = NULL;
+        else {
+            _stream = new std::ifstream(filename);
+            if (!_stream->is_open()) {
+                delete _stream;
+                _stream = NULL;
+                throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
+            }
+        }
+    }
+
+    ~input_t() { close(); }
+
+    void close()
+    {
+        if (_stream != NULL) {
+            _stream->close();
+            delete _stream;
+            _stream = NULL;
+        }
+    }
+};
 
 static Node *get_node(Graph &db, long long id, Jarvis::StringID tag,
                         std::function<void(Node &)> node_func)
@@ -179,18 +213,15 @@ void load_gson(Graph &db, const char *filename,
                 std::function<void(Node &)> node_func,
                 std::function<void(Edge &)> edge_func)
 {
-    std::ifstream input(filename);
-    if (!input.is_open())
-        throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
+    input_t input(filename);
 
     Json::Value root;
     const Json::Features features;
     Json::Reader reader(features);
 
-    if (!reader.parse(input, root)) {
-        input.close();
+    if (!reader.parse(input, root))
         throw Jarvis::Exception(202, "parse_failed", __FILE__, __LINE__);
-    }
+
     input.close();
 
     load_gson(db, root, node_func, edge_func);
