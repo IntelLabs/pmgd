@@ -35,7 +35,7 @@ mkgraph: mkgraph.o
 
 loadgraph: loadgraph.o
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIBS)
+	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
 dumpgraph: dumpgraph.o
 	$(call print,LINK,$@)
