@@ -5,7 +5,7 @@ ECHO := echo
 LIBS := ../lib/jarvis-util.lib ../lib/jarvis.lib
 CLEANFILES :=
 
-INCLUDES := -I../include
+INCLUDES := -I../include -I../util
 OPT ?= -O2
 
 FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
@@ -21,13 +21,17 @@ ifneq ($(findstring s,$(MAKEFLAGS)),)
     print = @$(ECHO) -e "\033[00;34m" [$(1)] $(2)"\033[00;00m"
 endif
 
-TOOLS := loadgraph dumpgraph
+TOOLS := mkgraph loadgraph dumpgraph
 
 OBJS := $(TOOLS:%=%.o)
 
 CLEANFILES += $(TOOLS) $(OBJS)
 
 all: $(TOOLS)
+
+mkgraph: mkgraph.o
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
 loadgraph: loadgraph.o
 	$(call print,LINK,$@)
