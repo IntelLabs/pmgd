@@ -60,6 +60,10 @@ $O/util/%.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
+$O/util/%.o: $O/util/%.cc
+	$(call print,COMPILE,$@)
+	$(CC) $(CFLAGS) -o $@ -c $<
+
 $O/util/scanner.cc: scanner.l
 	$(call print,LEX,$<)
 	flex $(LFLAGS) -o$@ --header-file=$*.hh $<
@@ -70,4 +74,5 @@ $O/util/loader.cc: loader.y
 
 DEPS := $(OBJS:%.o=%.d)
 -include $(DEPS)
-loader.cc scanner.cc: Makefile
+$O/util/loader.cc: $(MAKEFILE_LIST)
+$O/util/scanner.cc: $(MAKEFILE_LIST)
