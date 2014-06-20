@@ -2,8 +2,10 @@ CC := g++-4.8
 RM := rm -f
 ECHO := echo
 
-LIB := ../lib/jarvis-util.lib ../lib/jarvis.lib
-CLEANFILES := $(LIB)
+O := ..
+
+LIBS := $O/lib/jarvis-util.lib $O/lib/jarvis.lib
+CLEANFILES := $(LIBS)
 
 INCLUDES := -I../include
 OPT ?= -O2
@@ -28,93 +30,97 @@ TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          load_tsv_test load_gson_test \
          avltest chunklisttest indextest
 
-OBJS := $(TESTS:%=%.o)
+OBJS := $(TESTS:%=$O/test/%.o)
+BINS := $(TESTS:%=$O/test/%)
 
-CLEANFILES += $(TESTS) $(OBJS)
+CLEANFILES += $(OBJS) $(BINS)
 
-all: lib util $(TESTS)
+all: lib util $O/test $(BINS)
 
-apitest: apitest.o
+$O/test/apitest: $O/test/apitest.o
 	$(CC) -o $@ $<
 
-alloctest: alloctest.o $(LIB)
+$O/test/alloctest: $O/test/alloctest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
-soltest: soltest.o $(LIB)
+$O/test/soltest: $O/test/soltest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-nodeedgetest: nodeedgetest.o $(LIB)
+$O/test/nodeedgetest: $O/test/nodeedgetest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-listtest: listtest.o $(LIB)
+$O/test/listtest: $O/test/listtest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
-edgeindextest: edgeindextest.o
+$O/test/edgeindextest: $O/test/edgeindextest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
-propertytest: propertytest.o $(LIB)
+$O/test/propertytest: $O/test/propertytest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-propertypredicatetest: propertypredicatetest.o $(LIB)
+$O/test/propertypredicatetest: $O/test/propertypredicatetest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-propertychunktest: propertychunktest.o $(LIB)
+$O/test/propertychunktest: $O/test/propertychunktest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-propertylisttest: propertylisttest.o $(LIB)
+$O/test/propertylisttest: $O/test/propertylisttest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -static -o $@ $< $(LIB)
+	$(CC) $(OPT) -static -o $@ $< $(LIBS)
 
-filtertest: filtertest.o $(LIB)
+$O/test/filtertest: $O/test/filtertest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-txtest: txtest.o $(LIB)
+$O/test/txtest: $O/test/txtest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-stringtabletest: stringtabletest.o $(LIB)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+$O/test/stringtabletest: $O/test/stringtabletest.o $(LIBS)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-setproperty: setproperty.o $(LIB)
+$O/test/setproperty: $O/test/setproperty.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-load_tsv_test: load_tsv_test.o $(LIB) util
+$O/test/load_tsv_test: $O/test/load_tsv_test.o $(LIBS) util
 	$(call print,LNK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-load_gson_test: load_gson_test.o $(LIB) util
+$O/test/load_gson_test: $O/test/load_gson_test.o $(LIBS) util
 	$(call print,LNK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIB) -ljsoncpp
+	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
-avltest: avltest.o $(LIB)
+$O/test/avltest: $O/test/avltest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
-chunklisttest: chunklisttest.o $(LIB)
+$O/test/chunklisttest: $O/test/chunklisttest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
-indextest: indextest.o $(LIB)
+$O/test/indextest: $O/test/indextest.o $(LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) -o $@ $< $(LIBS)
 
 lib:
-	make -C ../src OPT=$(OPT) install
+	make -C ../src O=$O OPT=$(OPT) install
 
 util:
-	make -C ../util OPT=$(OPT) install
+	make -C ../util O=$O OPT=$(OPT) install
 
-%.o: %.cc $(MAKEFILE_LIST)
+$O/test:
+	mkdir -p $@
+
+$O/test/%.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
@@ -126,6 +132,5 @@ CLEANFILES += $(DEPS)
 clean:
 	$(call print,CLEAN)
 	$(RM) $(CLEANFILES)
-	make -C ../src clean
-	make -C ../util clean
-
+	make -C ../src O=$O clean
+	make -C ../util O=$O clean

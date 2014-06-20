@@ -2,7 +2,9 @@ CC := g++-4.8
 RM := rm -f
 ECHO := echo
 
-LIBS := ../lib/jarvis-util.lib ../lib/jarvis.lib
+O := ..
+
+LIBS := $O/lib/jarvis-util.lib $O/lib/jarvis.lib
 CLEANFILES :=
 
 INCLUDES := -I../include -I../util
@@ -23,25 +25,33 @@ endif
 
 TOOLS := mkgraph loadgraph dumpgraph
 
-OBJS := $(TOOLS:%=%.o)
+OBJS := $(TOOLS:%=$O/tools/%.o)
+BINS := $(TOOLS:%=$O/tools/%)
 
-CLEANFILES += $(TOOLS) $(OBJS)
+CLEANFILES += $(OBJS) $(BINS)
 
-all: $(TOOLS)
+all: $O/tools $(BINS)
 
-mkgraph: mkgraph.o
+$O/tools/mkgraph: $O/tools/mkgraph.o
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-loadgraph: loadgraph.o
+$O/tools/loadgraph: $O/tools/loadgraph.o
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
-dumpgraph: dumpgraph.o
+$O/tools/dumpgraph: $O/tools/dumpgraph.o
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-%.o: %.cc $(MAKEFILE_LIST)
+$O/tools/%.o: %.cc $(MAKEFILE_LIST)
+	$(call print,COMPILE,$@)
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$O/tools:
+	mkdir -p $@
+
+$O/tools/%.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
