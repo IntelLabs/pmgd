@@ -17,6 +17,14 @@ OBJS := $(patsubst %.cc,$O/util/%.o, \
           $(patsubst %.y,$O/util/%.o, \
             $(patsubst %.l,$O/util/%.o, $(SRCS))))
 
+# Add the output of flex and bison to the list of files to clean
+CLEANFILES += $(patsubst %.y,$O/util/%.cc, \
+                $(patsubst %.l,$O/util/%.cc, \
+                  $(filter %.y %.l, $(SRCS))))
+CLEANFILES += $(patsubst %.y,$O/util/%.hh, \
+                $(patsubst %.l,$O/util/%.hh, \
+                  $(filter %.y %.l, $(SRCS))))
+
 INCLUDES := -I../include
 OPT ?= -O2
 
