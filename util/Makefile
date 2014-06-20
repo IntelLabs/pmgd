@@ -8,14 +8,14 @@ O := ..
 
 TARGET := $O/util/jarvis-util.lib
 INSTALLPATH := $O/lib
-CLEANFILES := 
+CLEANFILES :=
 
-SRC := exception.cc text.cc dump.cc load_tsv.cc load_gson.cc loader.y scanner.l
+SRCS := exception.cc text.cc dump.cc load_tsv.cc load_gson.cc loader.y scanner.l
 
 # Translates source file names to object file names
 OBJS := $(patsubst %.cc,$O/util/%.o, \
-	$(patsubst %.y,$O/util/%.o,  \
-	$(patsubst %.l,$O/util/%.o, $(SRC))))
+          $(patsubst %.y,$O/util/%.o, \
+            $(patsubst %.l,$O/util/%.o, $(SRCS))))
 
 INCLUDES := -I../include
 OPT ?= -O2

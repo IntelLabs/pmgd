@@ -10,15 +10,15 @@ TARGET := $O/src/jarvis.lib
 INSTALLPATH := $O/lib
 CLEANFILES := 
 
-SRC := graph.cc node.cc edge.cc property.cc stringid.cc \
-       EdgeIndex.cc \
-       PropertyList.cc StringTable.cc FixedAllocator.cc Allocator.cc \
-       TransactionManager.cc transaction.cc \
-       AvlTreeIndex.cc IndexManager.cc Index.cc \
-       linux.cc
+SRCS := graph.cc node.cc edge.cc property.cc stringid.cc \
+        EdgeIndex.cc \
+        PropertyList.cc StringTable.cc FixedAllocator.cc Allocator.cc \
+        TransactionManager.cc transaction.cc \
+        AvlTreeIndex.cc IndexManager.cc Index.cc \
+        linux.cc
 
 # Translates source file names to object file names
-OBJS := $(patsubst %.cc, $O/src/%.o, $(SRC))
+OBJS := $(patsubst %.cc, $O/src/%.o, $(SRCS))
 
 INCLUDES := -I../include
 OPT ?= -O2
