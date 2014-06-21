@@ -4,10 +4,16 @@ CP := cp -a
 RM := rm -f
 ECHO := echo
 
-O := ..
+ifeq ($O,)
+    O_ROOT := ../
+    O_SRC :=
+else
+    O_ROOT := $O/
+    O_SRC := $O/src/
+endif
 
-TARGET := $O/src/jarvis.lib
-INSTALLPATH := $O/lib
+TARGET := $(O_SRC)jarvis.lib
+INSTALLPATH := $(O_ROOT)lib
 CLEANFILES := 
 
 SRCS := graph.cc node.cc edge.cc property.cc stringid.cc \
@@ -18,7 +24,7 @@ SRCS := graph.cc node.cc edge.cc property.cc stringid.cc \
         linux.cc
 
 # Translates source file names to object file names
-OBJS := $(patsubst %.cc, $O/src/%.o, $(SRCS))
+OBJS := $(patsubst %.cc, $(O_SRC)%.o, $(SRCS))
 
 INCLUDES := -I../include
 OPT ?= -O2
@@ -36,7 +42,7 @@ ifneq ($(findstring s,$(MAKEFLAGS)),)
     print = @$(ECHO) -e "\033[00;34m" [$(1)] $(2)"\033[00;00m"
 endif
 
-install: $O/src $(TARGET)
+install: $(O_SRC) $(TARGET)
 	$(call print,INSTALL,$(INSTALLPATH))
 	$(shell if ! test -d $(INSTALLPATH); then mkdir $(INSTALLPATH); fi)
 	$(CP) $(TARGET) $(INSTALLPATH)
@@ -49,10 +55,10 @@ clean:
 	$(call print,CLEAN)
 	$(RM) $(TARGET) $(OBJS) $(DEPS) $(CLEANFILES)
 
-$O/src:
+$(O_SRC):
 	mkdir -p $@
 
-$O/src/%.o: %.cc $(MAKEFILE_LIST)
+$(O_SRC)%.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
