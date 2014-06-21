@@ -8,14 +8,22 @@ O := ..
 
 TARGET := $O/util/jarvis-util.lib
 INSTALLPATH := $O/lib
-CLEANFILES := 
+CLEANFILES :=
 
-SRC := exception.cc text.cc dump.cc load_tsv.cc load_gson.cc loader.y scanner.l
+SRCS := exception.cc text.cc dump.cc load_tsv.cc load_gson.cc loader.y scanner.l
 
 # Translates source file names to object file names
 OBJS := $(patsubst %.cc,$O/util/%.o, \
-	$(patsubst %.y,$O/util/%.o,  \
-	$(patsubst %.l,$O/util/%.o, $(SRC))))
+          $(patsubst %.y,$O/util/%.o, \
+            $(patsubst %.l,$O/util/%.o, $(SRCS))))
+
+# Add the output of flex and bison to the list of files to clean
+CLEANFILES += $(patsubst %.y,$O/util/%.cc, \
+                $(patsubst %.l,$O/util/%.cc, \
+                  $(filter %.y %.l, $(SRCS))))
+CLEANFILES += $(patsubst %.y,$O/util/%.hh, \
+                $(patsubst %.l,$O/util/%.hh, \
+                  $(filter %.y %.l, $(SRCS))))
 
 INCLUDES := -I../include
 OPT ?= -O2
@@ -52,6 +60,10 @@ $O/util/%.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
+$O/util/%.o: $O/util/%.cc
+	$(call print,COMPILE,$@)
+	$(CC) $(CFLAGS) -o $@ -c $<
+
 $O/util/scanner.cc: scanner.l
 	$(call print,LEX,$<)
 	flex $(LFLAGS) -o$@ --header-file=$*.hh $<
@@ -62,4 +74,5 @@ $O/util/loader.cc: loader.y
 
 DEPS := $(OBJS:%.o=%.d)
 -include $(DEPS)
-loader.cc scanner.cc: Makefile
+$O/util/loader.cc: $(MAKEFILE_LIST)
+$O/util/scanner.cc: $(MAKEFILE_LIST)
