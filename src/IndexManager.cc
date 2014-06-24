@@ -20,8 +20,7 @@ IndexManager::IndexList *IndexManager::add_tag_index(int node_or_edge,
     if (tag_entry->num_elems() == 0 && !(tag == 0)) {
         // All we need is one value in the tree. Hopefully we will have different
         // type of data structure options eventually.
-        Index *prop0_idx = (Index *)allocator.alloc(sizeof(BoolValueIndex));
-        prop0_idx->init(t_boolean);
+        Index *prop0_idx = new (allocator.alloc(sizeof(BoolValueIndex))) BoolValueIndex(t_boolean);
         Index **value = tag_entry->add(0, allocator);
         *value = prop0_idx;
     }
@@ -50,20 +49,16 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
     if (*prop_idx == NULL) {
         switch(ptype) {
             case t_integer:
-                *prop_idx = (Index *)allocator.alloc(sizeof(LongValueIndex));
-                (*prop_idx)->init(t_integer);
+                *prop_idx = new (allocator.alloc(sizeof(LongValueIndex))) LongValueIndex(ptype);
                 break;
             case t_float:
-                *prop_idx = (Index *)allocator.alloc(sizeof(FloatValueIndex));
-                (*prop_idx)->init(t_float);
+                *prop_idx = new (allocator.alloc(sizeof(FloatValueIndex))) FloatValueIndex(ptype);
                 break;
             case t_boolean:
-                *prop_idx = (Index *)allocator.alloc(sizeof(BoolValueIndex));
-                (*prop_idx)->init(t_boolean);
+                *prop_idx = new (allocator.alloc(sizeof(BoolValueIndex))) BoolValueIndex(ptype);
                 break;
             case t_string:
-                *prop_idx = (Index *)allocator.alloc(sizeof(StringValueIndex));
-                (*prop_idx)->init(t_string);
+                *prop_idx = new (allocator.alloc(sizeof(StringValueIndex))) StringValueIndex(ptype);
                 break;
             case t_time:
             case t_novalue:
@@ -93,6 +88,7 @@ bool IndexManager::add_node(Node *n, Allocator &allocator)
     // TODO: Tree is unnecessary and Node* needs better arrangement for
     // quick search and remove operations
     BoolValueIndex *idx = (BoolValueIndex *)*(tag_entry->find(0));
+
     // Now retrieve the list where node pointers are getting added
     // This particular property only has one value = true and should
     // be the first and only node in the tree.

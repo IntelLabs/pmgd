@@ -1,85 +1,32 @@
 #pragma once
-#include "allocator.h"
-#include "KeyValuePair.h"
 #include "Index.h"
-#include "IndexString.h"
-
-// AVL Trees are very good for search which will hopefully be the
-// primary function when used for indexing. The balancing condition
-// is strict but search complexity remains at O(log n). The remove
-// function can cause multiple traversals through the tree but in order
-// to maintain correct balance, there is sadly no optimization. If deletes
-// become very frequent, consider splay tree or some other data structure.
-// Also, from some simple tests, it does seem like balancing starts
-// to become less frequent as the tree grows larger.
+#include "AvlTree.h"
+#include "TransactionImpl.h"
 
 namespace Jarvis {
-    class TransactionImpl;
-    template<typename K, typename V> class AvlTreeIndex : public Index {
-        struct TreeNode {
-            // Weird ordering to avoid compiler rounding and easier logging
-            TreeNode *left;
-            TreeNode *right;
-            int height;
-            K key;
-            V value;
-        };
-
-        TreeNode *_tree;
-        size_t _num_elems;
-
-        TreeNode *find_max(TreeNode *t) {
-            if (t == NULL || t->right == NULL)
-                return t;
-            return find_max(t->right);
-        }
-
-        TreeNode *left_rotate(TreeNode *hinge, TransactionImpl *tx);
-        TreeNode *right_rotate(TreeNode *hinge, TransactionImpl *tx);
-        TreeNode *leftright_rotate(TreeNode *hinge, TransactionImpl *tx);
-        TreeNode *rightleft_rotate(TreeNode *hinge, TransactionImpl *tx);
-        int max(int val1, int val2) { return (val1 > val2) ? val1 : val2; }
-        TreeNode *add_recursive(TreeNode *curr, const K &data, V*&r,
-                                Allocator &allocator, TransactionImpl *tx);
-        TreeNode *remove_recursive(TreeNode *curr, const K &data,
-                                   Allocator &allocator, TransactionImpl *tx);
-
-        int height(TreeNode *node)
-        {
-            if (node == NULL)
-                return -1;
-            return node->height;
-        }
-
-        // Unit test and associated funtions
-        friend class AvlTreeIndexTest;
-        TreeNode *left(const TreeNode *curr) { return (curr == NULL) ? NULL : curr->left; }
-        TreeNode *right(const TreeNode *curr) { return (curr == NULL) ? NULL : curr->right; }
-        K *key(TreeNode *curr) { return (curr == NULL) ? NULL : &curr->key; }
-        V *value(TreeNode *curr) { return (curr == NULL) ? NULL : &curr->value; }
-
+    template<typename K, typename V> class AvlTreeIndex
+                            : public Index, public AvlTree<K,V>
+    {
     public:
-        AvlTreeIndex() : _tree(NULL), _num_elems(0) {}
-        void init() { *this = AvlTreeIndex(); }
-        size_t num_elems() const { return _num_elems; }
+        // Initialize both and they do their own transaction flush
+        AvlTreeIndex(PropertyType ptype) : Index(ptype), AvlTree<K,V>()
+        {
+            // This will flush for both the base classes too.
+            TransactionImpl::flush_range(this, sizeof *this);
+        }
 
-        // We could use a key value pair in the tree struct and return a pointer to
-        // that but technically, the user shouldn't be allowed to modify anything
-        // other than what goes in the value area.
-        V *add(const K &key, Allocator &allocator);
+        using AvlTree<K,V>::add;
+        using AvlTree<K,V>::remove;
 
-        // In most cases, remove will remove the tree node. In cases where user
-        // wants to modify the value, it should be a find and modify, which
-        // might cause value to become empty, hence triggering a tree node delete.
-        // That would mean a repeat search for the node but I don't see another
-        // cleaner option. 
-        void remove(const K &key, Allocator &allocator);
+        // TODO: This could be a good location for an optimized tree
+        // remove with the knowledge of V = list
 
-        V *find(const K &key);
+        NodeIterator get_nodes(const K &key, const PropertyPredicate &pp);
     };
 
     // For the actual property value indices
     class Node;
+    class IndexString;
     template <class T> class List;
     typedef AvlTreeIndex<long long, List<Node *>> LongValueIndex;
     typedef AvlTreeIndex<double, List<Node *>> FloatValueIndex;

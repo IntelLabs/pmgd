@@ -5,7 +5,7 @@
 #include "../src/List.h"
 #include "../src/os.h"
 #include "../src/allocator.h"
-#include "../src/AvlTreeIndex.h"
+#include "../src/AvlTree.h"
 #include "../src/GraphConfig.h"
 #include "../util/util.h"
 
@@ -24,9 +24,9 @@ static constexpr AllocatorInfo default_allocators[] = {
 };
 
 namespace Jarvis {
-    class AvlTreeIndexTest {
+    class AvlTreeTest {
         public:
-            void print_recursive(AvlTreeIndex<int,int> &tree, AvlTreeIndex<int,int>::TreeNode *node,
+            void print_recursive(AvlTree<int,int> &tree, AvlTree<int,int>::TreeNode *node,
                     char side, int rec_depth)
             {
                 if (node == NULL)
@@ -38,7 +38,7 @@ namespace Jarvis {
                 print_recursive(tree, tree.right(node), 'R', rec_depth + 1);
             }
 
-            void print(AvlTreeIndex<int,int> &tree)
+            void print(AvlTree<int,int> &tree)
             {
                 print_recursive(tree, tree._tree, 'C', 0);
                 cout << endl;
@@ -64,8 +64,8 @@ int main()
         os::MapRegion region1(".", "region1", start_addr, region_size, create1, create1, false);
         Allocator allocator1(start_addr, NUM_FIXED_ALLOCATORS, NULL, default_allocators, create1);
 
-        AvlTreeIndex<int,int> tree;
-        AvlTreeIndexTest test;
+        AvlTree<int,int> tree;
+        AvlTreeTest test;
         int insert_vals[] = {5, 5, 10, 15, 20, 25, 1, 4, 30, 35, 40, 45, 50,
             12, 17, 60, 70, 70, 55, 19};
         int num_inserted = 18 + 2;

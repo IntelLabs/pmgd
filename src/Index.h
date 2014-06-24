@@ -8,10 +8,12 @@ namespace Jarvis {
     class GraphImpl;
 
     // Base class for all the property value indices
+    // Data resides in PM
     class Index {
         PropertyType _ptype;
     public:
-        void init(PropertyType ptype);
+        Index(PropertyType ptype) : _ptype(ptype) {}
+
         void add(const Property &p, Node *n, GraphImpl *db);
         void remove(const Property &p, Node *n, GraphImpl *db);
         void check_type(const PropertyType ptype)

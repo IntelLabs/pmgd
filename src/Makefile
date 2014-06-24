@@ -36,7 +36,7 @@ SRCS := graph.cc GraphConfig.cc node.cc edge.cc property.cc stringid.cc \
         EdgeIndex.cc \
         PropertyList.cc StringTable.cc FixedAllocator.cc Allocator.cc \
         TransactionManager.cc transaction.cc \
-        IndexString.cc AvlTreeIndex.cc IndexManager.cc Index.cc \
+        IndexString.cc AvlTree.cc AvlTreeIndex.cc IndexManager.cc Index.cc \
         linux.cc
 
 # Translates source file names to object file names.
