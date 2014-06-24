@@ -2,9 +2,17 @@ CC := g++-4.8
 RM := rm -f
 ECHO := echo
 
-O := ..
+ifeq ($O,)
+    O_ROOT  := ../
+    O_TOOLS :=
+    O_LIB   := ../lib/
+else
+    O_ROOT  := $O/
+    O_TOOLS := $O/tools/
+    O_LIB   := $O/lib/
+endif
 
-LIBS := $O/lib/jarvis-util.lib $O/lib/jarvis.lib
+LIBS := $(O_LIB)jarvis-util.lib $(O_LIB)jarvis.lib
 CLEANFILES :=
 
 INCLUDES := -I../include -I../util
@@ -25,33 +33,29 @@ endif
 
 TOOLS := mkgraph loadgraph dumpgraph
 
-OBJS := $(TOOLS:%=$O/tools/%.o)
-BINS := $(TOOLS:%=$O/tools/%)
+OBJS := $(TOOLS:%=$(O_TOOLS)%.o)
+BINS := $(TOOLS:%=$(O_TOOLS)%)
 
 CLEANFILES += $(OBJS) $(BINS)
 
-all: $O/tools $(BINS)
+all: $(O_TOOLS) $(BINS)
 
-$O/tools/mkgraph: $O/tools/mkgraph.o
+$(O_TOOLS)mkgraph: $(O_TOOLS)mkgraph.o
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/tools/loadgraph: $O/tools/loadgraph.o
+$(O_TOOLS)loadgraph: $(O_TOOLS)loadgraph.o
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
-$O/tools/dumpgraph: $O/tools/dumpgraph.o
+$(O_TOOLS)dumpgraph: $(O_TOOLS)dumpgraph.o
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/tools/%.o: %.cc $(MAKEFILE_LIST)
-	$(call print,COMPILE,$@)
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-$O/tools:
+$(O_TOOLS):
 	mkdir -p $@
 
-$O/tools/%.o: %.cc $(MAKEFILE_LIST)
+$(O_TOOLS)%.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
