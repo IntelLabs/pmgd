@@ -2,9 +2,17 @@ CC := g++-4.8
 RM := rm -f
 ECHO := echo
 
-O := ..
+ifeq ($O,)
+  O_ROOT := ../
+  O_TEST :=
+  O_LIB  := ../lib/
+else
+  O_ROOT := $O/
+  O_TEST := $O/test/
+  O_LIB  := $O/lib/
+endif
 
-LIBS := $O/lib/jarvis-util.lib $O/lib/jarvis.lib
+LIBS := $(O_LIB)jarvis-util.lib $(O_LIB)jarvis.lib
 CLEANFILES := $(LIBS)
 
 INCLUDES := -I../include
@@ -30,84 +38,84 @@ TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          load_tsv_test load_gson_test \
          avltest chunklisttest indextest
 
-OBJS := $(TESTS:%=$O/test/%.o)
-BINS := $(TESTS:%=$O/test/%)
+OBJS := $(TESTS:%=$(O_TEST)%.o)
+BINS := $(TESTS:%=$(O_TEST)%)
 
 CLEANFILES += $(OBJS) $(BINS)
 
-all: lib util $O/test $(BINS)
+all: lib util $(O_TEST) $(BINS)
 
-$O/test/apitest: $O/test/apitest.o
+$(O_TEST)apitest: $(O_TEST)apitest.o
 	$(CC) -o $@ $<
 
-$O/test/alloctest: $O/test/alloctest.o $(LIBS)
+$(O_TEST)alloctest: $(O_TEST)alloctest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIBS)
 
-$O/test/soltest: $O/test/soltest.o $(LIBS)
+$(O_TEST)soltest: $(O_TEST)soltest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/test/nodeedgetest: $O/test/nodeedgetest.o $(LIBS)
+$(O_TEST)nodeedgetest: $(O_TEST)nodeedgetest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/test/listtest: $O/test/listtest.o $(LIBS)
+$(O_TEST)listtest: $(O_TEST)listtest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIBS)
 
-$O/test/edgeindextest: $O/test/edgeindextest.o $(LIBS)
+$(O_TEST)edgeindextest: $(O_TEST)edgeindextest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIBS)
 
-$O/test/propertytest: $O/test/propertytest.o $(LIBS)
+$(O_TEST)propertytest: $(O_TEST)propertytest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/test/propertypredicatetest: $O/test/propertypredicatetest.o $(LIBS)
+$(O_TEST)propertypredicatetest: $(O_TEST)propertypredicatetest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/test/propertychunktest: $O/test/propertychunktest.o $(LIBS)
+$(O_TEST)propertychunktest: $(O_TEST)propertychunktest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/test/propertylisttest: $O/test/propertylisttest.o $(LIBS)
+$(O_TEST)propertylisttest: $(O_TEST)propertylisttest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -static -o $@ $< $(LIBS)
 
-$O/test/filtertest: $O/test/filtertest.o $(LIBS)
+$(O_TEST)filtertest: $(O_TEST)filtertest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/test/txtest: $O/test/txtest.o $(LIBS)
+$(O_TEST)txtest: $(O_TEST)txtest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/test/stringtabletest: $O/test/stringtabletest.o $(LIBS)
+$(O_TEST)stringtabletest: $(O_TEST)stringtabletest.o $(LIBS)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/test/setproperty: $O/test/setproperty.o $(LIBS)
+$(O_TEST)setproperty: $(O_TEST)setproperty.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/test/load_tsv_test: $O/test/load_tsv_test.o $(LIBS) util
+$(O_TEST)load_tsv_test: $(O_TEST)load_tsv_test.o $(LIBS) util
 	$(call print,LNK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$O/test/load_gson_test: $O/test/load_gson_test.o $(LIBS) util
+$(O_TEST)load_gson_test: $(O_TEST)load_gson_test.o $(LIBS) util
 	$(call print,LNK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
-$O/test/avltest: $O/test/avltest.o $(LIBS)
+$(O_TEST)avltest: $(O_TEST)avltest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIBS)
 
-$O/test/chunklisttest: $O/test/chunklisttest.o $(LIBS)
+$(O_TEST)chunklisttest: $(O_TEST)chunklisttest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIBS)
 
-$O/test/indextest: $O/test/indextest.o $(LIBS)
+$(O_TEST)indextest: $(O_TEST)indextest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIBS)
 
@@ -117,10 +125,10 @@ lib:
 util:
 	make -C ../util O=$O OPT=$(OPT) install
 
-$O/test:
+$(O_TEST):
 	mkdir -p $@
 
-$O/test/%.o: %.cc $(MAKEFILE_LIST)
+$(O_TEST)%.o: %.cc $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
