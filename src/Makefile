@@ -6,10 +6,10 @@ ECHO := echo
 
 ifeq ($O,)
     O_ROOT := ../
-    O_SRC :=
+    O_SRC  :=
 else
     O_ROOT := $O/
-    O_SRC := $O/src/
+    O_SRC  := $O/src/
 endif
 
 TARGET := $(O_SRC)jarvis.lib

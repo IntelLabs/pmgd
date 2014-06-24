@@ -3,13 +3,13 @@ RM := rm -f
 ECHO := echo
 
 ifeq ($O,)
-  O_ROOT := ../
-  O_TEST :=
-  O_LIB  := ../lib/
+    O_ROOT := ../
+    O_TEST :=
+    O_LIB  := ../lib/
 else
-  O_ROOT := $O/
-  O_TEST := $O/test/
-  O_LIB  := $O/lib/
+    O_ROOT := $O/
+    O_TEST := $O/test/
+    O_LIB  := $O/lib/
 endif
 
 LIBS := $(O_LIB)jarvis-util.lib $(O_LIB)jarvis.lib
