@@ -27,8 +27,8 @@ OBJS := $(patsubst %.cc,$(O_UTIL)%.o, \
 CLEANFILES += $(patsubst %.y,$(O_UTIL)%.cc, \
                 $(patsubst %.l,$(O_UTIL)%.cc, \
                   $(filter %.y %.l, $(SRCS))))
-CLEANFILES += $(patsubst %.y,$O/util/%.hh, \
-                $(patsubst %.l,$O/util/%.hh, \
+CLEANFILES += $(patsubst %.y,$(O_UTIL)%.hh, \
+                $(patsubst %.l,$(O_UTIL)%.hh, \
                   $(filter %.y %.l, $(SRCS))))
 
 INCLUDES := -I../include
