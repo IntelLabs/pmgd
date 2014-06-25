@@ -2,6 +2,7 @@
 #include <limits.h>
 #include <assert.h>
 #include <string.h> // for memcpy
+#include "compiler.h"
 #include "exception.h"
 #include "graph.h"
 #include "iterator.h"
@@ -13,7 +14,7 @@
 using namespace Jarvis;
 
 namespace Jarvis {
-    struct __attribute((packed)) PropertyRef::BlobRef {
+    struct PACKED PropertyRef::BlobRef {
         void *value;
         uint32_t size;
     };
