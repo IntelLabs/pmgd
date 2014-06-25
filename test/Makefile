@@ -120,10 +120,10 @@ $(O_TEST)indextest: $(O_TEST)indextest.o $(LIBS)
 	$(CC) -o $@ $< $(LIBS)
 
 lib:
-	make -C ../src O=$O OPT=$(OPT) install
+	make -C ../src O=$O OPT="$(OPT)" install
 
 util:
-	make -C ../util O=$O OPT=$(OPT) install
+	make -C ../util O=$O OPT="$(OPT)" install
 
 $(O_TEST):
 	mkdir -p $@
