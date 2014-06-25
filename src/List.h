@@ -26,7 +26,7 @@ namespace Jarvis {
         friend class EdgeIndexType;
         friend class EdgeIndex;
 
-        friend class IndexEq_NodeIteratorImpl;
+        template <typename D> friend class ListTraverser;
         const ListType* begin() const { return _list; }
 
     public:
@@ -43,6 +43,31 @@ namespace Jarvis {
         void remove(const T &value, Allocator &allocator);
         T* find(const T &val);
         size_t num_elems() const { return _num_elems; }
+    };
+
+    template <typename T> class ListTraverser {
+        typename List<T>::ListType *_pos;
+
+    public:
+        void set(List<T> *l)
+        {
+            if (l)
+                _pos = l->_list;
+            else
+                _pos = NULL;
+        }
+        ListTraverser(List<T> *l) { set(l); }
+
+        T &operator*() { return _pos->value; }
+        T *operator->() { return &_pos->value; }
+        const T &operator*() const { return _pos->value; }
+        const T *operator->() const { return &_pos->value; }
+        operator bool() const { return _pos != NULL; }
+        bool next()
+        {
+            _pos = _pos->next; 
+            return _pos != NULL;
+        }
     };
 
     template <typename T> T* List<T>::add(const T &value, Allocator &allocator)

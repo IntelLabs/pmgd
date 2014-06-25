@@ -7,21 +7,17 @@ using namespace Jarvis;
 
 namespace Jarvis {
     class IndexEq_NodeIteratorImpl : public NodeIteratorImplIntf {
-        const List<Node *>::ListType *_pos;
+        ListTraverser<Node *> _it;
     public:
         IndexEq_NodeIteratorImpl(List<Node *> *l)
-            : _pos(l->begin())
+            : _it(l)
         { }
-        Node &operator*() const { return *_pos->value; }
-        Node *operator->() const { return _pos->value; }
-        Node &operator*() { return *_pos->value; }
-        Node *operator->() { return _pos->value; }
-        operator bool() const { return _pos != NULL; }
-        bool next()
-        {
-            _pos = _pos->next; 
-            return _pos != NULL;
-        }
+        Node &operator*() { return **_it; }
+        Node *operator->() { return *_it; }
+        Node &operator*() const { return **_it; }
+        Node *operator->() const { return *_it; }
+        operator bool() const { return _it; }
+        bool next() { return _it.next(); }
     };
 }
 
