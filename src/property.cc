@@ -52,6 +52,6 @@ bool Jarvis::Property::operator<(const Property &a) const
         case t_float: return v_float < a.v_float;
         case t_time: return v_time < a.v_time;
         case t_blob: return false; // no ordering
-        default: assert(0);
+        default: assert(0); return false;
     }
 }

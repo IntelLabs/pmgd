@@ -15,6 +15,7 @@ StringTable::StringTable(const uint64_t region_addr, size_t len,
       _pm(reinterpret_cast<char *>(region_addr))
 {
     size_t num_entries = len / stringid_len;
+    (void)num_entries; // Silence unused variable warning
     assert((num_entries & (num_entries - 1)) == 0 );
     assert(num_entries <= (1 << 16));
 

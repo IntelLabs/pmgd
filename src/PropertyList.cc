@@ -316,7 +316,7 @@ unsigned PropertyList::get_space(const Property &p)
         case t_float: return sizeof (double);
         case t_time: return sizeof (Time);
         case t_blob: return sizeof (PropertyRef::BlobRef);
-        default: assert(0);
+        default: assert(0); return 0;
     }
 }
 
@@ -474,6 +474,7 @@ void PropertyRef::set_value(const Property &p, unsigned size,
             break;
         }
         default:
+            type = 0;
             assert(0);
     }
     type_size() = uint8_t((size - 1) << 4 | type);
@@ -572,6 +573,6 @@ Property PropertyRef::get_value() const
         case p_float: return Property(float_value());
         case p_time: return Property(time_value());
         case p_blob: return Property(blob_value());
-        default: assert(0);
+        default: assert(0); return Property();
     }
 }
