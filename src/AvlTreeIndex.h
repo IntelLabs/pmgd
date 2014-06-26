@@ -2,6 +2,7 @@
 #include "allocator.h"
 #include "KeyValuePair.h"
 #include "Index.h"
+#include "IndexString.h"
 
 // AVL Trees are very good for search which will hopefully be the
 // primary function when used for indexing. The balancing condition
@@ -83,4 +84,5 @@ namespace Jarvis {
     typedef AvlTreeIndex<long long, List<Node *>> LongValueIndex;
     typedef AvlTreeIndex<double, List<Node *>> FloatValueIndex;
     typedef AvlTreeIndex<bool, List<Node *>> BoolValueIndex;
+    typedef AvlTreeIndex<IndexString, List<Node *>> StringValueIndex;
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <locale>
 #include <stddef.h>
 #include "graph.h"
 #include "allocator.h"
@@ -52,6 +53,12 @@ namespace Jarvis {
         EdgeTable _edge_table;
         Allocator _allocator;
 
+        // The locale is always initialized to global/classic when the graph
+        // object is created.
+        // TODO: Determine a way to let user specify locale by name and
+        // associate it with the graph so indexes always work the same way.
+        std::locale _loc;  // Get the global/classic locale
+
         AllocatorInfo allocator_info(const RegionInfo &info,
                                      uint32_t obj_size) const;
 
@@ -65,5 +72,6 @@ namespace Jarvis {
         NodeTable &node_table() { return _node_table; }
         EdgeTable &edge_table() { return _edge_table; }
         Allocator &allocator() { return _allocator; }
+        std::locale &locale() { return _loc; }
     };
 };

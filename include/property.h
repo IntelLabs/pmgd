@@ -63,7 +63,7 @@ namespace Jarvis {
         PropertyType type() const { return _type; } 
         bool bool_value() const { check(t_boolean); return v_boolean; }
         long long int_value() const { check(t_integer); return v_integer; }
-        std::string string_value() const { check(t_string); return v_string; }
+        const std::string &string_value() const { check(t_string); return v_string; }
         double float_value() const { check(t_float); return v_float; }
         Time time_value() const { check(t_time); return v_time; }
         blob_t blob_value() const { check(t_blob); return v_blob; }

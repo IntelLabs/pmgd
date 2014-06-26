@@ -446,7 +446,7 @@ void PropertyRef::set_value(const Property &p, unsigned size,
             break;
         }
         case t_string: {
-            std::string value = p.string_value();
+            const std::string &value = p.string_value();
             size_t len = value.length();
             if (len <= 13) {
                 if (len > 0)
