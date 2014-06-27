@@ -1,8 +1,4 @@
-#include <stdint.h>
-#include <string.h>
 #include <assert.h>
-#include <stdlib.h>
-#include <locale>
 #include "IndexString.h"
 #include "GraphImpl.h"
 #include "TransactionImpl.h"

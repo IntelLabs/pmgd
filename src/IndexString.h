@@ -1,4 +1,9 @@
 #pragma once
+#include <stdint.h>
+#include <stddef.h>
+#include <string.h>
+#include <stdlib.h>
+#include <locale>
 
 namespace Jarvis {
     // String representation for Index nodes
