@@ -19,10 +19,10 @@ namespace Jarvis {
         uint32_t size;
     };
 
-    class PropertyListIterator : public PropertyIteratorImpl {
+    class PropertyListIteratorImpl : public PropertyIteratorImplIntf {
         PropertyRef _cur;
     public:
-        PropertyListIterator(const PropertyList *list)
+        PropertyListIteratorImpl(const PropertyList *list)
             : _cur(list)
             { _cur.skip_to_next(); }
 
@@ -96,7 +96,7 @@ Property PropertyList::get_property(StringID id) const
 
 PropertyIterator PropertyList::get_properties() const
 {
-    return PropertyIterator(new PropertyListIterator(this));
+    return PropertyIterator(new PropertyListIteratorImpl(this));
 }
 
 void PropertyList::set_property(StringID id, const Property &new_value,

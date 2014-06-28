@@ -161,10 +161,10 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
 }
 
 namespace Jarvis {
-    class NodeIndexIteratorImpl : public NodeIteratorImpl {
+    class IndexEq_NodeIteratorImpl : public NodeIteratorImplIntf {
         const List<Node *>::ListType *_pos;
     public:
-        NodeIndexIteratorImpl(List<Node *> *l)
+        IndexEq_NodeIteratorImpl(List<Node *> *l)
             : _pos(l->begin())
         { }
         Node &operator*() const { return *_pos->value; }
@@ -230,5 +230,5 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc)
     if (list == NULL)
         return NodeIterator(NULL);
     else
-        return NodeIterator(new NodeIndexIteratorImpl(list));
+        return NodeIterator(new IndexEq_NodeIteratorImpl(list));
 }

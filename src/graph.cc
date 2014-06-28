@@ -213,10 +213,10 @@ namespace Jarvis {
         bool next();
     };
 
-    class Graph_NodeIterator : public Graph_Iterator<NodeIteratorImpl, Node> {
+    class Graph_NodeIteratorImpl : public Graph_Iterator<NodeIteratorImplIntf, Node> {
     public:
-        Graph_NodeIterator(const FixedAllocator &a)
-            : Graph_Iterator<NodeIteratorImpl, Node>(a)
+        Graph_NodeIteratorImpl(const FixedAllocator &a)
+            : Graph_Iterator<NodeIteratorImplIntf, Node>(a)
             { }
         const Node &operator*() const { return *_cur; }
         const Node *operator->() const { return _cur; }
@@ -224,7 +224,7 @@ namespace Jarvis {
         Node *operator->() { return _cur; }
     };
 
-    class Graph_EdgeIterator : public Graph_Iterator<EdgeIteratorImpl, Edge> {
+    class Graph_EdgeIteratorImpl : public Graph_Iterator<EdgeIteratorImplIntf, Edge> {
         EdgeRef _ref;
 
         friend class EdgeRef;
@@ -233,8 +233,8 @@ namespace Jarvis {
         Node &get_source() const { return get_edge()->get_source(); }
         Node &get_destination() const { return get_edge()->get_destination(); }
     public:
-        Graph_EdgeIterator(const FixedAllocator &a)
-            : Graph_Iterator<EdgeIteratorImpl, Edge>(a), _ref(this)
+        Graph_EdgeIteratorImpl(const FixedAllocator &a)
+            : Graph_Iterator<EdgeIteratorImplIntf, Edge>(a), _ref(this)
             {}
         const EdgeRef &operator*() const { return _ref; }
         const EdgeRef *operator->() const { return &_ref; }
@@ -277,7 +277,7 @@ void Graph_Iterator<B, T>::_skip()
 
 NodeIterator Graph::get_nodes()
 {
-    return NodeIterator(new Graph_NodeIterator(_impl->node_table()));
+    return NodeIterator(new Graph_NodeIteratorImpl(_impl->node_table()));
 }
 
 NodeIterator Graph::get_nodes(StringID tag)
@@ -299,7 +299,7 @@ NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp)
 
 EdgeIterator Graph::get_edges()
 {
-    return EdgeIterator(new Graph_EdgeIterator(_impl->edge_table()));
+    return EdgeIterator(new Graph_EdgeIteratorImpl(_impl->edge_table()));
 }
 
 NodeID Graph::get_id(const Node &node) const

@@ -22,11 +22,11 @@ namespace Jarvis {
         size_t _num_elems;
 
         // For iterators
-        friend class NodeEdgeIteratorImpl;
+        friend class Node_EdgeIteratorImpl;
         friend class EdgeIndexType;
         friend class EdgeIndex;
 
-        friend class NodeIndexIteratorImpl;
+        friend class IndexEq_NodeIteratorImpl;
         const ListType* begin() const { return _list; }
 
     public:

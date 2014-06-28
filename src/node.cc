@@ -29,7 +29,7 @@ void Node::add_edge(Edge *edge, Direction dir, StringID tag, Allocator &index_al
 
 namespace Jarvis {
     // TODO Make the lists more opaque to this class
-    class NodeEdgeIteratorImpl : public EdgeIteratorImpl {
+    class Node_EdgeIteratorImpl : public EdgeIteratorImplIntf {
         EdgeRef _ref;
 
         // This has to be non-const because it is representing ptr
@@ -70,7 +70,7 @@ namespace Jarvis {
         }
 
     public:
-        NodeEdgeIteratorImpl(EdgeIndex *idx, const Node *n, Direction dir, StringID tag)
+        Node_EdgeIteratorImpl(EdgeIndex *idx, const Node *n, Direction dir, StringID tag)
             : _ref(this),
               _n1(const_cast<Node *>(n)),
               _dir(dir),
@@ -79,7 +79,7 @@ namespace Jarvis {
               _tag(tag),
               _pos(idx->get_first(_tag))
         { }
-        NodeEdgeIteratorImpl(EdgeIndex *idx, const Node *n, Direction dir)
+        Node_EdgeIteratorImpl(EdgeIndex *idx, const Node *n, Direction dir)
             : _ref(this),
               _n1(const_cast<Node *>(n)),
               _dir(dir),
@@ -89,7 +89,7 @@ namespace Jarvis {
               _pos(_key_pos->value.get_first())
         { }
         // Always starts with incoming first
-        NodeEdgeIteratorImpl(EdgeIndex *idx, EdgeIndex *out_idx, const Node *n, StringID tag)
+        Node_EdgeIteratorImpl(EdgeIndex *idx, EdgeIndex *out_idx, const Node *n, StringID tag)
             : _ref(this),
               _n1(const_cast<Node *>(n)),
               _dir(INCOMING),
@@ -98,7 +98,7 @@ namespace Jarvis {
               _tag(tag),
               _pos(idx->get_first(_tag))
         { }
-        NodeEdgeIteratorImpl(EdgeIndex *idx, EdgeIndex *out_idx, const Node *n)
+        Node_EdgeIteratorImpl(EdgeIndex *idx, EdgeIndex *out_idx, const Node *n)
             : _ref(this),
               _n1(const_cast<Node *>(n)),
               _dir(INCOMING),
@@ -142,7 +142,7 @@ EdgeIterator Node::get_edges(Direction dir, StringID tag) const
     if (dir == ANY)
         return get_edges(tag);
     EdgeIndex *idx = (dir == OUTGOING) ? _out_edges : _in_edges;
-    return EdgeIterator(new NodeEdgeIteratorImpl(idx, this, dir, tag));
+    return EdgeIterator(new Node_EdgeIteratorImpl(idx, this, dir, tag));
 }
 
 EdgeIterator Node::get_edges(Direction dir) const
@@ -156,7 +156,7 @@ EdgeIterator Node::get_edges(Direction dir) const
     // right point
     if (idx->num_elems() <= 0)
         return EdgeIterator(NULL);
-    return EdgeIterator(new NodeEdgeIteratorImpl(idx, this, dir));
+    return EdgeIterator(new Node_EdgeIteratorImpl(idx, this, dir));
 }
 
 EdgeIterator Node::get_edges(StringID tag) const
@@ -170,8 +170,8 @@ EdgeIterator Node::get_edges(StringID tag) const
     if (in_elems <= 0 && out_elems <= 0)
         return EdgeIterator(NULL);
     if (in_elems <= 0)
-        return EdgeIterator(new NodeEdgeIteratorImpl(_out_edges, this, OUTGOING, tag));
-    return EdgeIterator(new NodeEdgeIteratorImpl(_in_edges, _out_edges, this, tag));
+        return EdgeIterator(new Node_EdgeIteratorImpl(_out_edges, this, OUTGOING, tag));
+    return EdgeIterator(new Node_EdgeIteratorImpl(_in_edges, _out_edges, this, tag));
 }
 
 EdgeIterator Node::get_edges() const
@@ -185,8 +185,8 @@ EdgeIterator Node::get_edges() const
     if (in_elems <= 0 && out_elems <= 0)
         return EdgeIterator(NULL);
     if (in_elems <= 0)
-        return EdgeIterator(new NodeEdgeIteratorImpl(_out_edges, this, OUTGOING));
-    return EdgeIterator(new NodeEdgeIteratorImpl(_in_edges, _out_edges, this));
+        return EdgeIterator(new Node_EdgeIteratorImpl(_out_edges, this, OUTGOING));
+    return EdgeIterator(new Node_EdgeIteratorImpl(_in_edges, _out_edges, this));
 }
 
 bool Jarvis::Node::check_property(StringID id, Property &result) const
