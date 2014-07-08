@@ -53,8 +53,13 @@ INCLUDES := -I../include
 # Default optimization level.
 OPT ?= -O2
 
+# Omit the frame pointer unless we are profiling.
+ifeq ($(findstring -pg,$(OPT)),)
+OMIT_FRAME_POINTER := -fomit-frame-pointer
+endif
+
 # Optimization and language options.
-FFLAGS := -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 \
+FFLAGS := $(OMIT_FRAME_POINTER) -funit-at-a-time -finline-limit=2000000 \
           -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics
 
 # Warning options.
