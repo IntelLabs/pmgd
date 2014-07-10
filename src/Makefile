@@ -58,7 +58,8 @@ PM ?= $(shell if ! grep pcommit /proc/cpuinfo; then echo "-DNOPM"; fi)
 
 # Optimization and language options.
 FFLAGS := $(OMIT_FRAME_POINTER) -funit-at-a-time -finline-limit=2000000 \
-          -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics
+          -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics \
+          -fnon-call-exceptions
 
 # Warning options.
 WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \

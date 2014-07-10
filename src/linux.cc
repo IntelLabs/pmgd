@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <signal.h>
 
 #include "os.h"
 #include "exception.h"
@@ -57,4 +58,31 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
 Jarvis::os::MapRegion::~MapRegion()
 {
     close(_fd);
+}
+
+
+// Linux delivers SIGBUS when an attempted access to a memory-mapped
+// file cannot be satisfied, either because the access is beyond the
+// end of the file or because there is no space left on the device.
+// This code translates SIGBUS to an out-of-space exception.
+// It is not portable to throw an exception from a signal handler.
+// GCC supports it if the code is compiled with the -fnon-call-exceptions
+// option.
+// There are other reasons that a SIGBUS could occur. In most if not
+// all cases, it is a programming error. This will mask such
+// errors and make them appear to be an out-of-space condition.
+// It might be possible to distinguish by examining the faulting
+// address.
+Jarvis::os::SigHandler::SigHandler()
+{
+    struct sigaction sa;
+    sa.sa_handler = sigbus_handler;
+    sa.sa_flags = 0;
+    sigfillset(&sa.sa_mask);
+    sigaction(SIGBUS, &sa, NULL);
+}
+
+void Jarvis::os::SigHandler::sigbus_handler(int)
+{
+    throw Exception(out_of_space);
 }

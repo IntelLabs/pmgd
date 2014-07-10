@@ -33,7 +33,9 @@ namespace Jarvis {
         static const RegionInfo default_regions[];
         static const AllocatorInfo default_allocators[];
 
-        // ** Order here is important: GraphInit MUST be first
+        // Order here is important: SigHandler must be first,
+        // followed by GraphInit.
+        os::SigHandler _sighandler;
         GraphInit _init;
 
         // File-backed space

@@ -14,5 +14,11 @@ namespace Jarvis {
 
             ~MapRegion();
         };
+
+        class SigHandler {
+            static void sigbus_handler(int);
+        public:
+            SigHandler();
+        };
     };
 };
