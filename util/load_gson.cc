@@ -87,8 +87,15 @@ static Edge *get_edge(Graph &db, long long id,
 static int get_int_value(Json::Value &obj, const char *key_str, bool remove)
 {
     Json::Value key_obj = obj[key_str];
-    assert(key_obj.type() == Json::intValue);
-    int val = key_obj.asInt();
+    
+    int val;
+    if (key_obj.type() == Json::intValue)
+        val = key_obj.asInt();
+    else {
+        assert(key_obj.type() == Json::stringValue);
+        val = stoi(key_obj.asString(), NULL);
+    }
+
     if (remove)
         obj.removeMember(key_str);
     return val;
@@ -195,14 +202,26 @@ static void load_gson(Graph &db,
                 std::function<void(Node &)> node_func,
                 std::function<void(Edge &)> edge_func)
 {
-    Json::Value jnodes = root["vertices"];
+    Json::Value jgraph = root["graph"];
+    if (jgraph.type() != Json::objectValue) {
+        throw Jarvis::Exception(203, "graph_not_found", __FILE__, __LINE__);
+    }
 
+    Json::Value jmode = jgraph["mode"];
+    if (jmode.type() != Json::stringValue) {
+        throw Jarvis::Exception(203, "mode_not_found", __FILE__, __LINE__);
+    }
+    if (jmode.asString().compare("NORMAL")) {
+        throw Jarvis::Exception(203, "mode_not_supported", __FILE__, __LINE__);
+    }
+
+    Json::Value jnodes = jgraph["vertices"];
     if (jnodes.type() != Json::arrayValue) {
         throw Jarvis::Exception(203, "nodes_not_found", __FILE__, __LINE__);
     }
     load_nodes(db, jnodes, node_func, edge_func);
 
-    Json::Value jedges = root["edges"];
+    Json::Value jedges = jgraph["edges"];
     if (jedges.type() != Json::arrayValue) {
         throw Jarvis::Exception(203, "edges_not_found", __FILE__, __LINE__);
     }
