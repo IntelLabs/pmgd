@@ -10,7 +10,7 @@
 
 Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
                                  uint64_t map_addr, uint64_t map_len,
-                                 bool &create, bool truncate)
+                                 bool &create, bool truncate, bool read_only)
 {
     if (create) {
         // It doesn't matter if this step fails, either because the
@@ -21,7 +21,8 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
     }
 
     std::string filename = std::string(db_name) + "/" + region_name;
-    int open_flags = O_RDWR | create * O_CREAT | truncate * O_TRUNC;
+    int open_flags = read_only * O_RDONLY | !read_only * O_RDWR
+                     | create * O_CREAT | truncate * O_TRUNC;
     if ((_fd = open(filename.c_str(), open_flags, 0666)) < 0)
         throw Exception(map_failed);
 
@@ -47,8 +48,8 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
     }
 
     if (mmap((void *)map_addr, map_len,
-             PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED,
-             _fd, 0) == MAP_FAILED)
+             PROT_READ | !read_only * PROT_WRITE,
+             MAP_SHARED | MAP_FIXED, _fd, 0) == MAP_FAILED)
     {
         close(_fd);
         throw Exception(map_failed);

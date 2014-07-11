@@ -51,19 +51,25 @@ thread_local std::stack<TransactionImpl *> _tx_stack;
 static const uint32_t LOCK_TIMEOUT = 7;
 
 TransactionImpl::TransactionImpl(GraphImpl *db, int options)
-    : _db(db), _tx_type(options), _committed(false),
-      _tx_handle(db->transaction_manager().alloc_transaction())
+    : _db(db), _tx_type(options), _committed(false)
 {
+    bool read_write = _tx_type & Transaction::ReadWrite;
+
+    if (read_write)
+        db->check_read_write();
+
     // nested transaction
     if (_per_thread_tx != NULL) {
         if (_tx_type & Transaction::Independent) {
             _tx_stack.push(_per_thread_tx);
             _per_thread_tx = NULL;
         } else {
-            db->transaction_manager().free_transaction(_tx_handle);
-            throw Exception(not_implemented);
+            if (read_write)
+                throw Exception(not_implemented);
         }
     }
+
+    _tx_handle = db->transaction_manager().alloc_transaction(!read_write);
 
     _jcur = jbegin();
     _per_thread_tx = this; // Install per-thread TX
@@ -71,15 +77,17 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
 
 TransactionImpl::~TransactionImpl()
 {
-    if (_committed) {
-        finalize_commit();
-    } else {
-        rollback(_tx_handle, _jcur);
-    }
-    release_locks();
+    if (_tx_type & Transaction::ReadWrite) {
+        if (_committed) {
+            finalize_commit();
+        } else {
+            rollback(_tx_handle, _jcur);
+        }
+        release_locks();
 
-    TransactionManager *tx_manager = &_db->transaction_manager();
-    tx_manager->free_transaction(_tx_handle);
+        TransactionManager *tx_manager = &_db->transaction_manager();
+        tx_manager->free_transaction(_tx_handle);
+    }
 
     if (!_tx_stack.empty()) {
         assert(_tx_type & Transaction::Independent);
@@ -139,8 +147,12 @@ void TransactionImpl::log(void *ptr, size_t len)
     assert(len > 0);
     size_t je_entries = (len + JE_MAX_LEN - 1) / JE_MAX_LEN;
 
-    if (_jcur + je_entries >= jend())
-        throw Exception(tx_small_journal);
+    if (_jcur + je_entries >= jend()) {
+        if (_tx_type & Transaction::ReadWrite)
+            throw Exception(tx_small_journal);
+        else
+            throw Exception(read_only);
+    }
 
     // TODO: Acquire lock to support multiple threads in a transaction
     for (unsigned i = 0; i < je_entries - 1; i++) {

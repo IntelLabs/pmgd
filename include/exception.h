@@ -8,6 +8,7 @@ namespace Jarvis {
             e_null_iterator,
 
             e_map_failed,
+            e_read_only,
             e_out_of_space,
 
             e_property_type,

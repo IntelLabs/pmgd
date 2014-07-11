@@ -30,7 +30,7 @@ int main(int argc, char **argv)
         info1.offset = 0;
         info1.len = 1024;
         info1.size = 32;
-        os::MapRegion region1(".", "region1", start_addr, info1.len, create1, create1);
+        os::MapRegion region1(".", "region1", start_addr, info1.len, create1, create1, false);
         FixedAllocator allocator1(start_addr, info1, create1);
         long base1 = start_addr + /* sizeof(struct RegionHeader) */64;
         
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
         info2.offset = 0;
         info2.len = 96;
         info2.size = 32;
-        os::MapRegion region2(".", "region2", start_addr, info2.len, create2, create2);
+        os::MapRegion region2(".", "region2", start_addr, info2.len, create2, create2, false);
         FixedAllocator allocator2(start_addr, info2, create2);
         long base2 = start_addr + /* sizeof(struct RegionHeader) */64;
 
