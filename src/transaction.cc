@@ -139,7 +139,7 @@ void TransactionImpl::log(void *ptr, size_t len)
     assert(len > 0);
     size_t je_entries = (len + JE_MAX_LEN - 1) / JE_MAX_LEN;
 
-    if (_jcur + je_entries >= jend() - 1)
+    if (_jcur + je_entries >= jend())
         throw Exception(tx_small_journal);
 
     // TODO: Acquire lock to support multiple threads in a transaction
