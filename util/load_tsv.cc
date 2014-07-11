@@ -29,7 +29,7 @@ void load_tsv(Graph &db, FILE *f,
 {
     char buf[500];
 
-    Transaction tx(db);
+    Transaction tx(db, Transaction::ReadWrite);
     db.create_index(Graph::NODE, 0, ID_STR, PropertyType::t_integer);
     tx.commit();
 
@@ -37,7 +37,7 @@ void load_tsv(Graph &db, FILE *f,
         long long a, b;
         if (sscanf(buf, "%lld %lld", &a, &b) != 2)
             throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
         Node &src = get_node(db, a, node_func);
         Node &dst = get_node(db, b, node_func);
         Edge &edge = db.add_edge(src, dst, 0);

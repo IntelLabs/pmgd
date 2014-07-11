@@ -165,7 +165,7 @@ static void load_nodes(Graph &db,
         int id = get_int_value(jnode, "_id", true);
 
 
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
         Node *node = get_node(db, id, 0, node_func);
         set_properties(node, jnode);
         tx.commit();
@@ -187,7 +187,7 @@ static int load_edges(Graph &db,
         int outv = get_int_value(jedge, "_outV", true);
         std::string label = get_string_value(jedge, "_label", true);
 
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
         Edge *edge = get_edge(
                 db, id, outv, inv, label.c_str(), node_func, edge_func);
         set_properties(edge, jedge);
