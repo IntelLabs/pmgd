@@ -35,7 +35,7 @@ static void modify_nested(Graph &db, int argc, char **argv)
 {
     try {
         // Test nested independent transactions 
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
         modify(db, argc, argv, true);
         modify(db, argc, argv, false);
         tx.commit();
@@ -55,7 +55,7 @@ static void modify(Graph &db, int argc, char **argv, bool commit)
 
     try {
         // add nodes and edges in an independent transaction
-        Transaction tx(db, Transaction::Independent);
+        Transaction tx(db, Transaction::ReadWrite | Transaction::Independent);
 
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {

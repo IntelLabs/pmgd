@@ -52,7 +52,7 @@ int main()
     try {
         Graph db("avlgraph", Graph::Create);
 
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
         // Need the allocator
         struct AllocatorInfo info1;
         struct AllocatorInfo info_arr[sizeof default_allocators];

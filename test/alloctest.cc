@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 
     try {
         Graph db("alloctestdummy", Graph::Create);
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
 
         struct AllocatorInfo info1;
         bool create1 = true;

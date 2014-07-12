@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     try {
         Graph db("nodeedgegraph", create ? Graph::Create : Graph::ReadOnly);
 
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
 
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {

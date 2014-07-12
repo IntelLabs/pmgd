@@ -49,7 +49,7 @@ int main()
     try {
         Graph db("stringtablegraph", Graph::Create);
 
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
         cout << "Add and read\n";
         for (size_t i = 0; i < strings.size(); ++i) {
             try {

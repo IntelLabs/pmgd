@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     try {
         Graph db("ppgraph", create ? Graph::Create : Graph::ReadOnly);
 
-        Transaction tx(db);
+        Transaction tx(db, create ? Transaction::ReadWrite : 0);
 
         for (int i = 1; i < argc; i++) {
             char tag[8] = {0};

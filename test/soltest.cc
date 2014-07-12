@@ -17,7 +17,7 @@ int main(int argc, char **argv)
         Graph db("solgraph", create ? Graph::Create : Graph::ReadOnly);
 
         // add nodes and edges in a transaction
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
 
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {
