@@ -15,6 +15,9 @@ int main(int argc, char **argv)
 
     printf("node_count = %d, seed = %u\n", node_count, seed);
 
+    if (node_count <= 0)
+        return 1;
+
     srand(seed);
 
     try {

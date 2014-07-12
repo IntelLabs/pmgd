@@ -104,6 +104,7 @@ int main()
     }
     catch (Exception e) {
         print_exception(e);
+        return 1;
     }
     return 0;
 }

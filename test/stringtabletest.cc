@@ -42,9 +42,10 @@ int main()
         "critique", "editor", "advisor", "professor",
         "wrote", "reviewer", "note", "belongs-to",
         "son", "middle-initial", "mother", "father", // repeating last two for match test
-        "transaction-datumtest", "envoy\xc3\xa9", "re\xc3\xa7u", // For > 16, UTF testing
+        "envoy\xc3\xa9", "re\xc3\xa7u", // For UTF testing
     };
 
+    int r = 0;
     try {
         Graph db("stringtablegraph", Graph::Create);
 
@@ -57,12 +58,26 @@ int main()
             }
             catch (Exception e) {
                 print_exception(e);
+                r = 1;
+            }
+        }
+
+        try {
+            StringID s("transaction-datumtest");
+            cout << "String: " << s.name() << ", id: " << s.id() << "\n";
+            r = 1;
+        }
+        catch (Exception e) {
+            if (e.num != Exception::e_invalid_id) {
+                print_exception(e);
+                r = 1;
             }
         }
     }
     catch (Exception e) {
         print_exception(e);
+        r = 1;
     }
 
-    return 0;
+    return r;
 }
