@@ -12,8 +12,16 @@ else
     O_LIB  := $O/lib/
 endif
 
-LIBS := $(O_LIB)jarvis-util.lib $(O_LIB)jarvis.lib
-CLEANFILES := $(LIBS)
+TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
+         propertytest propertypredicatetest propertychunktest filtertest \
+         txtest propertylisttest \
+         stringtabletest setproperty \
+         load_tsv_test load_gson_test \
+         avltest chunklisttest indextest indexstringtest
+CLEANFILES :=
+
+OBJS := $(TESTS:%=$(O_TEST)%.o)
+BINS := $(TESTS:%=$(O_TEST)%)
 
 INCLUDES := -I../include
 OPT ?= -O2
@@ -27,21 +35,11 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
 CFLAGS := --std=c++11 $(INCLUDES) $(FFLAGS) $(WFLAGS) $(OPT) \
           $(PM) -MP -MMD
 
+LIBS := $(O_LIB)jarvis-util.lib $(O_LIB)jarvis.lib
+
 ifneq ($(findstring s,$(MAKEFLAGS)),)
     print = @$(ECHO) -e "\033[00;34m" [$(1)] $(2)"\033[00;00m"
 endif
-
-TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
-         propertytest propertypredicatetest propertychunktest filtertest \
-         txtest propertylisttest \
-         stringtabletest setproperty \
-         load_tsv_test load_gson_test \
-         avltest chunklisttest indextest indexstringtest
-
-OBJS := $(TESTS:%=$(O_TEST)%.o)
-BINS := $(TESTS:%=$(O_TEST)%)
-
-CLEANFILES += $(OBJS) $(BINS)
 
 all: lib util $(O_TEST) $(BINS)
 
@@ -129,6 +127,12 @@ lib:
 util:
 	make -C ../util O=$O OPT="$(OPT)" install
 
+clean:
+	$(call print,CLEAN)
+	$(RM) $(LIBS) $(BINS) $(OBJS) $(DEPS) $(CLEANFILES)
+	make -C ../src O=$O clean
+	make -C ../util O=$O clean
+
 $(O_TEST):
 	mkdir -p $@
 
@@ -138,11 +142,3 @@ $(O_TEST)%.o: %.cc $(MAKEFILE_LIST)
 
 DEPS := $(OBJS:%.o=%.d)
 -include $(DEPS)
-
-CLEANFILES += $(DEPS)
-
-clean:
-	$(call print,CLEAN)
-	$(RM) $(CLEANFILES)
-	make -C ../src O=$O clean
-	make -C ../util O=$O clean

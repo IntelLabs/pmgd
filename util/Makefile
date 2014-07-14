@@ -70,15 +70,13 @@ $(O_UTIL)%.o: $(O_UTIL)%.cc
 	$(call print,COMPILE,$@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-$(O_UTIL)scanner.cc: scanner.l
+$(O_UTIL)scanner.cc: scanner.l $(MAKEFILE_LIST)
 	$(call print,LEX,$<)
 	flex $(LFLAGS) -o$@ --header-file=$*.hh $<
 
-$(O_UTIL)loader.cc: loader.y
+$(O_UTIL)loader.cc: loader.y $(MAKEFILE_LIST)
 	$(call print,YACC,$<)
 	bison $(YFLAGS) -d -o $@ $<
 
 DEPS := $(OBJS:%.o=%.d)
 -include $(DEPS)
-$(O_UTIL)loader.cc: $(MAKEFILE_LIST)
-$(O_UTIL)scanner.cc: $(MAKEFILE_LIST)

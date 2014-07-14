@@ -12,8 +12,11 @@ else
     O_LIB   := $O/lib/
 endif
 
-LIBS := $(O_LIB)jarvis-util.lib $(O_LIB)jarvis.lib
+TOOLS := mkgraph loadgraph dumpgraph
 CLEANFILES :=
+
+OBJS := $(TOOLS:%=$(O_TOOLS)%.o)
+BINS := $(TOOLS:%=$(O_TOOLS)%)
 
 INCLUDES := -I../include -I../util
 OPT ?= -O2
@@ -27,16 +30,11 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
 CFLAGS := --std=c++11 $(INCLUDES) $(FFLAGS) $(WFLAGS) $(OPT) \
           $(PM) -MP -MMD
 
+LIBS := $(O_LIB)jarvis-util.lib $(O_LIB)jarvis.lib
+
 ifneq ($(findstring s,$(MAKEFLAGS)),)
     print = @$(ECHO) -e "\033[00;34m" [$(1)] $(2)"\033[00;00m"
 endif
-
-TOOLS := mkgraph loadgraph dumpgraph
-
-OBJS := $(TOOLS:%=$(O_TOOLS)%.o)
-BINS := $(TOOLS:%=$(O_TOOLS)%)
-
-CLEANFILES += $(OBJS) $(BINS)
 
 all: $(O_TOOLS) $(BINS)
 
@@ -52,6 +50,10 @@ $(O_TOOLS)dumpgraph: $(O_TOOLS)dumpgraph.o
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
+clean:
+	$(call print,CLEAN)
+	$(RM) $(BINS) $(OBJS) $(DEPS) $(CLEANFILES)
+
 $(O_TOOLS):
 	mkdir -p $@
 
@@ -61,9 +63,3 @@ $(O_TOOLS)%.o: %.cc $(MAKEFILE_LIST)
 
 DEPS := $(OBJS:%.o=%.d)
 -include $(DEPS)
-
-CLEANFILES += $(DEPS)
-
-clean:
-	$(call print,CLEAN)
-	$(RM) $(CLEANFILES)
