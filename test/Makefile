@@ -72,7 +72,11 @@ endif
 
 # The default goal builds the libraries and utilities, creates the
 # build directory, and builds all the targets.
-all: lib util $(O_TEST) $(BINS)
+all: $(O_TEST) $(BINS)
+
+$(O_LIB)jarvis.lib: lib
+
+$(O_LIB)jarvis-util.lib: $(O_LIB)jarvis.lib util
 
 $(O_TEST)apitest: $(O_TEST)apitest.o
 	$(CC) -o $@ $<
@@ -128,11 +132,11 @@ $(O_TEST)setproperty: $(O_TEST)setproperty.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$(O_TEST)load_tsv_test: $(O_TEST)load_tsv_test.o $(LIBS) util
+$(O_TEST)load_tsv_test: $(O_TEST)load_tsv_test.o $(LIBS)
 	$(call print,LNK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$(O_TEST)load_gson_test: $(O_TEST)load_gson_test.o $(LIBS) util
+$(O_TEST)load_gson_test: $(O_TEST)load_gson_test.o $(LIBS)
 	$(call print,LNK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
