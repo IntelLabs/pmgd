@@ -68,21 +68,35 @@ endif
 # The default goal creates the build directory and builds all the targets.
 all: $(O_TOOLS) $(BINS)
 
-$(O_TOOLS)mkgraph: $(O_TOOLS)mkgraph.o
+$(O_LIB)jarvis.lib: lib
+
+$(O_LIB)jarvis-util.lib:$(O_LIB)jarvis.lib util
+
+$(O_TOOLS)mkgraph: $(O_TOOLS)mkgraph.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$(O_TOOLS)loadgraph: $(O_TOOLS)loadgraph.o
+$(O_TOOLS)loadgraph: $(O_TOOLS)loadgraph.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
-$(O_TOOLS)dumpgraph: $(O_TOOLS)dumpgraph.o
+$(O_TOOLS)dumpgraph: $(O_TOOLS)dumpgraph.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
+
+# Build the Jarvis Lake library.
+lib:
+	make -C ../src O=$O OPT="$(OPT)" install
+
+# Build the Jarvis Lake utilities.
+util:
+	make -C ../util O=$O OPT="$(OPT)" install
 
 clean:
 	$(call print,CLEAN)
 	$(RM) $(BINS) $(OBJS) $(DEPS) $(CLEANFILES)
+	make -C ../src O=$O clean
+	make -C ../util O=$O clean
 
 # If the variable $(O_TOOLS) is non-empty and the corresponding
 # directory does not exist then create it.
