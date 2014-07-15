@@ -51,7 +51,7 @@ CLEANFILES += $(patsubst %.y,$(O_UTIL)%.hh, \
 INCLUDES := -I../include
 
 # Default optimization level.
-OPT ?= -O2
+OPT ?= -O3
 
 # Omit the frame pointer unless we are profiling.
 ifeq ($(findstring -pg,$(OPT)),)

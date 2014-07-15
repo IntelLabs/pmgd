@@ -46,7 +46,7 @@ OBJS := $(patsubst %.cc, $(O_SRC)%.o, $(SRCS))
 INCLUDES := -I../include
 
 # Default optimization level.
-OPT ?= -O2
+OPT ?= -O3
 
 # Omit the frame pointer unless we are profiling.
 ifeq ($(findstring -pg,$(OPT)),)

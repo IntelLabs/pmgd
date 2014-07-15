@@ -38,7 +38,7 @@ BINS := $(TOOLS:%=$(O_TOOLS)%)
 INCLUDES := -I../include -I../util
 
 # Default optimization level.
-OPT ?= -O2
+OPT ?= -O3
 
 # Omit the frame pointer unless we are profiling.
 ifeq ($(findstring -pg,$(OPT)),)
