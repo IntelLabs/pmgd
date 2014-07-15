@@ -86,6 +86,7 @@ $(TARGET): $(OBJS)
 clean:
 	$(call print,CLEAN)
 	$(RM) $(TARGET) $(OBJS) $(DEPS) $(CLEANFILES)
+	$(RM) $(INSTALLPATH)/$(TARGET)
 
 # If the variable $(O_SRC) is non-empty and the corresponding
 # directory does not exist then create it.

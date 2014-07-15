@@ -166,7 +166,7 @@ util:
 
 clean:
 	$(call print,CLEAN)
-	$(RM) $(LIBS) $(BINS) $(OBJS) $(DEPS) $(CLEANFILES)
+	$(RM) $(BINS) $(OBJS) $(DEPS) $(CLEANFILES)
 	make -C ../src O=$O clean
 	make -C ../util O=$O clean
 
