@@ -138,26 +138,26 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc)
     switch(_ptype) {
         case t_integer:
             {
-                if (pp.op == PropertyPredicate::eq)
-                    return static_cast<LongValueIndex *>(this)->get_nodes(p1.int_value(), pp);
-                else if (pp.op >= PropertyPredicate::gele) {
+                if (pp.op >= PropertyPredicate::gele) {
                     return static_cast<LongValueIndex *>(this)->get_nodes(p1.int_value(),
                                                                     p2.int_value(), pp.op);
                 }
+                else if (pp.op != PropertyPredicate::ne)
+                    return static_cast<LongValueIndex *>(this)->get_nodes(p1.int_value(), pp.op);
                 else
                     throw Exception(not_implemented);
             }
             break;
         case t_float:
-            return static_cast<FloatValueIndex *>(this)->get_nodes(p1.float_value(), pp);
+            return static_cast<FloatValueIndex *>(this)->get_nodes(p1.float_value(), pp.op);
             break;
         case t_boolean:
-            return static_cast<BoolValueIndex *>(this)->get_nodes(p1.bool_value(), pp);
+            return static_cast<BoolValueIndex *>(this)->get_nodes(p1.bool_value(), pp.op);
             break;
         case t_string:
             {
                 TransientIndexString istr(p1.string_value(), *loc);
-                return static_cast<StringValueIndex *>(this)->get_nodes(istr, pp);
+                return static_cast<StringValueIndex *>(this)->get_nodes(istr, pp.op);
             }
             break;
         case t_time:

@@ -67,6 +67,35 @@ int main(int argc, char **argv)
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
+        printf("## Trying iterator with tag tag1 and property range:202 with LT\n");
+        PropertyPredicate pp5("id1", PropertyPredicate::lt, 202);
+        for (NodeIterator i = db.get_nodes("tag1", pp5); i; i.next()) {
+            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
+        }
+
+        printf("## Trying iterator with tag tag1 and property range:203 with LE\n");
+        PropertyPredicate pp6("id1", PropertyPredicate::le, 203);
+        for (NodeIterator i = db.get_nodes("tag1", pp6); i; i.next()) {
+            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
+        }
+
+        printf("## Trying iterator with tag tag1 and property range:202 with GT\n");
+        PropertyPredicate pp7("id1", PropertyPredicate::gt, 202);
+        for (NodeIterator i = db.get_nodes("tag1", pp7); i; i.next()) {
+            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
+        }
+
+        printf("## Trying iterator with tag tag1 and property range:202 with GE\n");
+        PropertyPredicate pp8("id1", PropertyPredicate::ge, 202);
+        for (NodeIterator i = db.get_nodes("tag1", pp8); i; i.next()) {
+            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
+        }
+
+
         tx.commit();
     }
     catch (Exception e) {

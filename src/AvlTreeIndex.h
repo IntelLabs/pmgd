@@ -18,8 +18,19 @@ namespace Jarvis {
         void add_right_tree(typename AvlTree<K,V>::TreeNode *root,
                 const K &max, Compare &cmax,
                 std::stack<typename AvlTree<K,V>::TreeNode *> &path);
+        void find_start_min(typename AvlTree<K,V>::TreeNode *root,
+                      const K &max,
+                      Compare &cmax,
+                      std::stack<typename AvlTree<K,V>::TreeNode *> &path);
+        void find_start_max(typename AvlTree<K,V>::TreeNode *root,
+                      const K &min,
+                      Compare &cmin,
+                      std::stack<typename AvlTree<K,V>::TreeNode *> &path);
+        void add_full_right_tree(typename AvlTree<K,V>::TreeNode *root,
+                      std::stack<typename AvlTree<K,V>::TreeNode *> &path);
 
         template <class D> friend class IndexRange_NodeIteratorImpl;
+        template <class D> friend class IndexRangeNomax_NodeIteratorImpl;
     public:
         // Initialize both and they do their own transaction flush
         AvlTreeIndex(PropertyType ptype) : Index(ptype), AvlTree<K,V>()
@@ -31,10 +42,7 @@ namespace Jarvis {
         using AvlTree<K,V>::add;
         using AvlTree<K,V>::remove;
 
-        // TODO: This could be a good location for an optimized tree
-        // remove with the knowledge of V = list
-
-        NodeIterator get_nodes(const K &key, const PropertyPredicate &pp);
+        NodeIterator get_nodes(const K &key, PropertyPredicate::op_t op);
         NodeIterator get_nodes(const K &min, const K &max, PropertyPredicate::op_t op);
     };
 
