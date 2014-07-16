@@ -50,7 +50,7 @@ void Index::add(const Property &p, Node *n, GraphImpl *db)
     // Also, if it was a new element, the add code does a placement new.
     // The List->init() function does not do a transaction flush but
     // we are going to add an element right after before the transaction
-    // gets over and that should do the right logging of the very same
+    // gets over and that does the right logging of the very same
     // elements that get modified in init().
     dest->add(n, allocator);
 }
@@ -127,14 +127,15 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc)
     const Property &p1 = pp.v1;
     const Property &p2 = pp.v2;
 
-    if (pp.op == PropertyPredicate::ne)
-        throw Exception(not_implemented);
-    if (_ptype != p1.type())
-        throw Exception(property_type);
-    if (pp.op >= PropertyPredicate::gele) {
-        if (_ptype != p2.type())
+    if (pp.op != PropertyPredicate::dont_care) {
+        if (_ptype != p1.type())
             throw Exception(property_type);
+        if (pp.op >= PropertyPredicate::gele) {
+            if (_ptype != p2.type())
+                throw Exception(property_type);
+        }
     }
+
     switch(_ptype) {
         case t_integer:
             {
@@ -142,10 +143,10 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc)
                     return static_cast<LongValueIndex *>(this)->get_nodes(p1.int_value(),
                                                                     p2.int_value(), pp.op);
                 }
-                else if (pp.op != PropertyPredicate::ne)
-                    return static_cast<LongValueIndex *>(this)->get_nodes(p1.int_value(), pp.op);
+                else if (pp.op == PropertyPredicate::dont_care)
+                    return static_cast<LongValueIndex *>(this)->get_nodes();
                 else
-                    throw Exception(not_implemented);
+                    return static_cast<LongValueIndex *>(this)->get_nodes(p1.int_value(), pp.op);
             }
             break;
         case t_float:

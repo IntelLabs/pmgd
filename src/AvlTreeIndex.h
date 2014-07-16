@@ -8,6 +8,7 @@ namespace Jarvis {
     template<typename K, typename V> class AvlTreeIndex
                             : public Index, public AvlTree<K,V>
     {
+        // Helper functions for the iterators to function.
         class Compare;
 
         void find_start(typename AvlTree<K,V>::TreeNode *root,
@@ -28,9 +29,16 @@ namespace Jarvis {
                       std::stack<typename AvlTree<K,V>::TreeNode *> &path);
         void add_full_right_tree(typename AvlTree<K,V>::TreeNode *root,
                       std::stack<typename AvlTree<K,V>::TreeNode *> &path);
+        void find_start_all(typename AvlTree<K,V>::TreeNode *root,
+                      std::stack<typename AvlTree<K,V>::TreeNode *> &path);
+        void add_nodes_neq(typename AvlTree<K,V>::TreeNode *root,
+                      const K &neq,
+                      std::stack<typename AvlTree<K,V>::TreeNode *> &path);
 
         template <class D> friend class IndexRange_NodeIteratorImpl;
         template <class D> friend class IndexRangeNomax_NodeIteratorImpl;
+        template <class D> friend class IndexRangeAll_NodeIteratorImpl;
+        template <class D> friend class IndexRangeNeq_NodeIteratorImpl;
     public:
         // Initialize both and they do their own transaction flush
         AvlTreeIndex(PropertyType ptype) : Index(ptype), AvlTree<K,V>()
@@ -42,6 +50,7 @@ namespace Jarvis {
         using AvlTree<K,V>::add;
         using AvlTree<K,V>::remove;
 
+        NodeIterator get_nodes();
         NodeIterator get_nodes(const K &key, PropertyPredicate::op_t op);
         NodeIterator get_nodes(const K &min, const K &max, PropertyPredicate::op_t op);
     };
