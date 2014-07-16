@@ -32,7 +32,7 @@ INSTALLPATH := $(O_ROOT)lib
 CLEANFILES := 
 
 # List of source files.
-SRCS := graph.cc node.cc edge.cc property.cc stringid.cc \
+SRCS := graph.cc GraphConfig.cc node.cc edge.cc property.cc stringid.cc \
         EdgeIndex.cc \
         PropertyList.cc StringTable.cc FixedAllocator.cc Allocator.cc \
         TransactionManager.cc transaction.cc \

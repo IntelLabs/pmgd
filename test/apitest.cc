@@ -207,7 +207,7 @@ void q2a(Graph &db, Node &a, int N, void (*process)(Node &))
 }
 
 
-Jarvis::Graph::Graph(const char *, int)
+Jarvis::Graph::Graph(const char *, int, const Graph::Config *)
 {
 }
 

@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "graph.h"
+#include "GraphConfig.h"
 #include "GraphImpl.h"
 #include "node.h"
 #include "edge.h"
@@ -15,22 +16,10 @@
 
 using namespace Jarvis;
 
-static const size_t BASE_ADDRESS = 0x10000000000;
-static const size_t REGION_SIZE = 0x10000000000;
-static const unsigned NODE_SIZE = 64;
-static const unsigned EDGE_SIZE = 32;
-
 static constexpr char info_name[] = "graph.jdb";
 
-struct GraphImpl::RegionInfo {
-    static const int REGION_NAME_LEN = 32;
-    char name[REGION_NAME_LEN];     ///< Region name
-    uint64_t addr;                  ///< Virtual address of region
-    size_t len;                     ///< Length in byte
-};
-
 struct GraphImpl::GraphInfo {
-    static const uint64_t VERSION = 1;
+    static const uint64_t VERSION = 2;
 
     uint64_t version;
 
@@ -41,72 +30,26 @@ struct GraphImpl::GraphInfo {
     RegionInfo edge_info;
     RegionInfo allocator_info;
 
+    uint32_t max_stringid_length;
+
+    char locale_name[32];
+
     uint32_t num_fixed_allocators;
-    AllocatorInfo fixed_allocator_info[];
+    uint64_t allocator_offsets[];
+
+    void init(const GraphConfig &);
 };
 
-const AllocatorInfo GraphImpl::default_allocators[] = {
-    { 0, REGION_SIZE, 16 },
-    { 1*REGION_SIZE, REGION_SIZE, 32 },
-    { 2*REGION_SIZE, REGION_SIZE, 64 },
-    { 3*REGION_SIZE, REGION_SIZE, 128 },
-    { 4*REGION_SIZE, REGION_SIZE, 256 },
-};
-const size_t GraphImpl::NUM_FIXED_ALLOCATORS
-        = sizeof default_allocators / sizeof default_allocators[0];
-
-#define ADDRESS(region) (region##_ADDRESS)
-#define SIZE(region) (region##_SIZE)
-#define NEXT(region) (ADDRESS(region) + SIZE(region))
-
-#define ALIGN(addr, alignment) (((addr) + (alignment) - 1) & ~((alignment) - 1))
-
-// Set individual addresses so they can be set at different sizes when needed
-static const size_t INFO_ADDRESS = BASE_ADDRESS;
-static const unsigned INFO_SIZE = 4096;
-static const size_t INDEXMANAGER_ADDRESS = NEXT(INFO);
-static const unsigned INDEXMANAGER_SIZE = 4096;
-// Belongs here to make sure info header contains the
-// correct "obj_size"
-static const int MAX_STRINGID_CHARLEN = 16;
-// 12bits had fewest collisions in testing
-static const int MAX_STRINGIDS = 4096;
-static const size_t STRINGTABLE_ADDRESS = NEXT(INDEXMANAGER);
-static const size_t STRINGTABLE_SIZE = MAX_STRINGIDS * MAX_STRINGID_CHARLEN;
-
-static const size_t TRANSACTIONTABLE_ADDRESS = ALIGN(NEXT(STRINGTABLE), 0x200000);
-static const unsigned TRANSACTIONTABLE_SIZE = ALIGN(TRANSACTION_REGION_SIZE, 0x200000);
-
-// Node, edge tables kept TB aligned
-static const size_t NODETABLE_ADDRESS = ALIGN(NEXT(TRANSACTIONTABLE), REGION_SIZE);
-static const size_t NODETABLE_SIZE = REGION_SIZE;
-static const size_t EDGETABLE_ADDRESS = ALIGN(NEXT(NODETABLE), REGION_SIZE);
-static const size_t EDGETABLE_SIZE = REGION_SIZE;
-static const size_t ALLOCATORS_ADDRESS = ALIGN(NEXT(EDGETABLE), REGION_SIZE);
-static const size_t ALLOCATORS_SIZE = GraphImpl::NUM_FIXED_ALLOCATORS * REGION_SIZE;
-
-const GraphImpl::RegionInfo GraphImpl::default_regions[] = {
-    { "transaction.jdb", ADDRESS(TRANSACTIONTABLE), SIZE(TRANSACTIONTABLE)},
-    { "indexmanager.jdb", ADDRESS(INDEXMANAGER), SIZE(INDEXMANAGER)},
-    { "stringtable.jdb", ADDRESS(STRINGTABLE), SIZE(STRINGTABLE)},
-    { "nodes.jdb", ADDRESS(NODETABLE), SIZE(NODETABLE) },
-    { "edges.jdb", ADDRESS(EDGETABLE), SIZE(EDGETABLE) },
-    { "pooh-bah.jdb", ADDRESS(ALLOCATORS), SIZE(ALLOCATORS) },
-};
-
-AllocatorInfo GraphImpl::allocator_info(const RegionInfo &info,
-                                        uint32_t obj_size) const
-{
-    // This returns an offset of 0. The AllocatorInfo structs that
-    // need a non-zero offset are stored explicitly in the
-    // GraphInfo struct.
-    AllocatorInfo r = {0, info.len, obj_size, false};
-    return r;
+namespace Jarvis {
+const unsigned GraphImpl::MAX_FIXED_ALLOCATORS
+    = (GraphConfig::INFO_SIZE - offsetof(GraphInfo, allocator_offsets))
+               / sizeof GraphInfo::allocator_offsets[0]
+           - 1;
 }
 
 
-Graph::Graph(const char *name, int options)
-    : _impl(new GraphImpl(name, options))
+Graph::Graph(const char *name, int options, const Config *config)
+    : _impl(new GraphImpl(name, options, config))
 {
 }
 
@@ -139,34 +82,53 @@ void Graph::create_index(int node_or_edge, StringID tag,
                                         property_id, ptype, _impl->allocator());
 }
 
-GraphImpl::GraphInit::GraphInit(const char *name, int options)
+GraphImpl::GraphInit::GraphInit(const char *name, int options,
+                                const Graph::Config *user_config)
     : create(options & Graph::Create),
       read_only(options & Graph::ReadOnly),
-      info_map(name, info_name, BASE_ADDRESS, INFO_SIZE,
+      info_map(name, info_name,
+               GraphConfig::BASE_ADDRESS, GraphConfig::INFO_SIZE,
                create, false, read_only),
-      info(reinterpret_cast<GraphInfo *>(BASE_ADDRESS))
+      info(reinterpret_cast<GraphInfo *>(GraphConfig::BASE_ADDRESS))
 {
     // create was modified by _info_map constructor
     // depending on whether the file existed or not
+    // For a new graph, initialize the info structure
     if (create) {
-        // For a new graph, initialize the info structure
-        info->version = GraphInfo::VERSION;
-
-        // TODO replace static indexing
-        info->transaction_info = default_regions[0];
-        info->indexmanager_info = default_regions[1];
-        info->stringtable_info = default_regions[2];
-        info->node_info = default_regions[3];
-        info->edge_info = default_regions[4];
-        info->allocator_info = default_regions[5];
-        info->num_fixed_allocators = NUM_FIXED_ALLOCATORS;
-        memcpy(info->fixed_allocator_info, default_allocators, sizeof default_allocators);
-        TransactionImpl::flush_range(info, sizeof *info);
+        const GraphConfig config(user_config);
+        info->init(config);
+        node_size = config.node_size;
+        edge_size = config.edge_size;
+        fixed_allocator_info = std::move(config.fixed_allocator_info);
     }
     else {
         if (info->version != GraphInfo::VERSION)
             throw Exception(version_mismatch);
     }
+}
+
+void GraphImpl::GraphInfo::init(const GraphConfig &config)
+{
+    version = VERSION;
+    transaction_info = config.transaction_info;
+    indexmanager_info = config.indexmanager_info;
+    stringtable_info = config.stringtable_info;
+    node_info = config.node_info;
+    edge_info = config.edge_info;
+    allocator_info = config.allocator_info;
+
+    max_stringid_length = config.max_stringid_length;
+
+    unsigned size = config.locale_name.length() + 1;
+    if (size > sizeof locale_name)
+        throw Exception(not_implemented);
+    memcpy(locale_name, config.locale_name.c_str(), size);
+
+    num_fixed_allocators = config.fixed_allocator_info.size();
+    for (unsigned i = 0; i < num_fixed_allocators; i++)
+        allocator_offsets[i] = config.fixed_allocator_info[i].offset;
+
+    TransactionImpl::flush_range(this, sizeof *this);
 }
 
 GraphImpl::MapRegion::MapRegion(
@@ -175,8 +137,8 @@ GraphImpl::MapRegion::MapRegion(
 {
 }
 
-GraphImpl::GraphImpl(const char *name, int options)
-    : _init(name, options),
+GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
+    : _init(name, options, config),
       _transaction_region(name, _init.info->transaction_info, _init.create, _init.read_only),
       _indexmanager_region(name, _init.info->indexmanager_info, _init.create, _init.read_only),
       _stringtable_region(name, _init.info->stringtable_info, _init.create, _init.read_only),
@@ -189,18 +151,22 @@ GraphImpl::GraphImpl(const char *name, int options)
       _index_manager(_init.info->indexmanager_info.addr, _init.create),
       _string_table(_init.info->stringtable_info.addr,
                     _init.info->stringtable_info.len,
-                    MAX_STRINGID_CHARLEN,
+                    _init.info->max_stringid_length,
                     _init.create),
       _node_table(_init.info->node_info.addr,
-                  allocator_info(_init.info->node_info, NODE_SIZE),
+                  _init.node_size, _init.info->node_info.len,
                   _init.create),
       _edge_table(_init.info->edge_info.addr,
-                  allocator_info(_init.info->edge_info, EDGE_SIZE),
+                  _init.edge_size, _init.info->edge_info.len,
                   _init.create),
       _allocator(_init.info->allocator_info.addr,
-                 _init.info->fixed_allocator_info,
                  _init.info->num_fixed_allocators,
-                 _init.create)
+                 _init.info->allocator_offsets,
+                 &_init.fixed_allocator_info[0],
+                 _init.create),
+      _locale(_init.info->locale_name[0] != '\0'
+                  ? std::locale(_init.info->locale_name)
+                  : std::locale())
 {
     persistent_barrier(11);
 }

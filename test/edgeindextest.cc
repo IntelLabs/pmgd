@@ -7,6 +7,7 @@
 #include "../src/os.h"
 #include "../src/allocator.h"
 #include "../src/EdgeIndex.h"
+#include "../src/GraphConfig.h"
 #include "../util/util.h"
 
 using namespace Jarvis;
@@ -18,36 +19,30 @@ using namespace std;
 #define NUM_FIXED_ALLOCATORS 5
 
 static constexpr AllocatorInfo default_allocators[] = {
-    { 0, REGION_SIZE, 16 },
-    { 1*REGION_SIZE, REGION_SIZE, 32 },
-    { 2*REGION_SIZE, REGION_SIZE, 64 },
-    { 3*REGION_SIZE, REGION_SIZE, 128 },
-    { 4*REGION_SIZE, REGION_SIZE, 256 },
+    { 16, 0, REGION_SIZE },
+    { 32, 1*REGION_SIZE, REGION_SIZE },
+    { 64, 2*REGION_SIZE, REGION_SIZE },
+    { 128, 3*REGION_SIZE, REGION_SIZE },
+    { 256, 4*REGION_SIZE, REGION_SIZE },
 };
 
 int main()
 {
     cout << "EdgeIndex unit test\n\n";
     uint64_t start_addr;
+    uint64_t region_size;
 
     try {
         Graph db("edgeindexgraph", Graph::Create);
 
         Transaction tx(db, Transaction::ReadWrite);
-        // Need the allocator
-        struct AllocatorInfo info1;
-        struct AllocatorInfo info_arr[sizeof default_allocators];
         bool create1 = true;
 
         start_addr = 0x200000000;
-        memcpy(info_arr, default_allocators, sizeof default_allocators);
+        region_size = NUM_FIXED_ALLOCATORS * REGION_SIZE;
 
-        info1.offset = 0;
-        info1.len = NUM_FIXED_ALLOCATORS * REGION_SIZE;
-        info1.size = 0;
-
-        os::MapRegion region1(".", "region1", start_addr, info1.len, create1, create1, false);
-        Allocator allocator1(start_addr, info_arr, NUM_FIXED_ALLOCATORS, create1);
+        os::MapRegion region1(".", "region1", start_addr, region_size, create1, create1, false);
+        Allocator allocator1(start_addr, NUM_FIXED_ALLOCATORS, NULL, default_allocators, create1);
 
         cout << "Step 1: Test pair\n";
         // Since we do not have an allocator for anything < 16B, create large ptrs
