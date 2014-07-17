@@ -30,6 +30,12 @@ std::vector<IndexSpecification> specs;
 
 void print_usage(FILE *stream);
 
+bool check_arg(const char *arg, char short_name, const char *long_name)
+{
+    return (arg[0] == '-' && arg[1] == short_name)
+        || (arg[0] == '-' && arg[1] == '-' && strcmp(&arg[2], long_name) == 0);
+}
+
 int main(int argc, char **argv)
 {
     int argi = 1;
@@ -47,6 +53,51 @@ int main(int argc, char **argv)
     const char *db_name = argv[argi];
     argi += 1;
 
+    // Graph configuration options
+    Graph::Config config;
+    while (argi + 1 < argc) {
+        if (check_arg(argv[argi], 'R', "region-size"))
+            config.default_region_size = strtoull(argv[argi+1], 0, 16);
+        else if (check_arg(argv[argi], 'N', "node-table-size"))
+            config.node_table_size = strtoull(argv[argi+1], 0, 16);
+        else if (check_arg(argv[argi], 'E', "edge-table-size"))
+            config.edge_table_size = strtoull(argv[argi+1], 0, 16);
+        else if (check_arg(argv[argi], 'S', "string-table-size"))
+            config.string_table_size = strtoull(argv[argi+1], 0, 16);
+        else if (check_arg(argv[argi], 'n', "node-size"))
+            config.node_size = strtoul(argv[argi+1], 0, 0);
+        else if (check_arg(argv[argi], 'e', "edge-size"))
+            config.edge_size = strtoul(argv[argi+1], 0, 0);
+        else if (check_arg(argv[argi], 's', "stringid-length"))
+            config.max_stringid_length = strtoul(argv[argi+1], 0, 0);
+        else if (check_arg(argv[argi], 'l', "locale"))
+            config.locale_name = argv[argi+1];
+        else if (check_arg(argv[argi], 'A', "allocator-size")) {
+            uint64_t pool_size = strtoul(argv[argi+1], 0, 16);
+            unsigned object_size = 16;
+            for (int i = 0; i < 5; i++) {
+                config.fixed_allocators.push_back(
+                    Graph::Config::AllocatorInfo{ object_size, pool_size });
+                object_size *= 2;
+            }
+        }
+        else if (check_arg(argv[argi], 'a', "allocator")) {
+            if (!(argi + 2 < argc)) {
+                fprintf(stderr, "mkgraph: allocator option needs two values\n");
+                return 1;
+            }
+            unsigned object_size = strtoul(argv[argi+1], 0, 0);
+            uint64_t pool_size = strtoull(argv[argi+2], 0, 16);
+            config.fixed_allocators.push_back(
+                    Graph::Config::AllocatorInfo{ object_size, pool_size });
+            argi++;
+        }
+        else
+            break;
+        argi += 2;
+    }
+
+    // Index specifications
     while (argi + 3 < argc) {
         int node_or_edge;
         if (strcmp(argv[argi], "node") == 0)
@@ -82,8 +133,13 @@ int main(int argc, char **argv)
         argi += 4;
     }
 
+    if (argi < argc) {
+        fprintf(stderr, "mkgraph: unrecognized option\n");
+        return 1;
+    }
+
     try {
-        Graph db(db_name, Graph::Create);
+        Graph db(db_name, Graph::Create, &config);
 
         for (auto i:specs) {
             Transaction tx(db, Transaction::ReadWrite);
@@ -96,6 +152,10 @@ int main(int argc, char **argv)
         print_exception(e);
         return 1;
     }
+    catch (std::runtime_error e) {
+        printf("[Exception] %s\n", e.what());
+        return 1;
+    };
 
     return 0;
 }
