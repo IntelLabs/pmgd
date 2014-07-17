@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     try {
         Graph db(db_name, Graph::Create);
 
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
 
         NodeRef *node = NULL;
         EdgeRef *edge = NULL;
