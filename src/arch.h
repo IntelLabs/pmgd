@@ -45,6 +45,10 @@ static inline void memory_barrier() // Instruct compiler not to re-order
 }
 
 asm (
+    ".macro pcommit\n\t"
+    ".byte 0x66, 0x0f, 0xae, 0xf8\n\t"
+    ".endm\n\t"
+
     ".macro clflushopt mem\n\t"
     ".byte 0x66\n\t"
     "clflush \\mem\n\t"
