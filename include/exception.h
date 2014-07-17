@@ -10,6 +10,7 @@ namespace Jarvis {
             e_null_iterator,
 
             e_open_failed,
+            e_version_mismatch,
             e_read_only,
             e_out_of_space,
 

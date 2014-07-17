@@ -30,6 +30,8 @@ struct GraphImpl::RegionInfo {
 };
 
 struct GraphImpl::GraphInfo {
+    static const uint64_t VERSION = 1;
+
     uint64_t version;
 
     RegionInfo transaction_info;
@@ -148,7 +150,7 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options)
     // depending on whether the file existed or not
     if (create) {
         // For a new graph, initialize the info structure
-        info->version = 1;
+        info->version = GraphInfo::VERSION;
 
         // TODO replace static indexing
         info->transaction_info = default_regions[0];
@@ -160,6 +162,10 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options)
         info->num_fixed_allocators = NUM_FIXED_ALLOCATORS;
         memcpy(info->fixed_allocator_info, default_allocators, sizeof default_allocators);
         TransactionImpl::flush_range(info, sizeof *info);
+    }
+    else {
+        if (info->version != GraphInfo::VERSION)
+            throw Exception(version_mismatch);
     }
 }
 
