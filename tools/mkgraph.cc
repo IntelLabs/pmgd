@@ -86,7 +86,7 @@ int main(int argc, char **argv)
         Graph db(db_name, Graph::Create);
 
         for (auto i:specs) {
-            Transaction tx(db);
+            Transaction tx(db, Transaction::ReadWrite);
             db.create_index(i._node_or_edge, i._tag_is_zero ? 0 : i._tag,
                             i._property_id, i._type);
             tx.commit();

@@ -20,6 +20,8 @@ namespace Jarvis {
         void *jbegin;
         void *jend;
 
+        TransactionHandle() : id(-1), index(-1), jbegin(NULL), jend(NULL) {}
+
         TransactionHandle(TransactionId a, int b, void *c, void *d)
             : id(a), index(b), jbegin(c), jend(d)
             {}
@@ -43,13 +45,14 @@ namespace Jarvis {
 
         void reset_table(void);
         void recover(void);
+        void check_clean(void);
         void *tx_jbegin(int index);
         void *tx_jend(int index);
 
     public:
-        TransactionManager(uint64_t region_addr, uint64_t region_size, bool create);
+        TransactionManager(uint64_t region_addr, uint64_t region_size, bool create, bool read_only);
 
-        TransactionHandle alloc_transaction();
+        TransactionHandle alloc_transaction(bool read_only);
         void free_transaction(const TransactionHandle &);
     };
 };

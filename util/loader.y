@@ -201,7 +201,7 @@ void load(Graph &db, FILE *f,
 
         ~buffer_t() { yy_delete_buffer(_buffer); }
     } buffer(f);
-    Transaction tx(db);
+    Transaction tx(db, Transaction::ReadWrite);
     yy_params params = { db, node_func, edge_func };
     yyparse(params);
     tx.commit();

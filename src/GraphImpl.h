@@ -19,6 +19,7 @@ namespace Jarvis {
 
         struct GraphInit {
             bool create;
+            bool read_only;
             os::MapRegion info_map;
             GraphInfo *info;
 
@@ -27,7 +28,7 @@ namespace Jarvis {
 
         class MapRegion : public os::MapRegion {
         public:
-            MapRegion(const char *db_name, const RegionInfo &info, bool create);
+            MapRegion(const char *db_name, const RegionInfo &info, bool create, bool read_only);
         };
 
         static const RegionInfo default_regions[];
@@ -75,5 +76,11 @@ namespace Jarvis {
         EdgeTable &edge_table() { return _edge_table; }
         Allocator &allocator() { return _allocator; }
         std::locale &locale() { return _loc; }
+
+        void check_read_write()
+        {
+            if (_init.read_only)
+                throw Exception(read_only);
+        }
     };
 };

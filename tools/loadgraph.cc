@@ -69,7 +69,7 @@ int main(int argc, char **argv)
         Graph db(db_name);
 
         if (!append) {
-            Transaction tx(db);
+            Transaction tx(db, Transaction::ReadWrite);
             if (db.get_nodes()) {
                 fprintf(stderr, "loadgraph: Graphstore is not empty\n");
                 return 1;

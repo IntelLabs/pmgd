@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     try {
         Graph db("propertygraph", create ? Graph::Create : Graph::ReadOnly);
 
-        Transaction tx(db);
+        Transaction tx(db, create ? Transaction::ReadWrite : 0);
 
         Node *prev = 0;
         for (int i = 1; i < argc; i++) {

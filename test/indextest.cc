@@ -19,7 +19,7 @@ int main(int argc, char **argv)
         Graph db("indexgraph", Graph::Create);
 
         Node **nodes = new Node *[node_count + 1];
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
 
         for (int i = 1; i <= 2; i++) {
             db.create_index(Graph::NODE, "tag1", "id1", t_integer);

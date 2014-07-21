@@ -26,7 +26,7 @@ int main(int argc, char **argv)
         Node **nodes = new Node *[node_count + 1];
 
         for (int i = 1; i <= node_count; i++) {
-            Transaction tx(db);
+            Transaction tx(db, Transaction::ReadWrite);
             Node &n = db.add_node(0);
 
             printf("Node %d:\n", i);
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
         }
 
         for (int i = 1; i <= edge_count; i++) {
-            Transaction tx(db);
+            Transaction tx(db, Transaction::ReadWrite);
             Edge &e = db.add_edge(*nodes[i], *nodes[i+1], 0);
 
             printf("Edge %d: n%d -> n%d\n", i, i, i+1);

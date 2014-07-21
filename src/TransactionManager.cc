@@ -8,7 +8,7 @@
 using namespace Jarvis;
 
 TransactionManager::TransactionManager(
-        uint64_t region_addr, uint64_t region_size, bool create)
+    uint64_t region_addr, uint64_t region_size, bool create, bool read_only)
 {
     assert(region_size >= TRANSACTION_REGION_SIZE);
 
@@ -17,8 +17,10 @@ TransactionManager::TransactionManager(
 
     if (create)
         reset_table();
-    else
+    else if (!read_only)
         recover();
+    else
+        check_clean();
 
     _cur_tx_id = 0;
 }
@@ -60,8 +62,30 @@ void TransactionManager::recover(void) {
     reset_table(); // If successful, reset the journal
 }
 
-TransactionHandle TransactionManager::alloc_transaction()
+void TransactionManager::check_clean()
 {
+    // We can't open a graph read-only if it needs recovery.
+    // Check that there are no pending transactions, which would
+    // indicate a prior un-clean close.
+    for (int i = 0; i < MAX_TRANSACTIONS; i++)
+        if (_tx_table[i].tx_id != 0)
+            throw Exception(read_only);
+}
+
+TransactionHandle TransactionManager::alloc_transaction(bool read_only)
+{
+    if (read_only) {
+        // For a read-only transaction, don't allocate a transaction ID
+        // or an extent, but set jbegin and jend to a valid address,
+        // so that the overflow check in TransactionImpl::log will
+        // catch attempts to modify the graph using this transaction.
+        // Note that dummy may point to an extent that is in use by
+        // another transaction, but it will never be used except in
+        // a pointer comparison.
+        void *dummy = tx_jbegin(0);
+        return TransactionHandle(-1, -1, dummy, dummy);
+    }
+
     uint32_t tx_id = atomic_inc(_cur_tx_id) + 1;
 
     for (int i = 0; i < MAX_TRANSACTIONS; i++) {
@@ -77,8 +101,12 @@ TransactionHandle TransactionManager::alloc_transaction()
 
 void TransactionManager::free_transaction(const TransactionHandle &handle)
 {
-    TransactionHdr *hdr = &_tx_table[handle.index];
-    hdr->tx_id = 0;
-    clflush(hdr);
-    persistent_barrier(24); // Is this required?
+    // If handle.index is -1, this is a read-only transaction, and
+    // nothing needs to be done.
+    if (handle.index != -1) {
+        TransactionHdr *hdr = &_tx_table[handle.index];
+        hdr->tx_id = 0;
+        clflush(hdr);
+        persistent_barrier(24); // Is this required?
+    }
 }

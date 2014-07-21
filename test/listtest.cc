@@ -30,7 +30,7 @@ int main()
     try {
         Graph db("listgraph", Graph::Create);
 
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
         // Need the allocator
         struct AllocatorInfo info1;
         struct AllocatorInfo info_arr[sizeof default_allocators];
@@ -43,7 +43,7 @@ int main()
         info1.len = NUM_FIXED_ALLOCATORS * REGION_SIZE;
         info1.size = 0;
 
-        os::MapRegion region1(".", "region1", start_addr, info1.len, create1, create1);
+        os::MapRegion region1(".", "region1", start_addr, info1.len, create1, create1, false);
         Allocator allocator1(start_addr, info_arr, NUM_FIXED_ALLOCATORS, create1);
 
         List<int> *list = (List<int> *)allocator1.alloc(sizeof *list);

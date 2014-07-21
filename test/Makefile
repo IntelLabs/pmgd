@@ -30,7 +30,8 @@ TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          txtest propertylisttest \
          stringtabletest setproperty \
          load_tsv_test load_gson_test \
-         avltest chunklisttest indextest indexstringtest
+         avltest chunklisttest indextest indexstringtest \
+         rotest
 
 # Extra stuff to clean whose names cannot be derived from dependences.
 CLEANFILES :=
@@ -153,6 +154,10 @@ $(O_TEST)indextest: $(O_TEST)indextest.o $(LIBS)
 	$(CC) -o $@ $< $(LIBS)
 
 $(O_TEST)indexstringtest: $(O_TEST)indexstringtest.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) -o $@ $< $(LIBS)
+
+$(O_TEST)rotest: $(O_TEST)rotest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIBS)
 

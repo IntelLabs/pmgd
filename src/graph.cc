@@ -139,7 +139,9 @@ void Graph::create_index(int node_or_edge, StringID tag,
 
 GraphImpl::GraphInit::GraphInit(const char *name, int options)
     : create(options & Graph::Create),
-      info_map(name, info_name, BASE_ADDRESS, INFO_SIZE, create, false),
+      read_only(options & Graph::ReadOnly),
+      info_map(name, info_name, BASE_ADDRESS, INFO_SIZE,
+               create, false, read_only),
       info(reinterpret_cast<GraphInfo *>(BASE_ADDRESS))
 {
     // create was modified by _info_map constructor
@@ -162,22 +164,22 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options)
 }
 
 GraphImpl::MapRegion::MapRegion(
-        const char *db_name, const RegionInfo &info, bool create)
-    : os::MapRegion(db_name, info.name, info.addr, info.len, create, create)
+        const char *db_name, const RegionInfo &info, bool create, bool read_only)
+    : os::MapRegion(db_name, info.name, info.addr, info.len, create, create, read_only)
 {
 }
 
 GraphImpl::GraphImpl(const char *name, int options)
     : _init(name, options),
-      _transaction_region(name, _init.info->transaction_info, _init.create),
-      _indexmanager_region(name, _init.info->indexmanager_info, _init.create),
-      _stringtable_region(name, _init.info->stringtable_info, _init.create),
-      _node_region(name, _init.info->node_info, _init.create),
-      _edge_region(name, _init.info->edge_info, _init.create),
-      _allocator_region(name, _init.info->allocator_info, _init.create),
+      _transaction_region(name, _init.info->transaction_info, _init.create, _init.read_only),
+      _indexmanager_region(name, _init.info->indexmanager_info, _init.create, _init.read_only),
+      _stringtable_region(name, _init.info->stringtable_info, _init.create, _init.read_only),
+      _node_region(name, _init.info->node_info, _init.create, _init.read_only),
+      _edge_region(name, _init.info->edge_info, _init.create, _init.read_only),
+      _allocator_region(name, _init.info->allocator_info, _init.create, _init.read_only),
       _transaction_manager(_init.info->transaction_info.addr,
                            _init.info->transaction_info.len,
-                           _init.create),
+                           _init.create, _init.read_only),
       _index_manager(_init.info->indexmanager_info.addr, _init.create),
       _string_table(_init.info->stringtable_info.addr,
                     _init.info->stringtable_info.len,
