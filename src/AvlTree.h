@@ -13,6 +13,7 @@
 namespace Jarvis {
     class TransactionImpl;
     template<typename K, typename V> class AvlTree {
+    protected:
         struct TreeNode {
             // Weird ordering to avoid compiler rounding and easier logging
             TreeNode *left;
@@ -25,6 +26,7 @@ namespace Jarvis {
         TreeNode *_tree;
         size_t _num_elems;
 
+    private:
         TreeNode *find_max(TreeNode *t) {
             if (t == NULL || t->right == NULL)
                 return t;

@@ -1,4 +1,5 @@
 #pragma once
+#include <stack>
 #include "Index.h"
 #include "AvlTree.h"
 #include "TransactionImpl.h"
@@ -7,6 +8,18 @@ namespace Jarvis {
     template<typename K, typename V> class AvlTreeIndex
                             : public Index, public AvlTree<K,V>
     {
+        class Compare;
+
+        void find_start(typename AvlTree<K,V>::TreeNode *root,
+                const K &min, const K &max,
+                Compare &cmin,
+                Compare &cmax,
+                std::stack<typename AvlTree<K,V>::TreeNode *> &path);
+        void add_right_tree(typename AvlTree<K,V>::TreeNode *root,
+                const K &max, Compare &cmax,
+                std::stack<typename AvlTree<K,V>::TreeNode *> &path);
+
+        template <class D> friend class IndexRange_NodeIteratorImpl;
     public:
         // Initialize both and they do their own transaction flush
         AvlTreeIndex(PropertyType ptype) : Index(ptype), AvlTree<K,V>()
@@ -22,6 +35,7 @@ namespace Jarvis {
         // remove with the knowledge of V = list
 
         NodeIterator get_nodes(const K &key, const PropertyPredicate &pp);
+        NodeIterator get_nodes(const K &min, const K &max, PropertyPredicate::op_t op);
     };
 
     // For the actual property value indices

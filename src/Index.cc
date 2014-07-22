@@ -124,30 +124,39 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
 
 NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc)
 {
-    // Since we will not have range support yet, only the equal relation
-    // is valid
-    if (pp.op != PropertyPredicate::eq)
+    const Property &p1 = pp.v1;
+    const Property &p2 = pp.v2;
+
+    if (pp.op == PropertyPredicate::ne)
         throw Exception(not_implemented);
-
-    // TODO: Only handling eq case right now and the check has
-    // already been done when this is called. Use value v1 from pp.
-    const Property &p = pp.v1;
-
-    if (_ptype != p.type())
+    if (_ptype != p1.type())
         throw Exception(property_type);
+    if (pp.op >= PropertyPredicate::gele) {
+        if (_ptype != p2.type())
+            throw Exception(property_type);
+    }
     switch(_ptype) {
         case t_integer:
-            return static_cast<LongValueIndex *>(this)->get_nodes(p.int_value(), pp);
+            {
+                if (pp.op == PropertyPredicate::eq)
+                    return static_cast<LongValueIndex *>(this)->get_nodes(p1.int_value(), pp);
+                else if (pp.op >= PropertyPredicate::gele) {
+                    return static_cast<LongValueIndex *>(this)->get_nodes(p1.int_value(),
+                                                                    p2.int_value(), pp.op);
+                }
+                else
+                    throw Exception(not_implemented);
+            }
             break;
         case t_float:
-            return static_cast<FloatValueIndex *>(this)->get_nodes(p.float_value(), pp);
+            return static_cast<FloatValueIndex *>(this)->get_nodes(p1.float_value(), pp);
             break;
         case t_boolean:
-            return static_cast<BoolValueIndex *>(this)->get_nodes(p.bool_value(), pp);
+            return static_cast<BoolValueIndex *>(this)->get_nodes(p1.bool_value(), pp);
             break;
         case t_string:
             {
-                TransientIndexString istr(p.string_value(), *loc);
+                TransientIndexString istr(p1.string_value(), *loc);
                 return static_cast<StringValueIndex *>(this)->get_nodes(istr, pp);
             }
             break;

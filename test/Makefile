@@ -30,7 +30,7 @@ TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          txtest propertylisttest \
          stringtabletest setproperty \
          load_tsv_test load_gson_test \
-         avltest chunklisttest indextest indexstringtest \
+         avltest chunklisttest indextest indexrangetest indexstringtest \
          rotest
 
 # Extra stuff to clean whose names cannot be derived from dependences.
@@ -150,6 +150,10 @@ $(O_TEST)chunklisttest: $(O_TEST)chunklisttest.o $(LIBS)
 	$(CC) -o $@ $< $(LIBS)
 
 $(O_TEST)indextest: $(O_TEST)indextest.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) -o $@ $< $(LIBS)
+
+$(O_TEST)indexrangetest: $(O_TEST)indexrangetest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIBS)
 
