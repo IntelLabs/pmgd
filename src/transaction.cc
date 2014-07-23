@@ -60,13 +60,10 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
 
     // nested transaction
     if (_per_thread_tx != NULL) {
-        if (_tx_type & Transaction::Independent) {
-            _tx_stack.push(_per_thread_tx);
-            _per_thread_tx = NULL;
-        } else {
-            if (read_write)
-                throw Exception(not_implemented);
-        }
+        if (read_write && !(_tx_type & Transaction::Independent))
+            throw Exception(not_implemented);
+        _tx_stack.push(_per_thread_tx);
+        _per_thread_tx = NULL;
     }
 
     _tx_handle = db->transaction_manager().alloc_transaction(!read_write);
@@ -90,7 +87,6 @@ TransactionImpl::~TransactionImpl()
     }
 
     if (!_tx_stack.empty()) {
-        assert(_tx_type & Transaction::Independent);
         _per_thread_tx = _tx_stack.top(); // nested transactions
         _tx_stack.pop();
     } else {
