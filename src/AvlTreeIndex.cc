@@ -7,99 +7,94 @@ using namespace Jarvis;
 
 namespace Jarvis {
     template <typename K, typename V> class AvlTreeIndex<K,V>::Compare {
+        K _val;
         bool _equal;
     public:
-        Compare(bool equal) : _equal(equal) {}
+        Compare(const K val, bool equal) : _val(val), _equal(equal) {}
+
         // This is to be used only for making sure the values
         // are not equal. No implications on < or > should be made.
-        bool equals(const K &val1, const K &val2) const
-            { return (val1 == val2) && _equal; }
+        bool equals(const K &val1) const
+            { return (_val == val1) && _equal; }
 
-        bool lessthan(const K &val1, const K &val2) const
-            { return (val1 < val2); }
+        bool lessthan(const K &val1) const
+            { return (_val < val1); }
 
-        bool greaterthan(const K &val1, const K &val2) const
-            { return (val1 > val2); }
+        bool greaterthan(const K &val1) const
+            { return (_val > val1); }
 
-        bool greaterthanequal(const K &val1, const K &val2) const
-            { return (val1 > val2) || equals(val1, val2); }
+        bool greaterthanequal(const K &val1) const
+            { return (_val > val1) || equals(val1); }
     };
 }
 
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::find_start(typename AvlTree<K,V>::TreeNode *root,
-                const K &min, const K &max,
-                Compare &cmin,
-                Compare &cmax,
-                std::stack<typename AvlTree<K,V>::TreeNode *> &path)
+void AvlTreeIndex<K,V>::find_start(TreeNode *root,
+                                   const Compare &cmin, const Compare &cmax,
+                                   std::stack<TreeNode *> &path)
 {
     if (!root)
         return;
-    if (cmin.lessthan(min, root->key)) {
-        if (cmax.greaterthanequal(max, root->key))
+    if (cmin.lessthan(root->key)) {
+        if (cmax.greaterthanequal(root->key))
             path.push(root);
-        find_start(root->left, min, max, cmin, cmax, path);
+        find_start(root->left, cmin, cmax, path);
     }
-    else if (cmin.equals(min, root->key))
+    else if (cmin.equals(root->key))
             path.push(root);
     else  // Need to look for min in the right subtree
-        find_start(root->right, min, max, cmin, cmax, path);
+        find_start(root->right, cmin, cmax, path);
 }
 
 // We have already traversed to the min in the tree. So when
 // we backtrack through the stack, the only check we need to
 // make is that the value <(=) max.
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::add_right_tree(typename AvlTree<K,V>::TreeNode *root,
-                const K &max, Compare &cmax,
-                std::stack<typename AvlTree<K,V>::TreeNode *> &path)
+void AvlTreeIndex<K,V>::add_right_tree(TreeNode *root, const Compare &cmax,
+                                       std::stack<TreeNode *> &path)
 {
     if (!root)
         return;
-    if (cmax.greaterthanequal(max, root->key))
+    if (cmax.greaterthanequal(root->key))
         path.push(root);
-    add_right_tree(root->left, max, cmax, path);
+    add_right_tree(root->left, cmax, path);
 }
 
 // Use this to find first element when no min given
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::find_start_min(typename AvlTree<K,V>::TreeNode *root,
-                const K &max,
-                Compare &cmax,
-                std::stack<typename AvlTree<K,V>::TreeNode *> &path)
+void AvlTreeIndex<K,V>::find_start_min(TreeNode *root, const Compare &cmax,
+                                       std::stack<TreeNode *> &path)
 {
     if (!root)
         return;
     // min is the lowest element in the tree
-    if (cmax.greaterthanequal(max, root->key))
+    if (cmax.greaterthanequal(root->key))
         path.push(root);
-    find_start_min(root->left, max, cmax, path);
+    find_start_min(root->left, cmax, path);
 }
 
 // Use this to find first element when no max given
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::find_start_max(typename AvlTree<K,V>::TreeNode *root,
-                const K &min,
-                Compare &cmin,
-                std::stack<typename AvlTree<K,V>::TreeNode *> &path)
+void AvlTreeIndex<K,V>::find_start_max(TreeNode *root, const Compare &cmin,
+                                       std::stack<TreeNode *> &path)
 {
     if (!root)
         return;
 
-    if (cmin.lessthan(min, root->key)) {
+    if (cmin.lessthan(root->key)) {
         path.push(root);
-        find_start_max(root->left, min, cmin, path);
+        find_start_max(root->left, cmin, path);
     }
-    else if (cmin.equals(min, root->key))
+    else if (cmin.equals(root->key))
         path.push(root);
     else  // Need to look for min in the right subtree
-        find_start_max(root->right, min, cmin, path);
+        find_start_max(root->right, cmin, path);
 }
 
 // Use this to add all elements when no max limit given
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::add_full_right_tree(typename AvlTree<K,V>::TreeNode *root,
-                std::stack<typename AvlTree<K,V>::TreeNode *> &path)
+void AvlTreeIndex<K,V>::add_full_right_tree(TreeNode *root,
+                                            std::stack<TreeNode *> &path)
 {
     if (!root)
         return;
@@ -109,8 +104,7 @@ void AvlTreeIndex<K,V>::add_full_right_tree(typename AvlTree<K,V>::TreeNode *roo
 
 // Use this to find first element when no min/max given
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::find_start_all(typename AvlTree<K,V>::TreeNode *root,
-                std::stack<typename AvlTree<K,V>::TreeNode *> &path)
+void AvlTreeIndex<K,V>::find_start_all(TreeNode *root, std::stack<TreeNode *> &path)
 {
     if (!root)
         return;
@@ -121,9 +115,8 @@ void AvlTreeIndex<K,V>::find_start_all(typename AvlTree<K,V>::TreeNode *root,
 // Use this to find min element of tree that is not equal to given key.
 // Same function works for traversing the remaining tree too.
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::add_nodes_neq(typename AvlTree<K,V>::TreeNode *root,
-                const K &neq,
-                std::stack<typename AvlTree<K,V>::TreeNode *> &path)
+void AvlTreeIndex<K,V>::add_nodes_neq(TreeNode *root, const K &neq,
+                                      std::stack<TreeNode *> &path)
 {
     if (!root)
         return;
@@ -173,7 +166,6 @@ namespace Jarvis {
         typedef AvlTreeIndex<K, IndexValue> IndexNode;
         IndexNode *_tree;
         typename IndexNode::TreeNode *_curr;
-        K _max;
         typename IndexNode::Compare _cmax;
         std::stack<typename IndexNode::TreeNode *> _path;
 
@@ -183,10 +175,10 @@ namespace Jarvis {
                                     bool incl_min, bool incl_max)
             : Index_NodeIteratorImplBase(NULL),
               _tree(tree), _curr(NULL),
-              _max(max), _cmax(incl_max)
+              _cmax(max, incl_max)
         {
-            typename IndexNode::Compare cmin(incl_min);
-            _tree->find_start(tree->_tree, min, _max, cmin, _cmax, _path);
+            typename IndexNode::Compare cmin(min, incl_min);
+            _tree->find_start(tree->_tree, cmin, _cmax, _path);
             if (!_path.empty()) {
                 _curr = _path.top();
                 _path.pop();
@@ -200,9 +192,9 @@ namespace Jarvis {
         IndexRange_NodeIteratorImpl(IndexNode *tree, const K &max, bool incl_max)
             : Index_NodeIteratorImplBase(NULL),
               _tree(tree), _curr(NULL),
-              _max(max), _cmax(incl_max)
+              _cmax(max, incl_max)
         {
-            _tree->find_start_min(tree->_tree, _max, _cmax, _path);
+            _tree->find_start_min(tree->_tree, _cmax, _path);
             if (!_path.empty()) {
                 _curr = _path.top();
                 _path.pop();
@@ -215,7 +207,7 @@ namespace Jarvis {
             if(!_list_it.next()) { // current list iterator empty
                 typename IndexNode::TreeNode *temp = _curr->right;
                 _curr = NULL;
-                _tree->add_right_tree(temp, _max, _cmax, _path);
+                _tree->add_right_tree(temp, _cmax, _path);
                 if (!_path.empty()) {
                     _curr = _path.top();
                     _path.pop();
@@ -237,8 +229,6 @@ namespace Jarvis {
         typedef AvlTreeIndex<K, IndexValue> IndexNode;
         IndexNode *_tree;
         typename IndexNode::TreeNode *_curr;
-        K _min;
-        typename IndexNode::Compare cmin;
         std::stack<typename IndexNode::TreeNode *> _path;
 
     public:
@@ -246,11 +236,10 @@ namespace Jarvis {
                                     const K &min,
                                     bool incl_min)
             : Index_NodeIteratorImplBase(NULL),
-              _tree(tree), _curr(NULL),
-              _min(min),
-              cmin(incl_min)
+              _tree(tree), _curr(NULL)
         {
-            _tree->find_start_max(tree->_tree, _min, cmin, _path);
+            typename IndexNode::Compare cmin(min, incl_min);
+            _tree->find_start_max(tree->_tree, cmin, _path);
             if (!_path.empty()) {
                 _curr = _path.top();
                 _path.pop();
@@ -259,37 +248,8 @@ namespace Jarvis {
                 _list_it.set(&_curr->value);
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->right;
-                _curr = NULL;
-                _tree->add_full_right_tree(temp, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
-    };
-
-    template <typename K>
-    class IndexRangeAll_NodeIteratorImpl : public Index_NodeIteratorImplBase {
-        typedef List<Node *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
-        typename IndexNode::TreeNode *_curr;
-        std::stack<typename IndexNode::TreeNode *> _path;
-
-    public:
         // The dont_care case where no min and max are given.
-        IndexRangeAll_NodeIteratorImpl(IndexNode *tree)
+        IndexRangeNomax_NodeIteratorImpl(IndexNode *tree)
             : Index_NodeIteratorImplBase(NULL),
               _tree(tree), _curr(NULL)
         {
@@ -372,7 +332,7 @@ namespace Jarvis {
 template <typename K, typename V>
 NodeIterator AvlTreeIndex<K,V>::get_nodes()
 {
-    return NodeIterator(new IndexRangeAll_NodeIteratorImpl<K>(this));
+    return NodeIterator(new IndexRangeNomax_NodeIteratorImpl<K>(this));
 }
 
 template <typename K, typename V>

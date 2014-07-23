@@ -8,36 +8,25 @@ namespace Jarvis {
     template<typename K, typename V> class AvlTreeIndex
                             : public Index, public AvlTree<K,V>
     {
+        typedef typename AvlTree<K,V>::TreeNode TreeNode;
+
         // Helper functions for the iterators to function.
         class Compare;
 
-        void find_start(typename AvlTree<K,V>::TreeNode *root,
-                const K &min, const K &max,
-                Compare &cmin,
-                Compare &cmax,
-                std::stack<typename AvlTree<K,V>::TreeNode *> &path);
-        void add_right_tree(typename AvlTree<K,V>::TreeNode *root,
-                const K &max, Compare &cmax,
-                std::stack<typename AvlTree<K,V>::TreeNode *> &path);
-        void find_start_min(typename AvlTree<K,V>::TreeNode *root,
-                      const K &max,
-                      Compare &cmax,
-                      std::stack<typename AvlTree<K,V>::TreeNode *> &path);
-        void find_start_max(typename AvlTree<K,V>::TreeNode *root,
-                      const K &min,
-                      Compare &cmin,
-                      std::stack<typename AvlTree<K,V>::TreeNode *> &path);
-        void add_full_right_tree(typename AvlTree<K,V>::TreeNode *root,
-                      std::stack<typename AvlTree<K,V>::TreeNode *> &path);
-        void find_start_all(typename AvlTree<K,V>::TreeNode *root,
-                      std::stack<typename AvlTree<K,V>::TreeNode *> &path);
-        void add_nodes_neq(typename AvlTree<K,V>::TreeNode *root,
-                      const K &neq,
-                      std::stack<typename AvlTree<K,V>::TreeNode *> &path);
+        void find_start(TreeNode *root, const Compare &cmin, const Compare &cmax,
+                        std::stack<TreeNode *> &path);
+        void add_right_tree(TreeNode *root, const Compare &cmax,
+                            std::stack<TreeNode *> &path);
+        void find_start_min(TreeNode *root, const Compare &cmax,
+                            std::stack<TreeNode *> &path);
+        void find_start_max(TreeNode *root, const Compare &cmin,
+                            std::stack<TreeNode *> &path);
+        void add_full_right_tree(TreeNode *root, std::stack<TreeNode *> &path);
+        void find_start_all(TreeNode *root, std::stack<TreeNode *> &path);
+        void add_nodes_neq(TreeNode *root, const K &neq, std::stack<TreeNode *> &path);
 
         template <class D> friend class IndexRange_NodeIteratorImpl;
         template <class D> friend class IndexRangeNomax_NodeIteratorImpl;
-        template <class D> friend class IndexRangeAll_NodeIteratorImpl;
         template <class D> friend class IndexRangeNeq_NodeIteratorImpl;
     public:
         // Initialize both and they do their own transaction flush
