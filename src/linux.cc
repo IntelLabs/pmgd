@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <signal.h>
+#include <errno.h>
 
 #include "os.h"
 #include "exception.h"
@@ -24,13 +25,14 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
     int open_flags = read_only * O_RDONLY | !read_only * O_RDWR
                      | create * O_CREAT | truncate * O_TRUNC;
     if ((_fd = open(filename.c_str(), open_flags, 0666)) < 0)
-        throw Exception(map_failed);
+        throw Exception(open_failed, errno, filename + " (open)");
 
     // check for size before mmap'ing
     struct stat sb;
     if (fstat(_fd, &sb) < 0) {
+        int err = errno;
         close(_fd);
-        throw Exception(map_failed);
+        throw Exception(open_failed, err, filename + " (fstat)");
     }
 
     if (sb.st_size == off_t(map_len)) {
@@ -38,21 +40,23 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
     }
     else if (sb.st_size == 0 && create) {
         if (ftruncate(_fd, map_len) < 0) {
+            int err = errno;
             close(_fd);
-            throw Exception(map_failed);
+            throw Exception(open_failed, err, filename + " (ftruncate)");
         }
     }
     else {
         close(_fd);
-        throw Exception(map_failed);
+        throw Exception(open_failed, filename + " was not the expected size");
     }
 
     if (mmap((void *)map_addr, map_len,
              PROT_READ | !read_only * PROT_WRITE,
              MAP_SHARED | MAP_FIXED, _fd, 0) == MAP_FAILED)
     {
+        int err = errno;
         close(_fd);
-        throw Exception(map_failed);
+        throw Exception(open_failed, err, filename + " (mmap)");
     }
 }
 

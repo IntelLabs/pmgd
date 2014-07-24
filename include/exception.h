@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace Jarvis {
     struct Exception {
         enum {
@@ -7,7 +9,7 @@ namespace Jarvis {
             e_bad_alloc,
             e_null_iterator,
 
-            e_map_failed,
+            e_open_failed,
             e_read_only,
             e_out_of_space,
 
@@ -29,14 +31,37 @@ namespace Jarvis {
         int num;            ///< Exception number
         const char *name;   ///< Exception name
 
-        // Where it was thrown
-        const char *file;   ///< Filename
-        int line;           ///< Line number
+        // Additional information
+        std::string msg;
+        int errno_val;
 
-        Exception(int e, const char *n, const char *f, int l)
-            : num(e), name(n), file(f), line(l) {}
+        // Where it was thrown
+        const char *file;   ///< Source file name
+        int line;           ///< Source line number
+
+        Exception(int exc, const char *exc_name, const char *f, int l)
+            : num(exc), name(exc_name),
+              msg(), errno_val(0),
+              file(f), line(l)
+        {}
+
+        Exception(int exc, const char *exc_name,
+                  const std::string &m,
+                  const char *f, int l)
+            : num(exc), name(exc_name),
+              msg(m), errno_val(0),
+              file(f), line(l)
+        {}
+
+        Exception(int exc, const char *exc_name,
+                  int err, const std::string &m,
+                  const char *f, int l)
+            : num(exc), name(exc_name),
+              msg(m), errno_val(err),
+              file(f), line(l)
+        {}
     };
 
-#define Exception(name) \
-    Exception(Exception::e_##name, #name, __FILE__, __LINE__)
+#define Exception(name, ...) \
+    Exception(Exception::e_##name, #name, ##__VA_ARGS__, __FILE__, __LINE__)
 };
