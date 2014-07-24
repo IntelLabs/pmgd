@@ -27,6 +27,7 @@ namespace Jarvis {
         std::string locale_name;
 
         RegionInfo transaction_info;
+        RegionInfo journal_info;
         RegionInfo indexmanager_info;
         RegionInfo stringtable_info;
         RegionInfo node_info;

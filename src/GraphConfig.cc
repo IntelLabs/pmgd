@@ -80,7 +80,8 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
     init_region_info(stringtable_info, "stringtable.jdb", addr,
         string_table_size);
     init_region_info(transaction_info, "transaction.jdb", addr,
-         TRANSACTION_REGION_SIZE);
+         TRANSACTION_TABLE_SIZE);
+    init_region_info(journal_info, "journal.jdb", addr, JOURNAL_SIZE);
     init_region_info(node_info, "nodes.jdb", addr, node_table_size);
     init_region_info(edge_info, "edges.jdb", addr, edge_table_size);
 

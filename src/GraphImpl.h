@@ -43,14 +43,14 @@ namespace Jarvis {
 
         // File-backed space
         MapRegion _transaction_region;
+        MapRegion _journal_region;
         MapRegion _indexmanager_region;
         MapRegion _stringtable_region;
         MapRegion _node_region;
         MapRegion _edge_region;
         MapRegion _allocator_region;
 
-        // Even though the transaction file comes after index and string table
-        // the transaction object needs to go in first because of recovery.
+        // TransactionManager needs be first to do recovery.
         TransactionManager _transaction_manager;
         IndexManager _index_manager;
         StringTable _string_table;

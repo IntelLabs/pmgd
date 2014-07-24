@@ -24,6 +24,7 @@ struct GraphImpl::GraphInfo {
     uint64_t version;
 
     RegionInfo transaction_info;
+    RegionInfo journal_info;
     RegionInfo indexmanager_info;
     RegionInfo stringtable_info;
     RegionInfo node_info;
@@ -111,6 +112,7 @@ void GraphImpl::GraphInfo::init(const GraphConfig &config)
 {
     version = VERSION;
     transaction_info = config.transaction_info;
+    journal_info = config.journal_info;
     indexmanager_info = config.indexmanager_info;
     stringtable_info = config.stringtable_info;
     node_info = config.node_info;
@@ -140,6 +142,7 @@ GraphImpl::MapRegion::MapRegion(
 GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
     : _init(name, options, config),
       _transaction_region(name, _init.info->transaction_info, _init.create, _init.read_only),
+      _journal_region(name, _init.info->journal_info, _init.create, _init.read_only),
       _indexmanager_region(name, _init.info->indexmanager_info, _init.create, _init.read_only),
       _stringtable_region(name, _init.info->stringtable_info, _init.create, _init.read_only),
       _node_region(name, _init.info->node_info, _init.create, _init.read_only),
@@ -147,6 +150,8 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
       _allocator_region(name, _init.info->allocator_info, _init.create, _init.read_only),
       _transaction_manager(_init.info->transaction_info.addr,
                            _init.info->transaction_info.len,
+                           _init.info->journal_info.addr,
+                           _init.info->journal_info.len,
                            _init.create, _init.read_only),
       _index_manager(_init.info->indexmanager_info.addr, _init.create),
       _string_table(_init.info->stringtable_info.addr,

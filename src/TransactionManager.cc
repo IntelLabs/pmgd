@@ -8,12 +8,15 @@
 using namespace Jarvis;
 
 TransactionManager::TransactionManager(
-    uint64_t region_addr, uint64_t region_size, bool create, bool read_only)
+            uint64_t transaction_table_addr, uint64_t transaction_table_size,
+            uint64_t journal_addr, uint64_t journal_size,
+            bool create, bool read_only)
 {
-    assert(region_size >= TRANSACTION_REGION_SIZE);
+    assert(transaction_table_size >= TRANSACTION_TABLE_SIZE);
+    assert(journal_size >= JOURNAL_SIZE);
 
-    _tx_table = reinterpret_cast<TransactionHdr *>(region_addr);
-    _journal_addr = reinterpret_cast<void *>(region_addr + TRANSACTION_TABLE_SIZE);
+    _tx_table = reinterpret_cast<TransactionHdr *>(transaction_table_addr);
+    _journal_addr = reinterpret_cast<void *>(journal_addr);
 
     if (create)
         reset_table();
