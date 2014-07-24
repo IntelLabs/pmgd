@@ -14,6 +14,9 @@ static const size_t DEFAULT_EDGE_SIZE = 32;
 static const size_t DEFAULT_NUM_FIXED_ALLOCATORS = 5;
 static const size_t MIN_FIXED_ALLOCATOR = 16;
 
+static const size_t DEFAULT_TRANSACTION_TABLE_SIZE = 4096;
+static const size_t DEFAULT_JOURNAL_SIZE = 64 * 0x200000;
+
 static const size_t INDEX_MANAGER_SIZE = 4096;
 
 static const int DEFAULT_MAX_STRINGID_LENGTH = 16;
@@ -60,6 +63,9 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
     max_stringid_length = VALUE(max_stringid_length, DEFAULT_MAX_STRINGID_LENGTH);
     check_power_of_two(max_stringid_length);
 
+    size_t transaction_table_size = VALUE(transaction_table_size, DEFAULT_TRANSACTION_TABLE_SIZE);
+    size_t journal_size = VALUE(journal_size, DEFAULT_JOURNAL_SIZE);
+
     locale_name = user_config != NULL && !user_config->locale_name.empty()
                       ? user_config->locale_name : std::locale().name();
 
@@ -80,8 +86,8 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
     init_region_info(stringtable_info, "stringtable.jdb", addr,
         string_table_size);
     init_region_info(transaction_info, "transaction.jdb", addr,
-         TRANSACTION_TABLE_SIZE);
-    init_region_info(journal_info, "journal.jdb", addr, JOURNAL_SIZE);
+         transaction_table_size);
+    init_region_info(journal_info, "journal.jdb", addr, journal_size);
     init_region_info(node_info, "nodes.jdb", addr, node_table_size);
     init_region_info(edge_info, "edges.jdb", addr, edge_table_size);
 

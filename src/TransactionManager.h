@@ -6,12 +6,6 @@
 namespace Jarvis {
     typedef uint32_t TransactionId;
 
-    const int MAX_TRANSACTIONS = 64;
-    const int TRANSACTION_TABLE_SIZE = MAX_TRANSACTIONS*64;
-
-    const uint64_t JOURNAL_EXTENT = 2*1024*1024; //2MB
-    const uint64_t JOURNAL_SIZE = JOURNAL_EXTENT*MAX_TRANSACTIONS;
-
     struct TransactionHandle {
         TransactionId id;
         int index;
@@ -40,6 +34,10 @@ namespace Jarvis {
 
         // Journal in PM
         void *_journal_addr;
+
+        int _max_transactions;
+        size_t _extent_size;
+        int _max_extents;
 
         void reset_table(void);
         void recover(void);

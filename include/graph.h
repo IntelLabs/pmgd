@@ -37,6 +37,8 @@ namespace Jarvis {
             size_t node_table_size;
             size_t edge_table_size;
             size_t string_table_size;
+            size_t transaction_table_size;
+            size_t journal_size;
 
             std::string locale_name;
             std::vector<AllocatorInfo> fixed_allocators;
