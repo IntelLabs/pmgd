@@ -162,25 +162,89 @@ int main(int argc, char **argv)
 
 void print_usage(FILE *stream)
 {
-    fprintf(stream, "Usage: mkgraph [OPTION]... GRAPHSTORE [INDEX-SPECIFICATION]...\n");
-    fprintf(stream, "Create a GRAPHSTORE and specified INDICES.\n");
-    fprintf(stream, "\n");
-    fprintf(stream, "  -h  print this help and exit\n");
-    fprintf(stream, "\n");
-    fprintf(stream, "GRAPHSTORE must not already exist.\n");
-    fprintf(stream, "\n");
-    fprintf(stream, "Each INDEX-SPECIFICATION consists of a quadruplet:\n");
-    fprintf(stream, "    'node' | 'edge'\n");
-    fprintf(stream, "    TAG\n");
-    fprintf(stream, "    PROPERTY-IDENTIFIER\n");
-    fprintf(stream, "    TYPE\n");
-    fprintf(stream, "where\n");
-    fprintf(stream, "    TAG is '0' or a string\n");
-    fprintf(stream, "    PROPERTY-IDENTIFIER is a string\n");
-    fprintf(stream, "    TYPE is one of 'boolean', 'integer', 'string', 'float', or 'time'\n");
-    fprintf(stream, "\n");
-    fprintf(stream, "Examples:\n");
-    fprintf(stream, "mkgraph p2p-Gnutella04\n");
-    fprintf(stream, "mkgraph p2p-Gnutella04 node 0 id integer\n");
-    fprintf(stream, "mkgraph p2p-Gnutella04 node 0 id integer node 0 degree integer\n");
+    fprintf(stream,
+"Usage: mkgraph -h\n"
+"       mkgraph GRAPHSTORE [CONFIG-OPTION]... [INDEX-SPECIFICATION]...\n"
+"\n"
+"Create a GRAPHSTORE and specified INDICES. GRAPHSTORE must not already\n"
+"exist.\n"
+"\n"
+"  -h  print this help and exit\n"
+"\n"
+"  -n, --node-size SIZE\n"
+"          Set the size of nodes in the graph. The value must be a power\n"
+"          of two not less than 64 (which is the default). Setting a larger\n"
+"          value allows more property values to be stored in the node.\n"
+"\n"
+"  -e, --edge-size SIZE\n"
+"          Set the size of edges in the graph. The value must be a power\n"
+"          of two not less than 32 (which is the default). Setting a larger\n"
+"          value allows more property values to be stored in the edge.\n"
+"\n"
+"  -N, --node-table-size SIZE\n"
+"          Set the size of the node table. This controls the maximum number\n"
+"          of nodes that can be created in the graph. The default is the\n"
+"          value of the REGION-SIZE parameter. SIZE is assumed to be in\n"
+"          hexadecimal.\n"
+"\n"
+"  -E, --edge-table-size SIZE\n"
+"          Set the size of the edge table. This controls the maximum number\n"
+"          of edges that can be created in the graph. The default is the\n"
+"          value of the REGION-SIZE parameter. SIZE is assumed to be in\n"
+"          hexadecimal.\n"
+"\n"
+"  -R, --region-size REGION-SIZE\n"
+"          Set the default size of regions in the graph. This applies\n"
+"          to the node table, edge table, and each of the allocators, if\n"
+"          a different value is not specified for them. The default is\n"
+"          1 terabyte. SIZE is assumed to be in hexadecimal.\n"
+"\n"
+"  -s, --stringid-length LENGTH\n"
+"          Set the maximum length of strings used for node and edge tags\n"
+"          and property names. The value must be a power of two. The default\n"
+"          is 16 bytes. Setting this to a larger value will decrease the\n"
+"          number of strings that can be used, unless string-table-size is\n"
+"          also increased.\n"
+"\n"
+"  -S, --string-table-size SIZE\n"
+"          Set the size of the string table used for node and edge tags\n"
+"          and property names. This controls the number of unique strings\n"
+"          that can be used for tags and property names and also the size\n"
+"          of the hash function used. The value must be a power of two. The\n"
+"          default is 64KB. SIZE is assumed to be in hexadecimal.\n"
+"\n"
+"  -A, --allocator-size POOL-SIZE\n"
+"          Set the size of the pool to be used for each allocator. The\n"
+"          default is REGION-SIZE. This option cannot be used with -a or\n"
+"          --allocator. POOL-SIZE is assumed to be in hexadecimal.\n"
+"\n"
+"  -a, --allocator OBJECT-SIZE POOL-SIZE\n"
+"          Set the size of the pool to be used for allocations of the\n"
+"          specified object size. This option must be repeated for each\n"
+"          object size. If this option is specified one or more times,\n"
+"          allocators will be created *only* for the object sizes specified.\n"
+"          The default object sizes are 16, 32, 64, and 128. The default\n"
+"          pool size is REGION-SIZE. This option cannot be used with -A\n"
+"          or --allocator-size. POOL-SIZE is assumed to be in hexadecimal.\n"
+"\n"
+"  -l, --locale LOCALE-NAME\n"
+"          Set the name of the locale to be used for ordering strings in\n"
+"          indices. The locale must be available each time the graph is\n"
+"          opened.\n"
+"\n"
+"Each INDEX-SPECIFICATION consists of a quadruplet:\n"
+"    'node' | 'edge'\n"
+"    TAG\n"
+"    PROPERTY-IDENTIFIER\n"
+"    TYPE\n"
+"where\n"
+"    TAG is '0' or a string\n"
+"    PROPERTY-IDENTIFIER is a string\n"
+"    TYPE is one of 'boolean', 'integer', 'string', 'float', or 'time'\n"
+"\n"
+"Examples:\n"
+"mkgraph p2p-Gnutella04\n"
+"mkgraph p2p-Gnutella04 --region-size 80000000\n"
+"mkgraph p2p-Gnutella04 node 0 id integer\n"
+"mkgraph p2p-Gnutella04 node 0 id integer node 0 degree integer\n");
 }
