@@ -163,10 +163,11 @@ static void load_nodes(Graph &db,
 
         jnode.removeMember("_type");
         int id = get_int_value(jnode, "_id", true);
+        std::string label = get_string_value(jnode, "_label", true);
 
 
         Transaction tx(db, Transaction::ReadWrite);
-        Node *node = get_node(db, id, 0, node_func);
+        Node *node = get_node(db, id, label.c_str(), node_func);
         set_properties(node, jnode);
         tx.commit();
     }
