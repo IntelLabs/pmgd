@@ -139,26 +139,49 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc)
     switch(_ptype) {
         case t_integer:
             {
-                if (pp.op >= PropertyPredicate::gele) {
-                    return static_cast<LongValueIndex *>(this)->get_nodes(p1.int_value(),
-                                                                    p2.int_value(), pp.op);
-                }
+                LongValueIndex *This = static_cast<LongValueIndex *>(this);
+                if (pp.op >= PropertyPredicate::gele)
+                    return This->get_nodes(p1.int_value(), p2.int_value(), pp.op);
                 else if (pp.op == PropertyPredicate::dont_care)
-                    return static_cast<LongValueIndex *>(this)->get_nodes();
+                    return This->get_nodes();
                 else
-                    return static_cast<LongValueIndex *>(this)->get_nodes(p1.int_value(), pp.op);
+                    return This->get_nodes(p1.int_value(), pp.op);
             }
             break;
         case t_float:
-            return static_cast<FloatValueIndex *>(this)->get_nodes(p1.float_value(), pp.op);
+            {
+                FloatValueIndex *This = static_cast<FloatValueIndex *>(this);
+                if (pp.op >= PropertyPredicate::gele)
+                    return This->get_nodes(p1.float_value(), p2.float_value(), pp.op);
+                else if (pp.op == PropertyPredicate::dont_care)
+                    return This->get_nodes();
+                else
+                    return This->get_nodes(p1.float_value(), pp.op);
+            }
             break;
         case t_boolean:
-            return static_cast<BoolValueIndex *>(this)->get_nodes(p1.bool_value(), pp.op);
+            {
+                BoolValueIndex *This = static_cast<BoolValueIndex *>(this);
+                if (pp.op >= PropertyPredicate::gele)
+                    return This->get_nodes(p1.bool_value(), p2.bool_value(), pp.op);
+                else if (pp.op == PropertyPredicate::dont_care)
+                    return This->get_nodes();
+                else
+                    return This->get_nodes(p1.bool_value(), pp.op);
+            }
             break;
         case t_string:
             {
                 TransientIndexString istr(p1.string_value(), *loc);
-                return static_cast<StringValueIndex *>(this)->get_nodes(istr, pp.op);
+                StringValueIndex *This = static_cast<StringValueIndex *>(this);
+                if (pp.op >= PropertyPredicate::gele) {
+                    TransientIndexString istr2(p2.string_value(), *loc);
+                    return This->get_nodes(istr, istr2, pp.op);
+                }
+                else if (pp.op == PropertyPredicate::dont_care)
+                    return This->get_nodes();
+                else
+                    return This->get_nodes(istr, pp.op);
             }
             break;
         case t_time:
