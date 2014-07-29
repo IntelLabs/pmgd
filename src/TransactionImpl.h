@@ -70,8 +70,8 @@ namespace Jarvis {
             }
 
             // memset without logging
-            void memset_nolog(void *ptr, uint8_t val, size_t len)
-                { throw Exception(not_implemented); }
+            // TBD: implement when there is a need.
+            void memset_nolog(void *ptr, uint8_t val, size_t len);
 
             // write new_val without logging
             template <typename T>

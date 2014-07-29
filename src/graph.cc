@@ -42,10 +42,9 @@ struct GraphImpl::GraphInfo {
 };
 
 namespace Jarvis {
-const unsigned GraphImpl::MAX_FIXED_ALLOCATORS
-    = (GraphConfig::INFO_SIZE - offsetof(GraphInfo, allocator_offsets))
-               / sizeof GraphInfo::allocator_offsets[0]
-           - 1;
+    const unsigned GraphImpl::MAX_FIXED_ALLOCATORS
+        = ((GraphConfig::INFO_SIZE - offsetof(GraphInfo, allocator_offsets))
+               / sizeof GraphInfo::allocator_offsets[0]) - 1;
 }
 
 
@@ -123,7 +122,7 @@ void GraphImpl::GraphInfo::init(const GraphConfig &config)
 
     unsigned size = config.locale_name.length() + 1;
     if (size > sizeof locale_name)
-        throw Exception(not_implemented);
+        throw Exception(invalid_config);
     memcpy(locale_name, config.locale_name.c_str(), size);
 
     num_fixed_allocators = config.fixed_allocator_info.size();

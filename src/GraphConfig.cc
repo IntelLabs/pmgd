@@ -8,16 +8,18 @@
 
 using namespace Jarvis;
 
-static const size_t DEFAULT_REGION_SIZE = 0x10000000000;
+static const size_t DEFAULT_REGION_SIZE = GraphConfig::SIZE_1TB;
 static const size_t DEFAULT_NODE_SIZE = 64;
 static const size_t DEFAULT_EDGE_SIZE = 32;
 static const size_t DEFAULT_NUM_FIXED_ALLOCATORS = 5;
+
+// The object size of the smallest fixed allocator.
 static const size_t MIN_FIXED_ALLOCATOR = 16;
 
-static const size_t DEFAULT_TRANSACTION_TABLE_SIZE = 4096;
-static const size_t DEFAULT_JOURNAL_SIZE = 64 * 0x200000;
+static const size_t DEFAULT_TRANSACTION_TABLE_SIZE = GraphConfig::SIZE_4KB;
+static const size_t DEFAULT_JOURNAL_SIZE = 64 * GraphConfig::SIZE_2MB;
 
-static const size_t INDEX_MANAGER_SIZE = 4096;
+static const size_t INDEX_MANAGER_SIZE = GraphConfig::SIZE_4KB;
 
 static const int DEFAULT_MAX_STRINGID_LENGTH = 16;
 static const int DEFAULT_MAX_STRINGIDS = 4096;
@@ -80,6 +82,8 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
     size_t string_table_size = VALUE(string_table_size, DEFAULT_STRING_TABLE_SIZE);
     check_power_of_two(string_table_size);
 
+    // 'Addr' is updated by init_region_info to the end of the region,
+    // so it can be used to determine the base address of the next region.
     uint64_t addr = BASE_ADDRESS + INFO_SIZE;
     init_region_info(indexmanager_info, "indexmanager.jdb", addr,
          INDEX_MANAGER_SIZE);
@@ -91,6 +95,9 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
     init_region_info(node_info, "nodes.jdb", addr, node_table_size);
     init_region_info(edge_info, "edges.jdb", addr, edge_table_size);
 
+
+    // 'Offset' is updated by add_allocator to the end of the pool,
+    // so it can be used to determine the offset of the next pool.
     size_t offset = 0;
 
     if (user_config != NULL && user_config->fixed_allocators.size() != 0) {
@@ -130,12 +137,12 @@ void GraphConfig::init_region_info(RegionInfo &info, const char *name,
                                    uint64_t &addr, size_t size)
 {
     size_t alignment;
-    if (size >= 0x40000000)
-        alignment = 0x40000000;
-    else if (size >= 0x200000)
-        alignment = 0x200000;
+    if (size >= SIZE_1GB)
+        alignment = SIZE_1GB;
+    else if (size >= SIZE_2MB)
+        alignment = SIZE_2MB;
     else
-        alignment = 0x1000;
+        alignment = SIZE_4KB;
 
     strncpy(info.name, name, RegionInfo::REGION_NAME_LEN);
     info.addr = align(addr, alignment);
