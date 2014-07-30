@@ -1,5 +1,5 @@
 /*
- * This test checks Jarvis property lists
+ * This test checks Jarvis Index (eq iterators)
  */
 
 #include "jarvis.h"
