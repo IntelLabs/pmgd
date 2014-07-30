@@ -6,18 +6,7 @@
 
 namespace Jarvis {
 
-    /**
-     * Fixed-size allocator parameters
-     *
-     * Each allocator instance operates on a named region of
-     * persistent memory.
-     */
-    struct AllocatorInfo {
-        uint64_t offset;                ///< Offset from start of region
-        size_t len;                     ///< Length in byte
-        uint32_t size;                  ///< Object size in bytes, size <<< len
-        bool zero;                      ///< Zero the region before use
-    };
+    struct AllocatorInfo;
 
     /**
      * Fixed-size allocator
@@ -46,8 +35,8 @@ namespace Jarvis {
         size_t _num_free_calls;
 
     public:
-        FixedAllocator(const uint64_t region_addr,
-                       const struct AllocatorInfo &info, bool create);
+        FixedAllocator(uint64_t pool_addr, unsigned object_size,
+                       uint64_t pool_size, bool create);
 
         // Primary allocator functions; serialized
         void *alloc();
@@ -83,14 +72,12 @@ namespace Jarvis {
         unsigned find_alloc_index(size_t size);
 
     public:
-        Allocator(const uint64_t region_addr,
-                  const struct AllocatorInfo fixed_info[], int count, bool create)
-                    : _fixed_allocators(count)
-        {
-            for (int i = 0; i < count; ++i) { 
-                _fixed_allocators[i] = new FixedAllocator(region_addr, fixed_info[i], create);
-            }
-        }
+        // This constructor uses allocator_offsets[] if create is false
+        // or fixed_allocator_info[] if create is true.
+        Allocator(const uint64_t region_addr, int count,
+                  const uint64_t allocator_offsets[],
+                  const AllocatorInfo fixed_allocator_info[],
+                  bool create);
         void *alloc(size_t size);
         void free(void *addr, size_t size);
     };

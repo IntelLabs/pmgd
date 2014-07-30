@@ -8,12 +8,23 @@
 using namespace Jarvis;
 
 TransactionManager::TransactionManager(
-    uint64_t region_addr, uint64_t region_size, bool create, bool read_only)
+            uint64_t transaction_table_addr, uint64_t transaction_table_size,
+            uint64_t journal_addr, uint64_t journal_size,
+            bool create, bool read_only)
+    : _tx_table(reinterpret_cast<TransactionHdr *>(transaction_table_addr)),
+      _journal_addr(reinterpret_cast<void *>(journal_addr)),
+      _max_transactions(transaction_table_size / sizeof (TransactionHdr)),
+      _extent_size(journal_size / _max_transactions),
+      _max_extents(journal_size / _extent_size)
 {
-    assert(region_size >= TRANSACTION_REGION_SIZE);
-
-    _tx_table = reinterpret_cast<TransactionHdr *>(region_addr);
-    _journal_addr = reinterpret_cast<void *>(region_addr + TRANSACTION_TABLE_SIZE);
+    // The current implementation uses exactly one extent per transaction.
+    // _max_extents is always equal to _max_transactions.
+    // If the implementation is changed to allow multiple extents for a
+    // transaction, the determination of _extent_size should change.
+    // However, the computation of _max_transactions and _max_extents
+    // and the following requirement will not need to change.
+    if (_max_extents < _max_transactions)
+        throw Exception(invalid_config);
 
     if (create)
         reset_table();
@@ -27,19 +38,19 @@ TransactionManager::TransactionManager(
 
 void *TransactionManager::tx_jbegin(int index)
 {
-    // TODO: check that index is less than MAX_TRANSACTIONS
     // Each entry in the tx-table maps to a unique extent in the journal
-    return static_cast<uint8_t *>(_journal_addr) + (index * JOURNAL_EXTENT);
+    assert(index < _max_extents);
+    return static_cast<uint8_t *>(_journal_addr) + (index * _extent_size);
 }
 
 void *TransactionManager::tx_jend(int index)
 {
-    return static_cast<uint8_t *>(_journal_addr) + ((index+1) * JOURNAL_EXTENT);
+    return static_cast<uint8_t *>(_journal_addr) + ((index+1) * _extent_size);
 }
 
 void TransactionManager::reset_table(void)
 {
-    for (int i = 0; i < MAX_TRANSACTIONS; i++)
+    for (int i = 0; i < _max_transactions; i++)
     {
         TransactionHdr *hdr = &_tx_table[i];
         hdr->tx_id = 0;
@@ -52,7 +63,7 @@ void TransactionManager::reset_table(void)
 void TransactionManager::recover(void) {
     // create a Transaction(tx) object for each in_use entry and
     // call tx.abort (with no locks)
-    for (int i = 0; i < MAX_TRANSACTIONS; i++) {
+    for (int i = 0; i < _max_transactions; i++) {
         TransactionHdr *hdr = &_tx_table[i];
         if (hdr->tx_id != 0) {
             TransactionHandle handle(hdr->tx_id, i, hdr->jbegin, hdr->jend);
@@ -67,7 +78,7 @@ void TransactionManager::check_clean()
     // We can't open a graph read-only if it needs recovery.
     // Check that there are no pending transactions, which would
     // indicate a prior un-clean close.
-    for (int i = 0; i < MAX_TRANSACTIONS; i++)
+    for (int i = 0; i < _max_transactions; i++)
         if (_tx_table[i].tx_id != 0)
             throw Exception(read_only);
 }
@@ -88,7 +99,7 @@ TransactionHandle TransactionManager::alloc_transaction(bool read_only)
 
     uint32_t tx_id = atomic_inc(_cur_tx_id) + 1;
 
-    for (int i = 0; i < MAX_TRANSACTIONS; i++) {
+    for (int i = 0; i < _max_transactions; i++) {
         TransactionHdr *hdr = &_tx_table[i];
         if (hdr->tx_id == 0 && cmpxchg(hdr->tx_id, 0u, tx_id)) {
             clflush(hdr);

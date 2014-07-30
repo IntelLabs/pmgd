@@ -6,14 +6,6 @@
 namespace Jarvis {
     typedef uint32_t TransactionId;
 
-    const int MAX_TRANSACTIONS = 64;
-    const int TRANSACTION_TABLE_SIZE = MAX_TRANSACTIONS*64;
-
-    const uint64_t JOURNAL_EXTENT = 2*1024*1024; //2MB
-    const uint64_t JOURNAL_SIZE = JOURNAL_EXTENT*MAX_TRANSACTIONS;
-
-    const int TRANSACTION_REGION_SIZE = TRANSACTION_TABLE_SIZE + JOURNAL_SIZE;
-
     struct TransactionHandle {
         TransactionId id;
         int index;
@@ -43,6 +35,10 @@ namespace Jarvis {
         // Journal in PM
         void *_journal_addr;
 
+        int _max_transactions;
+        size_t _extent_size;
+        int _max_extents;
+
         void reset_table(void);
         void recover(void);
         void check_clean(void);
@@ -50,7 +46,11 @@ namespace Jarvis {
         void *tx_jend(int index);
 
     public:
-        TransactionManager(uint64_t region_addr, uint64_t region_size, bool create, bool read_only);
+        TransactionManager(uint64_t transaction_table_addr,
+                           uint64_t transaction_table_size,
+                           uint64_t journal_addr,
+                           uint64_t journal_size,
+                           bool create, bool read_only);
 
         TransactionHandle alloc_transaction(bool read_only);
         void free_transaction(const TransactionHandle &);

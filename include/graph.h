@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "stringid.h"
 #include "node.h"
 #include "edge.h"
@@ -21,7 +22,31 @@ namespace Jarvis {
 
     public:
         enum OpenOptions { Create = 1, ReadOnly = 2 };
-        Graph(const char *name, int options = 0);
+
+        struct Config {
+            struct AllocatorInfo {
+                unsigned object_size;  // size of objects in this pool
+                size_t size;           // size of pool in bytes
+            };
+
+            unsigned node_size;
+            unsigned edge_size;
+            unsigned max_stringid_length;
+
+            size_t default_region_size;
+            size_t node_table_size;
+            size_t edge_table_size;
+            size_t string_table_size;
+            size_t transaction_table_size;
+            size_t journal_size;
+
+            std::string locale_name;
+            std::vector<AllocatorInfo> fixed_allocators;
+
+            Config();
+        };
+
+        Graph(const char *name, int options = 0, const Config * = NULL);
         ~Graph();
 
         NodeID get_id(const Node &) const;

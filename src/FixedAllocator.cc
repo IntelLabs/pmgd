@@ -30,30 +30,34 @@ struct FixedAllocator::RegionHeader {
     int64_t num_allocated;
     uint64_t max_addr;               ///< tail_ptr < max_addr (always)
     uint32_t size;                   ///< Object size
-    uint32_t zero;                   ///< Zero region before use
 };
 
-FixedAllocator::FixedAllocator(const uint64_t region_addr,
-        const AllocatorInfo &info, bool create)
-          : _pm(reinterpret_cast<RegionHeader *>(region_addr + info.offset))
+
+FixedAllocator::FixedAllocator(uint64_t pool_addr,
+                               unsigned object_size, uint64_t pool_size,
+                               bool create)
+    : _pm(reinterpret_cast<RegionHeader *>(pool_addr))
 {
-    // Start allocation at a natural boundary.  Assume object size is
-    // a power of 2 of at least 8 bytes.
-    assert(info.size > sizeof(uint64_t));
-    assert(!(info.size & (info.size - 1)));
-    _alloc_offset = ((unsigned)sizeof(RegionHeader) + info.size - 1) & ~(info.size - 1);
-    uint64_t start_addr = region_addr + info.offset;
+#define ALLOC_OFFSET(sz) ((sizeof(RegionHeader) + (sz) - 1) & ~((sz) - 1))
 
     if (create) {
+        // Object size must be a power of 2 and at least 8 bytes.
+        assert(object_size >= sizeof(uint64_t));
+        assert(!(object_size & (object_size - 1)));
+
+        // Start allocation at a natural boundary.
+        _alloc_offset = ALLOC_OFFSET(object_size);
+
         _pm->free_ptr = NULL;
-        _pm->tail_ptr = (uint64_t *)(start_addr + _alloc_offset);
-        _pm->size = info.size;
-        _pm->zero = info.zero;
-        _pm->max_addr = start_addr + info.len;
+        _pm->tail_ptr = (uint64_t *)(pool_addr + _alloc_offset);
+        _pm->size = object_size;
+        _pm->max_addr = pool_addr + pool_size;
         _pm->num_allocated = 0;
 
         TransactionImpl::flush_range(_pm, sizeof(*_pm));
     }
+    else
+        _alloc_offset = ALLOC_OFFSET(_pm->size);
 }
 
 uint64_t FixedAllocator::get_id(const void *obj) const
@@ -94,8 +98,6 @@ void *FixedAllocator::alloc()
         _pm->tail_ptr = (uint64_t *)((uint64_t)_pm->tail_ptr + _pm->size);
     }
 
-    if (_pm->zero)
-        tx->memset_nolog(p, 0, _pm->size);
     _pm->num_allocated++;
 
     return p;
