@@ -98,14 +98,23 @@ int main()
         cout << "Num elements: " << tree.num_elems() << "\n";
         test.print(tree);
         
-        for (int i = 0; i < 5; ++i) {
-            int *value = tree.add(201 + i, allocator1);
+        for (int i = 0; i < 8; ++i) {
+            value = tree.add(201 + i, allocator1);
             *value = i + 1;
         }
+        value = tree.add(210, allocator1);
+        *value = 1;
+        value = tree.add(212, allocator1);
+        *value = 1;
+        value = tree.add(200, allocator1);
+        *value = 1;
         cout << "Num elements: " << tree.num_elems() << "\n";
         test.print(tree);
-        for (int i = 0; i < 5; ++i)
+        for (int i = 0; i < 8; ++i)
             tree.remove(201 + i, allocator1);
+        tree.remove(212, allocator1);
+        tree.remove(210, allocator1);
+        tree.remove(200, allocator1);
         cout << "Num elements: " << tree.num_elems() << "\n";
         test.print(tree);
     }
