@@ -55,3 +55,55 @@ bool Jarvis::Property::operator<(const Property &a) const
         default: assert(0); return false;
     }
 }
+
+Jarvis::Time::Time(const struct tm *tm, int hr_offset, int min_offset)
+    : time_val(0)
+{
+    struct tm utc_tm = *tm;
+    utc_tm.tm_hour -= hr_offset;
+    utc_tm.tm_min -= min_offset * (hr_offset >= 0 ? 1 : -1);
+    utc_tm.tm_isdst = -1;
+    mktime(&utc_tm);
+
+    // Fill in our time fields with the UTC version.
+    sec = utc_tm.tm_sec;
+    min = utc_tm.tm_min;
+    hour = utc_tm.tm_hour;
+    day = utc_tm.tm_mday;
+    mon = utc_tm.tm_mon + 1;  // tm month starts from 0
+    year = utc_tm.tm_year + 1900; // tm stores year - 1900
+    tz_min = min_offset / 15;
+    tz_hour = hr_offset;
+    tz_spare = 0;
+}
+
+void Jarvis::Time::fill_tm_utc(struct tm *tm) const
+{
+    memset(tm, 0, sizeof(struct tm));
+    tm->tm_sec = sec;
+    tm->tm_min = min;
+    tm->tm_hour = hour;
+    tm->tm_mday = day;
+    tm->tm_mon = mon - 1;
+    tm->tm_year = year - 1900;
+}
+
+void Jarvis::Time::get_utc(struct tm *tm) const
+{
+    if (tm == NULL)
+        return;
+    fill_tm_utc(tm);
+    tm->tm_isdst = -1;
+    mktime(tm);  // Fills wday
+}
+
+void Jarvis::Time::get_tm(struct tm *tm) const
+{
+    if (tm == NULL)
+        return;
+    fill_tm_utc(tm);
+    tm->tm_hour += tz_hour;
+    tm->tm_min += tz_min * (tz_hour >= 0 ? 1 : -1) * 15;
+    tm->tm_isdst = -1;
+    mktime(tm);  // Fills wday
+}
