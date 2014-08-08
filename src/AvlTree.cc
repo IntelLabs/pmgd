@@ -256,4 +256,5 @@ template class AvlTree<int, int>;
 template class AvlTree<long long, List<Node *>>;
 template class AvlTree<bool, List<Node *>>;
 template class AvlTree<double, List<Node *>>;
+template class AvlTree<Time, List<Node *>>;
 template class AvlTree<IndexString, List<Node *>>;
