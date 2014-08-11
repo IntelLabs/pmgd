@@ -21,6 +21,6 @@ namespace Jarvis {
 
         // Use a locale pointer here so that callers of get_nodes, where locale is
         // irrelevant, do not need to acquire it from the GraphImpl object. 
-        NodeIterator get_nodes(const PropertyPredicate &pp, std::locale *loc);
+        NodeIterator get_nodes(const PropertyPredicate &pp, std::locale *loc, bool reverse);
     };
 }

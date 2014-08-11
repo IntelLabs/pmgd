@@ -25,9 +25,25 @@ namespace Jarvis {
         void find_start_all(TreeNode *root, std::stack<TreeNode *> &path);
         void add_nodes_neq(TreeNode *root, const K &neq, std::stack<TreeNode *> &path);
 
+        // For reverse iterators
+        void find_start_reverse(TreeNode *root, const Compare &cmin, const Compare &cmax,
+                        std::stack<TreeNode *> &path);
+        void add_left_tree(TreeNode *root, const Compare &cmin,
+                            std::stack<TreeNode *> &path);
+        void find_start_max_reverse(TreeNode *root, const Compare &cmin,
+                            std::stack<TreeNode *> &path);
+        void find_start_min_reverse(TreeNode *root, const Compare &cmax,
+                            std::stack<TreeNode *> &path);
+        void find_start_all_reverse(TreeNode *root, std::stack<TreeNode *> &path);
+        void add_full_left_tree(TreeNode *root, std::stack<TreeNode *> &path);
+        void add_nodes_neq_reverse(TreeNode *root, const K &neq, std::stack<TreeNode *> &path);
+
         template <class D> friend class IndexRange_NodeIteratorImpl;
         template <class D> friend class IndexRangeNomax_NodeIteratorImpl;
         template <class D> friend class IndexRangeNeq_NodeIteratorImpl;
+        template <class D> friend class IndexRangeReverse_NodeIteratorImpl;
+        template <class D> friend class IndexRangeNomin_NodeIteratorImpl;
+        template <class D> friend class IndexRangeNeqReverse_NodeIteratorImpl;
     public:
         // Initialize both and they do their own transaction flush
         AvlTreeIndex(PropertyType ptype) : Index(ptype), AvlTree<K,V>()
@@ -39,9 +55,10 @@ namespace Jarvis {
         using AvlTree<K,V>::add;
         using AvlTree<K,V>::remove;
 
-        NodeIterator get_nodes();
-        NodeIterator get_nodes(const K &key, PropertyPredicate::op_t op);
-        NodeIterator get_nodes(const K &min, const K &max, PropertyPredicate::op_t op);
+        NodeIterator get_nodes(bool reverse);
+        NodeIterator get_nodes(const K &key, PropertyPredicate::op_t op, bool reverse);
+        NodeIterator get_nodes(const K &min, const K &max, PropertyPredicate::op_t op,
+                               bool reverse);
     };
 
     // For the actual property value indices

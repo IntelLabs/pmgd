@@ -54,11 +54,11 @@ namespace Jarvis {
 
         NodeIterator get_nodes();
         NodeIterator get_nodes(StringID tag);
-        NodeIterator get_nodes(StringID tag, const PropertyPredicate &);
+        NodeIterator get_nodes(StringID tag, const PropertyPredicate &, bool reverse = false);
 
         EdgeIterator get_edges();
         EdgeIterator get_edges(StringID tag);
-        EdgeIterator get_edges(StringID tag, const PropertyPredicate &);
+        EdgeIterator get_edges(StringID tag, const PropertyPredicate &, bool reverse = false);
 
         PathIterator get_paths(Node &a, bool depth_first = false);
         PathIterator get_paths(Node &a, Node &b, bool depth_first = false);
