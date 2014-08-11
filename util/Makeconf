@@ -1,6 +1,7 @@
 # List of sources for this directory.
 UTIL_SRCS := $(addprefix util/, \
-                         exception.cc text.cc dump_debug.cc \
+                         exception.cc text.cc \
+                         dump_debug.cc dump_gexf.cc \
                          load_tsv.cc load_gson.cc loader.y scanner.l)
 
 # Derive a list of objects.

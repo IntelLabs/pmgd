@@ -14,15 +14,33 @@ void print_usage(FILE *stream);
 int main(int argc, char **argv)
 {
     bool recover = false;
+    enum { DEBUG, GEXF };
+    int type = DEBUG;
     int argi = 1;
 
-    if (argi < argc && strcmp(argv[argi], "-h") == 0) {
-        print_usage(stdout);
-        return 0;
-    }
+    while (argi < argc && argv[argi][0] == '-') {
+        switch (argv[argi][1]) {
+            case 'h':
+                print_usage(stdout);
+                return 0;
 
-    if (argi < argc && strcmp(argv[argi], "-r") == 0) {
-        recover = true;
+            case 'r':
+                recover = true;
+                break;
+
+            case 'd':
+                type = DEBUG;
+                break;
+
+            case 'x':
+                type = GEXF;
+                break;
+
+            default:
+                fprintf(stderr, "dumpgraph: %s: Unrecognized option\n", argv[argi]);
+                print_usage(stderr);
+                return 1;
+        }
         argi++;
     }
 
@@ -37,7 +55,10 @@ int main(int argc, char **argv)
     try {
         Graph db(db_name, recover ? Graph::ReadWrite : Graph::ReadOnly);
         Transaction tx(db);
-        dump_debug(db);
+        switch (type) {
+            case DEBUG: dump_debug(db); break;
+            case GEXF: dump_gexf(db); break;
+        }
     }
     catch (Exception e) {
         print_exception(e, stderr);
@@ -49,9 +70,11 @@ int main(int argc, char **argv)
 
 void print_usage(FILE *stream)
 {
-    fprintf(stream, "Usage: dumpgraph [-h] [-r] GRAPHSTORE\n");
+    fprintf(stream, "Usage: dumpgraph [OPTION]... GRAPHSTORE\n");
     fprintf(stream, "Dump the content of GRAPHSTORE.\n");
     fprintf(stream, "\n");
     fprintf(stream, "  -h  print this help and exit\n");
     fprintf(stream, "  -r  open the graph read/write, so recovery can be performed if necessary\n");
+    fprintf(stream, "  -d  debug mode: list all nodes then all edges (default)\n");
+    fprintf(stream, "  -x  dump in the GEXF file format\n");
 }

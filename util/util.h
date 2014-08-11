@@ -24,6 +24,7 @@ extern std::string time_to_string(const Jarvis::Time& t, bool utc=false);
 extern void print_exception(const Jarvis::Exception &e, FILE *f = stdout);
 
 extern void dump_debug(Jarvis::Graph &db, FILE *f = stdout);
+extern void dump_gexf(Jarvis::Graph &db, FILE *f = stdout);
 
 extern void dump(Jarvis::Graph &db, const Jarvis::Node &n, FILE *f = stdout);
 extern void dump(Jarvis::Graph &db, const Jarvis::Edge &n, FILE *f = stdout);
