@@ -126,5 +126,5 @@ NodeIterator IndexManager::get_nodes(StringID tag)
     // This index can never be null cause we create it for each non-zero tag.
     // The second parameter here is the locale which we surely do not need for
     // a boolean property.
-    return prop0_idx->get_nodes(PropertyPredicate(0, PropertyPredicate::eq, true), NULL);
+    return prop0_idx->get_nodes(PropertyPredicate(0, PropertyPredicate::eq, true), NULL, false);
 }

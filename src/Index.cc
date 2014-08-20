@@ -122,7 +122,7 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
     }
 }
 
-NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc)
+NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, bool reverse)
 {
     const Property &p1 = pp.v1;
     const Property &p2 = pp.v2;
@@ -141,33 +141,33 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc)
             {
                 LongValueIndex *This = static_cast<LongValueIndex *>(this);
                 if (pp.op >= PropertyPredicate::gele)
-                    return This->get_nodes(p1.int_value(), p2.int_value(), pp.op);
+                    return This->get_nodes(p1.int_value(), p2.int_value(), pp.op, reverse);
                 else if (pp.op == PropertyPredicate::dont_care)
-                    return This->get_nodes();
+                    return This->get_nodes(reverse);
                 else
-                    return This->get_nodes(p1.int_value(), pp.op);
+                    return This->get_nodes(p1.int_value(), pp.op, reverse);
             }
             break;
         case t_float:
             {
                 FloatValueIndex *This = static_cast<FloatValueIndex *>(this);
                 if (pp.op >= PropertyPredicate::gele)
-                    return This->get_nodes(p1.float_value(), p2.float_value(), pp.op);
+                    return This->get_nodes(p1.float_value(), p2.float_value(), pp.op, reverse);
                 else if (pp.op == PropertyPredicate::dont_care)
-                    return This->get_nodes();
+                    return This->get_nodes(reverse);
                 else
-                    return This->get_nodes(p1.float_value(), pp.op);
+                    return This->get_nodes(p1.float_value(), pp.op, reverse);
             }
             break;
         case t_boolean:
             {
                 BoolValueIndex *This = static_cast<BoolValueIndex *>(this);
                 if (pp.op >= PropertyPredicate::gele)
-                    return This->get_nodes(p1.bool_value(), p2.bool_value(), pp.op);
+                    return This->get_nodes(p1.bool_value(), p2.bool_value(), pp.op, reverse);
                 else if (pp.op == PropertyPredicate::dont_care)
-                    return This->get_nodes();
+                    return This->get_nodes(reverse);
                 else
-                    return This->get_nodes(p1.bool_value(), pp.op);
+                    return This->get_nodes(p1.bool_value(), pp.op, reverse);
             }
             break;
         case t_string:
@@ -176,12 +176,12 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc)
                 StringValueIndex *This = static_cast<StringValueIndex *>(this);
                 if (pp.op >= PropertyPredicate::gele) {
                     TransientIndexString istr2(p2.string_value(), *loc);
-                    return This->get_nodes(istr, istr2, pp.op);
+                    return This->get_nodes(istr, istr2, pp.op, reverse);
                 }
                 else if (pp.op == PropertyPredicate::dont_care)
-                    return This->get_nodes();
+                    return This->get_nodes(reverse);
                 else
-                    return This->get_nodes(istr, pp.op);
+                    return This->get_nodes(istr, pp.op, reverse);
             }
             break;
         case t_time:
