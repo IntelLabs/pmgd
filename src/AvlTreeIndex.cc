@@ -36,7 +36,7 @@ void AvlTreeIndex<K,V>::find_start(TreeNode *root,
                                    const Compare &cmin, const Compare &cmax,
                                    std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     if (cmin.lessthan(root->key)) {
         if (cmax.greaterthanequal(root->key))
@@ -56,19 +56,19 @@ template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_right_tree(TreeNode *root, const Compare &cmax,
                                        std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     if (cmax.greaterthanequal(root->key))
         path.push(root);
     add_right_tree(root->left, cmax, path);
 }
 
-// Use this to find first element when no min given
+// Find first element when no min given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_min(TreeNode *root, const Compare &cmax,
                                        std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     // min is the lowest element in the tree
     if (cmax.greaterthanequal(root->key))
@@ -76,12 +76,12 @@ void AvlTreeIndex<K,V>::find_start_min(TreeNode *root, const Compare &cmax,
     find_start_min(root->left, cmax, path);
 }
 
-// Use this to find first element when no max given
+// Find first element when no max given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_max(TreeNode *root, const Compare &cmin,
                                        std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
 
     if (cmin.lessthan(root->key)) {
@@ -94,40 +94,41 @@ void AvlTreeIndex<K,V>::find_start_max(TreeNode *root, const Compare &cmin,
         find_start_max(root->right, cmin, path);
 }
 
-// Use this to add all elements when no max limit given
+// Add all elements when no max limit given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_full_right_tree(TreeNode *root,
                                             std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     path.push(root);
     add_full_right_tree(root->left, path);
 }
 
-// Use this to find first element when no min/max given
+// Find first element when no min/max given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_all(TreeNode *root, std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     path.push(root);
     find_start_all(root->left, path);
 }
 
-// Use this to find min element of tree that is not equal to given key.
+// Find min element of tree that is not equal to given key.
 // Same function works for traversing the remaining tree too.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_nodes_neq(TreeNode *root, const K &neq,
                                       std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     if (!(neq == root->key))
         path.push(root);
     else {
-        // If the root == neq, we would miss its right.
-        // No need to check for neq cause of unique nodes.
+        // If the root is equal to the key, don't forget its right,
+        // which we can add to the path without checking againt neq
+        // because of uniqueness.
         if (root->right != NULL)
             path.push(root->right);
     }
@@ -140,7 +141,7 @@ void AvlTreeIndex<K,V>::find_start_reverse(TreeNode *root,
                                    const Compare &cmin, const Compare &cmax,
                                    std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     if (cmax.greaterthan(root->key)) {
         if (cmin.lessthanequal(root->key))
@@ -153,12 +154,12 @@ void AvlTreeIndex<K,V>::find_start_reverse(TreeNode *root,
         find_start_reverse(root->left, cmin, cmax, path);
 }
 
-// Use this to find first element when no max given
+// Find first element when no max given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_max_reverse(TreeNode *root, const Compare &cmin,
                                        std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     if (cmin.lessthanequal(root->key))
         path.push(root);
@@ -172,19 +173,19 @@ template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_left_tree(TreeNode *root, const Compare &cmin,
                                        std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     if (cmin.lessthanequal(root->key))
         path.push(root);
     add_left_tree(root->right, cmin, path);
 }
 
-// Use this to find first element when no min given
+// Find first element when no min given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_min_reverse(TreeNode *root, const Compare &cmax,
                                        std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
 
     if (cmax.greaterthan(root->key)) {
@@ -197,40 +198,41 @@ void AvlTreeIndex<K,V>::find_start_min_reverse(TreeNode *root, const Compare &cm
         find_start_min_reverse(root->left, cmax, path);
 }
 
-// Use this to find first element when no min/max given
+// Find first element when no min/max given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_all_reverse(TreeNode *root, std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     path.push(root);
     find_start_all_reverse(root->right, path);
 }
 
-// Use this to add all elements when no max limit given
+// Add all elements when no max limit given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_full_left_tree(TreeNode *root,
                                            std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     path.push(root);
     add_full_left_tree(root->right, path);
 }
 
-// Use this to find max element of tree that is not equal to given key.
+// Find max element of tree that is not equal to given key.
 // Same function works for traversing the remaining tree too.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_nodes_neq_reverse(TreeNode *root, const K &neq,
                                       std::stack<TreeNode *> &path)
 {
-    if (!root)
+    if (root == NULL)
         return;
     if (!(neq == root->key))
         path.push(root);
     else {
-        // If the root == neq, we would miss its left.
-        // No need to check for neq cause of unique nodes.
+        // If the root is equal to the key, don't forget its left,
+        // which we can add to the path without checking againt neq
+        // because of uniqueness.
         if (root->left != NULL)
             path.push(root->left);
     }
