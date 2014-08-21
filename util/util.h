@@ -14,7 +14,7 @@ namespace Jarvis {
 };
 
 extern std::string property_text(const Jarvis::Property &i);
-extern std::string property_text(const Jarvis::PropertyIterator &i);
+extern std::string property_text(const Jarvis::PropertyRef &i);
 template <typename T> std::string tag_text(const T &n);
 
 extern bool string_to_tm(const std::string &tstr, struct tm *user_tz_tm,
