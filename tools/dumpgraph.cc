@@ -14,7 +14,7 @@ void print_usage(FILE *stream);
 int main(int argc, char **argv)
 {
     bool recover = false;
-    enum { DEBUG, GEXF };
+    enum { DEBUG, GEXF, JTXT };
     int type = DEBUG;
     int argi = 1;
 
@@ -34,6 +34,10 @@ int main(int argc, char **argv)
 
             case 'x':
                 type = GEXF;
+                break;
+
+            case 'j':
+                type = JTXT;
                 break;
 
             default:
@@ -58,6 +62,7 @@ int main(int argc, char **argv)
         switch (type) {
             case DEBUG: dump_debug(db); break;
             case GEXF: dump_gexf(db); break;
+            case JTXT: dump_jarvis(db); break;
         }
     }
     catch (Exception e) {
@@ -77,4 +82,5 @@ void print_usage(FILE *stream)
     fprintf(stream, "  -r  open the graph read/write, so recovery can be performed if necessary\n");
     fprintf(stream, "  -d  debug mode: list all nodes then all edges (default)\n");
     fprintf(stream, "  -x  dump in the GEXF file format\n");
+    fprintf(stream, "  -j  dump in the Jarvis Lake graph text format\n");
 }
