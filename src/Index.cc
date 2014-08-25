@@ -96,7 +96,7 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
                     dest->remove(n, allocator);
                     // TODO: Re-traversal of tree.
                     if (dest->num_elems() == 0)
-                        prop_idx->remove(p.float_value(), allocator);
+                        prop_idx->remove(p.bool_value(), allocator);
                 }
             }
             break;
