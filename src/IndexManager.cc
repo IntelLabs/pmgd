@@ -57,10 +57,12 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
             case t_boolean:
                 *prop_idx = new (allocator.alloc(sizeof(BoolValueIndex))) BoolValueIndex(ptype);
                 break;
+            case t_time:
+                *prop_idx = new (allocator.alloc(sizeof(TimeValueIndex))) TimeValueIndex(ptype);
+                break;
             case t_string:
                 *prop_idx = new (allocator.alloc(sizeof(StringValueIndex))) StringValueIndex(ptype);
                 break;
-            case t_time:
             case t_novalue:
                 throw Exception(not_implemented);
             case t_blob:
