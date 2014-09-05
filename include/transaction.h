@@ -9,7 +9,7 @@ namespace Jarvis {
     class Transaction {
         TransactionImpl *_impl;
 
-        void *operator new(std::size_t);
+	//        void *operator new(std::size_t);
 
     public:
         enum TransactionOptions { Dependent = 0, Independent = 1,

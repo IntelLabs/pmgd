@@ -24,6 +24,7 @@ endif
 
 # Target.
 TARGET := $(O_SRC)jarvis.lib
+DLTARGET := $(O_SRC)libjarvis.so
 
 # Where the target should be installed.
 INSTALLPATH := $(O_ROOT)lib
@@ -66,7 +67,7 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
           -Wno-parentheses -Wno-conversion
 
 # Flags for C++ compilation.
-CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
+CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD -fPIC
 
 # Add a little bit of colorful noise in silent mode.
 ifneq ($(findstring s,$(MAKEFLAGS)),)
@@ -75,10 +76,11 @@ endif
 
 # The default goal creates the build directory, builds the target,
 # creates the install directory, and copies the target there.
-install: $(O_SRC) $(TARGET)
+install: $(O_SRC) $(TARGET) $(DLTARGET)
 	$(call print,INSTALL,$(INSTALLPATH))
 	$(shell if ! test -d $(INSTALLPATH); then mkdir $(INSTALLPATH); fi)
 	$(CP) $(TARGET) $(INSTALLPATH)
+	$(CP) $(DLTARGET) $(INSTALLPATH)
 
 $(TARGET): $(OBJS)
 	$(call print,AR,$@)
@@ -88,6 +90,11 @@ clean:
 	$(call print,CLEAN)
 	$(RM) $(TARGET) $(OBJS) $(DEPS) $(CLEANFILES)
 	$(RM) $(INSTALLPATH)/$(TARGET)
+
+# Create a separate rule for a shared object library
+# needed for Java/JNI bindings to jarvis
+$(DLTARGET): $(OBJS)
+	$(CC) $(CFLAGS) -shared -o $(DLTARGET) *.o
 
 # If the variable $(O_SRC) is non-empty and the corresponding
 # directory does not exist then create it.
