@@ -28,13 +28,13 @@ jobject Java_NodeIterator_nextNative(JNIEnv *env, jobject ni){
     //build node to return 
     jclass cls = env->FindClass("Node");
     jmethodID cnstrctr = env->GetMethodID(cls, "<init>", 
-					  "(J)V");
+                                          "(J)V");
     jobject cur = NULL;
     if(j_ni)
       cur = env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_n));
     else
       cur = env->NewObject(cls, cnstrctr, (jlong) 0);
-				   
+
     return cur;
   }
   catch (Exception e){

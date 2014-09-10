@@ -14,14 +14,14 @@ public class NodeIterator {
     private Node current;
 
     public NodeIterator(long handle, Node origin){
-	jarvisHandle = handle;
-	current = origin;
+        jarvisHandle = handle;
+        current = origin;
     }
 
     public native boolean hasNext(); //replaces the override of bool()
     public Node getNext(){
-	current = nextNative();
-	return current; 
+        current = nextNative();
+        return current; 
     }
 
     //    public native NodeIterator filter(PropertyPredicate pp);
@@ -33,23 +33,23 @@ public class NodeIterator {
     // Because java doesn't allow overriding operators, we cannot 
     //  just let them slide through to jarvis.
     public Node get_current(){
-	return current;
+        return current;
     }
 
     public String get_tag(){
-	return current.get_tag();
+        return current.get_tag();
     }
     public boolean check_property(String property, Property result){
-	return current.check_property(property, result);
+        return current.check_property(property, result);
     }
     public Property get_property(String property){
-	return current.get_property(property);
+        return current.get_property(property);
     }
     public void set_property(String id, Property prop){
-	current.set_property(id, prop);
+        current.set_property(id, prop);
     }
     public void remove_property(String name){
-	current.remove_property(name);
+        current.remove_property(name);
     }
 
     private native Node nextNative();     

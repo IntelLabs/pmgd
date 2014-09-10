@@ -11,7 +11,7 @@
 using namespace Jarvis;
 
 void Java_Transaction_startTransactionNative(JNIEnv *env, jobject tx, 
-					      jobject graph, jint options){
+                                             jobject graph, jint options){
   Graph &j_db = *(getJarvisHandle<Graph>(env,graph));
   try{
     Transaction *j_tx = new Transaction(j_db, options);

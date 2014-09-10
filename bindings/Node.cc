@@ -24,7 +24,7 @@ jstring Java_Node_get_1tag(JNIEnv *env, jobject node){
 
 
 jboolean Java_Node_check_1property(JNIEnv *env , jobject node, 
-				   jstring str, jobject prop){
+                                   jstring str, jobject prop){
   Node &j_node = *(getJarvisHandle<Node>(env,node));
   const char *j_str = env->GetStringUTFChars(str,0);
   try{
@@ -39,7 +39,7 @@ jboolean Java_Node_check_1property(JNIEnv *env , jobject node,
   }
 }
 jobject Java_Node_get_1property(JNIEnv *env, jobject node, 
-				jstring str){
+                                jstring str){
   Node &j_node = *(getJarvisHandle<Node>(env,node));
   const char *j_str = env->GetStringUTFChars(str,0);
   try{
@@ -48,7 +48,7 @@ jobject Java_Node_get_1property(JNIEnv *env, jobject node,
 
     jclass cls = env->FindClass("Property");
     jmethodID cnstrctr = env->GetMethodID(cls, "<init>",
-    					  "()V");
+                                          "()V");
     jobject new_p = env->NewObject(cls, cnstrctr, result);
     setJarvisHandle<Property>(env,new_p, result);
     return new_p;
@@ -60,7 +60,7 @@ jobject Java_Node_get_1property(JNIEnv *env, jobject node,
 }
 
 void Java_Node_set_1property(JNIEnv *env, jobject node,
-			     jstring str, jobject prop){
+                             jstring str, jobject prop){
   Node &j_node = *(getJarvisHandle<Node>(env,node));
   Property &j_prop = *(getJarvisHandle<Property>(env,prop));
   const char *j_str = env->GetStringUTFChars(str,0);
@@ -73,7 +73,7 @@ void Java_Node_set_1property(JNIEnv *env, jobject node,
 }
 
 void Java_Node_remove_1property(JNIEnv *env, jobject node, 
-				jstring str){
+                                jstring str){
   Node &j_node = *(getJarvisHandle<Node>(env,node));
   const char *j_str = env->GetStringUTFChars(str,0);
   try{

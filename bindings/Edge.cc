@@ -29,7 +29,7 @@ jobject Java_Edge_get_1source(JNIEnv *env, jobject edge){
 
     jclass cls = env->FindClass("Node");
     jmethodID cnstrctr = env->GetMethodID(cls, "<init>", 
-    					  "(J)V");
+                                          "(J)V");
     jobject src = env->NewObject(cls, cnstrctr, &j_src);
     return src;
   }
@@ -46,7 +46,7 @@ jobject Java_Edge_get_1destination(JNIEnv *env, jobject edge){
 
     jclass cls = env->FindClass("Node");
     jmethodID cnstrctr = env->GetMethodID(cls, "<init>", 
-    					  "(J)V");
+                                          "(J)V");
     jobject dest = env->NewObject(cls, cnstrctr, &j_dest);
     return dest;
   }catch (Exception e){
@@ -56,7 +56,7 @@ jobject Java_Edge_get_1destination(JNIEnv *env, jobject edge){
 }
 
 jboolean Java_Edge_check_1property(JNIEnv *env , jobject edge, 
-				   jstring str, jobject prop){
+                                   jstring str, jobject prop){
   Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
   const char *j_str = env->GetStringUTFChars(str,0);
   try{
@@ -72,7 +72,7 @@ jboolean Java_Edge_check_1property(JNIEnv *env , jobject edge,
 }
 
 jobject Java_Edge_get_1property(JNIEnv *env, jobject edge, 
-				jstring str){
+                                jstring str){
   Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
   const char *j_str = env->GetStringUTFChars(str,0);
   try{
@@ -81,7 +81,7 @@ jobject Java_Edge_get_1property(JNIEnv *env, jobject edge,
 
     jclass cls = env->FindClass("Property");
     jmethodID cnstrctr = env->GetMethodID(cls, "<init>",
-    					  "()V");
+                                          "()V");
     jobject new_p = env->NewObject(cls, cnstrctr, result);
     setJarvisHandle<Property>(env,new_p, result);
     return new_p;
@@ -93,7 +93,7 @@ jobject Java_Edge_get_1property(JNIEnv *env, jobject edge,
 }
 
 void Java_Edge_set_1property(JNIEnv *env, jobject edge,
-			     jstring str, jobject prop){
+                             jstring str, jobject prop){
   Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
   Property &j_prop = *(getJarvisHandle<Property>(env,prop));
   const char *j_str = env->GetStringUTFChars(str,0);
@@ -106,7 +106,7 @@ void Java_Edge_set_1property(JNIEnv *env, jobject edge,
 }
 
 void Java_Edge_remove_1property(JNIEnv *env, jobject edge, 
-				jstring str){
+                                jstring str){
   Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
   const char *j_str = env->GetStringUTFChars(str,0);
   try{

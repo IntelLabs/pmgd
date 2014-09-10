@@ -12,7 +12,7 @@ public class Node {
     //Constructor must be public to satisfy JNI requirement.
     //Must find another way to satisfy the control of node creation.
     public Node(long handle){
-	jarvisHandle = handle;
+        jarvisHandle = handle;
     }
 
     public native String get_tag();

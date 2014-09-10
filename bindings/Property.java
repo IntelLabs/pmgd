@@ -10,28 +10,28 @@ public class Property{
     private long jarvisHandle;
 
     public Property(){
-	newPropertyNative();
+        newPropertyNative();
     }
     public Property(Property p){
-	newPropertyNative(p);
+        newPropertyNative(p);
     }
     public Property(boolean v){
-	newPropertyNative(v);
+        newPropertyNative(v);
     }
     public Property(int v){
-	newPropertyNative(v);
+        newPropertyNative(v);
     }
     public Property(String s){
-	newPropertyNative(s);
-	} 
+        newPropertyNative(s);
+    } 
     public Property(double v){
-	newPropertyNative(v);
+        newPropertyNative(v);
     }
     //    public Property(Time t){
-    //	newPropertyNative(t);
+    //  newPropertyNative(t);
     //    }
     //    public Property(blob_t b){
-    //	newPropertyNative(b);
+    //  newPropertyNative(b);
     //    }
     
     //Add operator overrides here
