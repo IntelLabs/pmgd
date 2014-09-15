@@ -41,20 +41,20 @@ jobject JNICALL Java_Graph_get_1nodes(JNIEnv *env, jobject graph){
     NodeIterator *j_ni = new NodeIterator(j_db.get_nodes());
     Node *j_n = &(**j_ni);
 
-    //build node to return 
+    //build node to return
     jclass cls = env->FindClass("Node");
-    jmethodID cnstrctr = env->GetMethodID(cls, "<init>", 
+    jmethodID cnstrctr = env->GetMethodID(cls, "<init>",
                                           "(J)V");
     jobject cur = NULL;
-    cur = env->NewObject(cls, cnstrctr, 
+    cur = env->NewObject(cls, cnstrctr,
                          reinterpret_cast<jlong>(j_n));
 
     //create a java nodeiterator
     cls = env->FindClass("NodeIterator");
-    cnstrctr = env->GetMethodID(cls, "<init>", 
+    cnstrctr = env->GetMethodID(cls, "<init>",
                                 "(JLNode;)V");
-    jobject ni = env->NewObject(cls, cnstrctr, 
-                                reinterpret_cast<jlong>(j_ni), 
+    jobject ni = env->NewObject(cls, cnstrctr,
+                                reinterpret_cast<jlong>(j_ni),
                                 cur);
     return ni;
   }
@@ -78,7 +78,7 @@ void Java_Graph_loadGraphNative(JNIEnv *env, jobject obj,
   env->ReleaseStringUTFChars(filename, db_name);
 }
 
-void Java_Graph_addNodeNative(JNIEnv *env, jobject graph, 
+void Java_Graph_addNodeNative(JNIEnv *env, jobject graph,
                               jobject node, jstring tag){
   const char *j_tag = env->GetStringUTFChars(tag, 0);
   Graph &j_db = *(getJarvisHandle<Graph>(env,graph));
@@ -92,7 +92,7 @@ void Java_Graph_addNodeNative(JNIEnv *env, jobject graph,
 }
 
 void Java_Graph_addEdgeNative(JNIEnv *env, jobject graph,
-                              jobject edge, jobject src, 
+                              jobject edge, jobject src,
                               jobject dest, jstring tag){
   const char *j_tag = env->GetStringUTFChars(tag, 0);
   Graph &j_db = *(getJarvisHandle<Graph>(env,graph));
@@ -108,7 +108,7 @@ void Java_Graph_addEdgeNative(JNIEnv *env, jobject graph,
 }
 
 
-void Java_Graph_remove__LNode_2(JNIEnv *env, jobject graph, 
+void Java_Graph_remove__LNode_2(JNIEnv *env, jobject graph,
                                 jobject node){
   Graph &j_db = *(getJarvisHandle<Graph>(env,graph));
   Node &j_node = *(getJarvisHandle<Node>(env,node));
@@ -121,7 +121,7 @@ void Java_Graph_remove__LNode_2(JNIEnv *env, jobject graph,
 }
 
 
-void Java_Graph_remove__LEdge_2(JNIEnv *env, jobject graph, 
+void Java_Graph_remove__LEdge_2(JNIEnv *env, jobject graph,
                                 jobject edge){
   Graph &j_db = *(getJarvisHandle<Graph>(env,graph));
   Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));

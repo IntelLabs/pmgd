@@ -6,5 +6,5 @@
  */
 
 public class Filter{
-    
+
 }

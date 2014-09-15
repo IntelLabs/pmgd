@@ -28,7 +28,7 @@ jobject Java_Edge_get_1source(JNIEnv *env, jobject edge){
     Node &j_src = j_edge.get_source();
 
     jclass cls = env->FindClass("Node");
-    jmethodID cnstrctr = env->GetMethodID(cls, "<init>", 
+    jmethodID cnstrctr = env->GetMethodID(cls, "<init>",
                                           "(J)V");
     jobject src = env->NewObject(cls, cnstrctr, &j_src);
     return src;
@@ -45,17 +45,17 @@ jobject Java_Edge_get_1destination(JNIEnv *env, jobject edge){
     Node &j_dest = j_edge.get_destination();
 
     jclass cls = env->FindClass("Node");
-    jmethodID cnstrctr = env->GetMethodID(cls, "<init>", 
+    jmethodID cnstrctr = env->GetMethodID(cls, "<init>",
                                           "(J)V");
     jobject dest = env->NewObject(cls, cnstrctr, &j_dest);
     return dest;
   }catch (Exception e){
     print_exception(e);
     return NULL;
-  } 
+  }
 }
 
-jboolean Java_Edge_check_1property(JNIEnv *env , jobject edge, 
+jboolean Java_Edge_check_1property(JNIEnv *env , jobject edge,
                                    jstring str, jobject prop){
   Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
   const char *j_str = env->GetStringUTFChars(str,0);
@@ -71,7 +71,7 @@ jboolean Java_Edge_check_1property(JNIEnv *env , jobject edge,
   }
 }
 
-jobject Java_Edge_get_1property(JNIEnv *env, jobject edge, 
+jobject Java_Edge_get_1property(JNIEnv *env, jobject edge,
                                 jstring str){
   Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
   const char *j_str = env->GetStringUTFChars(str,0);
@@ -105,7 +105,7 @@ void Java_Edge_set_1property(JNIEnv *env, jobject edge,
   }
 }
 
-void Java_Edge_remove_1property(JNIEnv *env, jobject edge, 
+void Java_Edge_remove_1property(JNIEnv *env, jobject edge,
                                 jstring str){
   Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
   const char *j_str = env->GetStringUTFChars(str,0);

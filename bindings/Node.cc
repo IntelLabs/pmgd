@@ -23,7 +23,7 @@ jstring Java_Node_get_1tag(JNIEnv *env, jobject node){
 }
 
 
-jboolean Java_Node_check_1property(JNIEnv *env , jobject node, 
+jboolean Java_Node_check_1property(JNIEnv *env , jobject node,
                                    jstring str, jobject prop){
   Node &j_node = *(getJarvisHandle<Node>(env,node));
   const char *j_str = env->GetStringUTFChars(str,0);
@@ -38,7 +38,7 @@ jboolean Java_Node_check_1property(JNIEnv *env , jobject node,
     return false; //this should really throw, not return
   }
 }
-jobject Java_Node_get_1property(JNIEnv *env, jobject node, 
+jobject Java_Node_get_1property(JNIEnv *env, jobject node,
                                 jstring str){
   Node &j_node = *(getJarvisHandle<Node>(env,node));
   const char *j_str = env->GetStringUTFChars(str,0);
@@ -72,7 +72,7 @@ void Java_Node_set_1property(JNIEnv *env, jobject node,
   }
 }
 
-void Java_Node_remove_1property(JNIEnv *env, jobject node, 
+void Java_Node_remove_1property(JNIEnv *env, jobject node,
                                 jstring str){
   Node &j_node = *(getJarvisHandle<Node>(env,node));
   const char *j_str = env->GetStringUTFChars(str,0);

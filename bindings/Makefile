@@ -1,7 +1,7 @@
 ##
 # Makefile for the Jarvis Lake Java bindings
 
-#Tools.
+# Tools.
 CC := g++-4.8
 RM := rm -f
 ECHO := echo
@@ -23,7 +23,7 @@ else
 endif
 
 # Targets.
-CLASSES :=  Property Node NodeIterator Edge Transaction Graph
+CLASSES := Property Node NodeIterator Edge Transaction Graph
 JAVAFILES := $(CLASSES:%=%.java)
 CCFILES := $(CLASSES:%=%.cc)
 OBJS := $(CLASSES:%=%.o)
@@ -32,7 +32,7 @@ OBJS := $(CLASSES:%=%.o)
 CLEANFILES := libjarvis-jni.so *~
 
 # Additional places to look for include files.
-INCLUDES := -I$(O_ROOT)include  -I$(O_ROOT)/util 
+INCLUDES := -I$(O_ROOT)include -I$(O_ROOT)/util
 JAVA_INCLUDES := -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
 
 # Default optimization level.
@@ -81,12 +81,11 @@ headers: $(JAVAFILES)
 	javah -jni $(CLASSES)
 
 $(LIBRARY): $(CCFILES)
-	$(CC) $(CFLAGS)  -fPIC -c $(CCFILES) $(LDFLAGS) $(LIBS)
-	$(CC) $(CFLAGS)  -shared -o $(LIBRARY) $(OBJS) $(LDFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) -fPIC -c $(CCFILES) $(LDFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) -shared -o $(LIBRARY) $(OBJS) $(LDFLAGS) $(LIBS)
 
 test: $(LIBRARY)
 	javac $(JAVAFILES) BindingsTest.java
-
 
 # Build the Jarvis Lake library.
 lib:

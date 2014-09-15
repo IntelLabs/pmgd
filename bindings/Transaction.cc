@@ -10,7 +10,7 @@
 
 using namespace Jarvis;
 
-void Java_Transaction_startTransactionNative(JNIEnv *env, jobject tx, 
+void Java_Transaction_startTransactionNative(JNIEnv *env, jobject tx,
                                              jobject graph, jint options){
   Graph &j_db = *(getJarvisHandle<Graph>(env,graph));
   try{

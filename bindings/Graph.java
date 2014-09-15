@@ -38,7 +38,7 @@ public class Graph {
 
     public Node add_node(String tag){
         Node node = new Node(0);
-        addNodeNative(node, tag); 
+        addNodeNative(node, tag);
         return node;
     }
 
@@ -47,10 +47,10 @@ public class Graph {
         addEdgeNative(edge, src, dest, tag);
         return edge;
     }
-    public native void remove(Node n); 
+    public native void remove(Node n);
     public native void remove(Edge e);
 
-    //    public native void create_index(int node_or_edge, String tag, 
+    //    public native void create_index(int node_or_edge, String tag,
     //                             String property_id, PropertyType ptype);
 
     public native void dumpGraph();
@@ -58,10 +58,9 @@ public class Graph {
 
     private native void loadGraphNative(String db_name, int options);
     private native void addNodeNative(Node node, String tag);
-    private native void addEdgeNative(Edge edge, 
+    private native void addEdgeNative(Edge edge,
                                       Node src, Node dest, String tag);
     static {
         System.loadLibrary("jarvis-jni");
-    } 
+    }
 }
-

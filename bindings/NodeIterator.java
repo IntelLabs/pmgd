@@ -1,8 +1,8 @@
 /*
  * Corresponds to the nodeiterator.h file in Jarvis.
- * 
+ *
  * However, since Java does not allow operator overrides,
- * we cannot treat the operator itself as a 
+ * we cannot treat the operator itself as a
  *
  * Notes:
  *  - need to catch and throw exceptions up
@@ -21,7 +21,7 @@ public class NodeIterator {
     public native boolean hasNext(); //replaces the override of bool()
     public Node getNext(){
         current = nextNative();
-        return current; 
+        return current;
     }
 
     //    public native NodeIterator filter(PropertyPredicate pp);
@@ -30,7 +30,7 @@ public class NodeIterator {
 
 
     // Wrap the functions for node, so we can act on the current
-    // Because java doesn't allow overriding operators, we cannot 
+    // Because java doesn't allow overriding operators, we cannot
     //  just let them slide through to jarvis.
     public Node get_current(){
         return current;
@@ -52,6 +52,6 @@ public class NodeIterator {
         current.remove_property(name);
     }
 
-    private native Node nextNative();     
+    private native Node nextNative();
     public native void dispose();
 }

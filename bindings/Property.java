@@ -23,7 +23,7 @@ public class Property{
     }
     public Property(String s){
         newPropertyNative(s);
-    } 
+    }
     public Property(double v){
         newPropertyNative(v);
     }
@@ -33,7 +33,7 @@ public class Property{
     //    public Property(blob_t b){
     //  newPropertyNative(b);
     //    }
-    
+
     //Add operator overrides here
 
 
@@ -53,7 +53,7 @@ public class Property{
     public native double float_value();
     //    public native Time time_value();
     //    public native Blob blob_value();
-    
+
     private native void newPropertyNative();
     private native void newPropertyNative(Property p);
     private native void newPropertyNative(boolean v);
