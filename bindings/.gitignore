@@ -1,3 +1,11 @@
+Edge.h
+Graph.h
+Graph_IndexOptions.h
+Graph_OpenOptions.h
+Node.h
+NodeIterator.h
+Property.h
+Transaction.h
 *.o
 *.d
 *.class
