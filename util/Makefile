@@ -22,10 +22,9 @@ else
     O_UTIL := $O/util/
 endif
 
-# Target.
+# Targets.
 TARGET := $(O_UTIL)jarvis-util.lib
 DLTARGET := $(O_UTIL)libjarvis-util.so
-
 
 # Where the target should be installed.
 INSTALLPATH := $(O_ROOT)lib
@@ -88,17 +87,13 @@ $(TARGET): $(OBJS)
 	$(call print,AR,$@)
 	$(AR) cr $@ $(OBJS)
 
+$(DLTARGET): $(OBJS)
+	$(CC) $(CFLAGS) -shared -o $(DLTARGET) $(OBJS)
+
 clean:
 	$(call print,CLEAN)
-	$(RM) $(TARGET) $(OBJS) $(DEPS) $(CLEANFILES)
-	$(RM) $(INSTALLPATH)/$(TARGET)
-
-# Create a separate set of rules for a shared object library 
-# needed for Java/JNI bindings to jarvis
-LDFLAGS += -L/usr/lib
-LIBS := -ljsoncpp
-$(DLTARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -shared -o $(DLTARGET) *.o
+	$(RM) $(TARGET) $(DLTARGET) $(OBJS) $(DEPS) $(CLEANFILES)
+	$(RM) $(INSTALLPATH)/$(TARGET) $(INSTALLPATH)/$(DLTARGET)
 
 # If the variable $(O_UTIL) is non-empty and the corresponding
 # directory does not exist then create it.

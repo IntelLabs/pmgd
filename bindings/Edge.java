@@ -7,10 +7,11 @@
  */
 
 
-public class Edge{
+public class Edge {
     private long jarvisHandle;
 
-    public Edge(long handle){
+    public Edge(long handle)
+    {
         jarvisHandle = handle;
     }
 
@@ -23,5 +24,4 @@ public class Edge{
     //    public native PropertyIterator get_properties();
     public native void set_property(String id, Property property);
     public native void remove_property(String name);
-
 }

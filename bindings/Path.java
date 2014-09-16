@@ -4,7 +4,5 @@
  * Notes: unimplemented
  */
 
-
-public class Path{
-
+public class Path {
 }

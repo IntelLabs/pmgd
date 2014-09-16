@@ -22,7 +22,7 @@ else
     O_SRC  := $O/src/
 endif
 
-# Target.
+# Targets.
 TARGET := $(O_SRC)jarvis.lib
 DLTARGET := $(O_SRC)libjarvis.so
 
@@ -86,15 +86,13 @@ $(TARGET): $(OBJS)
 	$(call print,AR,$@)
 	$(AR) cr $@ $(OBJS)
 
-clean:
-	$(call print,CLEAN)
-	$(RM) $(TARGET) $(OBJS) $(DEPS) $(CLEANFILES)
-	$(RM) $(INSTALLPATH)/$(TARGET)
-
-# Create a separate rule for a shared object library
-# needed for Java/JNI bindings to jarvis
 $(DLTARGET): $(OBJS)
 	$(CC) $(CFLAGS) -shared -o $(DLTARGET) *.o
+
+clean:
+	$(call print,CLEAN)
+	$(RM) $(TARGET) $(DLTARGET) $(OBJS) $(DEPS) $(CLEANFILES)
+	$(RM) $(INSTALLPATH)/$(TARGET) $(INSTALLPATH)/$(DLTARGET)
 
 # If the variable $(O_SRC) is non-empty and the corresponding
 # directory does not exist then create it.

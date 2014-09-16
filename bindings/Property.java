@@ -6,35 +6,50 @@
  *  - need to catch and throw exceptions up
  */
 
-public class Property{
+public class Property {
     private long jarvisHandle;
 
-    public Property(){
+    public Property()
+    {
         newPropertyNative();
     }
-    public Property(Property p){
+
+    public Property(Property p)
+    {
         newPropertyNative(p);
     }
-    public Property(boolean v){
+
+    public Property(boolean v)
+    {
         newPropertyNative(v);
     }
-    public Property(int v){
+
+    public Property(int v)
+    {
         newPropertyNative(v);
     }
-    public Property(String s){
+
+    public Property(String s)
+    {
         newPropertyNative(s);
     }
-    public Property(double v){
+
+    public Property(double v)
+    {
         newPropertyNative(v);
     }
-    //    public Property(Time t){
-    //  newPropertyNative(t);
-    //    }
-    //    public Property(blob_t b){
-    //  newPropertyNative(b);
+
+    //    public Property(Time t)
+    //    {
+    //        newPropertyNative(t);
     //    }
 
-    //Add operator overrides here
+    //    public Property(blob_t b)
+    //    {
+    //        newPropertyNative(b);
+    //    }
+
+    // Add operator overrides here
 
 
     // Java enums are messed up. Using constants instead

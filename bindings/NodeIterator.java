@@ -13,13 +13,16 @@ public class NodeIterator {
     private long jarvisHandle;
     private Node current;
 
-    public NodeIterator(long handle, Node origin){
+    public NodeIterator(long handle, Node origin)
+    {
         jarvisHandle = handle;
         current = origin;
     }
 
-    public native boolean hasNext(); //replaces the override of bool()
-    public Node getNext(){
+    public native boolean hasNext(); // replaces the override of bool()
+
+    public Node getNext()
+    {
         current = nextNative();
         return current;
     }
@@ -32,23 +35,33 @@ public class NodeIterator {
     // Wrap the functions for node, so we can act on the current
     // Because java doesn't allow overriding operators, we cannot
     //  just let them slide through to jarvis.
-    public Node get_current(){
+    public Node get_current()
+    {
         return current;
     }
 
-    public String get_tag(){
+    public String get_tag()
+    {
         return current.get_tag();
     }
-    public boolean check_property(String property, Property result){
+
+    public boolean check_property(String property, Property result)
+    {
         return current.check_property(property, result);
     }
-    public Property get_property(String property){
+
+    public Property get_property(String property)
+    {
         return current.get_property(property);
     }
-    public void set_property(String id, Property prop){
+
+    public void set_property(String id, Property prop)
+    {
         current.set_property(id, prop);
     }
-    public void remove_property(String name){
+
+    public void remove_property(String name)
+    {
         current.remove_property(name);
     }
 

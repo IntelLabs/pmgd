@@ -9,9 +9,10 @@
 public class Node {
     private long jarvisHandle;
 
-    //Constructor must be public to satisfy JNI requirement.
-    //Must find another way to satisfy the control of node creation.
-    public Node(long handle){
+    // Constructor must be public to satisfy JNI requirement.
+    // Must find another way to satisfy the control of node creation.
+    public Node(long handle)
+    {
         jarvisHandle = handle;
     }
 

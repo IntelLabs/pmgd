@@ -5,6 +5,5 @@
  *  - need to catch and throw exceptions up
  */
 
-public class Filter{
-
+public class Filter {
 }
