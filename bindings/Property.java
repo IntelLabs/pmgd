@@ -3,49 +3,48 @@
  *
  * Notes:
  *  - Omitting time, blob as an option for property types
- *  - need to catch and throw exceptions up
  */
 
 public class Property {
     private long jarvisHandle;
     private Property(long handle) { jarvisHandle = handle; }
 
-    public Property()
+    public Property() throws Exception
     {
         newPropertyNative();
     }
 
-    public Property(Property p)
+    public Property(Property p) throws Exception
     {
         newPropertyNative(p);
     }
 
-    public Property(boolean v)
+    public Property(boolean v) throws Exception
     {
         newPropertyNative(v);
     }
 
-    public Property(int v)
+    public Property(int v) throws Exception
     {
         newPropertyNative(v);
     }
 
-    public Property(String s)
+    public Property(String s) throws Exception
     {
         newPropertyNative(s);
     }
 
-    public Property(double v)
+    public Property(double v) throws Exception
     {
         newPropertyNative(v);
     }
 
-    //    public Property(Time t)
+    //    public Property(Time t) throws Exception
     //    {
     //        newPropertyNative(t);
     //    }
 
-    //    public Property(blob_t b)
+    //    public Property(blob_t b) throws Exception
     //    {
     //        newPropertyNative(b);
     //    }
@@ -62,18 +61,18 @@ public class Property {
     public static final int t_time = 6;
     public static final int t_blob = 7;
 
-    public native int type();
-    public native boolean bool_value();
-    public native long int_value();
-    public native String string_value();
-    public native double float_value();
-    //    public native Time time_value();
-    //    public native Blob blob_value();
+    public native int type() throws Exception;
+    public native boolean bool_value() throws Exception;
+    public native long int_value() throws Exception;
+    public native String string_value() throws Exception;
+    public native double float_value() throws Exception;
+    //    public native Time time_value() throws Exception;
+    //    public native Blob blob_value() throws Exception;
 
-    private native void newPropertyNative();
-    private native void newPropertyNative(Property p);
-    private native void newPropertyNative(boolean v);
-    private native void newPropertyNative(int v);
-    private native void newPropertyNative(String s);
-    private native void newPropertyNative(double v);
+    private native void newPropertyNative() throws Exception;
+    private native void newPropertyNative(Property p) throws Exception;
+    private native void newPropertyNative(boolean v) throws Exception;
+    private native void newPropertyNative(int v) throws Exception;
+    private native void newPropertyNative(String s) throws Exception;
+    private native void newPropertyNative(double v) throws Exception;
 }
