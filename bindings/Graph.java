@@ -11,12 +11,12 @@
 public class Graph {
     private long jarvisHandle;
 
-    public enum OpenOptions { CREATE, READONLY };
-    public enum IndexOptions { NODE, EDGE };
+    public enum OpenOptions { NONE, CREATE, READONLY };
+    public enum IndexOptions { DUMMY, NODE, EDGE };
 
-    public Graph(String db_name, int options)
+    public Graph(String db_name, OpenOptions options)
     {
-        loadGraphNative(db_name, options);
+        loadGraphNative(db_name, options.ordinal());
         // Use this wrapper to allow exception catches
     }
 

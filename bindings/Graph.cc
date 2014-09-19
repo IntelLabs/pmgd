@@ -69,7 +69,7 @@ void Java_Graph_loadGraphNative(JNIEnv *env, jobject obj,
 {
     const char *db_name = env->GetStringUTFChars(filename, 0);
     try {
-        Graph *db = new Graph(db_name);
+        Graph *db = new Graph(db_name, options);
         setJarvisHandle(env, obj, db);
     }
     catch (Exception e) {

@@ -50,6 +50,8 @@ JOBJS := $(CLASSES:%=$(O_BINDINGS)%.class)
 CSRCS := $(CLASSES:%=$(O_BINDINGS)%.cc)
 COBJS := $(CLASSES:%=$(O_BINDINGS)%.o)
 
+JOBJS += $(O_BINDINGS)Graph\$$OpenOptions.class
+
 # Additional places to look for include files.
 INCLUDES := -I$(O_BINDINGS). -I../include -I../util
 JAVA_INCLUDES := -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
