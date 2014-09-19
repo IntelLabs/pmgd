@@ -19,7 +19,7 @@ void Java_Transaction_startTransactionNative(JNIEnv *env, jobject tx,
         setJarvisHandle(env, tx, j_tx);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }
 
@@ -31,6 +31,6 @@ void Java_Transaction_commit(JNIEnv *env, jobject tx)
         delete(&j_tx);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }
