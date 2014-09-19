@@ -1,3 +1,4 @@
 *.o
 *.d
 jarvis.lib
+libjarvis.so

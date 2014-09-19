@@ -1,6 +1,7 @@
 *.o
 *.d
 jarvis-util.lib
+libjarvis-util.so
 loader.cc
 loader.hh
 scanner.cc

@@ -23,10 +23,10 @@ else
 endif
 
 # Targets.
-TARGET := $(O_UTIL)jarvis-util.lib
-DLTARGET := $(O_UTIL)libjarvis-util.so
+SLIBRARY := $(O_UTIL)jarvis-util.lib
+DLIBRARY := $(O_UTIL)libjarvis-util.so
 
-# Where the target should be installed.
+# Where the targets should be installed.
 INSTALLPATH := $(O_ROOT)lib
 
 # Extra stuff to clean whose names cannot be derived from dependences.
@@ -35,7 +35,7 @@ CLEANFILES :=
 # List of source files.
 SRCS := exception.cc text.cc dump.cc load_tsv.cc load_gson.cc loader.y scanner.l
 
-# Translates source file names to object file names.
+# Translate source file names to object file names.
 OBJS := $(patsubst %.cc,$(O_UTIL)%.o, \
           $(patsubst %.y,$(O_UTIL)%.o, \
             $(patsubst %.l,$(O_UTIL)%.o, $(SRCS))))
@@ -75,25 +75,27 @@ ifneq ($(findstring s,$(MAKEFLAGS)),)
     print = @$(ECHO) -e "\033[00;34m" [$(1)] $(2)"\033[00;00m"
 endif
 
-# The default goal creates the build directory, builds the target,
-# creates the install directory, and copies the target there.
-install: $(O_UTIL) $(TARGET) $(DLTARGET)
-	$(call print,INSTALL,$(INSTALLPATH))
+# The default goal creates the build directory, builds the targets,
+# creates the install directory, and copies the targets there.
+install: $(O_UTIL) $(SLIBRARY) $(DLIBRARY)
 	$(shell if ! test -d $(INSTALLPATH); then mkdir $(INSTALLPATH); fi)
-	$(CP) $(TARGET) $(INSTALLPATH)
-	$(CP) $(DLTARGET) $(INSTALLPATH)
+	$(call print,INSTALL,$(SLIBRARY))
+	$(CP) $(SLIBRARY) $(INSTALLPATH)
+	$(call print,INSTALL,$(DLIBRARY))
+	$(CP) $(DLIBRARY) $(INSTALLPATH)
 
-$(TARGET): $(OBJS)
+$(SLIBRARY): $(OBJS)
 	$(call print,AR,$@)
 	$(AR) cr $@ $(OBJS)
 
-$(DLTARGET): $(OBJS)
-	$(CC) $(CFLAGS) -shared -o $(DLTARGET) $(OBJS)
+$(DLIBRARY): $(OBJS)
+	$(call print,AR,$@)
+	$(CC) -shared -o $(DLIBRARY) $(OBJS)
 
 clean:
 	$(call print,CLEAN)
-	$(RM) $(TARGET) $(DLTARGET) $(OBJS) $(DEPS) $(CLEANFILES)
-	$(RM) $(INSTALLPATH)/$(TARGET) $(INSTALLPATH)/$(DLTARGET)
+	$(RM) $(SLIBRARY) $(DLIBRARY) $(OBJS) $(DEPS) $(CLEANFILES)
+	$(RM) $(INSTALLPATH)/$(SLIBRARY) $(INSTALLPATH)/$(DLIBRARY)
 
 # If the variable $(O_UTIL) is non-empty and the corresponding
 # directory does not exist then create it.

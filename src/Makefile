@@ -23,10 +23,10 @@ else
 endif
 
 # Targets.
-TARGET := $(O_SRC)jarvis.lib
-DLTARGET := $(O_SRC)libjarvis.so
+SLIBRARY := $(O_SRC)jarvis.lib
+DLIBRARY := $(O_SRC)libjarvis.so
 
-# Where the target should be installed.
+# Where the targets should be installed.
 INSTALLPATH := $(O_ROOT)lib
 
 # Extra stuff to clean whose names cannot be derived from dependences.
@@ -40,7 +40,7 @@ SRCS := graph.cc GraphConfig.cc node.cc edge.cc property.cc stringid.cc \
         IndexString.cc AvlTree.cc AvlTreeIndex.cc IndexManager.cc Index.cc \
         linux.cc
 
-# Translates source file names to object file names.
+# Translate source file names to object file names.
 OBJS := $(patsubst %.cc, $(O_SRC)%.o, $(SRCS))
 
 # Additional places to look for include files.
@@ -74,25 +74,27 @@ ifneq ($(findstring s,$(MAKEFLAGS)),)
     print = @$(ECHO) -e "\033[00;34m" [$(1)] $(2)"\033[00;00m"
 endif
 
-# The default goal creates the build directory, builds the target,
-# creates the install directory, and copies the target there.
-install: $(O_SRC) $(TARGET) $(DLTARGET)
-	$(call print,INSTALL,$(INSTALLPATH))
+# The default goal creates the build directory, builds the targets,
+# creates the install directory, and copies the targets there.
+install: $(O_SRC) $(SLIBRARY) $(DLIBRARY)
 	$(shell if ! test -d $(INSTALLPATH); then mkdir $(INSTALLPATH); fi)
-	$(CP) $(TARGET) $(INSTALLPATH)
-	$(CP) $(DLTARGET) $(INSTALLPATH)
+	$(call print,INSTALL,$(SLIBRARY))
+	$(CP) $(SLIBRARY) $(INSTALLPATH)
+	$(call print,INSTALL,$(DLIBRARY))
+	$(CP) $(DLIBRARY) $(INSTALLPATH)
 
-$(TARGET): $(OBJS)
+$(SLIBRARY): $(OBJS)
 	$(call print,AR,$@)
 	$(AR) cr $@ $(OBJS)
 
-$(DLTARGET): $(OBJS)
-	$(CC) $(CFLAGS) -shared -o $(DLTARGET) *.o
+$(DLIBRARY): $(OBJS)
+	$(call print,AR,$@)
+	$(CC) -shared -o $@ $(OBJS)
 
 clean:
 	$(call print,CLEAN)
-	$(RM) $(TARGET) $(DLTARGET) $(OBJS) $(DEPS) $(CLEANFILES)
-	$(RM) $(INSTALLPATH)/$(TARGET) $(INSTALLPATH)/$(DLTARGET)
+	$(RM) $(SLIBRARY) $(DLIBRAY) $(OBJS) $(DEPS) $(CLEANFILES)
+	$(RM) $(INSTALLPATH)/$(SLIBRARY) $(INSTALLPATH)/$(DLIBRARY)
 
 # If the variable $(O_SRC) is non-empty and the corresponding
 # directory does not exist then create it.
