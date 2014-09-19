@@ -42,7 +42,7 @@ INSTALLPATH := $(O_ROOT)lib
 CLEANFILES :=
 
 # List of classes implementing the bindings.
-CLASSES := Property Node NodeIterator Edge Transaction Graph
+CLASSES := Property Node NodeIterator Edge Transaction Graph Exception
 
 # Translate source file names.
 JSRCS := $(CLASSES:%=$(O_BINDINGS)%.java)
