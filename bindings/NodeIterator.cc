@@ -23,18 +23,19 @@ jobject Java_NodeIterator_nextNative(JNIEnv *env, jobject ni)
 
         j_ni.next();
 
-        // get the head
-        Node *j_n = &(*j_ni);
-        printf("(from c) tag: %s\n", j_n->get_tag().name().c_str());
+        jobject cur;
+        if (j_ni) {
+            // get the head
+            Node *j_n = &(*j_ni);
+            printf("(from c) tag: %s\n", j_n->get_tag().name().c_str());
 
-        // build node to return
-        jclass cls = env->FindClass("Node");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-        jobject cur = NULL;
-        if(j_ni)
+            // build node to return
+            jclass cls = env->FindClass("Node");
+            jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
             cur = env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_n));
+        }
         else
-            cur = env->NewObject(cls, cnstrctr, (jlong) 0);
+            cur = NULL;
 
         return cur;
     }
