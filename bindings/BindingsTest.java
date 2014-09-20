@@ -100,7 +100,7 @@ public class BindingsTest{
 	// Do getnodes and verify by IDs that we are gettign everything
 	Transaction tx6 = new Transaction(db, false, false);
 	NodeIterator ni = db.get_nodes();
-	for(int i =1; ni.hasNext(); ni.getNext()){
+	for (int i = 1; !ni.done(); ni.next()) {
 	    rc = db.get_id(ni.get_current());
 	    System.out.printf("Node iterator(%d) returned id %d.\n", 
 			      i, rc);

@@ -1,11 +1,5 @@
 /*
- * Corresponds to the nodeiterator.h file in Jarvis.
- *
- * However, since Java does not allow operator overrides,
- * we cannot treat the operator itself as a
- *
- * Notes:
- *  - should implement an abstract class, but this provides framework
+ * Java wrapper for Jarvis NodeIterator
  */
 
 public class NodeIterator {
@@ -18,13 +12,10 @@ public class NodeIterator {
         current = origin;
     }
 
-    public native boolean hasNext(); // replaces the override of bool()
+    public boolean done() //replaces the override of bool()
+        { return current == null; }
 
-    public Node getNext()
-    {
-        current = nextNative();
-        return current;
-    }
+    public native void next();
 
     //    public native NodeIterator filter(PropertyPredicate pp);
     //    public native void process();
@@ -59,6 +50,5 @@ public class NodeIterator {
         current.remove_property(name);
     }
 
-    private native Node nextNative();
     public native void dispose();
 }

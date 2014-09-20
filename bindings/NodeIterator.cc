@@ -10,13 +10,7 @@
 
 using namespace Jarvis;
 
-jboolean Java_NodeIterator_hasNext(JNIEnv *env, jobject ni)
-{
-    NodeIterator &j_ni = *(getJarvisHandle<NodeIterator>(env, ni));
-    return j_ni;
-}
-
-jobject Java_NodeIterator_nextNative(JNIEnv *env, jobject ni)
+void Java_NodeIterator_next(JNIEnv *env, jobject ni)
 {
     try {
         NodeIterator &j_ni = *(getJarvisHandle<NodeIterator>(env, ni));
@@ -25,9 +19,8 @@ jobject Java_NodeIterator_nextNative(JNIEnv *env, jobject ni)
 
         jobject cur;
         if (j_ni) {
-            // get the head
+            // get the current node
             Node *j_n = &(*j_ni);
-            printf("(from c) tag: %s\n", j_n->get_tag().name().c_str());
 
             // build node to return
             jclass cls = env->FindClass("Node");
@@ -37,11 +30,12 @@ jobject Java_NodeIterator_nextNative(JNIEnv *env, jobject ni)
         else
             cur = NULL;
 
-        return cur;
+        jclass cls = env->GetObjectClass(ni);
+        jfieldID fid = env->GetFieldID(cls, "current", "LNode;");
+        env->SetObjectField(ni, fid, cur);
     }
     catch (Exception e) {
         JavaThrow(env, e);
-        return NULL;
     }
 }
 
