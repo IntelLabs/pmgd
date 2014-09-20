@@ -69,13 +69,13 @@ public class BindingsTest{
 	n1.set_property("Age", p_age);
 
 
-	Property p6 = new Property();
-	Property p7 = new Property();
-	if( n1.check_property("Name", p6))
-	   p7 = n1.get_property("Name");
-	System.out.printf("check returns:%s,\n get returns:%s\n",
-			  p6.string_value(), p7.string_value());
+	Property p6 = n1.get_property("Name");
+	if (p6 != null)
+	    System.out.printf(" get returns:%s\n", p6.string_value());
 	n1.remove_property("Age");
+	Property p7 = n1.get_property("Age");
+	if (p7 != null)
+	    System.out.printf("get returns:%s\n", p7.int_value());
 	tx4.commit();
 
 	// Add, check, get, and remove properties from new edge 1
@@ -86,13 +86,13 @@ public class BindingsTest{
 	e1.set_property("Count", p_count);
 
 
-	Property p8 = new Property();
-	Property p9 = new Property();
-	if( e1.check_property("Relation", p8))
-	   p9 = e1.get_property("Relation");
-	System.out.printf("check returns:%s,\n get returns:%s\n",
-			  p8.string_value(), p9.string_value());
+	Property p8 = e1.get_property("Relation");
+	if (p8 != null)
+	    System.out.printf(" get returns:%s\n", p8.string_value());
 	e1.remove_property("Count");
+	Property p9 = n1.get_property("Count");
+	if (p9 != null)
+	    System.out.printf("get returns:%s\n", p9.int_value());
 	tx5.commit();
 
 

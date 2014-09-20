@@ -15,7 +15,6 @@ public class Edge {
     public native Node get_source();
     public native Node get_destination();
 
-    public native boolean check_property(String property, Property result);
     public native Property get_property(String property);
     //    public native PropertyIterator get_properties();
     public native void set_property(String id, Property property);

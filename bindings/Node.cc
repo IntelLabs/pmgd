@@ -23,41 +23,24 @@ jstring Java_Node_get_1tag(JNIEnv *env, jobject node)
     }
 }
 
-jboolean Java_Node_check_1property(JNIEnv *env , jobject node,
-                                   jstring str, jobject prop)
-{
-    Node &j_node = *(getJarvisHandle<Node>(env, node));
-    const char *j_str = env->GetStringUTFChars(str, 0);
-    try {
-        Property *result = new Property();
-        bool ret = j_node.check_property(j_str, *result);
-        setJarvisHandle<Property>(env, prop, result); // set a return prop
-        return ret;
-    }
-    catch (Exception e) {
-        print_exception(e);
-        return false; // this should really throw, not return
-    }
-}
 
-jobject Java_Node_get_1property(JNIEnv *env, jobject node,
-                                jstring str)
+jobject Java_Node_get_1property(JNIEnv *env, jobject node, jstring str)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
     const char *j_str = env->GetStringUTFChars(str, 0);
     try {
-        Property *result = new Property();
-        *result = j_node.get_property(j_str);
+        Property result;
+        if (!j_node.check_property(j_str, result))
+            return NULL;
 
         jclass cls = env->FindClass("Property");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "()V");
-        jobject new_p = env->NewObject(cls, cnstrctr, result);
-        setJarvisHandle<Property>(env, new_p, result);
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        jobject new_p = env->NewObject(cls, cnstrctr, new Property(result));
         return new_p;
     }
     catch (Exception e) {
         print_exception(e);
-        return NULL; // empty property better?
+        return NULL;  //empty property better?
     }
 }
 

@@ -45,11 +45,6 @@ public class NodeIterator {
         return current.get_tag();
     }
 
-    public boolean check_property(String property, Property result)
-    {
-        return current.check_property(property, result);
-    }
-
     public Property get_property(String property)
     {
         return current.get_property(property);

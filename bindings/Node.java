@@ -11,7 +11,6 @@ public class Node {
     private Node(long handle) { jarvisHandle = handle; }
 
     public native String get_tag();
-    public native boolean check_property(String property, Property result);
     public native Property get_property(String property);
     //    public native PropertyIterator get_properties();
     //    public native EdgeIterator get_edges();

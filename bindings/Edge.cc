@@ -57,40 +57,23 @@ jobject Java_Edge_get_1destination(JNIEnv *env, jobject edge)
     }
 }
 
-jboolean Java_Edge_check_1property(JNIEnv *env , jobject edge,
-                                   jstring str, jobject prop)
-{
-    Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
-    const char *j_str = env->GetStringUTFChars(str, 0);
-    try {
-        Property *result = new Property();
-        bool ret = j_edge.check_property(j_str, *result);
-        setJarvisHandle<Property>(env, prop, result); // set a return prop
-        return ret;
-    }
-    catch (Exception e) {
-        print_exception(e);
-        return false; // this should really throw, not return
-    }
-}
-
 jobject Java_Edge_get_1property(JNIEnv *env, jobject edge, jstring str)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     const char *j_str = env->GetStringUTFChars(str, 0);
     try {
-        Property *result = new Property();
-        *result = j_edge.get_property(j_str);
+        Property result;
+        if (!j_edge.check_property(j_str, result))
+            return NULL;
 
         jclass cls = env->FindClass("Property");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "()V");
-        jobject new_p = env->NewObject(cls, cnstrctr, result);
-        setJarvisHandle<Property>(env, new_p, result);
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        jobject new_p = env->NewObject(cls, cnstrctr, new Property(result));
         return new_p;
     }
     catch (Exception e) {
         print_exception(e);
-        return NULL; // empty property better?
+        return NULL;  //empty property better?
     }
 }
 

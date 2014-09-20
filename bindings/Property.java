@@ -8,6 +8,7 @@
 
 public class Property {
     private long jarvisHandle;
+    private Property(long handle) { jarvisHandle = handle; }
 
     public Property()
     {
