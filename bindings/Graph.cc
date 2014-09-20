@@ -41,18 +41,22 @@ jobject JNICALL Java_Graph_get_1nodes(JNIEnv *env, jobject graph)
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     try {
         NodeIterator *j_ni = new NodeIterator(j_db.get_nodes());
-        Node *j_n = &(**j_ni);
+        jobject cur;
 
-        // build node to return
-        jclass cls = env->FindClass("Node");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-        jobject cur = NULL;
-        cur = env->NewObject(cls, cnstrctr,
-                             reinterpret_cast<jlong>(j_n));
+        if (*j_ni) {
+            Node *j_n = &(**j_ni);
+
+            // build node to return
+            jclass cls = env->FindClass("Node");
+            jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+            cur = env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_n));
+        }
+        else
+            cur = NULL;
 
         // create a java nodeiterator
-        cls = env->FindClass("NodeIterator");
-        cnstrctr = env->GetMethodID(cls, "<init>", "(JLNode;)V");
+        jclass cls = env->FindClass("NodeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLNode;)V");
         jobject ni = env->NewObject(cls, cnstrctr,
                                     reinterpret_cast<jlong>(j_ni),
                                     cur);
