@@ -36,19 +36,8 @@ public class Graph {
     //    public native PathIterator get_paths(Node a, bool depth_first);
     //    public native PathIterator get_paths(Node a, Node b, bool depth_first);
 
-    public Node add_node(String tag)
-    {
-        Node node = new Node(0);
-        addNodeNative(node, tag);
-        return node;
-    }
-
-    public Edge add_edge(Node src, Node dest, String tag)
-    {
-        Edge edge = new Edge(0);
-        addEdgeNative(edge, src, dest, tag);
-        return edge;
-    }
+    public native Node add_node(String tag);
+    public native Edge add_edge(Node src, Node dest, String tag);
 
     public native void remove(Node n);
     public native void remove(Edge e);
@@ -60,9 +49,7 @@ public class Graph {
 
 
     private native void loadGraphNative(String db_name, int options);
-    private native void addNodeNative(Node node, String tag);
-    private native void addEdgeNative(Edge edge,
-                                      Node src, Node dest, String tag);
+
     static {
         System.loadLibrary("jarvis-jni");
     }

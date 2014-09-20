@@ -13,7 +13,7 @@ public class NodeIterator {
     private long jarvisHandle;
     private Node current;
 
-    public NodeIterator(long handle, Node origin)
+    private NodeIterator(long handle, Node origin)
     {
         jarvisHandle = handle;
         current = origin;

@@ -9,11 +9,7 @@
 
 public class Edge {
     private long jarvisHandle;
-
-    public Edge(long handle)
-    {
-        jarvisHandle = handle;
-    }
+    private Edge(long handle) { jarvisHandle = handle; }
 
     public native String get_tag();
     public native Node get_source();

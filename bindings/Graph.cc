@@ -78,23 +78,24 @@ void Java_Graph_loadGraphNative(JNIEnv *env, jobject obj,
     env->ReleaseStringUTFChars(filename, db_name);
 }
 
-void Java_Graph_addNodeNative(JNIEnv *env, jobject graph, 
-                              jobject node, jstring tag)
+jobject JNICALL Java_Graph_add_1node(JNIEnv *env, jobject graph, jstring tag)
 {
     const char *j_tag = env->GetStringUTFChars(tag, 0);
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     try {
         Node &j_node = j_db.add_node(j_tag);
-        setJarvisHandle(env, node, &j_node);
+        jclass cls = env->FindClass("Node");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(&j_node));
     }
     catch (Exception e) {
         print_exception(e);
+        return NULL;
     }
 }
 
-void Java_Graph_addEdgeNative(JNIEnv *env, jobject graph,
-                              jobject edge, jobject src,
-                              jobject dest, jstring tag)
+jobject JNICALL Java_Graph_add_1edge(JNIEnv *env, jobject graph,
+                                     jobject src, jobject dest, jstring tag)
 {
     const char *j_tag = env->GetStringUTFChars(tag, 0);
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
@@ -102,10 +103,13 @@ void Java_Graph_addEdgeNative(JNIEnv *env, jobject graph,
     Node &j_dest = *(getJarvisHandle<Node>(env, dest));
     try {
         Edge &j_edge = j_db.add_edge(j_src, j_dest, j_tag);
-        setJarvisHandle(env, edge, &j_edge);
+        jclass cls = env->FindClass("Edge");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(&j_edge));
     }
     catch (Exception e) {
         print_exception(e);
+        return NULL;
     }
 }
 
