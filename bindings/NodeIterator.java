@@ -50,6 +50,12 @@ public class NodeIterator {
         return current.get_property(property);
     }
 
+    public PropertyIterator get_properties() throws Exception
+    {
+        null_check("get_properties");
+        return current.get_properties();
+    }
+
     public void set_property(String id, Property prop) throws Exception
     {
         null_check("set_property");

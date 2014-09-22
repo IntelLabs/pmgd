@@ -6,6 +6,7 @@ Graph_OpenOptions.h
 Node.h
 NodeIterator.h
 Property.h
+PropertyIterator.h
 Transaction.h
 *.o
 *.d

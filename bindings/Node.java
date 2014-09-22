@@ -11,7 +11,7 @@ public class Node {
 
     public native String get_tag() throws Exception;
     public native Property get_property(String property) throws Exception;
-    //    public native PropertyIterator get_properties();
+    public native PropertyIterator get_properties();
     //    public native EdgeIterator get_edges();
     //    public native EdgeIterator get_edges(Direction dir);
     //    public native EdgeIterator get_edges(String tag);

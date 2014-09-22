@@ -44,6 +44,23 @@ jobject Java_Node_get_1property(JNIEnv *env, jobject node, jstring str)
     }
 }
 
+jobject Java_Node_get_1properties(JNIEnv *env, jobject node)
+{
+    Node &j_node = *(getJarvisHandle<Node>(env, node));
+    try {
+        PropertyIterator *j_pi = new PropertyIterator(j_node.get_properties());
+
+        // create a Java PropertyIterator
+        jclass cls = env->FindClass("PropertyIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_pi));
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
 void Java_Node_set_1property(JNIEnv *env, jobject node,
                              jstring str, jobject prop)
 {

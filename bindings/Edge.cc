@@ -77,6 +77,23 @@ jobject Java_Edge_get_1property(JNIEnv *env, jobject edge, jstring str)
     }
 }
 
+jobject Java_Edge_get_1properties(JNIEnv *env, jobject edge)
+{
+    Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
+    try {
+        PropertyIterator *j_pi = new PropertyIterator(j_edge.get_properties());
+
+        // create a Java PropertyIterator
+        jclass cls = env->FindClass("PropertyIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_pi));
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
 void Java_Edge_set_1property(JNIEnv *env, jobject edge,
                              jstring str, jobject prop)
 {

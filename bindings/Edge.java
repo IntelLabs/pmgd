@@ -1,10 +1,6 @@
 /*
  * Corresponds to the edge.h file in Jarvis.
- *
- * Notes:
- *  - need to implement iterators to get properties working
  */
-
 
 public class Edge {
     private long jarvisHandle;
@@ -15,7 +11,7 @@ public class Edge {
     public native Node get_destination() throws Exception;
 
     public native Property get_property(String property) throws Exception;
-    //    public native PropertyIterator get_properties();
+    public native PropertyIterator get_properties();
     public native void set_property(String id, Property property) throws Exception;
     public native void remove_property(String name) throws Exception;
 }
