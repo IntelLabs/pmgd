@@ -102,8 +102,31 @@ public class BindingsTest{
 	NodeIterator ni = db.get_nodes();
 	for (int i = 1; !ni.done(); ni.next()) {
 	    rc = db.get_id(ni.get_current());
-	    System.out.printf("Node iterator(%d) returned id %d.\n", 
-			      i, rc);
+            System.out.printf("Node iterator(%d), id %d #%s:\n",
+                              i, rc, ni.get_tag());
+            for (PropertyIterator pi = ni.get_properties(); !pi.done(); pi.next()) {
+                System.out.printf("  %s [%d] ", pi.id(), pi.type());
+                switch (pi.type()) {
+                    case Property.t_novalue:
+                        break;
+                    case Property.t_boolean:
+                        System.out.printf("%s", pi.bool_value() ? "T" : "F");
+                        break;
+                    case Property.t_integer:
+                        System.out.printf("%d", pi.int_value());
+                        break;
+                    case Property.t_string:
+                        System.out.printf("%s", pi.string_value());
+                        break;
+                    case Property.t_float:
+                        System.out.printf("%f", pi.float_value());
+                        break;
+                    default:
+                        System.out.printf("?");
+                        break;
+                }
+                System.out.printf("\n");
+            }
 	    i++;
 	}
 	tx6.commit();
