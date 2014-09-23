@@ -26,6 +26,4 @@ public class Node {
     //    public native EdgeIterator get_edges(Direction dir, String tag);
     public native void set_property(String id, Property prop);
     public native void remove_property(String name);
-
-    public native void dispose();
 }
