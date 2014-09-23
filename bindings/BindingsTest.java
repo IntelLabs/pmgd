@@ -129,6 +129,36 @@ public class BindingsTest{
             }
 	    i++;
 	}
+	EdgeIterator ei = db.get_edges();
+	for (int i = 1; !ei.done(); ei.next()) {
+	    rc = db.get_id(ei.get_current());
+            System.out.printf("Edge iterator(%d), id %d #%s:\n",
+                              i, rc, ei.get_tag());
+            for (PropertyIterator pi = ei.get_properties(); !pi.done(); pi.next()) {
+                System.out.printf("  %s [%d] ", pi.id(), pi.type());
+                switch (pi.type()) {
+                    case Property.t_novalue:
+                        break;
+                    case Property.t_boolean:
+                        System.out.printf("%s", pi.bool_value() ? "T" : "F");
+                        break;
+                    case Property.t_integer:
+                        System.out.printf("%d", pi.int_value());
+                        break;
+                    case Property.t_string:
+                        System.out.printf("%s", pi.string_value());
+                        break;
+                    case Property.t_float:
+                        System.out.printf("%f", pi.float_value());
+                        break;
+                    default:
+                        System.out.printf("?");
+                        break;
+                }
+                System.out.printf("\n");
+            }
+	    i++;
+	}
 	tx6.commit();
 
 	//Dump it out for verification purposes
