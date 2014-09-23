@@ -42,7 +42,7 @@ INSTALLPATH := $(O_ROOT)lib
 CLEANFILES :=
 
 # List of classes implementing the bindings.
-CLASSES := Property PropertyIterator Node NodeIterator Edge \
+CLASSES := Property PropertyIterator Node NodeIterator Edge EdgeIterator \
            Transaction Graph Exception
 
 # Translate source file names.

@@ -68,6 +68,25 @@ jobject JNICALL Java_Graph_get_1nodes(JNIEnv *env, jobject graph)
     }
 }
 
+jobject JNICALL Java_Graph_get_1edges(JNIEnv *env, jobject graph)
+{
+    Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
+
+    try {
+        EdgeIterator *j_ei = new EdgeIterator(j_db.get_edges());
+
+        // create a Java EdgeIterator
+        jclass cls = env->FindClass("EdgeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_ei));
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+
 void Java_Graph_loadGraphNative(JNIEnv *env, jobject obj,
                                 jstring filename, jint options)
 {

@@ -1,4 +1,5 @@
 Edge.h
+EdgeIterator.h
 Exception.h
 Graph.h
 Graph_IndexOptions.h

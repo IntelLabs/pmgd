@@ -26,7 +26,7 @@ public class Graph {
     //    public native NodeIterator get_nodes(String tag,
     //                                         PropertyPredicate ppred,
     //                                         bool reverse);
-    //    public native EdgeIterator get_edges();
+    public native EdgeIterator get_edges() throws Exception;
     //    public native EdgeIterator get_edges(String tag);
     //    public native EdgeIterator get_edges(String tag,
     //                                         PropertyPredicate ppred,
