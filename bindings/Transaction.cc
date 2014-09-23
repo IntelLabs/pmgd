@@ -29,8 +29,16 @@ void Java_Transaction_commit(JNIEnv *env, jobject tx)
     try {
         j_tx.commit();
         delete(&j_tx);
+        setJarvisHandle(env, tx, static_cast<Transaction *>(NULL));
     }
     catch (Exception e) {
         JavaThrow(env, e);
     }
+}
+
+void Java_Transaction_abort(JNIEnv *env, jobject tx)
+{
+    Transaction *j_tx = getJarvisHandle<Transaction>(env, tx);
+    delete j_tx;
+    setJarvisHandle(env, tx, static_cast<Transaction *>(NULL));
 }

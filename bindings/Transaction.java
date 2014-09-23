@@ -21,6 +21,9 @@ public class Transaction {
     }
 
     public native void commit();
+    public native void abort();
+    public void finalize() { abort(); }
+
     private native void startTransactionNative(Graph db, int options)
                             throws Exception;
 }
