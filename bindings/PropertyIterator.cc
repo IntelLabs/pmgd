@@ -114,4 +114,5 @@ void Java_PropertyIterator_dispose(JNIEnv *env, jobject pi)
 {
     PropertyIterator *j_pi = getJarvisHandle<PropertyIterator>(env, pi);
     delete j_pi;
+    setJarvisHandle(env, pi, static_cast<PropertyIterator *>(NULL));
 }

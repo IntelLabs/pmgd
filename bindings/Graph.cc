@@ -229,6 +229,13 @@ void Java_Graph_remove__LEdge_2(JNIEnv *env, jobject graph, jobject edge)
     }
 }
 
+void Java_Graph_dispose(JNIEnv *env, jobject graph)
+{
+    Graph *j_db = getJarvisHandle<Graph>(env, graph);
+    delete j_db;
+    setJarvisHandle(env, graph, static_cast<Graph *>(NULL));
+}
+
 jobject new_java_object(JNIEnv *env, const char *name, void *obj)
 {
     jclass cls = env->FindClass(name);

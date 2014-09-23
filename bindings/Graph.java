@@ -46,6 +46,8 @@ public class Graph {
     //                                    String property_id, PropertyType ptype);
 
     private native void loadGraphNative(String db_name, int options);
+    public void finalize() { dispose(); }
+    public native void dispose();
 
     static {
         System.loadLibrary("jarvis-jni");

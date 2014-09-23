@@ -68,5 +68,6 @@ public class NodeIterator {
         current.remove_property(name);
     }
 
+    public void finalize() { dispose(); }
     public native void dispose();
 }

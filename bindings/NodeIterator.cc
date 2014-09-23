@@ -38,4 +38,5 @@ void Java_NodeIterator_dispose(JNIEnv *env, jobject ni)
 {
     NodeIterator *j_ni = getJarvisHandle<NodeIterator>(env, ni);
     delete j_ni;
+    setJarvisHandle(env, ni, static_cast<NodeIterator *>(NULL));
 }

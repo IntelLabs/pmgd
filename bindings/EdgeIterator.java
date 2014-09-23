@@ -20,5 +20,7 @@ public class EdgeIterator {
     public native PropertyIterator get_properties() throws Exception;
     public native void set_property(String id, Property prop) throws Exception;
     public native void remove_property(String name) throws Exception;
+
+    public void finalize() { dispose(); }
     public native void dispose();
 }

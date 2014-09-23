@@ -19,5 +19,7 @@ public class PropertyIterator {
     public native long int_value() throws Exception;
     public native String string_value() throws Exception;
     public native double float_value() throws Exception;
+
+    public void finalize() { dispose(); }
     public native void dispose();
 }

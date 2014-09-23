@@ -138,4 +138,5 @@ void JNICALL Java_EdgeIterator_dispose(JNIEnv *env, jobject ei)
 {
     EdgeIterator *j_ei = getJarvisHandle<EdgeIterator>(env, ei);
     delete j_ei;
+    setJarvisHandle(env, ei, static_cast<EdgeIterator *>(NULL));
 }

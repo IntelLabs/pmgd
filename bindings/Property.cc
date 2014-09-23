@@ -147,3 +147,10 @@ void Java_Property_newPropertyNative__D(JNIEnv *env, jobject prop,
         JavaThrow(env, e);
     }
 }
+
+void Java_Property_dispose(JNIEnv *env, jobject prop)
+{
+    Property *j_prop = getJarvisHandle<Property>(env, prop);
+    delete j_prop;
+    setJarvisHandle(env, prop, static_cast<Property *>(NULL));
+}

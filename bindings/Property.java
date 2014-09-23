@@ -75,4 +75,7 @@ public class Property {
     private native void newPropertyNative(int v) throws Exception;
     private native void newPropertyNative(String s) throws Exception;
     private native void newPropertyNative(double v) throws Exception;
+
+    public void finalize() { dispose(); }
+    public native void dispose();
 }
