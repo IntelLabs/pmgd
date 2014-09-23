@@ -5,6 +5,7 @@ Graph.h
 Graph_IndexOptions.h
 Graph_OpenOptions.h
 Node.h
+Node_Direction.h
 NodeIterator.h
 Property.h
 PropertyIterator.h

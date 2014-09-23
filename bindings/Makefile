@@ -52,6 +52,7 @@ CSRCS := $(CLASSES:%=$(O_BINDINGS)%.cc)
 COBJS := $(CLASSES:%=$(O_BINDINGS)%.o)
 
 JOBJS += $(O_BINDINGS)Graph\$$OpenOptions.class
+JOBJS += $(O_BINDINGS)Node\$$Direction.class
 
 # Additional places to look for include files.
 INCLUDES := -I$(O_BINDINGS). -I../include -I../util

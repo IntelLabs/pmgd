@@ -61,6 +61,87 @@ jobject Java_Node_get_1properties(JNIEnv *env, jobject node)
     }
 }
 
+jobject JNICALL Java_Node_get_1edges__(JNIEnv *env, jobject node)
+{
+    Node &j_node = *(getJarvisHandle<Node>(env, node));
+    try {
+        EdgeIterator *j_ei = new EdgeIterator(j_node.get_edges());
+
+        // create a Java EdgeIterator
+        jclass cls = env->FindClass("EdgeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_ei));
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+jobject JNICALL Java_Node_get_1edges__LNode_Direction_2(JNIEnv *env,
+                    jobject node, jobject dir)
+{
+    Node &j_node = *(getJarvisHandle<Node>(env, node));
+    jclass cls = env->GetObjectClass(dir);
+    jmethodID ordinal = env->GetMethodID(cls, "ordinal", "()V");
+    int j_dir = env->CallIntMethod(dir, ordinal);
+    try {
+        EdgeIterator *j_ei = new EdgeIterator(j_node.get_edges(Direction(j_dir)));
+
+        // create a Java EdgeIterator
+        jclass cls = env->FindClass("EdgeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_ei));
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+jobject JNICALL Java_Node_get_1edges__Ljava_lang_String_2(JNIEnv *env,
+                    jobject node, jstring tag)
+{
+    Node &j_node = *(getJarvisHandle<Node>(env, node));
+    const char *j_tag = env->GetStringUTFChars(tag, 0);
+    try {
+        EdgeIterator *j_ei = new EdgeIterator(j_node.get_edges(j_tag));
+
+        // create a Java EdgeIterator
+        jclass cls = env->FindClass("EdgeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_ei));
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+jobject JNICALL Java_Node_get_1edges__LNode_Direction_2Ljava_lang_String_2
+    (JNIEnv *env, jobject node, jobject dir, jstring tag)
+{
+    Node &j_node = *(getJarvisHandle<Node>(env, node));
+    jclass cls = env->GetObjectClass(dir);
+    jmethodID ordinal = env->GetMethodID(cls, "ordinal", "()V");
+    int j_dir = env->CallIntMethod(dir, ordinal);
+    const char *j_tag = env->GetStringUTFChars(tag, 0);
+    try {
+        EdgeIterator *j_ei = new EdgeIterator(j_node.get_edges(Direction(j_dir), j_tag));
+
+        // create a Java EdgeIterator
+        jclass cls = env->FindClass("EdgeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_ei));
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+
+
 void Java_Node_set_1property(JNIEnv *env, jobject node,
                              jstring str, jobject prop)
 {
