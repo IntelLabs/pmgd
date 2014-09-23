@@ -36,7 +36,7 @@ jint Java_Graph_get_1id__LEdge_2(JNIEnv *env, jobject graph, jobject edge)
     return j_db.get_id(j_edge);
 }
 
-jobject JNICALL Java_Graph_get_1nodes(JNIEnv *env, jobject graph)
+jobject JNICALL Java_Graph_get_1nodes__(JNIEnv *env, jobject graph)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     try {
@@ -68,7 +68,79 @@ jobject JNICALL Java_Graph_get_1nodes(JNIEnv *env, jobject graph)
     }
 }
 
-jobject JNICALL Java_Graph_get_1edges(JNIEnv *env, jobject graph)
+
+jobject JNICALL Java_Graph_get_1nodes__Ljava_lang_String_2(JNIEnv *env,
+                    jobject graph, jstring tag)
+{
+    Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
+    const char *j_tag = env->GetStringUTFChars(tag, 0);
+    try {
+        NodeIterator *j_ni = new NodeIterator(j_db.get_nodes(j_tag));
+        jobject cur;
+
+        if (*j_ni) {
+            Node *j_n = &(**j_ni);
+
+            // build node to return
+            jclass cls = env->FindClass("Node");
+            jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+            cur = env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_n));
+        }
+        else
+            cur = NULL;
+
+        // create a java nodeiterator
+        jclass cls = env->FindClass("NodeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLNode;)V");
+        jobject ni = env->NewObject(cls, cnstrctr,
+                                    reinterpret_cast<jlong>(j_ni),
+                                    cur);
+        return ni;
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+
+jobject JNICALL Java_Graph_get_1nodes__Ljava_lang_String_2LPropertyPredicate_2Z
+    (JNIEnv *env, jobject graph, jstring tag, jobject pp, jboolean reverse)
+{
+    Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
+    const char *j_tag = env->GetStringUTFChars(tag, 0);
+    PropertyPredicate &j_pp = *(getJarvisHandle<PropertyPredicate>(env, pp));
+    try {
+        NodeIterator *j_ni = new NodeIterator(j_db.get_nodes(j_tag, j_pp, reverse));
+        jobject cur;
+
+        if (*j_ni) {
+            Node *j_n = &(**j_ni);
+
+            //build node to return
+            jclass cls = env->FindClass("Node");
+            jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+            cur = env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_n));
+        }
+        else
+            cur = NULL;
+
+        //create a java nodeiterator
+        jclass cls = env->FindClass("NodeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLNode;)V");
+        jobject ni = env->NewObject(cls, cnstrctr,
+                                    reinterpret_cast<jlong>(j_ni),
+                                    cur);
+        return ni;
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+
+jobject JNICALL Java_Graph_get_1edges__(JNIEnv *env, jobject graph)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
 
@@ -86,6 +158,44 @@ jobject JNICALL Java_Graph_get_1edges(JNIEnv *env, jobject graph)
     }
 }
 
+jobject JNICALL Java_Graph_get_1edges__Ljava_lang_String_2(JNIEnv *env,
+                    jobject graph, jstring tag)
+{
+    Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
+    const char *j_tag = env->GetStringUTFChars(tag, 0);
+    try {
+        EdgeIterator *j_ei = new EdgeIterator(j_db.get_edges(j_tag));
+
+        // create a Java EdgeIterator
+        jclass cls = env->FindClass("EdgeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_ei));
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+jobject JNICALL Java_Graph_get_1edges__Ljava_lang_String_2LPropertyPredicate_2Z
+    (JNIEnv *env, jobject graph, jstring tag, jobject pp, jboolean reverse)
+{
+    Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
+    const char *j_tag = env->GetStringUTFChars(tag, 0);
+    PropertyPredicate &j_pp = *(getJarvisHandle<PropertyPredicate>(env, pp));
+    try {
+        EdgeIterator *j_ei = new EdgeIterator(j_db.get_edges(j_tag, j_pp, reverse));
+
+        // create a Java EdgeIterator
+        jclass cls = env->FindClass("EdgeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
+        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_ei));
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
 
 void Java_Graph_loadGraphNative(JNIEnv *env, jobject obj,
                                 jstring filename, jint options)
