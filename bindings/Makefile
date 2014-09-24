@@ -29,7 +29,7 @@ CCFILES := $(CLASSES:%=%.cc)
 OBJS := $(CLASSES:%=%.o)
 
 # Extra stuff to clean whose names cannot be derived from dependences.
-CLEANFILES := libjarvis-jni.so *~
+CLEANFILES := libjarvis-jni.so
 
 # Additional places to look for include files.
 INCLUDES := -I$(O_ROOT)include -I$(O_ROOT)/util
