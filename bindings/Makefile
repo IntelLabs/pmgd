@@ -43,7 +43,7 @@ CLEANFILES :=
 
 # List of classes implementing the bindings.
 CLASSES := Property PropertyIterator Node NodeIterator Edge EdgeIterator \
-           Transaction Graph Exception
+           Transaction Graph Exception PropertyPredicate
 
 # Translate source file names.
 JSRCS := $(CLASSES:%=$(O_BINDINGS)%.java)
@@ -53,6 +53,7 @@ COBJS := $(CLASSES:%=$(O_BINDINGS)%.o)
 
 JOBJS += $(O_BINDINGS)Graph\$$OpenOptions.class
 JOBJS += $(O_BINDINGS)Node\$$Direction.class
+JOBJS += $(O_BINDINGS)PropertyPredicate\$$op_t.class
 
 # Additional places to look for include files.
 INCLUDES := -I$(O_BINDINGS). -I../include -I../util

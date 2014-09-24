@@ -1,10 +1,8 @@
 /*
- * Corresponds to the Property.h file in Jarvis.
+ * Java wrapper for Jarvis PropertyPredicate
  *
- * Notes:
- *  - Omitting time, blob as an option for property types
- *  - Stubs are just in place, need to be built up for filter
- *  - need to catch and throw exceptions up
+ * This object is created from Java and passed in
+ * to Jarvis functions that use it. It does not persist in Jarvis.
  */
 
 public class PropertyPredicate {
@@ -14,30 +12,21 @@ public class PropertyPredicate {
                        gele, gelt, gtle, gtlt };
 
     public PropertyPredicate()
-    {
-        genericPropertyPredicateNative(0, null, null, null, null);
-    }
+        { newPropertyPredicateNative(); }
+    public PropertyPredicate(String name)
+        { newPropertyPredicateNative(name); }
+    public PropertyPredicate(String name, op_t op, Property v)
+        { newPropertyPredicateNative(name, op.ordinal(), v); }
+    public PropertyPredicate(String name, op_t op, Property v1, Property v2)
+        { newPropertyPredicateNative(name, op.ordinal(), v1, v2); }
 
-    public PropertyPredicate(String i)
-    {
-        genericPropertyPredicateNative(1, i, null, null, null);
-    }
+    private native void newPropertyPredicateNative();
+    private native void newPropertyPredicateNative(String name);
+    private native void newPropertyPredicateNative(String name, int op,
+                                                   Property v);
+    private native void newPropertyPredicateNative(String name, int op,
+                                                   Property v1, Property v2);
 
-    public PropertyPredicate(String i, op_t o, Property v)
-    {
-        genericPropertyPredicateNative(3, i, o, v, null);
-    }
-
-    public PropertyPredicate(String i, op_t o, Property v1, Property v2)
-    {
-        genericPropertyPredicateNative(3, i, o, v1, v2);
-    }
-
-    // Add operator overrides here
-
-    private native void genericPropertyPredicateNative(int count,
-                                                       String i,
-                                                       op_t o,
-                                                       Property v1,
-                                                       Property v2);
+    public void finalize() { dispose(); }
+    public native void dispose();
 }

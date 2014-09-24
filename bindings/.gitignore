@@ -9,6 +9,8 @@ Node_Direction.h
 NodeIterator.h
 Property.h
 PropertyIterator.h
+PropertyPredicate.h
+PropertyPredicate_op_t.h
 Transaction.h
 *.o
 *.d
