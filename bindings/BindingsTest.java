@@ -62,12 +62,21 @@ public class BindingsTest{
 	System.out.printf("The string value of this is: %s.\n",
 			  p4.string_value());
 
-	// Add, check, get, and remove properties from new node 1
+	// Add, check, get, and remove properties from new nodes
 	Transaction tx4 = new Transaction(db, false, false);
 	Property p_name = new Property("katelin");
 	Property p_age = new Property(26);
 	n1.set_property("Name", p_name);
 	n1.set_property("Age", p_age);
+
+	n2.set_property("Name", new Property("philip"));
+	n2.set_property("Age", new Property(52));
+
+	Node n3 = db.add_node("myTag2");
+	n3.set_property("Name", new Property("alain"));
+
+	Node n4 = db.add_node("myTag2");
+	n4.set_property("Name", new Property("vishakha"));
 
 
 	Property p6 = n1.get_property("Name");
@@ -98,7 +107,7 @@ public class BindingsTest{
 
 
 	// Do getnodes and verify by IDs that we are gettign everything
-	Transaction tx6 = new Transaction(db, false, false);
+	Transaction tx6 = new Transaction(db, false, true);
 	NodeIterator ni = db.get_nodes();
 	for (int i = 1; !ni.done(); ni.next()) {
 	    rc = db.get_id(ni.get_current());
@@ -159,7 +168,37 @@ public class BindingsTest{
             }
 	    i++;
 	}
-	tx6.commit();
+
+        ni = db.get_nodes(null, new PropertyPredicate("Name"), false);
+        for ( ; !ni.done(); ni.next())
+            System.out.printf("Node %d has Name\n", db.get_id(ni.get_current()));
+
+        ni = db.get_nodes(null, new PropertyPredicate("Age"), false);
+        for ( ; !ni.done(); ni.next())
+            System.out.printf("Node %d has Age\n", db.get_id(ni.get_current()));
+
+        System.out.printf("Nodes with name > m\n");
+        ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.op_t.ge, new Property("m")), false);
+        for ( ; !ni.done(); ni.next())
+            System.out.printf("Node %d: %s\n",
+                    db.get_id(ni.get_current()),
+                    ni.get_property("Name").string_value());
+
+        System.out.printf("Nodes with name > f and name < s\n");
+        ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.op_t.gtlt, new Property("f"), new Property("s")), false);
+        for ( ; !ni.done(); ni.next())
+            System.out.printf("Node %d: %s\n",
+                    db.get_id(ni.get_current()),
+                    ni.get_property("Name").string_value());
+
+        System.out.printf("Nodes with tag myTag2 and name > a and name < s\n");
+        ni = db.get_nodes("myTag2", new PropertyPredicate("Name", PropertyPredicate.op_t.gtlt, new Property("a"), new Property("s")), false);
+        for ( ; !ni.done(); ni.next())
+            System.out.printf("Node %d: %s\n",
+                    db.get_id(ni.get_current()),
+                    ni.get_property("Name").string_value());
+
+	tx6.abort();
 
 	//Dump it out for verification purposes
 	Transaction tx = new Transaction(db, false, true);
