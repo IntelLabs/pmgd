@@ -75,9 +75,13 @@ public class BindingsTest{
 	Node n3 = db.add_node("myTag2");
 	n3.set_property("Name", new Property("alain"));
 
-	Node n4 = db.add_node("myTag2");
+	Node n4 = db.add_node(null);
 	n4.set_property("Name", new Property("vishakha"));
 
+	Edge e2 = db.add_edge(n1, n3, "myTag3");
+	Edge e3 = db.add_edge(n4, n1, null);
+	Edge e4 = db.add_edge(n3, n2, null);
+	Edge e5 = db.add_edge(n4, n2, "myTag3");
 
 	Property p6 = n1.get_property("Name");
 	if (p6 != null)
@@ -111,8 +115,8 @@ public class BindingsTest{
 	NodeIterator ni = db.get_nodes();
 	for (int i = 1; !ni.done(); ni.next()) {
 	    rc = db.get_id(ni.get_current());
-            System.out.printf("Node iterator(%d), id %d #%s:\n",
-                              i, rc, ni.get_tag());
+            System.out.printf("Node iterator(%d), id %d%s:\n",
+                              i, rc, tag_text(ni.get_tag()));
             for (PropertyIterator pi = ni.get_properties(); !pi.done(); pi.next()) {
                 System.out.printf("  %s [%d] ", pi.id(), pi.type());
                 switch (pi.type()) {
@@ -141,8 +145,8 @@ public class BindingsTest{
 	EdgeIterator ei = db.get_edges();
 	for (int i = 1; !ei.done(); ei.next()) {
 	    rc = db.get_id(ei.get_current());
-            System.out.printf("Edge iterator(%d), id %d #%s:\n",
-                              i, rc, ei.get_tag());
+            System.out.printf("Edge iterator(%d), id %d%s:\n",
+                              i, rc, tag_text(ei.get_tag()));
             for (PropertyIterator pi = ei.get_properties(); !pi.done(); pi.next()) {
                 System.out.printf("  %s [%d] ", pi.id(), pi.type());
                 switch (pi.type()) {
@@ -198,16 +202,108 @@ public class BindingsTest{
                     db.get_id(ni.get_current()),
                     ni.get_property("Name").string_value());
 
+        System.out.printf("All edges to/from node 1:");
+        for (ei = n1.get_edges(); !ei.done(); ei.next())
+            System.out.printf(" %d", db.get_id(ei.get_current()));
+        System.out.printf("\n");
+
+        System.out.printf("All edges to/from node 1:");
+        ei = n1.get_edges(Node.Direction.ANY);
+        for ( ; !ei.done(); ei.next())
+            System.out.printf(" %d", db.get_id(ei.get_current()));
+        System.out.printf("\n");
+
+        System.out.printf("Edges to/from node 1 with tag:");
+        ei = n1.get_edges("myTag3");
+        for ( ; !ei.done(); ei.next())
+            System.out.printf(" %d", db.get_id(ei.get_current()));
+        System.out.printf("\n");
+
+        System.out.printf("Edges to/from node 1 with tag:");
+        ei = n1.get_edges(Node.Direction.ANY, "myTag3");
+        for ( ; !ei.done(); ei.next())
+            System.out.printf(" %d", db.get_id(ei.get_current()));
+        System.out.printf("\n");
+
+        System.out.printf("Edges from node 1 with tag:");
+        ei = n1.get_edges(Node.Direction.OUTGOING, "myTag3");
+        for ( ; !ei.done(); ei.next())
+            System.out.printf(" %d", db.get_id(ei.get_current()));
+        System.out.printf("\n");
+
+        System.out.printf("Edges to node 2 with tag:");
+        ei = n2.get_edges(Node.Direction.INCOMING, "myTag3");
+        for ( ; !ei.done(); ei.next())
+            System.out.printf(" %d", db.get_id(ei.get_current()));
+        System.out.printf("\n");
+
 	tx6.abort();
 
 	//Dump it out for verification purposes
-	Transaction tx = new Transaction(db, false, true);
-	db.dumpGraph();
-	tx.commit();
+        dump(db);
+
         }catch(Exception e) {
             e.print();
             return;
         }
     }
 
+    static void dump(Graph db) throws Exception
+    {
+        Transaction tx = new Transaction(db, false, true);
+        for (NodeIterator i = db.get_nodes(); !i.done(); i.next())
+            dump(db, i.get_current());
+        for (EdgeIterator i = db.get_edges(); !i.done(); i.next())
+            dump(db, i.get_current());
+        tx.commit();
+    }
+
+    static void dump(Graph db, Node n) throws Exception
+    {
+        System.out.printf("Node %d%s:\n", db.get_id(n), tag_text(n.get_tag()));
+        for (PropertyIterator i = n.get_properties(); !i.done(); i.next())
+            System.out.printf("  %s: %s\n", i.id(), property_text(i.get_current()));
+
+        for (EdgeIterator i = n.get_edges(Node.Direction.OUTGOING); !i.done(); i.next())
+            System.out.printf(" %s -> n%d (e%d)\n", tag_text(i.get_tag()),
+                              db.get_id(i.get_destination()),
+                              db.get_id(i.get_current()));
+
+        for (EdgeIterator i = n.get_edges(Node.Direction.INCOMING); !i.done(); i.next())
+            System.out.printf(" %s <- n%d (e%d)\n", tag_text(i.get_tag()),
+                              db.get_id(i.get_source()),
+                              db.get_id(i.get_current()));
+    }
+
+    static void dump(Graph db, Edge e) throws Exception
+    {
+        System.out.printf("Edge %d%s: n%d -> n%d\n",
+            db.get_id(e), tag_text(e.get_tag()),
+            db.get_id(e.get_source()), db.get_id(e.get_destination()));
+
+        for (PropertyIterator i = e.get_properties(); !i.done(); i.next())
+            System.out.printf("  %s: %s\n", i.id(), property_text(i.get_current()));
+    }
+
+    static String tag_text(String tag)
+    {
+        if (tag != null)
+            return " #" + tag;
+        else
+            return "";
+    }
+
+    static String property_text(Property p) throws Exception
+    {
+        switch (p.type()) {
+            case Property.t_novalue: return "no value";
+            case Property.t_boolean: return p.bool_value() ? "T" : "F";
+            case Property.t_integer: return Long.toString(p.int_value());
+            case Property.t_string: return p.string_value();
+            case Property.t_float: return Double.toString(p.float_value());
+            case Property.t_time: return "<time value>";
+            case Property.t_blob: return "<blob value>";
+            default: return "<unknown property type>";
+        }
+    }
 }
