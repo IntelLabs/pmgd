@@ -45,6 +45,33 @@ jstring JNICALL Java_EdgeIterator_get_1tag(JNIEnv *env, jobject ei)
 }
 
 
+jobject JNICALL Java_EdgeIterator_get_1source(JNIEnv *env, jobject ei)
+{
+    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
+    try {
+        Node &j_n = j_ei->get_source();
+        return new_java_object(env, "Node", &j_n);
+    }
+    catch (Exception e){
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+jobject JNICALL Java_EdgeIterator_get_1destination(JNIEnv *env, jobject ei)
+{
+    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
+    try {
+        Node &j_n = j_ei->get_destination();
+        return new_java_object(env, "Node", &j_n);
+    }
+    catch (Exception e){
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+
 jobject JNICALL Java_EdgeIterator_get_1property(JNIEnv *env, jobject ei,
                                                 jstring name)
 {

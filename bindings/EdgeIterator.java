@@ -14,6 +14,8 @@ public class EdgeIterator {
 
     public native Edge get_current() throws Exception;
     public native String get_tag() throws Exception;
+    public native Node get_source() throws Exception;
+    public native Node get_destination() throws Exception;
     public native Property get_property(String property) throws Exception;
     public native PropertyIterator get_properties() throws Exception;
     public native void set_property(String id, Property prop) throws Exception;
