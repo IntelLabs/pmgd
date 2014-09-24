@@ -45,9 +45,6 @@ public class Graph {
     //    public native void create_index(int node_or_edge, String tag,
     //                                    String property_id, PropertyType ptype);
 
-    public native void dumpGraph();
-
-
     private native void loadGraphNative(String db_name, int options);
 
     static {

@@ -10,18 +10,6 @@
 
 using namespace Jarvis;
 
-void Java_Graph_dumpGraph(JNIEnv *env, jobject graph)
-{
-    Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
-    try {
-        dump_nodes(j_db);
-        dump_edges(j_db);
-    }
-    catch (Exception e) {
-        JavaThrow(env, e);
-    }
-}
-
 jint Java_Graph_get_1id__LNode_2(JNIEnv *env, jobject graph, jobject node)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
