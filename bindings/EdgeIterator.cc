@@ -22,10 +22,7 @@ jobject JNICALL Java_EdgeIterator_get_1current(JNIEnv *env, jobject ei)
 
     try {
         Edge *result = &static_cast<Edge &>(*j_ei);
-
-        jclass cls = env->FindClass("Edge");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-        return env->NewObject(cls, cnstrctr, result);
+        return new_java_object(env, "Edge", result);
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -56,12 +53,10 @@ jobject JNICALL Java_EdgeIterator_get_1property(JNIEnv *env, jobject ei,
 
     try {
         Property result;
-        if (!j_ei->check_property(j_name, result))
+        if (j_ei->check_property(j_name, result))
+            return new_java_object(env, "Property", new Property(result));
+        else
             return NULL;
-
-        jclass cls = env->FindClass("Property");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-        return env->NewObject(cls, cnstrctr, new Property(result));
     }
     catch (Exception e){
         JavaThrow(env, e);
@@ -74,11 +69,7 @@ jobject JNICALL Java_EdgeIterator_get_1properties(JNIEnv *env, jobject ei)
     EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
     try {
         PropertyIterator *j_pi = new PropertyIterator(j_ei->get_properties());
-
-        // create a Java PropertyIterator
-        jclass cls = env->FindClass("PropertyIterator");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-        return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_pi));
+        return new_java_object(env, "PropertyIterator", j_pi);
     }
     catch (Exception e){
         JavaThrow(env, e);

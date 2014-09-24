@@ -24,11 +24,7 @@ jobject JNICALL Java_PropertyIterator_get_1current(JNIEnv *env, jobject pi)
 
     try {
         Property result = *j_pi;
-
-        jclass cls = env->FindClass("Property");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-        jobject new_p = env->NewObject(cls, cnstrctr, new Property(result));
-        return new_p;
+        return new_java_object(env, "Property", new Property(result));
     }
     catch (Exception e) {
         JavaThrow(env, e);

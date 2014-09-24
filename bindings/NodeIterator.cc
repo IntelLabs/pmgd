@@ -20,11 +20,7 @@ void Java_NodeIterator_next(JNIEnv *env, jobject ni)
         if (j_ni) {
             // get the current node
             Node *j_n = &(*j_ni);
-
-            // build node to return
-            jclass cls = env->FindClass("Node");
-            jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-            cur = env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(j_n));
+            cur = new_java_object(env, "Node", j_n);
         }
         else
             cur = NULL;
