@@ -13,6 +13,7 @@ void print_usage(FILE *stream);
 
 int main(int argc, char **argv)
 {
+    bool recover = false;
     int argi = 1;
 
     if (argi < argc && strcmp(argv[argi], "-h") == 0) {
@@ -20,15 +21,20 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    if (argc < 2) {
-        fprintf(stderr, "dumpgraph: No graphstore specified\n");
+    if (argi < argc && strcmp(argv[argi], "-r") == 0) {
+        recover = true;
+        argi++;
+    }
+
+    if (!(argi < argc)) {
+        print_usage(stdout);
         return 1;
     }
 
-    const char *db_name = argv[1];
+    const char *db_name = argv[argi];
 
     try {
-        Graph db(db_name, Graph::ReadOnly);
+        Graph db(db_name, recover ? Graph::ReadWrite : Graph::ReadOnly);
         Transaction tx(db);
         dump_nodes(db);
         dump_edges(db);
@@ -43,8 +49,9 @@ int main(int argc, char **argv)
 
 void print_usage(FILE *stream)
 {
-    fprintf(stream, "Usage: dumpgraph [-h] GRAPHSTORE\n");
+    fprintf(stream, "Usage: dumpgraph [-h] [-r] GRAPHSTORE\n");
     fprintf(stream, "Dump the content of GRAPHSTORE.\n");
     fprintf(stream, "\n");
     fprintf(stream, "  -h  print this help and exit\n");
+    fprintf(stream, "  -r  open the graph read/write, so recovery can be performed if necessary\n");
 }

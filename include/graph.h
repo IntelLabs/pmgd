@@ -21,7 +21,7 @@ namespace Jarvis {
         void operator=(const Graph &);
 
     public:
-        enum OpenOptions { Create = 1, ReadOnly = 2 };
+        enum OpenOptions { ReadWrite = 0, Create = 1, ReadOnly = 2 };
 
         struct Config {
             struct AllocatorInfo {
@@ -46,7 +46,7 @@ namespace Jarvis {
             Config();
         };
 
-        Graph(const char *name, int options = 0, const Config * = NULL);
+        Graph(const char *name, int options = ReadWrite, const Config * = NULL);
         ~Graph();
 
         NodeID get_id(const Node &) const;
