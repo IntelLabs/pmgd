@@ -14,8 +14,11 @@ jstring Java_Edge_get_1tag(JNIEnv *env, jobject edge)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     try {
-        const char* tag = j_edge.get_tag().name().c_str();
-        return env->NewStringUTF(tag);
+        StringID tag = j_edge.get_tag();
+        if (tag == 0)
+            return NULL;
+        else
+            return env->NewStringUTF(tag.name().c_str());
     }
     catch (Exception e) {
         JavaThrow(env, e);

@@ -35,8 +35,11 @@ jstring JNICALL Java_EdgeIterator_get_1tag(JNIEnv *env, jobject ei)
 {
     EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
     try {
-        const char *tag = j_ei->get_tag().name().c_str();
-        return env->NewStringUTF(tag);
+        StringID tag = j_ei->get_tag();
+        if (tag == 0)
+            return NULL;
+        else
+            return env->NewStringUTF(tag.name().c_str());
     }
     catch (Exception e){
         JavaThrow(env, e);

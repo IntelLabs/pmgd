@@ -14,8 +14,11 @@ jstring Java_Node_get_1tag(JNIEnv *env, jobject node)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
     try {
-        const char* tag = j_node.get_tag().name().c_str();
-        return env->NewStringUTF(tag);
+        StringID tag = j_node.get_tag();
+        if (tag == 0)
+            return NULL;
+        else
+            return env->NewStringUTF(tag.name().c_str());
     }
     catch (Exception e) {
         JavaThrow(env, e);
