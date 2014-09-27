@@ -18,7 +18,7 @@ jstring Java_Node_get_1tag(JNIEnv *env, jobject node)
         return env->NewStringUTF(tag);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return NULL;
     }
 }
@@ -39,8 +39,8 @@ jobject Java_Node_get_1property(JNIEnv *env, jobject node, jstring str)
         return new_p;
     }
     catch (Exception e) {
-        print_exception(e);
-        return NULL;  //empty property better?
+        JavaThrow(env, e);
+        return NULL;
     }
 }
 
@@ -54,7 +54,7 @@ void Java_Node_set_1property(JNIEnv *env, jobject node,
         j_node.set_property(j_str, j_prop);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }
 
@@ -67,6 +67,6 @@ void Java_Node_remove_1property(JNIEnv *env, jobject node,
         j_node.remove_property(j_str);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }

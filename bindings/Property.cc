@@ -17,7 +17,7 @@ jint Java_Property_type(JNIEnv *env, jobject prop)
         return (int)pt;
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return 0;
     }
 }
@@ -30,7 +30,7 @@ jboolean Java_Property_bool_1value(JNIEnv *env, jobject prop)
         return j_bool;
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return false;
     }
 }
@@ -43,7 +43,7 @@ jlong Java_Property_int_1value(JNIEnv *env , jobject prop)
         return j_int;
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return 0;
     }
 }
@@ -56,7 +56,7 @@ jstring Java_Property_string_1value(JNIEnv *env, jobject prop)
         return env->NewStringUTF(j_str);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return NULL;
     }
 }
@@ -68,7 +68,7 @@ jdouble Java_Property_float_1value(JNIEnv *env, jobject prop)
         return j_prop.float_value();
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return 0;
     }
 }
@@ -80,7 +80,7 @@ void Java_Property_newPropertyNative__(JNIEnv *env, jobject prop)
         setJarvisHandle(env, prop, j_prop);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }
 
@@ -93,7 +93,7 @@ void Java_Property_newPropertyNative__LProperty_2(JNIEnv *env, jobject prop,
         setJarvisHandle(env, prop, j_prop);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }
 
@@ -106,7 +106,7 @@ void Java_Property_newPropertyNative__Z(JNIEnv *env, jobject prop,
         setJarvisHandle(env, prop, j_prop);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }
 
@@ -119,7 +119,7 @@ void Java_Property_newPropertyNative__I(JNIEnv *env, jobject prop,
         setJarvisHandle(env, prop, j_prop);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }
 
@@ -131,7 +131,7 @@ void Java_Property_newPropertyNative__Ljava_lang_String_2(JNIEnv *env, jobject p
         setJarvisHandle(env, prop, j_prop);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }
 
@@ -144,6 +144,6 @@ void Java_Property_newPropertyNative__D(JNIEnv *env, jobject prop,
         setJarvisHandle(env, prop, j_prop);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }

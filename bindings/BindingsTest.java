@@ -2,6 +2,7 @@ public class BindingsTest{
     public static void main(String[] args){
 	String sample_loc = args.length > 0 ? args[0] : "bindingsgraph";
 
+        try {
 	Graph db = new Graph(sample_loc, Graph.OpenOptions.NONE);
 
 	//Adding Node, getting ID, tag
@@ -111,6 +112,10 @@ public class BindingsTest{
 	Transaction tx = new Transaction(db, false, true);
 	db.dumpGraph();
 	tx.commit();
+        }catch(Exception e) {
+            e.print();
+            return;
+        }
     }
 
 }

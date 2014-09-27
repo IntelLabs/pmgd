@@ -39,7 +39,7 @@ jobject Java_NodeIterator_nextNative(JNIEnv *env, jobject ni)
         return cur;
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return NULL;
     }
 }

@@ -1,4 +1,5 @@
 Edge.h
+Exception.h
 Graph.h
 Graph_IndexOptions.h
 Graph_OpenOptions.h

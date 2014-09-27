@@ -2,6 +2,7 @@
 #define JARVISHANDLES_H
 
 #include <jni.h>
+#include "../include/exception.h"
 
 inline jfieldID getHandleField(JNIEnv *env, jobject obj)
 {
@@ -22,5 +23,7 @@ inline void setJarvisHandle(JNIEnv *env, jobject obj, T *t)
     jlong handle = reinterpret_cast<jlong>(t);
     env->SetLongField(obj, getHandleField(env, obj), handle);
 }
+
+extern void JavaThrow(JNIEnv *env, Jarvis::Exception e);
 
 #endif

@@ -18,7 +18,7 @@ jstring Java_Edge_get_1tag(JNIEnv *env, jobject edge)
         return env->NewStringUTF(tag);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return NULL;
     }
 }
@@ -35,7 +35,7 @@ jobject Java_Edge_get_1source(JNIEnv *env, jobject edge)
         return src;
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return NULL;
     }
 }
@@ -52,7 +52,7 @@ jobject Java_Edge_get_1destination(JNIEnv *env, jobject edge)
         return dest;
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return NULL;
     }
 }
@@ -72,8 +72,8 @@ jobject Java_Edge_get_1property(JNIEnv *env, jobject edge, jstring str)
         return new_p;
     }
     catch (Exception e) {
-        print_exception(e);
-        return NULL;  //empty property better?
+        JavaThrow(env, e);
+        return NULL;
     }
 }
 
@@ -87,7 +87,7 @@ void Java_Edge_set_1property(JNIEnv *env, jobject edge,
         j_edge.set_property(j_str, j_prop);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }
 
@@ -100,6 +100,6 @@ void Java_Edge_remove_1property(JNIEnv *env, jobject edge,
         j_edge.remove_property(j_str);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }

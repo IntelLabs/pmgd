@@ -18,7 +18,7 @@ void Java_Graph_dumpGraph(JNIEnv *env, jobject graph)
         dump_edges(j_db);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }
 
@@ -59,7 +59,7 @@ jobject JNICALL Java_Graph_get_1nodes(JNIEnv *env, jobject graph)
         return ni;
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return NULL;
     }
 }
@@ -73,7 +73,7 @@ void Java_Graph_loadGraphNative(JNIEnv *env, jobject obj,
         setJarvisHandle(env, obj, db);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
     env->ReleaseStringUTFChars(filename, db_name);
 }
@@ -89,7 +89,7 @@ jobject JNICALL Java_Graph_add_1node(JNIEnv *env, jobject graph, jstring tag)
         return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(&j_node));
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return NULL;
     }
 }
@@ -108,7 +108,7 @@ jobject JNICALL Java_Graph_add_1edge(JNIEnv *env, jobject graph,
         return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(&j_edge));
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
         return NULL;
     }
 }
@@ -121,7 +121,7 @@ void Java_Graph_remove__LNode_2(JNIEnv *env, jobject graph, jobject node)
         j_db.remove(j_node);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }
 
@@ -133,6 +133,6 @@ void Java_Graph_remove__LEdge_2(JNIEnv *env, jobject graph, jobject edge)
         j_db.remove(j_edge);
     }
     catch (Exception e) {
-        print_exception(e);
+        JavaThrow(env, e);
     }
 }

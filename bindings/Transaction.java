@@ -2,14 +2,13 @@
  * Corresponds to the transactions.h file in Jarvis.
  *
  * Notes:
- *  - need to catch and throw exceptions up
  */
 
 public class Transaction {
     private long jarvisHandle;
 
-    public Transaction(Graph db,
-                       boolean is_dependent, boolean is_readonly)
+    public Transaction(Graph db, boolean is_dependent, boolean is_readonly)
+        throws Exception
     {
         int options = 0;
         // Convert to C enum before going through JNI
@@ -22,5 +21,6 @@ public class Transaction {
     }
 
     public native void commit();
-    private native void startTransactionNative(Graph db, int options);
+    private native void startTransactionNative(Graph db, int options)
+                            throws Exception;
 }

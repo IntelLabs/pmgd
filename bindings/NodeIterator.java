@@ -5,7 +5,6 @@
  * we cannot treat the operator itself as a
  *
  * Notes:
- *  - need to catch and throw exceptions up
  *  - should implement an abstract class, but this provides framework
  */
 
@@ -40,22 +39,22 @@ public class NodeIterator {
         return current;
     }
 
-    public String get_tag()
+    public String get_tag() throws Exception
     {
         return current.get_tag();
     }
 
-    public Property get_property(String property)
+    public Property get_property(String property) throws Exception
     {
         return current.get_property(property);
     }
 
-    public void set_property(String id, Property prop)
+    public void set_property(String id, Property prop) throws Exception
     {
         current.set_property(id, prop);
     }
 
-    public void remove_property(String name)
+    public void remove_property(String name) throws Exception
     {
         current.remove_property(name);
     }
