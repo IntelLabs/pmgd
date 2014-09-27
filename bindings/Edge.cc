@@ -14,8 +14,11 @@ jstring Java_Edge_get_1tag(JNIEnv *env, jobject edge)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     try {
-        const char* tag = j_edge.get_tag().name().c_str();
-        return env->NewStringUTF(tag);
+        StringID tag = j_edge.get_tag();
+        if (tag == 0)
+            return NULL;
+        else
+            return env->NewStringUTF(tag.name().c_str());
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -28,11 +31,7 @@ jobject Java_Edge_get_1source(JNIEnv *env, jobject edge)
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     try {
         Node &j_src = j_edge.get_source();
-
-        jclass cls = env->FindClass("Node");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-        jobject src = env->NewObject(cls, cnstrctr, &j_src);
-        return src;
+        return new_java_object(env, "Node", &j_src);
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -45,11 +44,7 @@ jobject Java_Edge_get_1destination(JNIEnv *env, jobject edge)
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     try {
         Node &j_dest = j_edge.get_destination();
-
-        jclass cls = env->FindClass("Node");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-        jobject dest = env->NewObject(cls, cnstrctr, &j_dest);
-        return dest;
+        return new_java_object(env, "Node", &j_dest);
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -63,13 +58,23 @@ jobject Java_Edge_get_1property(JNIEnv *env, jobject edge, jstring str)
     const char *j_str = env->GetStringUTFChars(str, 0);
     try {
         Property result;
-        if (!j_edge.check_property(j_str, result))
+        if (j_edge.check_property(j_str, result))
+            return new_java_object(env, "Property", new Property(result));
+        else
             return NULL;
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
 
-        jclass cls = env->FindClass("Property");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-        jobject new_p = env->NewObject(cls, cnstrctr, new Property(result));
-        return new_p;
+jobject Java_Edge_get_1properties(JNIEnv *env, jobject edge)
+{
+    Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
+    try {
+        PropertyIterator *j_pi = new PropertyIterator(j_edge.get_properties());
+        return new_java_object(env, "PropertyIterator", j_pi);
     }
     catch (Exception e) {
         JavaThrow(env, e);

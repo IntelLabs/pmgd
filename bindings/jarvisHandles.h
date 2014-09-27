@@ -24,6 +24,8 @@ inline void setJarvisHandle(JNIEnv *env, jobject obj, T *t)
     env->SetLongField(obj, getHandleField(env, obj), handle);
 }
 
+
+extern jobject new_java_object(JNIEnv *env, const char *name, void *obj);
 extern void JavaThrow(JNIEnv *env, Jarvis::Exception e);
 
 #endif

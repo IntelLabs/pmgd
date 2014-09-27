@@ -3,7 +3,6 @@
  *
  * Notes:
  *  - Omitting Config options at the moment
- *  - need to implement iterators for node/edge/path
  *  - need to implement index
  */
 
@@ -22,15 +21,17 @@ public class Graph {
     public native int get_id(Edge n);
 
     public native NodeIterator get_nodes() throws Exception;
-    //    public native NodeIterator get_nodes(String tag);
-    //    public native NodeIterator get_nodes(String tag,
-    //                                         PropertyPredicate ppred,
-    //                                         bool reverse);
-    //    public native EdgeIterator get_edges();
-    //    public native EdgeIterator get_edges(String tag);
-    //    public native EdgeIterator get_edges(String tag,
-    //                                         PropertyPredicate ppred,
-    //                                         bool reverse);
+    public native NodeIterator get_nodes(String tag) throws Exception;
+    public native NodeIterator get_nodes(String tag,
+                                         PropertyPredicate ppred,
+                                         boolean reverse) throws Exception;
+
+    public native EdgeIterator get_edges() throws Exception;
+    public native EdgeIterator get_edges(String tag) throws Exception;
+    public native EdgeIterator get_edges(String tag,
+                                         PropertyPredicate ppred,
+                                         boolean reverse) throws Exception;
+
     //    public native PathIterator get_paths(Node a, bool depth_first);
     //    public native PathIterator get_paths(Node a, Node b, bool depth_first);
 

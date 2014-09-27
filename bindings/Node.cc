@@ -14,8 +14,11 @@ jstring Java_Node_get_1tag(JNIEnv *env, jobject node)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
     try {
-        const char* tag = j_node.get_tag().name().c_str();
-        return env->NewStringUTF(tag);
+        StringID tag = j_node.get_tag();
+        if (tag == 0)
+            return NULL;
+        else
+            return env->NewStringUTF(tag.name().c_str());
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -30,19 +33,86 @@ jobject Java_Node_get_1property(JNIEnv *env, jobject node, jstring str)
     const char *j_str = env->GetStringUTFChars(str, 0);
     try {
         Property result;
-        if (!j_node.check_property(j_str, result))
+        if (j_node.check_property(j_str, result))
+            return new_java_object(env, "Property", new Property(result));
+        else
             return NULL;
-
-        jclass cls = env->FindClass("Property");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-        jobject new_p = env->NewObject(cls, cnstrctr, new Property(result));
-        return new_p;
     }
     catch (Exception e) {
         JavaThrow(env, e);
         return NULL;
     }
 }
+
+jobject Java_Node_get_1properties(JNIEnv *env, jobject node)
+{
+    Node &j_node = *(getJarvisHandle<Node>(env, node));
+    try {
+        PropertyIterator *j_pi = new PropertyIterator(j_node.get_properties());
+        return new_java_object(env, "PropertyIterator", j_pi);
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+jobject JNICALL Java_Node_get_1edges__(JNIEnv *env, jobject node)
+{
+    Node &j_node = *(getJarvisHandle<Node>(env, node));
+    try {
+        EdgeIterator *j_ei = new EdgeIterator(j_node.get_edges());
+        return new_java_object(env, "EdgeIterator", j_ei);
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+jobject JNICALL Java_Node_get_1edges__I(JNIEnv *env, jobject node, jint dir)
+{
+    Node &j_node = *(getJarvisHandle<Node>(env, node));
+    try {
+        EdgeIterator *j_ei = new EdgeIterator(j_node.get_edges(Direction(dir)));
+        return new_java_object(env, "EdgeIterator", j_ei);
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+jobject JNICALL Java_Node_get_1edges__Ljava_lang_String_2(JNIEnv *env,
+                    jobject node, jstring tag)
+{
+    Node &j_node = *(getJarvisHandle<Node>(env, node));
+    const char *j_tag = env->GetStringUTFChars(tag, 0);
+    try {
+        EdgeIterator *j_ei = new EdgeIterator(j_node.get_edges(j_tag));
+        return new_java_object(env, "EdgeIterator", j_ei);
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
+jobject JNICALL Java_Node_get_1edges__ILjava_lang_String_2
+    (JNIEnv *env, jobject node, jint dir, jstring tag)
+{
+    Node &j_node = *(getJarvisHandle<Node>(env, node));
+    const char *j_tag = env->GetStringUTFChars(tag, 0);
+    try {
+        EdgeIterator *j_ei = new EdgeIterator(j_node.get_edges(Direction(dir), j_tag));
+        return new_java_object(env, "EdgeIterator", j_ei);
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
+}
+
 
 void Java_Node_set_1property(JNIEnv *env, jobject node,
                              jstring str, jobject prop)

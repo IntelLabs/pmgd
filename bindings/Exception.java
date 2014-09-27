@@ -13,6 +13,7 @@ public class Exception extends java.lang.Exception
 
     public String file;
     public int line;
+    public String function;
 
     public Exception(int num, String name, String msg,
                      int errno_val, String errno_msg,
@@ -27,9 +28,20 @@ public class Exception extends java.lang.Exception
         this.line = line;
     }
 
+    public Exception(int num, String name, String function, String msg)
+    {
+        this.num = num;
+        this.name = name;
+        this.msg = msg;
+        this.function = function;
+    }
+
     public void print()
     {
-        System.out.printf("[Exception] %s at %s:%d\n", name, file, line);
+        if (function != null)
+            System.out.printf("[Exception] %s in %s\n", name, function);
+        else
+            System.out.printf("[Exception] %s at %s:%d\n", name, file, line);
         if (errno_val != 0)
             System.out.printf("%s: %s (%d)\n", msg, errno_msg, errno_val);
         else if (msg != null)
