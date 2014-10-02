@@ -52,6 +52,7 @@ CSRCS := $(CLASSES:%=$(O_BINDINGS)%.cc)
 COBJS := $(CLASSES:%=$(O_BINDINGS)%.o)
 
 JOBJS += $(O_BINDINGS)Graph\$$OpenOptions.class
+JOBJS += $(O_BINDINGS)Graph\$$IndexOptions.class
 JOBJS += $(O_BINDINGS)Node\$$Direction.class
 JOBJS += $(O_BINDINGS)PropertyPredicate\$$op_t.class
 
@@ -107,13 +108,29 @@ BindingsTest.class: BindingsTest.java install
 
 clean:
 	$(call print,CLEAN)
-	$(RM) $(COBJS) $(DEPS) $(CLEANFILES)
+	$(RM) $(DLIBRARY) $(JLIBRARY) $(COBJS) $(JOBJS) $(DEPS) $(CLEANFILES)
 	$(RM) $(INSTALLPATH)/$(DLIBRARY) $(INSTALLPATH)/$(JLIBRARY)
 
 # If the variable $(O_BINDINGS) is non-empty and the corresponding
 # directory does not exist then create it.
 $(O_BINDINGS):
 	mkdir -p $@
+
+$(O_BINDINGS)Graph\$$OpenOptions.class: Graph.java
+	$(call print,COMPILE,$@)
+	$(JC) -d $(O_BINDINGS). $<
+
+$(O_BINDINGS)Graph\$$IndexOptions.class: Graph.java
+	$(call print,COMPILE,$@)
+	$(JC) -d $(O_BINDINGS). $<
+
+$(O_BINDINGS)Node\$$Direction.class: Node.java
+	$(call print,COMPILE,$@)
+	$(JC) -d $(O_BINDINGS). $<
+
+$(O_BINDINGS)PropertyPredicate\$$op_t.class: PropertyPredicate.java
+	$(call print,COMPILE,$@)
+	$(JC) -d $(O_BINDINGS). $<
 
 # Rule for building an object file from a C++ file.
 $(O_BINDINGS)%.o: %.cc $(O_BINDINGS)%.h $(MAKEFILE_LIST)
@@ -131,5 +148,5 @@ $(O_BINDINGS)%.class: %.java $(MAKEFILE_LIST)
 	$(JC) -d $(O_BINDINGS). $<
 
 # Include dependency information if they are available.
-DEPS := $(OBJS:%.o=%.d)
+DEPS := $(COBJS:%.o=%.d)
 -include $(DEPS)
