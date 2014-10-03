@@ -2,15 +2,12 @@ Edge.h
 EdgeIterator.h
 Exception.h
 Graph.h
-Graph_IndexOptions.h
-Graph_OpenOptions.h
 Node.h
 Node_Direction.h
 NodeIterator.h
 Property.h
 PropertyIterator.h
 PropertyPredicate.h
-PropertyPredicate_op_t.h
 Transaction.h
 *.o
 *.d
