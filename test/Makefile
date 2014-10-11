@@ -5,6 +5,7 @@
 CC := g++-4.8
 RM := rm -f
 ECHO := echo
+JC := javac
 
 # Allow builds from a read-only source tree.
 #
@@ -32,6 +33,7 @@ TESTS := apitest alloctest soltest nodeedgetest listtest edgeindextest \
          load_tsv_test load_gson_test \
          avltest chunklisttest indextest indexrangetest indexstringtest \
 		 reverseindexrangetest emailindextest \
+         BindingsTest.class \
          rotest
 
 # Extra stuff to clean whose names cannot be derived from dependences.
@@ -173,6 +175,10 @@ $(O_TEST)emailindextest: $(O_TEST)emailindextest.o $(LIBS)
 $(O_TEST)rotest: $(O_TEST)rotest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIBS)
+
+$(O_TEST)BindingsTest.class: BindingsTest.java $(LIBS)
+	$(call print,LINK,$@)
+	$(JC) -cp $(O_LIB)/jarvis-jni.jar -d $(O_TEST). $<
 
 # Build the Jarvis Lake library.
 lib:

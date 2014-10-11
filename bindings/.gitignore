@@ -11,6 +11,5 @@ PropertyPredicate.h
 Transaction.h
 *.o
 *.d
-*.class
 jarvis-jni.jar
 libjarvis-jni.so

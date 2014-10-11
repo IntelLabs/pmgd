@@ -103,9 +103,6 @@ $(DLIBRARY): $(COBJS)
 $(JLIBRARY): $(JOBJS)
 	cd $(O_BINDINGS).; $(JAR) cf $@ $(subst $(O_BINDINGS),,$(JOBJS))
 
-BindingsTest.class: BindingsTest.java install
-	$(JC) -d $(O_BINDINGS). $<
-
 clean:
 	$(call print,CLEAN)
 	$(RM) $(DLIBRARY) $(JLIBRARY) $(COBJS) $(JOBJS) $(DEPS) $(CLEANFILES)
