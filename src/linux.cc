@@ -9,9 +9,34 @@
 #include "os.h"
 #include "exception.h"
 
+class Jarvis::os::MapRegion::OSMapRegion {
+    int _fd;
+public:
+    OSMapRegion(const char *db_name, const char *region_name,
+                uint64_t map_addr, uint64_t map_len,
+                bool &create, bool truncate, bool read_only);
+
+    ~OSMapRegion();
+};
+
+
 Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
                                  uint64_t map_addr, uint64_t map_len,
                                  bool &create, bool truncate, bool read_only)
+    : _s(new OSMapRegion(db_name, region_name, map_addr, map_len,
+                         create, truncate, read_only))
+{
+}
+
+Jarvis::os::MapRegion::~MapRegion()
+{
+    delete _s;
+}
+
+Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
+    (const char *db_name, const char *region_name,
+     uint64_t map_addr, uint64_t map_len,
+     bool &create, bool truncate, bool read_only)
 {
     if (create) {
         // It doesn't matter if this step fails, either because the
@@ -60,7 +85,7 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
     }
 }
 
-Jarvis::os::MapRegion::~MapRegion()
+Jarvis::os::MapRegion::OSMapRegion::~OSMapRegion()
 {
     close(_fd);
 }
@@ -90,4 +115,16 @@ Jarvis::os::SigHandler::SigHandler()
 void Jarvis::os::SigHandler::sigbus_handler(int)
 {
     throw Exception(out_of_space);
+}
+
+size_t Jarvis::os::get_default_region_size() { return SIZE_1TB; }
+
+size_t Jarvis::os::get_alignment(size_t size)
+{
+    if (size >= SIZE_1GB)
+        return SIZE_1GB;
+    else if (size >= SIZE_2MB)
+        return SIZE_2MB;
+    else
+        return SIZE_4KB;
 }

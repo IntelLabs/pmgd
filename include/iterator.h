@@ -6,6 +6,13 @@
 #include "stringid.h"
 #include "property.h"
 
+#ifdef _MSC_VER
+// Disable the multiple copy constructor warning.
+#pragma warning(disable : 4521)
+// Disable the empty array in struct/union warning.
+#pragma warning(disable : 4200)
+#endif
+
 namespace Jarvis {
     enum Disposition { dont_pass, pass, stop, pass_stop, prune, pass_prune };
 
@@ -22,8 +29,6 @@ namespace Jarvis {
     };
 
     template <typename Impl> class Iterator {
-        Iterator(const Iterator &);
-
     protected:
         Impl *_impl;
         void done() { delete _impl; _impl = NULL; }
@@ -36,6 +41,7 @@ namespace Jarvis {
         }
 
     public:
+        Iterator(const Iterator &) = delete;
         typedef Impl Impl_type;
         typedef typename Impl::Ref_type Ref_type;
 
@@ -169,7 +175,7 @@ namespace Jarvis {
         PropertyType type() const
         {
             assert(ptype() >= p_novalue && ptype() <= p_blob);
-            static constexpr PropertyType type_map[] = {
+            static const PropertyType type_map[] = {
                 t_novalue, t_boolean, t_boolean, t_integer, t_float,
                 t_time, t_string, t_string, t_blob
             };
@@ -194,7 +200,7 @@ namespace Jarvis {
     };
 
     class PropertyList {
-        static constexpr unsigned chunk_size = 64;
+        static const unsigned chunk_size = 64;
 
         uint8_t _chunk0[];
 

@@ -45,10 +45,7 @@ struct TransactionImpl::JournalEntry {
     uint8_t data[JE_MAX_LEN];
 };
 
-thread_local TransactionImpl *TransactionImpl::_per_thread_tx = NULL;
-thread_local std::stack<TransactionImpl *> _tx_stack;
-
-static const uint32_t LOCK_TIMEOUT = 7;
+THREAD TransactionImpl *TransactionImpl::_per_thread_tx = NULL;
 
 TransactionImpl::TransactionImpl(GraphImpl *db, int options)
     : _db(db), _tx_type(options), _committed(false)
@@ -58,17 +55,15 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
     if (read_write)
         db->check_read_write();
 
-    // nested transaction
-    if (_per_thread_tx != NULL) {
-        if (read_write && !(_tx_type & Transaction::Independent))
-            throw Exception(not_implemented);
-        _tx_stack.push(_per_thread_tx);
-        _per_thread_tx = NULL;
-    }
+    // nested dependent transactions not supported yet
+    if (_per_thread_tx != NULL && read_write
+            && !(_tx_type & Transaction::Independent))
+        throw Exception(not_implemented);
 
     _tx_handle = db->transaction_manager().alloc_transaction(!read_write);
 
     _jcur = jbegin();
+    _outer_tx = _per_thread_tx;
     _per_thread_tx = this; // Install per-thread TX
 }
 
@@ -86,12 +81,7 @@ TransactionImpl::~TransactionImpl()
         tx_manager->free_transaction(_tx_handle);
     }
 
-    if (!_tx_stack.empty()) {
-        _per_thread_tx = _tx_stack.top(); // nested transactions
-        _tx_stack.pop();
-    } else {
-        _per_thread_tx = NULL; // un-install per-thread tx
-    }
+    _per_thread_tx = _outer_tx;
 }
 
 

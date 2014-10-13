@@ -6,6 +6,7 @@
 #include <jsoncpp/json/json.h>
 #include <time.h>
 #include <string.h>
+#include <iostream>
 #include "jarvis.h"
 #include "util.h"
 

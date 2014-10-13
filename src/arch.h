@@ -6,7 +6,7 @@ template <typename T>
 static inline bool cmpxchg(volatile T &m, T old_val, T new_val)
 {
     bool result = 0;
-    asm volatile ("lock cmpxchg %3, %1; sete %0"
+    __asm__ volatile ("lock cmpxchg %3, %1; sete %0"
                   : "=q"(result), "+m"(m), "+a"(old_val)
                   : "r"(new_val)
                   : "memory", "cc");
@@ -17,7 +17,7 @@ template <typename T>
 static inline bool bts(volatile T &m, int bit)
 {
     bool result = 0;
-    asm volatile ("lock bts%z1 %2, %1\n; setc %0"
+    __asm__ volatile ("lock bts%z1 %2, %1\n; setc %0"
             : "=q"(result), "+m"(m) : "Ir"(T(bit)) : "memory", "cc");
     return result;
 }
@@ -27,7 +27,7 @@ static inline unsigned bsr(T value)
 {
     T r;
     // Find the index of the highest bit = 1
-    asm("bsr %1,%0" : "=r"(r) : "r"(value));
+    __asm__("bsr %1,%0" : "=r"(r) : "r"(value));
     return unsigned(r);
 }
 
@@ -35,16 +35,17 @@ template <typename T>
 static inline T atomic_inc(volatile T &m)
 {
     T r = 1;
-    asm volatile ("lock xadd %1, %0" : "+m"(m), "+r"(r) : : "memory", "cc");
+    __asm__ volatile ("lock xadd %1, %0" : "+m"(m), "+r"(r) : : "memory", "cc");
     return r;
 }
 
 static inline void memory_barrier() // Instruct compiler not to re-order
 {
-    asm volatile ("" : : : "memory");
+    __asm__ volatile ("" : : : "memory");
 }
 
-asm (
+#if defined(HSPM) || !defined(NOPM)
+__asm__ (
     ".macro pcommit\n\t"
     ".byte 0x66, 0x0f, 0xae, 0xf8\n\t"
     ".endm\n\t"
@@ -71,23 +72,24 @@ asm (
     "mfence\n\t"
     ".endm\n\t"
 );
+#endif
 
 static inline void clflush(void *addr)
 {
 #ifndef NOPM
-    asm("clflushopt \"%0\"" : "+m"(*(char *)addr) : : "memory");
+    __asm__("clflushopt \"%0\"" : "+m"(*(char *)addr) : : "memory");
 #endif
 }
 
 static inline void persistent_barrier(uint8_t param)
 {
 #if defined(HSPM)
-    asm volatile ("mysfence %0"  : : "N"(param));
-    asm volatile ("mypcommit %0" : : "N"(param+1));
-    asm volatile ("mysfence %0"  : : "N"(param+2));
+    __asm__ volatile ("mysfence %0"  : : "N"(param));
+    __asm__ volatile ("mypcommit %0" : : "N"(param+1));
+    __asm__ volatile ("mysfence %0"  : : "N"(param+2));
 #elif !defined(NOPM)
-    asm volatile ("sfence" : : : "memory");
-    asm volatile ("pcommit" : : : "memory");
-    asm volatile ("sfence" : : : "memory");
+    __asm__ volatile ("sfence" : : : "memory");
+    __asm__ volatile ("pcommit" : : : "memory");
+    __asm__ volatile ("sfence" : : : "memory");
 #endif
 }

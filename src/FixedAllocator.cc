@@ -124,7 +124,7 @@ void FixedAllocator::free(void *p)
 
 void *FixedAllocator::begin() const
 {
-    return (void *)((unsigned long)_pm + _alloc_offset);
+    return (void *)((uint64_t)_pm + _alloc_offset);
 }
 
 const void *FixedAllocator::end() const
@@ -134,7 +134,7 @@ const void *FixedAllocator::end() const
 
 void *FixedAllocator::next(const void *curr) const
 {
-    return (void *)((unsigned long)curr + _pm->size);
+    return (void *)((uint64_t)curr + _pm->size);
 }
 
 bool FixedAllocator::is_free(const void *curr) const
