@@ -74,7 +74,8 @@ FFLAGS := $(OMIT_FRAME_POINTER) -funit-at-a-time -finline-limit=2000000 \
 
 # Warning options.
 WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
-          -Wformat=2 -Wno-parentheses -Wno-conversion
+          -Wformat=2 -Wno-parentheses -Wno-conversion \
+          -Wmissing-declarations
 
 # Flags for C++ compilation.
 CFLAGS := --std=c++11 $(INCLUDES) $(JAVA_INCLUDES) $(FFLAGS) $(WFLAGS) $(OPT) \
