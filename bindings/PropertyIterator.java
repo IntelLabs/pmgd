@@ -2,6 +2,8 @@
  * Java wrapper for Jarvis PropertyIterator.
  */
 
+package jarvis;
+
 public class PropertyIterator {
     private long jarvisHandle;
     private PropertyIterator(long handle) { jarvisHandle = handle; }

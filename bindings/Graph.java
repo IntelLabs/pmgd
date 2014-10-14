@@ -6,6 +6,8 @@
  *  - need to implement index
  */
 
+package jarvis;
+
 public class Graph {
     private long jarvisHandle;
 

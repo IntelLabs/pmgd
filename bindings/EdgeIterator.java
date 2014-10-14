@@ -2,6 +2,8 @@
  * Java wrapper for Jarvis EdgeIterator
  */
 
+package jarvis;
+
 public class EdgeIterator {
     private long jarvisHandle;
     private EdgeIterator(long handle) { jarvisHandle = handle; }

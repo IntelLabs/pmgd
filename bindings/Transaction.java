@@ -4,6 +4,8 @@
  * Notes:
  */
 
+package jarvis;
+
 public class Transaction {
     private long jarvisHandle;
 

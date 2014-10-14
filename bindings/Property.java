@@ -5,6 +5,8 @@
  *  - Omitting time, blob as an option for property types
  */
 
+package jarvis;
+
 public class Property {
     private long jarvisHandle;
     private Property(long handle) { jarvisHandle = handle; }

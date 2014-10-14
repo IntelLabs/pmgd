@@ -2,6 +2,8 @@
  * Java wrapper for Jarvis NodeIterator
  */
 
+package jarvis;
+
 public class NodeIterator {
     private long jarvisHandle;
     private Node current;

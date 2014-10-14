@@ -2,6 +2,8 @@
  * Corresponds to the node.h file in Jarvis.
  */
 
+package jarvis;
+
 public class Node {
     private long jarvisHandle;
     private Node(long handle) { jarvisHandle = handle; }

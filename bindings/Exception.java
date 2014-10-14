@@ -2,6 +2,8 @@
  * Corresponds to the exception.h file in Jarvis.
  */
 
+package jarvis;
+
 public class Exception extends java.lang.Exception
 {
     public int num;

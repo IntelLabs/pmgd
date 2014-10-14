@@ -2,6 +2,8 @@
  * Corresponds to the edge.h file in Jarvis.
  */
 
+package jarvis;
+
 public class Edge {
     private long jarvisHandle;
     private Edge(long handle) { jarvisHandle = handle; }

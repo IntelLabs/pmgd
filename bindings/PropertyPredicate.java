@@ -5,6 +5,8 @@
  * to Jarvis functions that use it. It does not persist in Jarvis.
  */
 
+package jarvis;
+
 public class PropertyPredicate {
     private long jarvisHandle;
 
