@@ -39,8 +39,8 @@ jobject JNICALL Java_jarvis_Graph_get_1nodes__(JNIEnv *env, jobject graph)
             cur = NULL;
 
         // create a java nodeiterator
-        jclass cls = env->FindClass("NodeIterator");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLNode;)V");
+        jclass cls = env->FindClass("jarvis/NodeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
         jobject ni = env->NewObject(cls, cnstrctr,
                                     reinterpret_cast<jlong>(j_ni),
                                     cur);
@@ -70,8 +70,8 @@ jobject JNICALL Java_jarvis_Graph_get_1nodes__Ljava_lang_String_2(JNIEnv *env,
             cur = NULL;
 
         // create a java nodeiterator
-        jclass cls = env->FindClass("NodeIterator");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLNode;)V");
+        jclass cls = env->FindClass("jarvis/NodeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
         jobject ni = env->NewObject(cls, cnstrctr,
                                     reinterpret_cast<jlong>(j_ni),
                                     cur);
@@ -102,8 +102,8 @@ jobject JNICALL Java_jarvis_Graph_get_1nodes__Ljava_lang_String_2Ljarvis_Propert
             cur = NULL;
 
         //create a java nodeiterator
-        jclass cls = env->FindClass("NodeIterator");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLNode;)V");
+        jclass cls = env->FindClass("jarvis/NodeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
         jobject ni = env->NewObject(cls, cnstrctr,
                                     reinterpret_cast<jlong>(j_ni),
                                     cur);
@@ -238,7 +238,9 @@ void Java_jarvis_Graph_dispose(JNIEnv *env, jobject graph)
 
 jobject new_java_object(JNIEnv *env, const char *name, void *obj)
 {
-    jclass cls = env->FindClass(name);
+    char full_name[40] = "jarvis/";
+    strcat(full_name, name);
+    jclass cls = env->FindClass(full_name);
     jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
     return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(obj));
 }

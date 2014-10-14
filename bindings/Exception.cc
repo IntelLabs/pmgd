@@ -4,7 +4,7 @@
 
 void JavaThrow(JNIEnv *env, Jarvis::Exception e)
 {
-    jclass cls = env->FindClass("Exception");
+    jclass cls = env->FindClass("jarvis/Exception");
     jmethodID constr = env->GetMethodID(cls, "<init>",
         "(ILjava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;I)V");
     jobject exc = env->NewObject(cls, constr,

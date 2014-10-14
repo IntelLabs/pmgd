@@ -26,7 +26,7 @@ void Java_jarvis_NodeIterator_next(JNIEnv *env, jobject ni)
             cur = NULL;
 
         jclass cls = env->GetObjectClass(ni);
-        jfieldID fid = env->GetFieldID(cls, "current", "LNode;");
+        jfieldID fid = env->GetFieldID(cls, "current", "Ljarvis/Node;");
         env->SetObjectField(ni, fid, cur);
     }
     catch (Exception e) {
