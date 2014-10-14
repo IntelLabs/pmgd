@@ -47,14 +47,14 @@ CLASSES := Property PropertyIterator Node NodeIterator Edge EdgeIterator \
 
 # Translate source file names.
 JSRCS := $(CLASSES:%=$(O_BINDINGS)%.java)
-JOBJS := $(CLASSES:%=$(O_BINDINGS)%.class)
+JOBJS := $(CLASSES:%=$(O_BINDINGS)jarvis/%.class)
 CSRCS := $(CLASSES:%=$(O_BINDINGS)%.cc)
 COBJS := $(CLASSES:%=$(O_BINDINGS)%.o)
 
-JOBJS += $(O_BINDINGS)Graph\$$OpenOptions.class
-JOBJS += $(O_BINDINGS)Graph\$$IndexOptions.class
-JOBJS += $(O_BINDINGS)Node\$$Direction.class
-JOBJS += $(O_BINDINGS)PropertyPredicate\$$op_t.class
+JOBJS += $(O_BINDINGS)jarvis/Graph\$$OpenOptions.class
+JOBJS += $(O_BINDINGS)jarvis/Graph\$$IndexOptions.class
+JOBJS += $(O_BINDINGS)jarvis/Node\$$Direction.class
+JOBJS += $(O_BINDINGS)jarvis/PropertyPredicate\$$op_t.class
 
 # Additional places to look for include files.
 INCLUDES := -I$(O_BINDINGS). -I../include -I../util
@@ -117,19 +117,19 @@ clean:
 $(O_BINDINGS):
 	mkdir -p $@
 
-$(O_BINDINGS)Graph\$$OpenOptions.class: Graph.java
+$(O_BINDINGS)jarvis/Graph\$$OpenOptions.class: Graph.java
 	$(call print,COMPILE,$@)
 	$(JC) -d $(O_BINDINGS). $<
 
-$(O_BINDINGS)Graph\$$IndexOptions.class: Graph.java
+$(O_BINDINGS)jarvis/Graph\$$IndexOptions.class: Graph.java
 	$(call print,COMPILE,$@)
 	$(JC) -d $(O_BINDINGS). $<
 
-$(O_BINDINGS)Node\$$Direction.class: Node.java
+$(O_BINDINGS)jarvis/Node\$$Direction.class: Node.java
 	$(call print,COMPILE,$@)
 	$(JC) -d $(O_BINDINGS). $<
 
-$(O_BINDINGS)PropertyPredicate\$$op_t.class: PropertyPredicate.java
+$(O_BINDINGS)jarvis/PropertyPredicate\$$op_t.class: PropertyPredicate.java
 	$(call print,COMPILE,$@)
 	$(JC) -d $(O_BINDINGS). $<
 
@@ -139,12 +139,12 @@ $(O_BINDINGS)%.o: %.cc $(O_BINDINGS)%.h $(MAKEFILE_LIST)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 # Rule for building a JNI header file for a class.
-$(O_BINDINGS)%.h: %.java $(MAKEFILE_LIST)
+$(O_BINDINGS)%.h: $(O_BINDINGS)jarvis/%.class $(MAKEFILE_LIST)
 	$(call print,JAVAH,$@)
-	$(JH) -jni -o $@ $*
+	$(JH) -jni -o $@ jarvis.$*
 
 # Rule for building bytecodes from a Java file.
-$(O_BINDINGS)%.class: %.java $(MAKEFILE_LIST)
+$(O_BINDINGS)jarvis/%.class: %.java $(MAKEFILE_LIST)
 	$(call print,COMPILE,$@)
 	$(JC) -d $(O_BINDINGS). $<
 
