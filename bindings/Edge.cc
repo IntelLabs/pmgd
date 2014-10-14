@@ -10,7 +10,7 @@
 
 using namespace Jarvis;
 
-jstring Java_Edge_get_1tag(JNIEnv *env, jobject edge)
+jstring Java_jarvis_Edge_get_1tag(JNIEnv *env, jobject edge)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     try {
@@ -26,7 +26,7 @@ jstring Java_Edge_get_1tag(JNIEnv *env, jobject edge)
     }
 }
 
-jobject Java_Edge_get_1source(JNIEnv *env, jobject edge)
+jobject Java_jarvis_Edge_get_1source(JNIEnv *env, jobject edge)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     try {
@@ -39,7 +39,7 @@ jobject Java_Edge_get_1source(JNIEnv *env, jobject edge)
     }
 }
 
-jobject Java_Edge_get_1destination(JNIEnv *env, jobject edge)
+jobject Java_jarvis_Edge_get_1destination(JNIEnv *env, jobject edge)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     try {
@@ -52,7 +52,7 @@ jobject Java_Edge_get_1destination(JNIEnv *env, jobject edge)
     }
 }
 
-jobject Java_Edge_get_1property(JNIEnv *env, jobject edge, jstring str)
+jobject Java_jarvis_Edge_get_1property(JNIEnv *env, jobject edge, jstring str)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     const char *j_str = env->GetStringUTFChars(str, 0);
@@ -69,7 +69,7 @@ jobject Java_Edge_get_1property(JNIEnv *env, jobject edge, jstring str)
     }
 }
 
-jobject Java_Edge_get_1properties(JNIEnv *env, jobject edge)
+jobject Java_jarvis_Edge_get_1properties(JNIEnv *env, jobject edge)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
     try {
@@ -82,7 +82,7 @@ jobject Java_Edge_get_1properties(JNIEnv *env, jobject edge)
     }
 }
 
-void Java_Edge_set_1property(JNIEnv *env, jobject edge,
+void Java_jarvis_Edge_set_1property(JNIEnv *env, jobject edge,
                              jstring str, jobject prop)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
@@ -96,7 +96,7 @@ void Java_Edge_set_1property(JNIEnv *env, jobject edge,
     }
 }
 
-void Java_Edge_remove_1property(JNIEnv *env, jobject edge,
+void Java_jarvis_Edge_remove_1property(JNIEnv *env, jobject edge,
                                 jstring str)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));

@@ -9,7 +9,7 @@
 
 using namespace Jarvis;
 
-jint Java_Property_type(JNIEnv *env, jobject prop)
+jint Java_jarvis_Property_type(JNIEnv *env, jobject prop)
 {
     Property &j_prop = *(getJarvisHandle<Property>(env, prop));
     try {
@@ -22,7 +22,7 @@ jint Java_Property_type(JNIEnv *env, jobject prop)
     }
 }
 
-jboolean Java_Property_bool_1value(JNIEnv *env, jobject prop)
+jboolean Java_jarvis_Property_bool_1value(JNIEnv *env, jobject prop)
 {
     Property &j_prop = *(getJarvisHandle<Property>(env, prop));
     try {
@@ -35,7 +35,7 @@ jboolean Java_Property_bool_1value(JNIEnv *env, jobject prop)
     }
 }
 
-jlong Java_Property_int_1value(JNIEnv *env , jobject prop)
+jlong Java_jarvis_Property_int_1value(JNIEnv *env , jobject prop)
 {
     Property &j_prop = *(getJarvisHandle<Property>(env, prop));
     try {
@@ -48,7 +48,7 @@ jlong Java_Property_int_1value(JNIEnv *env , jobject prop)
     }
 }
 
-jstring Java_Property_string_1value(JNIEnv *env, jobject prop)
+jstring Java_jarvis_Property_string_1value(JNIEnv *env, jobject prop)
 {
     Property &j_prop = *(getJarvisHandle<Property>(env, prop));
     try {
@@ -61,7 +61,7 @@ jstring Java_Property_string_1value(JNIEnv *env, jobject prop)
     }
 }
 
-jdouble Java_Property_float_1value(JNIEnv *env, jobject prop)
+jdouble Java_jarvis_Property_float_1value(JNIEnv *env, jobject prop)
 {
     Property &j_prop = *(getJarvisHandle<Property>(env, prop));
     try {
@@ -73,7 +73,7 @@ jdouble Java_Property_float_1value(JNIEnv *env, jobject prop)
     }
 }
 
-void Java_Property_newPropertyNative__(JNIEnv *env, jobject prop)
+void Java_jarvis_Property_newPropertyNative__(JNIEnv *env, jobject prop)
 {
     try {
         Property *j_prop = new Property();
@@ -84,8 +84,8 @@ void Java_Property_newPropertyNative__(JNIEnv *env, jobject prop)
     }
 }
 
-void Java_Property_newPropertyNative__LProperty_2(JNIEnv *env, jobject prop,
-                                                  jobject prop_ref)
+void Java_jarvis_Property_newPropertyNative__Ljarvis_Property_2
+    (JNIEnv *env, jobject prop, jobject prop_ref)
 {
     Property &j_prop_ref = *(getJarvisHandle<Property>(env, prop_ref));
     try {
@@ -97,7 +97,7 @@ void Java_Property_newPropertyNative__LProperty_2(JNIEnv *env, jobject prop,
     }
 }
 
-void Java_Property_newPropertyNative__Z(JNIEnv *env, jobject prop,
+void Java_jarvis_Property_newPropertyNative__Z(JNIEnv *env, jobject prop,
                                         jboolean v)
 {
     bool j_v = (bool)v;
@@ -110,7 +110,7 @@ void Java_Property_newPropertyNative__Z(JNIEnv *env, jobject prop,
     }
 }
 
-void Java_Property_newPropertyNative__I(JNIEnv *env, jobject prop,
+void Java_jarvis_Property_newPropertyNative__I(JNIEnv *env, jobject prop,
                                         jint v)
 {
     int j_v = (int) v;
@@ -123,7 +123,7 @@ void Java_Property_newPropertyNative__I(JNIEnv *env, jobject prop,
     }
 }
 
-void Java_Property_newPropertyNative__Ljava_lang_String_2(JNIEnv *env, jobject prop, jstring v)
+void Java_jarvis_Property_newPropertyNative__Ljava_lang_String_2(JNIEnv *env, jobject prop, jstring v)
 {
     const char *j_v = env->GetStringUTFChars(v, 0);
     try {
@@ -135,7 +135,7 @@ void Java_Property_newPropertyNative__Ljava_lang_String_2(JNIEnv *env, jobject p
     }
 }
 
-void Java_Property_newPropertyNative__D(JNIEnv *env, jobject prop,
+void Java_jarvis_Property_newPropertyNative__D(JNIEnv *env, jobject prop,
                                         jdouble v)
 {
     double j_v = (double) v;
@@ -148,7 +148,7 @@ void Java_Property_newPropertyNative__D(JNIEnv *env, jobject prop,
     }
 }
 
-void Java_Property_dispose(JNIEnv *env, jobject prop)
+void Java_jarvis_Property_dispose(JNIEnv *env, jobject prop)
 {
     Property *j_prop = getJarvisHandle<Property>(env, prop);
     delete j_prop;

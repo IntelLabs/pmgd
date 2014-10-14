@@ -9,7 +9,7 @@
 
 using namespace Jarvis;
 
-void Java_NodeIterator_next(JNIEnv *env, jobject ni)
+void Java_jarvis_NodeIterator_next(JNIEnv *env, jobject ni)
 {
     try {
         NodeIterator &j_ni = *(getJarvisHandle<NodeIterator>(env, ni));
@@ -34,7 +34,7 @@ void Java_NodeIterator_next(JNIEnv *env, jobject ni)
     }
 }
 
-void Java_NodeIterator_dispose(JNIEnv *env, jobject ni)
+void Java_jarvis_NodeIterator_dispose(JNIEnv *env, jobject ni)
 {
     NodeIterator *j_ni = getJarvisHandle<NodeIterator>(env, ni);
     delete j_ni;

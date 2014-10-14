@@ -4,14 +4,14 @@
 
 using namespace Jarvis;
 
-void JNICALL Java_PropertyPredicate_newPropertyPredicateNative__
+void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__
     (JNIEnv *env, jobject pp)
 {
     PropertyPredicate *j_pp = new PropertyPredicate();
     setJarvisHandle(env, pp, j_pp);
 }
 
-void JNICALL Java_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_String_2
+void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_String_2
     (JNIEnv *env, jobject pp, jstring name)
 {
     const char *j_name = env->GetStringUTFChars(name, 0);
@@ -19,7 +19,7 @@ void JNICALL Java_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_Strin
     setJarvisHandle(env, pp, j_pp);
 }
 
-void JNICALL Java_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_String_2ILProperty_2
+void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_String_2ILjarvis_Property_2
     (JNIEnv *env, jobject pp, jstring name, jint op, jobject v)
 {
     const char *j_name = env->GetStringUTFChars(name, 0);
@@ -29,7 +29,7 @@ void JNICALL Java_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_Strin
     setJarvisHandle(env, pp, j_pp);
 }
 
-void JNICALL Java_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_String_2ILProperty_2LProperty_2
+void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_String_2ILjarvis_Property_2Ljarvis_Property_2
     (JNIEnv *env, jobject pp, jstring name, jint op, jobject v1, jobject v2)
 {
     const char *j_name = env->GetStringUTFChars(name, 0);
@@ -40,7 +40,7 @@ void JNICALL Java_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_Strin
     setJarvisHandle(env, pp, j_pp);
 }
 
-void Java_PropertyPredicate_dispose(JNIEnv *env, jobject pp)
+void Java_jarvis_PropertyPredicate_dispose(JNIEnv *env, jobject pp)
 {
     NodeIterator *j_pp = getJarvisHandle<NodeIterator>(env, pp);
     delete j_pp;

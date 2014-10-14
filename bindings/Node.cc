@@ -10,7 +10,7 @@
 
 using namespace Jarvis;
 
-jstring Java_Node_get_1tag(JNIEnv *env, jobject node)
+jstring Java_jarvis_Node_get_1tag(JNIEnv *env, jobject node)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
     try {
@@ -27,7 +27,7 @@ jstring Java_Node_get_1tag(JNIEnv *env, jobject node)
 }
 
 
-jobject Java_Node_get_1property(JNIEnv *env, jobject node, jstring str)
+jobject Java_jarvis_Node_get_1property(JNIEnv *env, jobject node, jstring str)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
     const char *j_str = env->GetStringUTFChars(str, 0);
@@ -44,7 +44,7 @@ jobject Java_Node_get_1property(JNIEnv *env, jobject node, jstring str)
     }
 }
 
-jobject Java_Node_get_1properties(JNIEnv *env, jobject node)
+jobject Java_jarvis_Node_get_1properties(JNIEnv *env, jobject node)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
     try {
@@ -57,7 +57,7 @@ jobject Java_Node_get_1properties(JNIEnv *env, jobject node)
     }
 }
 
-jobject JNICALL Java_Node_get_1edges__(JNIEnv *env, jobject node)
+jobject JNICALL Java_jarvis_Node_get_1edges__(JNIEnv *env, jobject node)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
     try {
@@ -70,7 +70,7 @@ jobject JNICALL Java_Node_get_1edges__(JNIEnv *env, jobject node)
     }
 }
 
-jobject JNICALL Java_Node_get_1edges__I(JNIEnv *env, jobject node, jint dir)
+jobject JNICALL Java_jarvis_Node_get_1edges__I(JNIEnv *env, jobject node, jint dir)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
     try {
@@ -83,7 +83,7 @@ jobject JNICALL Java_Node_get_1edges__I(JNIEnv *env, jobject node, jint dir)
     }
 }
 
-jobject JNICALL Java_Node_get_1edges__Ljava_lang_String_2(JNIEnv *env,
+jobject JNICALL Java_jarvis_Node_get_1edges__Ljava_lang_String_2(JNIEnv *env,
                     jobject node, jstring tag)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
@@ -98,7 +98,7 @@ jobject JNICALL Java_Node_get_1edges__Ljava_lang_String_2(JNIEnv *env,
     }
 }
 
-jobject JNICALL Java_Node_get_1edges__ILjava_lang_String_2
+jobject JNICALL Java_jarvis_Node_get_1edges__ILjava_lang_String_2
     (JNIEnv *env, jobject node, jint dir, jstring tag)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
@@ -114,7 +114,7 @@ jobject JNICALL Java_Node_get_1edges__ILjava_lang_String_2
 }
 
 
-void Java_Node_set_1property(JNIEnv *env, jobject node,
+void Java_jarvis_Node_set_1property(JNIEnv *env, jobject node,
                              jstring str, jobject prop)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
@@ -128,7 +128,7 @@ void Java_Node_set_1property(JNIEnv *env, jobject node,
     }
 }
 
-void Java_Node_remove_1property(JNIEnv *env, jobject node,
+void Java_jarvis_Node_remove_1property(JNIEnv *env, jobject node,
                                 jstring str)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));

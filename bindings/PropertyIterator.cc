@@ -6,19 +6,19 @@
 
 using namespace Jarvis;
 
-void JNICALL Java_PropertyIterator_next(JNIEnv *env, jobject pi)
+void JNICALL Java_jarvis_PropertyIterator_next(JNIEnv *env, jobject pi)
 {
     PropertyIterator &j_pi = *(getJarvisHandle<PropertyIterator>(env, pi));
     j_pi.next();
 }
 
-jboolean JNICALL Java_PropertyIterator_done(JNIEnv *env, jobject pi)
+jboolean JNICALL Java_jarvis_PropertyIterator_done(JNIEnv *env, jobject pi)
 {
     PropertyIterator &j_pi = *(getJarvisHandle<PropertyIterator>(env, pi));
     return !bool(j_pi);
 }
 
-jobject JNICALL Java_PropertyIterator_get_1current(JNIEnv *env, jobject pi)
+jobject JNICALL Java_jarvis_PropertyIterator_get_1current(JNIEnv *env, jobject pi)
 {
     PropertyIterator &j_pi = *(getJarvisHandle<PropertyIterator>(env, pi));
 
@@ -32,7 +32,7 @@ jobject JNICALL Java_PropertyIterator_get_1current(JNIEnv *env, jobject pi)
     }
 }
 
-jstring JNICALL Java_PropertyIterator_id(JNIEnv *env, jobject pi)
+jstring JNICALL Java_jarvis_PropertyIterator_id(JNIEnv *env, jobject pi)
 {
     PropertyIterator &j_pi = *(getJarvisHandle<PropertyIterator>(env, pi));
 
@@ -45,7 +45,7 @@ jstring JNICALL Java_PropertyIterator_id(JNIEnv *env, jobject pi)
     }
 }
 
-jint JNICALL Java_PropertyIterator_type(JNIEnv *env, jobject pi)
+jint JNICALL Java_jarvis_PropertyIterator_type(JNIEnv *env, jobject pi)
 {
     PropertyIterator &j_pi = *(getJarvisHandle<PropertyIterator>(env, pi));
 
@@ -58,7 +58,7 @@ jint JNICALL Java_PropertyIterator_type(JNIEnv *env, jobject pi)
     }
 }
 
-jboolean JNICALL Java_PropertyIterator_bool_1value(JNIEnv *env, jobject pi)
+jboolean JNICALL Java_jarvis_PropertyIterator_bool_1value(JNIEnv *env, jobject pi)
 {
     PropertyIterator &j_pi = *(getJarvisHandle<PropertyIterator>(env, pi));
 
@@ -71,7 +71,7 @@ jboolean JNICALL Java_PropertyIterator_bool_1value(JNIEnv *env, jobject pi)
     }
 }
 
-jlong JNICALL Java_PropertyIterator_int_1value(JNIEnv *env, jobject pi)
+jlong JNICALL Java_jarvis_PropertyIterator_int_1value(JNIEnv *env, jobject pi)
 {
     PropertyIterator &j_pi = *(getJarvisHandle<PropertyIterator>(env, pi));
 
@@ -84,7 +84,7 @@ jlong JNICALL Java_PropertyIterator_int_1value(JNIEnv *env, jobject pi)
     }
 }
 
-jstring JNICALL Java_PropertyIterator_string_1value(JNIEnv *env, jobject pi)
+jstring JNICALL Java_jarvis_PropertyIterator_string_1value(JNIEnv *env, jobject pi)
 {
     PropertyIterator &j_pi = *(getJarvisHandle<PropertyIterator>(env, pi));
 
@@ -97,7 +97,7 @@ jstring JNICALL Java_PropertyIterator_string_1value(JNIEnv *env, jobject pi)
     }
 }
 
-jdouble JNICALL Java_PropertyIterator_float_1value(JNIEnv *env, jobject pi)
+jdouble JNICALL Java_jarvis_PropertyIterator_float_1value(JNIEnv *env, jobject pi)
 {
     PropertyIterator &j_pi = *(getJarvisHandle<PropertyIterator>(env, pi));
 
@@ -110,7 +110,7 @@ jdouble JNICALL Java_PropertyIterator_float_1value(JNIEnv *env, jobject pi)
     }
 }
 
-void Java_PropertyIterator_dispose(JNIEnv *env, jobject pi)
+void Java_jarvis_PropertyIterator_dispose(JNIEnv *env, jobject pi)
 {
     PropertyIterator *j_pi = getJarvisHandle<PropertyIterator>(env, pi);
     delete j_pi;

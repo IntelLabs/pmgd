@@ -10,21 +10,21 @@
 
 using namespace Jarvis;
 
-jint Java_Graph_get_1id__LNode_2(JNIEnv *env, jobject graph, jobject node)
+jint Java_jarvis_Graph_get_1id__Ljarvis_Node_2(JNIEnv *env, jobject graph, jobject node)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     Node &j_node = *(getJarvisHandle<Node>(env, node));
     return j_db.get_id(j_node);
 }
 
-jint Java_Graph_get_1id__LEdge_2(JNIEnv *env, jobject graph, jobject edge)
+jint Java_jarvis_Graph_get_1id__Ljarvis_Edge_2(JNIEnv *env, jobject graph, jobject edge)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     return j_db.get_id(j_edge);
 }
 
-jobject JNICALL Java_Graph_get_1nodes__(JNIEnv *env, jobject graph)
+jobject JNICALL Java_jarvis_Graph_get_1nodes__(JNIEnv *env, jobject graph)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     try {
@@ -53,7 +53,7 @@ jobject JNICALL Java_Graph_get_1nodes__(JNIEnv *env, jobject graph)
 }
 
 
-jobject JNICALL Java_Graph_get_1nodes__Ljava_lang_String_2(JNIEnv *env,
+jobject JNICALL Java_jarvis_Graph_get_1nodes__Ljava_lang_String_2(JNIEnv *env,
                     jobject graph, jstring tag)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
@@ -84,7 +84,7 @@ jobject JNICALL Java_Graph_get_1nodes__Ljava_lang_String_2(JNIEnv *env,
 }
 
 
-jobject JNICALL Java_Graph_get_1nodes__Ljava_lang_String_2LPropertyPredicate_2Z
+jobject JNICALL Java_jarvis_Graph_get_1nodes__Ljava_lang_String_2Ljarvis_PropertyPredicate_2Z
     (JNIEnv *env, jobject graph, jstring tag, jobject pp, jboolean reverse)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
@@ -116,7 +116,7 @@ jobject JNICALL Java_Graph_get_1nodes__Ljava_lang_String_2LPropertyPredicate_2Z
 }
 
 
-jobject JNICALL Java_Graph_get_1edges__(JNIEnv *env, jobject graph)
+jobject JNICALL Java_jarvis_Graph_get_1edges__(JNIEnv *env, jobject graph)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     try {
@@ -129,7 +129,7 @@ jobject JNICALL Java_Graph_get_1edges__(JNIEnv *env, jobject graph)
     }
 }
 
-jobject JNICALL Java_Graph_get_1edges__Ljava_lang_String_2(JNIEnv *env,
+jobject JNICALL Java_jarvis_Graph_get_1edges__Ljava_lang_String_2(JNIEnv *env,
                     jobject graph, jstring tag)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
@@ -144,7 +144,7 @@ jobject JNICALL Java_Graph_get_1edges__Ljava_lang_String_2(JNIEnv *env,
     }
 }
 
-jobject JNICALL Java_Graph_get_1edges__Ljava_lang_String_2LPropertyPredicate_2Z
+jobject JNICALL Java_jarvis_Graph_get_1edges__Ljava_lang_String_2Ljarvis_PropertyPredicate_2Z
     (JNIEnv *env, jobject graph, jstring tag, jobject pp, jboolean reverse)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
@@ -160,7 +160,7 @@ jobject JNICALL Java_Graph_get_1edges__Ljava_lang_String_2LPropertyPredicate_2Z
     }
 }
 
-void Java_Graph_loadGraphNative(JNIEnv *env, jobject obj,
+void Java_jarvis_Graph_loadGraphNative(JNIEnv *env, jobject obj,
                                 jstring filename, jint options)
 {
     const char *db_name = env->GetStringUTFChars(filename, 0);
@@ -174,7 +174,7 @@ void Java_Graph_loadGraphNative(JNIEnv *env, jobject obj,
     env->ReleaseStringUTFChars(filename, db_name);
 }
 
-jobject JNICALL Java_Graph_add_1node(JNIEnv *env, jobject graph, jstring tag)
+jobject JNICALL Java_jarvis_Graph_add_1node(JNIEnv *env, jobject graph, jstring tag)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
@@ -188,7 +188,7 @@ jobject JNICALL Java_Graph_add_1node(JNIEnv *env, jobject graph, jstring tag)
     }
 }
 
-jobject JNICALL Java_Graph_add_1edge(JNIEnv *env, jobject graph,
+jobject JNICALL Java_jarvis_Graph_add_1edge(JNIEnv *env, jobject graph,
                                      jobject src, jobject dest, jstring tag)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
@@ -205,7 +205,7 @@ jobject JNICALL Java_Graph_add_1edge(JNIEnv *env, jobject graph,
     }
 }
 
-void Java_Graph_remove__LNode_2(JNIEnv *env, jobject graph, jobject node)
+void Java_jarvis_Graph_remove__Ljarvis_Node_2(JNIEnv *env, jobject graph, jobject node)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     Node &j_node = *(getJarvisHandle<Node>(env, node));
@@ -217,7 +217,7 @@ void Java_Graph_remove__LNode_2(JNIEnv *env, jobject graph, jobject node)
     }
 }
 
-void Java_Graph_remove__LEdge_2(JNIEnv *env, jobject graph, jobject edge)
+void Java_jarvis_Graph_remove__Ljarvis_Edge_2(JNIEnv *env, jobject graph, jobject edge)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
@@ -229,7 +229,7 @@ void Java_Graph_remove__LEdge_2(JNIEnv *env, jobject graph, jobject edge)
     }
 }
 
-void Java_Graph_dispose(JNIEnv *env, jobject graph)
+void Java_jarvis_Graph_dispose(JNIEnv *env, jobject graph)
 {
     Graph *j_db = getJarvisHandle<Graph>(env, graph);
     delete j_db;

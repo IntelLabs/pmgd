@@ -10,7 +10,7 @@
 
 using namespace Jarvis;
 
-void Java_Transaction_startTransactionNative(JNIEnv *env, jobject tx,
+void Java_jarvis_Transaction_startTransactionNative(JNIEnv *env, jobject tx,
                                              jobject graph, jint options)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
@@ -23,7 +23,7 @@ void Java_Transaction_startTransactionNative(JNIEnv *env, jobject tx,
     }
 }
 
-void Java_Transaction_commit(JNIEnv *env, jobject tx)
+void Java_jarvis_Transaction_commit(JNIEnv *env, jobject tx)
 {
     Transaction &j_tx = *(getJarvisHandle<Transaction>(env, tx));
     try {
@@ -36,7 +36,7 @@ void Java_Transaction_commit(JNIEnv *env, jobject tx)
     }
 }
 
-void Java_Transaction_abort(JNIEnv *env, jobject tx)
+void Java_jarvis_Transaction_abort(JNIEnv *env, jobject tx)
 {
     Transaction *j_tx = getJarvisHandle<Transaction>(env, tx);
     delete j_tx;
