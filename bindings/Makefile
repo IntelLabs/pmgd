@@ -81,9 +81,6 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
 CFLAGS := --std=c++11 $(INCLUDES) $(JAVA_INCLUDES) $(FFLAGS) $(WFLAGS) $(OPT) \
           $(PM) -MP -MMD -fPIC
 
-# Jarvis Lake libraries.
-CLIBS := -L$(O_LIB) -ljarvis-util -ljarvis
-
 # Add a little bit of colorful noise in silent mode.
 ifneq ($(findstring s,$(MAKEFLAGS)),)
     print = @$(ECHO) -e "\033[00;34m" [$(1)] $(2)"\033[00;00m"
@@ -98,11 +95,17 @@ install: $(O_BINDINGS) $(DLIBRARY) $(JLIBRARY)
 	$(call print,INSTALL,$(JLIBRARY))
 	$(CP) $(JLIBRARY) $(INSTALLPATH)
 
-$(DLIBRARY): $(COBJS)
-	$(CC) -shared -o $@ $(COBJS) $(CLIBS)
+$(DLIBRARY): $(COBJS) $(O_LIB)jarvis-util.lib $(O_LIB)jarvis.lib
+	$(CC) -shared -o $@ $(COBJS) $(O_LIB)jarvis-util.lib $(O_LIB)jarvis.lib
 
 $(JLIBRARY): $(JOBJS)
 	cd $(O_BINDINGS).; $(JAR) cf $@ $(subst $(O_BINDINGS),,$(JOBJS))
+
+$(O_LIB)jarvis.lib:
+	make -C ../src
+
+$(O_LIB)jarvis-util.lib:
+	make -C ../util
 
 clean:
 	$(call print,CLEAN)
