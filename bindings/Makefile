@@ -151,3 +151,39 @@ $(O_BINDINGS)jarvis/%.class: %.java $(MAKEFILE_LIST)
 # Include dependency information if they are available.
 DEPS := $(COBJS:%.o=%.d)
 -include $(DEPS)
+
+$(O_BINDINGS)jarvis/Graph.class : \
+    $(O_BINDINGS)jarvis/Exception.class \
+    $(O_BINDINGS)jarvis/Node.class \
+    $(O_BINDINGS)jarvis/Edge.class \
+    $(O_BINDINGS)jarvis/NodeIterator.class \
+    $(O_BINDINGS)jarvis/EdgeIterator.class \
+    $(O_BINDINGS)jarvis/PropertyPredicate.class
+
+$(O_BINDINGS)jarvis/NodeIterator.class : \
+    $(O_BINDINGS)jarvis/Exception.class \
+    $(O_BINDINGS)jarvis/Node.class \
+    $(O_BINDINGS)jarvis/Property.class \
+    $(O_BINDINGS)jarvis/PropertyIterator.class
+
+$(O_BINDINGS)jarvis/Property.class : \
+    $(O_BINDINGS)jarvis/Exception.class
+
+$(O_BINDINGS)jarvis/PropertyIterator.class : \
+    $(O_BINDINGS)jarvis/Exception.class \
+    $(O_BINDINGS)jarvis/Property.class
+
+$(O_BINDINGS)jarvis/Transaction.class : \
+    $(O_BINDINGS)jarvis/Exception.class \
+    $(O_BINDINGS)jarvis/Graph.class
+
+$(O_BINDINGS)jarvis/Node.class : \
+    Node.java \
+    Edge.java \
+    EdgeIterator.java \
+    $(O_BINDINGS)jarvis/Exception.class \
+    $(O_BINDINGS)jarvis/Property.class \
+    $(O_BINDINGS)jarvis/PropertyIterator.class \
+    $(MAKEFILE_LIST)
+	$(call print,COMPILE,$@)
+	$(JC) -d $(O_BINDINGS). Node.java Edge.java EdgeIterator.java
