@@ -4,11 +4,18 @@
 # Eliminate all default rules.
 .SUFFIXES:
 
+# Ask make not to delete these intermediate files
+.SECONDARY: $(CHDRS)
+
+#MAKEFILE := $(lastword $(MAKEFILE_LIST))
+
 # Tools.
 CC := g++-4.8
 CP := cp -a
 RM := rm -f
 ECHO := echo
+MKDIR := mkdir
+TOUCH := touch
 JC := javac
 JH := javah
 JAR := jar
@@ -50,6 +57,7 @@ JSRCS := $(CLASSES:%=$(O_BINDINGS)%.java)
 JOBJS := $(CLASSES:%=$(O_BINDINGS)jarvis/%.class)
 CSRCS := $(CLASSES:%=$(O_BINDINGS)%.cc)
 COBJS := $(CLASSES:%=$(O_BINDINGS)%.o)
+CHDRS := $(CLASSES:%=%(O_BINDINGS)%.h)
 
 JOBJS += $(O_BINDINGS)jarvis/Graph\$$OpenOptions.class
 JOBJS += $(O_BINDINGS)jarvis/Graph\$$IndexOptions.class
@@ -88,12 +96,16 @@ endif
 
 # The default goal creates the build directory, builds the targets,
 # creates the install directory, and copies the targets there.
-install: $(O_BINDINGS) $(DLIBRARY) $(JLIBRARY)
-	$(shell if ! test -d $(INSTALLPATH); then mkdir $(INSTALLPATH); fi)
+install: $(O_BINDINGS) $(INSTALLPATH) \
+         $(INSTALLPATH)/$(JLIBRARY) $(INSTALLPATH)/$(DLIBRARY)
+
+$(INSTALLPATH)/$(JLIBRARY): $(JLIBRARY)
 	$(call print,INSTALL,$(DLIBRARY))
-	$(CP) $(DLIBRARY) $(INSTALLPATH)
-	$(call print,INSTALL,$(JLIBRARY))
 	$(CP) $(JLIBRARY) $(INSTALLPATH)
+
+$(INSTALLPATH)/$(DLIBRARY): $(DLIBRARY)
+	$(call print,INSTALL,$(JLIBRARY))
+	$(CP) $(DLIBRARY) $(INSTALLPATH)
 
 $(DLIBRARY): $(COBJS) $(O_LIB)jarvis-util.lib $(O_LIB)jarvis.lib
 	$(CC) -shared -o $@ $(COBJS) $(O_LIB)jarvis-util.lib $(O_LIB)jarvis.lib
@@ -115,23 +127,10 @@ clean:
 # If the variable $(O_BINDINGS) is non-empty and the corresponding
 # directory does not exist then create it.
 $(O_BINDINGS):
-	mkdir -p $@
+	$(MKDIR) -p $@
 
-$(O_BINDINGS)jarvis/Graph\$$OpenOptions.class: Graph.java
-	$(call print,COMPILE,$@)
-	$(JC) -d $(O_BINDINGS). $<
-
-$(O_BINDINGS)jarvis/Graph\$$IndexOptions.class: Graph.java
-	$(call print,COMPILE,$@)
-	$(JC) -d $(O_BINDINGS). $<
-
-$(O_BINDINGS)jarvis/Node\$$Direction.class: Node.java
-	$(call print,COMPILE,$@)
-	$(JC) -d $(O_BINDINGS). $<
-
-$(O_BINDINGS)jarvis/PropertyPredicate\$$op_t.class: PropertyPredicate.java
-	$(call print,COMPILE,$@)
-	$(JC) -d $(O_BINDINGS). $<
+$(INSTALLPATH):
+	$(MKDIR) -p $(INSTALLPATH)
 
 # Rule for building an object file from a C++ file.
 $(O_BINDINGS)%.o: %.cc $(O_BINDINGS)%.h $(MAKEFILE_LIST)
@@ -139,20 +138,22 @@ $(O_BINDINGS)%.o: %.cc $(O_BINDINGS)%.h $(MAKEFILE_LIST)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 # Rule for building a JNI header file for a class.
-$(O_BINDINGS)%.h: $(O_BINDINGS)jarvis/%.class $(MAKEFILE_LIST)
+$(O_BINDINGS)%.h: $(O_BINDINGS)jarvis/%.class $(MAKEFILE)
 	$(call print,JAVAH,$@)
-	$(JH) -jni -o $@ jarvis.$*
+	$(JH) -jni -cp $(O_BINDINGS). -o $@ jarvis.$*
+	$(TOUCH) -m -r $< $@
 
 # Rule for building bytecodes from a Java file.
-$(O_BINDINGS)jarvis/%.class: %.java $(MAKEFILE_LIST)
+$(O_BINDINGS)jarvis/%.class: %.java $(MAKEFILE)
 	$(call print,COMPILE,$@)
-	$(JC) -d $(O_BINDINGS). $<
+	$(JC) -cp $(O_BINDINGS). -d $(O_BINDINGS). $<
 
 # Include dependency information if they are available.
 DEPS := $(COBJS:%.o=%.d)
 -include $(DEPS)
 
-$(O_BINDINGS)jarvis/Graph.class : \
+# Explicit list of dependencies among the java source files.
+$(O_BINDINGS)jarvis/Graph.class: \
     $(O_BINDINGS)jarvis/Exception.class \
     $(O_BINDINGS)jarvis/Node.class \
     $(O_BINDINGS)jarvis/Edge.class \
@@ -160,30 +161,55 @@ $(O_BINDINGS)jarvis/Graph.class : \
     $(O_BINDINGS)jarvis/EdgeIterator.class \
     $(O_BINDINGS)jarvis/PropertyPredicate.class
 
-$(O_BINDINGS)jarvis/NodeIterator.class : \
+$(O_BINDINGS)jarvis/NodeIterator.class: \
     $(O_BINDINGS)jarvis/Exception.class \
     $(O_BINDINGS)jarvis/Node.class \
     $(O_BINDINGS)jarvis/Property.class \
     $(O_BINDINGS)jarvis/PropertyIterator.class
 
-$(O_BINDINGS)jarvis/Property.class : \
+$(O_BINDINGS)jarvis/Property.class: \
     $(O_BINDINGS)jarvis/Exception.class
 
-$(O_BINDINGS)jarvis/PropertyIterator.class : \
+$(O_BINDINGS)jarvis/PropertyIterator.class: \
     $(O_BINDINGS)jarvis/Exception.class \
     $(O_BINDINGS)jarvis/Property.class
 
-$(O_BINDINGS)jarvis/Transaction.class : \
+$(O_BINDINGS)jarvis/Transaction.class: \
     $(O_BINDINGS)jarvis/Exception.class \
     $(O_BINDINGS)jarvis/Graph.class
 
-$(O_BINDINGS)jarvis/Node.class : \
+# Build these three sources together because of mutual dependencies.
+.SECONDARY: Node.build
+$(O_BINDINGS)jarvis/Node.class: Node.build
+$(O_BINDINGS)jarvis/Node\$$Direction.class: Node.build
+$(O_BINDINGS)jarvis/Edge.class: Node.build
+$(O_BINDINGS)jarvis/EdgeIterator.class: Node.build
+
+Node.build: \
     Node.java \
     Edge.java \
     EdgeIterator.java \
     $(O_BINDINGS)jarvis/Exception.class \
     $(O_BINDINGS)jarvis/Property.class \
     $(O_BINDINGS)jarvis/PropertyIterator.class \
-    $(MAKEFILE_LIST)
+    $(MAKEFILE)
 	$(call print,COMPILE,$@)
-	$(JC) -d $(O_BINDINGS). Node.java Edge.java EdgeIterator.java
+	$(JC) -cp $(O_BINDINGS). -d $(O_BINDINGS). Node.java Edge.java EdgeIterator.java
+
+# Rules for compiling a single Java source file into multiple classes.
+.SECONDARY: Graph.build
+$(O_BINDINGS)jarvis/Graph.class: Graph.build
+$(O_BINDINGS)jarvis/Graph\$$OpenOptions.class: Graph.build
+$(O_BINDINGS)jarvis/Graph\$$IndexOptions.class: Graph.build
+
+Graph.build: Graph.java $(MAKEFILE)
+	$(call print,COMPILE,$@)
+	$(JC) -cp $(O_BINDINGS). -d $(O_BINDINGS). $<
+
+.SECONDARY: PropertyPredicate.build
+$(O_BINDINGS)jarvis/PropertyPredicate.class: PropertyPredicate.build
+$(O_BINDINGS)jarvis/PropertyPredicate\$$op_t.class: PropertyPredicate.build
+
+PropertyPredicate.build: PropertyPredicate.java $(MAKEFILE)
+	$(call print,COMPILE,$@)
+	$(JC) -cp $(O_BINDINGS). -d $(O_BINDINGS). $<
