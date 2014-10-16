@@ -22,7 +22,7 @@ namespace Jarvis {
     public:
         StringTable(const uint64_t region_addr, size_t len,
                     unsigned stringid_len, bool create);
-        uint16_t get(const char *name);
+        bool get(const char *name, uint16_t &id, bool add);
         std::string get(uint16_t id) const;
     };
 };

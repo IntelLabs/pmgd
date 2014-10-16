@@ -53,9 +53,9 @@ inline uint16_t StringTable::hash_fnv_1a(const char *name, unsigned &len)
     return (uint16_t)(((hash >> 16) ^ hash) & HASH_MASK);
 }
 
-uint16_t StringTable::get(const char *name)
+bool StringTable::get(const char *name, uint16_t &id, bool add)
 {
-    bool collision = true;
+    bool r;
     unsigned length;
 
     uint16_t hash = hash_fnv_1a(name, length);
@@ -63,18 +63,22 @@ uint16_t StringTable::get(const char *name)
     if (length > MAX_STRINGID_LEN)
         throw Exception(invalid_id);
 
-    do {
+    while (true) {
         uint64_t offset = hash * MAX_STRINGID_LEN;
         char *dest = _pm + offset;
         // Check if the slot is unoccupied.
         if (*dest == 0) {
-            // Ok to acquire transaction object here again (after StringID)
-            // cause this is not a frequented branch
-            TransactionImpl *tx = TransactionImpl::get_tx();
-            tx->check_read_write();
-            tx->write_nolog(dest, (void *)name, length);
-            // Found an empty slot to copy string. Therefore,
-            // no need for further string comparison.
+            // Found an empty slot.
+            if (add) {
+                // Ok to acquire transaction object here again (after StringID)
+                // because this is not a frequented branch.
+                TransactionImpl *tx = TransactionImpl::get_tx();
+                tx->check_read_write();
+                tx->write_nolog(dest, (void *)name, length);
+            }
+            else
+                hash = 0;
+            r = false;
             break;
         }
         // Some string there already. Check if it matches with name.
@@ -85,10 +89,10 @@ uint16_t StringTable::get(const char *name)
         int l = length % 4;
         int num_ints = length / 4;
 
-        collision = false; // Assume we will succeed in this comparison
+        bool match = true; // Assume we will succeed in this comparison
         for (int i = 0; i < num_ints; ++i) {
             if (s1[i] != s2[i]) {
-                collision = true;
+                match = false;
                 break;
             }
         }
@@ -96,14 +100,21 @@ uint16_t StringTable::get(const char *name)
             char *s = (char *)(s1 + num_ints);
             char *d = (char *)(s2 + num_ints);
             for (int i = 0; i < l; ++i) {
-                if (s[i] != d[i])
-                    collision = true;
+                if (s[i] != d[i]) {
+                    match = false;
+                    break;
+                }
             }
         }
-        if (collision)
-            hash = uint16_t((hash + 1) & HASH_MASK);
-    } while (collision);
-    return hash;
+        if (match) {
+            r = true;
+            break;
+        }
+        hash = uint16_t((hash + 1) & HASH_MASK);
+    }
+
+    id = hash;
+    return r;
 }
 
 std::string StringTable::get(uint16_t id) const

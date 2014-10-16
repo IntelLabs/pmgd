@@ -241,8 +241,9 @@ Jarvis::EdgeIterator Jarvis::Graph::get_edges()
     throw Exception(not_implemented);
 }
 
-Jarvis::StringID::StringID(const char *)
+bool Jarvis::StringID::get(const char *, StringID &, bool)
 {
+    throw Exception(not_implemented);
 }
 
 Jarvis::Property Jarvis::Edge::get_property(StringID) const

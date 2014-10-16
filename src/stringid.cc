@@ -5,13 +5,15 @@
 #include "TransactionImpl.h"
 #include "GraphImpl.h"
 
-Jarvis::StringID::StringID(const char *s)
+bool Jarvis::StringID::get(const char *s, StringID &stringid, bool add)
 {
-    if (s == NULL || *s == '\0')
-        _id = 0;
+    if (s == NULL || *s == '\0') {
+        stringid._id = 0;
+        return true;
+    }
     else {
         TransactionImpl *tx = TransactionImpl::get_tx();
-        _id = tx->get_db()->string_table().get(s);
+        return tx->get_db()->string_table().get(s, stringid._id, add);
     }
 }
 
