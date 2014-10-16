@@ -14,19 +14,30 @@ using namespace Jarvis;
 void create_db(const char *name)
 {
     Graph db(name, Graph::Create);
+    Transaction tx(db, Transaction::ReadWrite);
+    db.add_node(0);
+    db.add_node("");
+    db.add_node("x");
 }
 
-// Test that a read-only operation works.
+// Test that read-only operations work.
 void test1(Graph &db)
 {
     Transaction tx(db);
     dump_nodes(db);
+    StringID id1(0);
+    StringID id2("");
+    StringID id3("x");
+    StringID id;
+    if (!StringID::lookup("x", id))
+        throw Exception(111, "unexpected", __FILE__, __LINE__);
+    if (StringID::lookup("y", id))
+        throw Exception(111, "unexpected", __FILE__, __LINE__);
 }
 
 // Test that a read-only transaction cannot be used to modify the db.
-void test2(Graph &db)
+void test2a(Graph &db)
 {
-    Transaction tx(db);
     try {
         db.add_node(0);
     }
@@ -37,6 +48,28 @@ void test2(Graph &db)
     }
     throw Exception(111, "unexpected", __FILE__, __LINE__);
 }
+
+void test2b(Graph &db)
+{
+    try {
+        // Try to create a stringid that doesn't exist
+        StringID id("y");
+    }
+    catch (Exception e) {
+        if (e.num != Exception::e_read_only)
+            throw e;
+        return;
+    }
+    throw Exception(111, "unexpected", __FILE__, __LINE__);
+}
+
+void test2(Graph &db)
+{
+    Transaction tx(db);
+    test2a(db);
+    test2b(db);
+}
+
 
 // Test that a read-write transaction cannot be created in a read-only graph.
 void test3(Graph &db)
