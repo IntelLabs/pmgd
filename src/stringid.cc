@@ -7,7 +7,7 @@
 
 Jarvis::StringID::StringID(const char *s)
 {
-    if (s == NULL)
+    if (s == NULL || *s == '\0')
         _id = 0;
     else {
         TransactionImpl *tx = TransactionImpl::get_tx();
