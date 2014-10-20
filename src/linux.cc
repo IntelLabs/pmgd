@@ -64,6 +64,9 @@ Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
         create = false;
     }
     else if (sb.st_size == 0 && create) {
+        if (read_only)
+            throw Exception(read_only);
+
         if (ftruncate(_fd, map_len) < 0) {
             int err = errno;
             close(_fd);
