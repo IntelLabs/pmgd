@@ -270,6 +270,8 @@ NodeIterator Graph::get_nodes(StringID tag)
 
 NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp, bool reverse)
 {
+    if (pp.id == 0)
+        return get_nodes(tag);
     Index *index = _impl->index_manager().get_index(NODE, tag, pp.id);
     if (index)
         return index->get_nodes(pp, &_impl->locale(), reverse);
