@@ -91,6 +91,6 @@ namespace Jarvis {
         const KeyPosition *get_first() { return _key_list.begin(); }
         size_t num_elems() { return _key_list.num_elems(); }
         // This will remove the element based on edge pointer value
-        void remove(const StringID key, Edge* edge, Node* node, Allocator& allocator);
+        void remove(const StringID key, Edge* edge, Allocator& allocator);
     };
 }
