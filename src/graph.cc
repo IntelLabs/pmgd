@@ -82,6 +82,26 @@ Edge &Graph::add_edge(Node &src, Node &dest, StringID tag)
     return *edge;
 }
 
+void Graph::remove(Node &node)
+{
+    Allocator &allocator = _impl->allocator();
+    node.remove_all_properties();
+    node.get_edges().process([this](Edge &edge) { remove(edge); });
+    node.cleanup(allocator);
+    _impl->index_manager().remove_node(&node, allocator);
+    _impl->node_table().free(&node);
+}
+
+void Graph::remove(Edge &edge)
+{
+    Allocator &allocator = _impl->allocator();
+    edge.remove_all_properties();
+    edge.get_source().remove_edge(&edge, Outgoing, allocator);
+    edge.get_destination().remove_edge(&edge, Incoming, allocator);
+    _impl->index_manager().remove_edge(&edge, allocator);
+    _impl->edge_table().free(&edge);
+}
+
 void Graph::create_index(IndexType index_type, StringID tag,
                          StringID property_id, const PropertyType ptype)
 {
