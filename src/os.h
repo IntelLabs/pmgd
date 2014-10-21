@@ -16,6 +16,9 @@ namespace Jarvis {
             OSMapRegion *_s;
 
         public:
+            MapRegion(const MapRegion &) = delete;
+            void operator=(const MapRegion &) = delete;
+
             MapRegion(const char *db_name, const char *region_name,
                       uint64_t map_addr, uint64_t map_len,
                       bool &create, bool truncate, bool read_only);
@@ -26,6 +29,8 @@ namespace Jarvis {
         class SigHandler {
             static void sigbus_handler(int);
         public:
+            SigHandler(const SigHandler &) = delete;
+            void operator=(const SigHandler &) = delete;
             SigHandler();
         };
 

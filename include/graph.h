@@ -17,9 +17,6 @@ namespace Jarvis {
         friend class Transaction;
         GraphImpl *_impl;
 
-        Graph(const Graph &);
-        void operator=(const Graph &);
-
     public:
         enum OpenOptions { ReadWrite = 0, Create = 1, ReadOnly = 2 };
 
@@ -46,6 +43,8 @@ namespace Jarvis {
             Config();
         };
 
+        Graph(const Graph &) = delete;
+        void operator=(const Graph &) = delete;
         Graph(const char *name, int options = ReadWrite, const Config * = NULL);
         ~Graph();
 

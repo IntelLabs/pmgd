@@ -38,6 +38,9 @@ namespace Jarvis {
         static void clean_free_list(TransactionImpl *tx, void *obj, void *list);
 
     public:
+        FixedAllocator(const FixedAllocator &) = delete;
+        void operator=(const FixedAllocator &) = delete;
+
         FixedAllocator(uint64_t pool_addr, unsigned object_size,
                        uint64_t pool_size, bool create);
 

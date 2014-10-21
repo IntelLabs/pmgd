@@ -212,6 +212,9 @@ namespace Jarvis {
         static unsigned get_space(const Property &);
 
     public:
+        PropertyList(const PropertyList &) = delete;
+        ~PropertyList() = delete;
+        void operator=(const PropertyList &) = delete;
         void init(std::size_t size);
         bool check_property(StringID property, Property &result) const;
         Property get_property(StringID id) const;
@@ -240,6 +243,8 @@ namespace Jarvis {
         Edge *edge() const { return _impl->get_edge(); }
 
     public:
+        EdgeRef(const EdgeRef &) = delete;
+        void operator=(const EdgeRef &) = delete;
         EdgeRef(EdgeIteratorImplIntf *impl) : _impl(impl) {}
         operator Edge &() { return *edge(); }
         StringID get_tag() const { return _impl->get_tag(); }
@@ -282,6 +287,8 @@ namespace Jarvis {
     class PathRef {
         PathIteratorImplIntf *_impl;
     public:
+        PathRef(const PathRef &) = delete;
+        void operator=(const PathRef &) = delete;
         PathRef(PathIteratorImplIntf *i) : _impl(i) { }
         operator Path() const;
         Node &start_node() const { return _impl->start_node(); }

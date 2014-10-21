@@ -20,6 +20,8 @@ namespace Jarvis {
         uint16_t hash_fnv_1a(const char *name, unsigned &len);
 
     public:
+        StringTable(const StringTable &) = delete;
+        void operator=(const StringTable &) = delete;
         StringTable(const uint64_t region_addr, size_t len,
                     unsigned stringid_len, bool create);
         bool get(const char *name, uint16_t &id, bool add);

@@ -46,6 +46,8 @@ namespace Jarvis {
                 { return static_cast<JournalEntry *>(_tx_handle.jend); }
 
         public:
+            TransactionImpl(const TransactionImpl &) = delete;
+            void operator=(const TransactionImpl &) = delete;
             TransactionImpl(GraphImpl *db, int options);
             ~TransactionImpl();
 

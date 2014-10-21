@@ -23,11 +23,10 @@ namespace Jarvis {
         void add_edge(Edge *edge, Direction dir, StringID tag,
                       Allocator &index_allocator);
 
-        Node(const Node &);
-        ~Node();
-        void operator=(const Node &);
-
     public:
+        Node(const Node &) = delete;
+        ~Node() = delete;
+        void operator=(const Node &) = delete;
         StringID get_tag() const { return _tag; }
         bool check_property(StringID property, Property &result) const;
         Property get_property(StringID property) const;

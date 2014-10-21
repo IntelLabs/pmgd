@@ -43,6 +43,10 @@ struct GraphImpl::GraphInfo {
     uint64_t allocator_offsets[];
 
     void init(const GraphConfig &);
+
+    GraphInfo(const GraphInfo &) = delete;
+    ~GraphInfo() = delete;
+    void operator=(const GraphInfo &) = delete;
 };
 
 namespace Jarvis {

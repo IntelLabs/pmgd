@@ -16,11 +16,10 @@ namespace Jarvis {
         friend class Graph;
         void init(Node &src, Node &dest, StringID tag, unsigned object_size);
 
-        Edge(const Edge &);
-        ~Edge();
-        void operator=(const Edge &);
-
     public:
+        Edge(const Edge &) = delete;
+        ~Edge() = delete;
+        void operator=(const Edge &) = delete;
         StringID get_tag() const { return _tag; }
         Node &get_source() const { return *_src; }
         Node &get_destination() const { return *_dest; }

@@ -50,6 +50,9 @@ namespace Jarvis {
         void *tx_jend(int index);
 
     public:
+        TransactionManager(const TransactionManager &) = delete;
+        void operator=(const TransactionManager &) = delete;
+
         TransactionManager(uint64_t *tx_id,
                            uint64_t transaction_table_addr,
                            uint64_t transaction_table_size,
