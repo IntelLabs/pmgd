@@ -19,12 +19,26 @@ void Node::init(StringID tag, unsigned object_size, Allocator &index_allocator)
     _property_list.init(object_size - offsetof(Node, _property_list));
 }
 
+void Node::cleanup(Allocator &index_allocator)
+{
+    EdgeIndex::free(_out_edges, index_allocator);
+    EdgeIndex::free(_in_edges, index_allocator);
+}
+
 void Node::add_edge(Edge *edge, Direction dir, StringID tag, Allocator &index_allocator)
 {
     if (dir == Outgoing)
         _out_edges->add(tag, edge, &edge->get_destination(), index_allocator);
     else
         _in_edges->add(tag, edge, &edge->get_source(), index_allocator);
+}
+
+void Node::remove_edge(Edge *edge, Direction dir, Allocator &index_allocator)
+{
+    if (dir == Outgoing)
+        _out_edges->remove(edge->get_tag(), edge, index_allocator);
+    else
+        _in_edges->remove(edge->get_tag(), edge, index_allocator);
 }
 
 namespace Jarvis {
