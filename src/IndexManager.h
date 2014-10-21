@@ -46,6 +46,8 @@ namespace Jarvis {
 
         bool add(Graph::IndexType index_type, StringID tag, void *obj,
                  Allocator &allocator);
+        void remove(Graph::IndexType index_type, StringID tag, void *obj,
+                 Allocator &allocator);
 
     public:
         IndexManager(const uint64_t region_addr, bool create)
@@ -72,6 +74,12 @@ namespace Jarvis {
 
         bool add_edge(Edge *edge, Allocator &allocator)
             { return add(Graph::EdgeIndex, edge->get_tag(), edge, allocator); }
+
+        void remove_node(Node *node, Allocator &allocator)
+            { remove(Graph::NodeIndex, node->get_tag(), node, allocator); }
+
+        void remove_edge(Edge *edge, Allocator &allocator)
+            { remove(Graph::EdgeIndex, edge->get_tag(), edge, allocator); }
 
         void update(GraphImpl *db,
                     Graph::IndexType index_type, StringID tag, void *obj,
