@@ -245,6 +245,8 @@ namespace Jarvis {
                 /*Graph::IndexType*/ int index_type, StringID tag, void *obj);
         void remove_property(StringID name,
                 /*Graph::IndexType*/ int index_type, StringID tag, void *obj);
+        void remove_all_properties(
+                /*Graph::IndexType*/ int index_type, StringID tag, void *obj);
     };
 };
 

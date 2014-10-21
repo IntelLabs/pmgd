@@ -22,6 +22,7 @@ namespace Jarvis {
                   Allocator &index_allocator);
         void add_edge(Edge *edge, Direction dir, StringID tag,
                       Allocator &index_allocator);
+        void remove_all_properties();
 
     public:
         Node(const Node &) = delete;

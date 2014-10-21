@@ -24,3 +24,6 @@ void Jarvis::Edge::set_property(StringID id, const Property &new_value)
 
 void Jarvis::Edge::remove_property(StringID id)
     { _property_list.remove_property(id, Graph::EdgeIndex, _tag, this); }
+
+void Jarvis::Edge::remove_all_properties()
+    { _property_list.remove_all_properties(Graph::EdgeIndex, _tag, this); }

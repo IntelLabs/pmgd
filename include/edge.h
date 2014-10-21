@@ -15,6 +15,7 @@ namespace Jarvis {
 
         friend class Graph;
         void init(Node &src, Node &dest, StringID tag, unsigned object_size);
+        void remove_all_properties();
 
     public:
         Edge(const Edge &) = delete;

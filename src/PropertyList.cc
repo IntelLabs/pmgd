@@ -170,6 +170,50 @@ void PropertyList::remove_property(StringID id,
     }
 }
 
+void PropertyList::remove_all_properties(
+            /*Graph::IndexType*/ int index_type, StringID tag, void *obj)
+{
+    // Free all blobs and strings, free all chunks beyond chunk0,
+    // and set the first byte of chunk0 to p_end, indicating that
+    // there are no properties in the list.
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl *db = tx->get_db();
+    Allocator &allocator = db->allocator();
+    PropertyRef p(this);
+    bool first = true;
+    while (p.not_done()) {
+        switch (p.ptype()) {
+            case PropertyRef::p_link: {
+                uint8_t *chunk = p._chunk;
+                p.follow_link();
+                if (!first)
+                    allocator.free(chunk, PropertyList::chunk_size);
+                first = false;
+                continue;
+            }
+            case PropertyRef::p_unused:
+                break;
+            case PropertyRef::p_string_ptr:
+                db->index_manager().update(db, Graph::IndexType(index_type),
+                                           tag, obj, p.get_id(), &p, NULL);
+                /* fall through */
+            case PropertyRef::p_blob: { // Note: indexes not supported for blobs
+                PropertyRef::BlobRef *v = (PropertyRef::BlobRef *)p.val();
+                allocator.free(v->value, v->size);
+                break;
+            }
+            default:
+                db->index_manager().update(db, Graph::IndexType(index_type),
+                                           tag, obj, p.get_id(), &p, NULL);
+                break;
+        }
+        p.skip();
+    }
+    if (!first)
+        allocator.free(p._chunk, PropertyList::chunk_size);
+    tx->write<uint8_t>(&_chunk0[1], PropertyRef::p_end);
+}
+
 
 // Search the property list for the specified property id.
 // If it is found, return a reference to the property in r.
