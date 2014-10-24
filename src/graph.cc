@@ -21,7 +21,7 @@ static constexpr char info_name[] = "graph.jdb";
 extern constexpr char commit_id[] = "Commit id: " COMMIT_ID;
 
 struct GraphImpl::GraphInfo {
-    static const uint64_t VERSION = 2;
+    static const uint64_t VERSION = 3;
 
     uint64_t version;
 
@@ -36,6 +36,8 @@ struct GraphImpl::GraphInfo {
     uint32_t max_stringid_length;
 
     char locale_name[32];
+
+    uint64_t last_transaction_id;
 
     uint32_t num_fixed_allocators;
     uint64_t allocator_offsets[];
@@ -149,7 +151,8 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
       _node_region(name, _init.info->node_info, _init.create, _init.read_only),
       _edge_region(name, _init.info->edge_info, _init.create, _init.read_only),
       _allocator_region(name, _init.info->allocator_info, _init.create, _init.read_only),
-      _transaction_manager(_init.info->transaction_info.addr,
+      _transaction_manager(&_init.info->last_transaction_id,
+                           _init.info->transaction_info.addr,
                            _init.info->transaction_info.len,
                            _init.info->journal_info.addr,
                            _init.info->journal_info.len,

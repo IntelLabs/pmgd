@@ -8,10 +8,12 @@
 using namespace Jarvis;
 
 TransactionManager::TransactionManager(
+            uint64_t *tx_id,
             uint64_t transaction_table_addr, uint64_t transaction_table_size,
             uint64_t journal_addr, uint64_t journal_size,
             bool create, bool read_only)
-    : _tx_table(reinterpret_cast<TransactionHdr *>(transaction_table_addr)),
+    : _cur_tx_id(tx_id),
+      _tx_table(reinterpret_cast<TransactionHdr *>(transaction_table_addr)),
       _journal_addr(reinterpret_cast<void *>(journal_addr)),
       _max_transactions(transaction_table_size / sizeof (TransactionHdr)),
       _extent_size(journal_size / _max_transactions),
@@ -26,14 +28,13 @@ TransactionManager::TransactionManager(
     if (_max_extents < _max_transactions)
         throw Exception(invalid_config);
 
-    if (create)
+    if (create) {
         reset_table();
-    else if (!read_only)
+        *_cur_tx_id = 0;
+    } else if (!read_only)
         recover();
     else
         check_clean();
-
-    _cur_tx_id = 0;
 }
 
 void *TransactionManager::tx_jbegin(int index)
@@ -97,13 +98,13 @@ TransactionHandle TransactionManager::alloc_transaction(bool read_only)
         return TransactionHandle(-1, -1, dummy, dummy);
     }
 
-    uint32_t tx_id = atomic_inc(_cur_tx_id) + 1;
+    TransactionId tx_id = atomic_inc(*_cur_tx_id) + 1;
+    clflush(_cur_tx_id);
 
     for (int i = 0; i < _max_transactions; i++) {
         TransactionHdr *hdr = &_tx_table[i];
-        if (hdr->tx_id == 0 && cmpxchg(hdr->tx_id, 0u, tx_id)) {
+        if (hdr->tx_id == 0 && cmpxchg(hdr->tx_id, (TransactionId)0, tx_id)) {
             clflush(hdr);
-            persistent_barrier(21); // Is this required?
             return TransactionHandle(tx_id, i, tx_jbegin(i), tx_jend(i));
         }
     }
@@ -115,9 +116,10 @@ void TransactionManager::free_transaction(const TransactionHandle &handle)
     // If handle.index is -1, this is a read-only transaction, and
     // nothing needs to be done.
     if (handle.index != -1) {
+        // Writing 0 to the transaction-id commits the transaction
         TransactionHdr *hdr = &_tx_table[handle.index];
         hdr->tx_id = 0;
         clflush(hdr);
-        persistent_barrier(24); // Is this required?
+        persistent_barrier(24);
     }
 }
