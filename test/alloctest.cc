@@ -30,7 +30,7 @@ int main(int argc, char **argv)
         start_addr = 0x100000000;
         pool_size = 1024;
         object_size = 32;
-        os::MapRegion region1(".", "region1", start_addr, pool_size, create1, create1, false);
+        os::MapRegion region1("alloctestdummy", "region1", start_addr, pool_size, create1, create1, false);
         FixedAllocator allocator1(start_addr, object_size, pool_size, create1);
         long base1 = start_addr + /* sizeof(struct RegionHeader) */64;
         
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
         start_addr = 0x200000000;
         pool_size = 96;
         object_size = 32;
-        os::MapRegion region2(".", "region2", start_addr, pool_size, create2, create2, false);
+        os::MapRegion region2("alloctestdummy", "region2", start_addr, pool_size, create2, create2, false);
         FixedAllocator allocator2(start_addr, object_size, pool_size, create2);
         long base2 = start_addr + /* sizeof(struct RegionHeader) */64;
 
