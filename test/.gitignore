@@ -25,6 +25,7 @@ soltest
 stringtabletest
 test720
 test750
+test767
 txtest
 allocgraph
 alloctestdummy
@@ -52,6 +53,7 @@ solgraph
 stringtablegraph
 test720graph
 test750graph
+test767graph
 txgraph
 BindingsTest.class
 mkgraph

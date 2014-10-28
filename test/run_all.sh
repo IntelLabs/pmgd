@@ -37,7 +37,7 @@ tests=( alloctest avltest chunklisttest edgeindextest
         propertytest propertylisttest
         reverseindexrangetest rotest
         soltest stringtabletest txtest
-        test720 test750 )
+        test720 test750 test767 )
 
 graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
              emailindexgraph filtergraph indexgraph indexstringgraph
@@ -46,7 +46,7 @@ graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
              propertygraph propertylistgraph
              reverseindexrangegraph rograph
              solgraph stringtablegraph txgraph
-             test720graph test750graph )
+             test720graph test750graph test767graph )
 
 #make -s clean
 make -s
