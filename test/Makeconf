@@ -12,7 +12,7 @@ TEST_SRCS := $(addprefix test/, \
                          reverseindexrangetest.cc emailindextest.cc \
                          rotest.cc BindingsTest.java \
                          neighbortest.cc \
-                         test720.cc)
+                         test720.cc test750.cc)
 
 # Derive a list of objects.
 TEST_COBJS := $(patsubst %.cc,%.o, \

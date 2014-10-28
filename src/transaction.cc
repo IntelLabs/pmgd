@@ -33,7 +33,6 @@ void Transaction::commit()
 
 // 64B Journal entries
 const static uint8_t JE_MAX_LEN = 48;
-const static uint8_t JE_COMMIT_MARKER = 0x77;
 
 struct TransactionImpl::JournalEntry {
     TransactionId tx_id;
@@ -78,10 +77,9 @@ TransactionImpl::~TransactionImpl()
         } else {
             rollback(_tx_handle, _jcur);
         }
-        release_locks();
-
         TransactionManager *tx_manager = &_db->transaction_manager();
         tx_manager->free_transaction(_tx_handle);
+        release_locks();
     }
 
     _per_thread_tx = _outer_tx;
@@ -130,11 +128,10 @@ void TransactionImpl::log_je(void *src_ptr, size_t len)
     _jcur++;
 }
 
-// The last record in the journal is fixed as the COMMIT record.
 void TransactionImpl::log(void *ptr, size_t len)
 {
     assert(len > 0);
-    size_t je_entries = (len + JE_MAX_LEN - 1) / JE_MAX_LEN;
+    size_t je_entries = (len + JE_MAX_LEN) / JE_MAX_LEN;
 
     if (_jcur + je_entries >= jend()) {
         if (_tx_type & Transaction::ReadWrite)
@@ -161,13 +158,6 @@ void TransactionImpl::finalize_commit()
     for (JournalEntry *je = jbegin(); je < _jcur; je++)
         clflush(je->addr);
     persistent_barrier(34);
-
-    // Log the commit record
-    JournalEntry *jcommit = jend() - 1;
-    jcommit->type = JE_COMMIT_MARKER;
-    jcommit->tx_id = tx_id();
-    clflush(jcommit);
-    persistent_barrier(37);
 }
 
 
@@ -220,17 +210,10 @@ void TransactionImpl::flush_range(void *ptr, size_t len)
 
 // static function to allow recovery from TransactionManager.
 // There are no real TransactionImpl objects at recovery time.
-// The last record in the journal is fixed as the COMMIT record.
 void TransactionImpl::recover_tx(const TransactionHandle &h)
 {
-    TransactionId tx_id = h.id;
     JournalEntry *jend = static_cast<JournalEntry *>(h.jend);
-    JournalEntry *jcommit = jend - 1;
-
-    if (!(jcommit->tx_id == tx_id && jcommit->type == JE_COMMIT_MARKER)) {
-        // COMMIT record not found. Rollback !
-        rollback(h, jcommit);
-    }
+    rollback(h, jend);
 }
 
 void TransactionImpl::rollback(const TransactionHandle &h,

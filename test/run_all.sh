@@ -37,7 +37,7 @@ tests=( alloctest avltest chunklisttest edgeindextest
         propertytest propertylisttest
         reverseindexrangetest rotest
         soltest stringtabletest txtest
-        test720 )
+        test720 test750 )
 
 graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
              emailindexgraph filtergraph indexgraph indexstringgraph
@@ -46,7 +46,7 @@ graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
              propertygraph propertylistgraph
              reverseindexrangegraph rograph
              solgraph stringtablegraph txgraph
-             test720graph )
+             test720graph test750graph )
 
 #make -s clean
 make -s
@@ -74,6 +74,11 @@ do
             1	3
             2	4
             3	4" | ./$test;;
+        test750)
+            test750 1 &&
+            test750 2 &&
+            test750 3 &&
+            test750 4;;
         *) ./$test n1 n2 n3 n4 ;;
     esac > ./log/${test}.log
 

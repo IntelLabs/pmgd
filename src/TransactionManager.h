@@ -4,7 +4,10 @@
 #include <stdint.h>
 
 namespace Jarvis {
-    typedef uint32_t TransactionId;
+    // TransactionId is never reset and should not roll-over.
+    // A 64-bit transaction ID supports 3 billion transactions
+    // per second for 100 years.
+    typedef uint64_t TransactionId;
 
     struct TransactionHandle {
         TransactionId id;
@@ -27,7 +30,8 @@ namespace Jarvis {
     };
 
     class TransactionManager {
-        TransactionId _cur_tx_id;
+        // Transaction ID in PM
+        TransactionId *_cur_tx_id;
 
         // Transaction table in PM
         TransactionHdr *_tx_table;
@@ -46,7 +50,8 @@ namespace Jarvis {
         void *tx_jend(int index);
 
     public:
-        TransactionManager(uint64_t transaction_table_addr,
+        TransactionManager(uint64_t *tx_id,
+                           uint64_t transaction_table_addr,
                            uint64_t transaction_table_size,
                            uint64_t journal_addr,
                            uint64_t journal_size,
