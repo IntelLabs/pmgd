@@ -51,6 +51,26 @@ namespace Jarvis {
         Node &get_source() const { return ((_dir == INCOMING) ? *_pos->value.value() : *_n1); }
         Node &get_destination() const { return ((_dir == OUTGOING) ? *_pos->value.value() : *_n1); }
 
+        // When _pos is NULL, move to next key or direction
+        void _next()
+        {
+            if (_key_pos != NULL) {
+                // Case with no tag specified
+                // Move to the next EdgeIndexType
+                _key_pos = _key_pos->next;
+                if (_key_pos != NULL) {
+                    _tag = _key_pos->value.get_key();
+                    // Move to the head of <Edge,Node> list for 
+                    // tag _tag in EdgeIndexType
+                    _pos = _key_pos->value.get_first();
+                }
+                else // Tag was not specified
+                    switch_direction(true);
+            }
+            else // Case with tag specified
+                switch_direction(false);
+        }
+
         // Move to out edges and change _key_pos, _pos if !NULL
         void switch_direction(bool no_tag)
         {
@@ -88,6 +108,7 @@ namespace Jarvis {
               _tag(_key_pos->value.get_key()),
               _pos(_key_pos->value.get_first())
         { }
+
         // Always starts with incoming first
         Node_EdgeIteratorImpl(EdgeIndex *idx, EdgeIndex *out_idx, const Node *n, StringID tag)
             : _ref(this),
@@ -97,7 +118,11 @@ namespace Jarvis {
               _key_pos(NULL),
               _tag(tag),
               _pos(idx->get_first(_tag))
-        { }
+        {
+            if (_pos == NULL)
+                _next();
+        }
+
         Node_EdgeIteratorImpl(EdgeIndex *idx, EdgeIndex *out_idx, const Node *n)
             : _ref(this),
               _n1(const_cast<Node *>(n)),
@@ -106,32 +131,22 @@ namespace Jarvis {
               _key_pos(const_cast<EdgeIndex::KeyPosition *>(idx->get_first())),
               _tag(_key_pos->value.get_key()),
               _pos(_key_pos->value.get_first())
-        { }
+        {
+            if (_pos == NULL)
+                _next();
+        }
+
         operator bool() const { return _pos != NULL; }
         const EdgeRef &operator*() const { return _ref; }
         const EdgeRef *operator->() const { return &_ref; }
         EdgeRef &operator*() { return _ref; }
         EdgeRef *operator->() { return &_ref; }
+
         bool next()
         {
-            _pos = _pos->next; 
-            if (_pos == NULL && _key_pos != NULL) {
-                // Case with no tag specified
-                // Move to the next EdgeIndexType
-                _key_pos = _key_pos->next;
-                if (_key_pos != NULL) {
-                    _tag = _key_pos->value.get_key();
-                    // Move to the head of <Edge,Node> list for 
-                    // tag _tag in EdgeIndexType
-                    _pos = _key_pos->value.get_first();
-                }
-                else  // Tag was not specified
-                    switch_direction(true);
-            }
-            // Case with tag specified
-            else if (_pos == NULL && _key_pos == NULL)
-                switch_direction(false);
-            // If _pos still has element, keep going
+            _pos = _pos->next;
+            if (_pos == NULL)
+                _next();
             return _pos != NULL;
         }
     };
