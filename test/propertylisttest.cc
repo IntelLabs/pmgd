@@ -33,7 +33,7 @@ int main(int argc, char **argv)
         Graph db(db_name, Graph::Create);
 
         annotate("Start transaction");
-        Transaction tx(db);
+        Transaction tx(db, Transaction::ReadWrite);
         annotate("Add node");
         Node &n = db.add_node(0);
         annotate("Commit transaction");
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
                 std::string s = std::string(id_str) + " D";
                 printf("%s\n", s.c_str());
                 annotate(s);
-                Transaction tx(db);
+                Transaction tx(db, Transaction::ReadWrite);
                 n.remove_property(id_str);
                 tx.commit();
                 continue;
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
             std::string s = std::string(id_str) + " = " + property_text(value);
             printf("%s\n", s.c_str());
             annotate(s);
-            Transaction tx(db);
+            Transaction tx(db, Transaction::ReadWrite);
             n.set_property(id_str, value);
             tx.commit();
         }
