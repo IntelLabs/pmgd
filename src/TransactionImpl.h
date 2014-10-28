@@ -29,13 +29,17 @@ namespace Jarvis {
 
             TransactionImpl *_outer_tx;
 
+            struct CommitCallbackItem;
+            CommitCallbackItem *_commit_callback_list;
+
             void log_je(void *src, size_t len);
             void release_locks();
             void finalize_commit();
+            void call_commit_callbacks();
             static void rollback(const TransactionHandle &h,
                                  const JournalEntry *jend);
 
-            TransactionId tx_id() { return _tx_handle.id; }
+            TransactionId tx_id() const { return _tx_handle.id; }
             JournalEntry *jbegin()
                 { return static_cast<JournalEntry *>(_tx_handle.jbegin); }
             JournalEntry *jend()
@@ -55,6 +59,9 @@ namespace Jarvis {
                 if (!(_tx_type & Transaction::ReadWrite))
                     throw Exception(read_only);
             }
+
+            typedef void (*CommitCallback)(TransactionImpl *tx, void *, void *);
+            void *&register_commit_callback(void *obj, CommitCallback f);
 
             // log data; user performs the writes
             void log(void *ptr, size_t len);

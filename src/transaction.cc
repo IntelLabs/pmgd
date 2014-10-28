@@ -48,7 +48,10 @@ struct TransactionImpl::JournalEntry {
 THREAD TransactionImpl *TransactionImpl::_per_thread_tx = NULL;
 
 TransactionImpl::TransactionImpl(GraphImpl *db, int options)
-    : _db(db), _tx_type(options), _committed(false)
+    : _db(db),
+      _tx_type(options),
+      _committed(false),
+      _commit_callback_list(NULL)
 {
     bool read_write = _tx_type & Transaction::ReadWrite;
 
@@ -152,6 +155,8 @@ void TransactionImpl::log(void *ptr, size_t len)
 
 void TransactionImpl::finalize_commit()
 {
+    call_commit_callbacks();
+
     // Flush (and make durable) dirty in-place data pointed to by log entries
     for (JournalEntry *je = jbegin(); je < _jcur; je++)
         clflush(je->addr);
@@ -164,6 +169,32 @@ void TransactionImpl::finalize_commit()
     clflush(jcommit);
     persistent_barrier(37);
 }
+
+
+struct TransactionImpl::CommitCallbackItem {
+    CommitCallbackItem *next;
+    void *obj;
+    CommitCallback f;
+    void *cookie;
+};
+
+void *&TransactionImpl::register_commit_callback(void *obj, CommitCallback f)
+{
+    for (CommitCallbackItem *l = _commit_callback_list; l != NULL; l = l->next)
+        if (l->obj == obj)
+            return l->cookie;
+
+    CommitCallbackItem *tmp = new CommitCallbackItem{_commit_callback_list, obj, f, NULL};
+    _commit_callback_list = tmp;
+    return tmp->cookie;
+}
+
+void TransactionImpl::call_commit_callbacks()
+{
+    for (CommitCallbackItem *l = _commit_callback_list; l != NULL; l = l->next)
+        (*l->f)(this, l->obj, l->cookie);
+}
+
 
 template<typename T>
 static inline T align_low(T var, size_t sz)

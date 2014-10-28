@@ -15,6 +15,8 @@ using namespace Jarvis;
 static void passfail(long id, long expected, long actual);
 static std::ostream& operator<< (std::ostream &out, Exception& e);
 
+static int r;
+
 int main(int argc, char **argv)
 {
     std::cout << "Fixed-size allocator unit test\n\n";
@@ -24,7 +26,7 @@ int main(int argc, char **argv)
 
     try {
         Graph db("alloctestdummy", Graph::Create);
-        Transaction tx(db, Transaction::ReadWrite);
+        Transaction tx1(db, Transaction::ReadWrite);
 
         bool create1 = true;
         start_addr = 0x100000000;
@@ -40,9 +42,16 @@ int main(int argc, char **argv)
         void *addr2 = allocator1.alloc();
         passfail(2, base1 + object_size, (long)addr2);
 
-        allocator1.free(addr1);
+        tx1.commit();
+
+        Transaction tx2(db, Transaction::ReadWrite);
 
         allocator1.free(addr2);
+        allocator1.free(addr1);
+
+        tx2.commit();
+
+        Transaction tx3(db, Transaction::ReadWrite);
 
         addr2 = allocator1.alloc();
         passfail(3, base1 + object_size, (long)addr2);
@@ -80,7 +89,7 @@ int main(int argc, char **argv)
             exit(1);
         }
 
-        tx.commit();
+        tx3.commit();
     }
     catch (Exception e)
     {
@@ -88,7 +97,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    return 0;
+    return r;
 }
 
 static void passfail(long id, long expected, long actual)
@@ -102,7 +111,7 @@ static void passfail(long id, long expected, long actual)
     std::cerr << "expected " << std::hex << expected << "; ";
     std::cerr << "got " << std::hex << actual << "\n";
 
-    exit(1);
+    r = 1;
 }
 
 static std::ostream& operator<< (std::ostream &out, Exception& e)

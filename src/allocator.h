@@ -3,6 +3,7 @@
 #include <vector>
 #include <stddef.h>
 #include <stdint.h>
+#include "TransactionImpl.h"
 
 namespace Jarvis {
 
@@ -33,6 +34,8 @@ namespace Jarvis {
         // Stats
         size_t _num_alloc_calls;
         size_t _num_free_calls;
+
+        static void clean_free_list(TransactionImpl *tx, void *obj, void *list);
 
     public:
         FixedAllocator(uint64_t pool_addr, unsigned object_size,
