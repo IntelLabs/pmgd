@@ -3,6 +3,12 @@
 #include "jarvis.h"
 #include "util.h"
 
+#ifdef _MSC_VER
+extern "C" char *strptime(const char *buf, const char *format, struct tm *tm);
+#else
+#include <time.h>
+#endif
+
 using namespace Jarvis;
 
 std::string property_text(const Property &p)
@@ -146,7 +152,15 @@ std::string time_to_string(const Time &t, bool utc)
     // Pick some string length since the length of the time value
     // depends on the locale.
     char str[80];
+
+#if defined _MSC_VER
+    // The strftime used here is from windows dll and doesn't support all
+    // the same format specifiers as Linux.
+    size_t num_bytes = strftime(str, 80, "%Y-%m-%dT%H:%M:%S", &tm);
+#else
     size_t num_bytes = strftime(str, 80, "%FT%T", &tm);
+#endif
+
     // Check for remaining bytes to make sure there is room for the
     // timezone portion.
     assert(num_bytes > 0 && num_bytes < 70);
