@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "jarvis.h"
+#include "loader.h"
 #include "loader.hh"
 
 #undef yywrap

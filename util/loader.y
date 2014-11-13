@@ -3,12 +3,7 @@
 #include <string.h>
 #include "jarvis.h"
 #include "../util/util.h"
-
-struct yy_params {
-    Jarvis::Graph &db;
-    std::function<void(Jarvis::Node &)> node_func;
-    std::function<void(Jarvis::Edge &)> edge_func;
-};
+#include "loader.h"
 
 extern int yylex();
 extern int yyerror(yy_params, const char *);
