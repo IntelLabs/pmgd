@@ -66,9 +66,10 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
 # Flags for C++ compilation.
 CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
 
-# Define CLEANFILES and CLEANDIRS as immediate variables!
+# Define CLEANFILES, CLEANDIRS, and PHONY as immediate variables!
 CLEANFILES :=
 CLEANDIRS :=
+PHONY :=
 
 ##
 # "all" is our default target.

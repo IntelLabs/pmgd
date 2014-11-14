@@ -10,8 +10,11 @@ TOOLS_OBJS := $(patsubst %.cc,%.o, $(TOOLS_SRCS))
 # Add to the global list of objects.
 OBJS += $(TOOLS_OBJS)
 
+# What we are building here.
+TOOLS_BINS += $(patsubst %.cc,%, $(TOOLS_SRCS))
+
 # Add to the global list of binary utilities.
-BINS += $(patsubst %.cc,%, $(TOOLS_SRCS))
+BINS += $(TOOLS_BINS)
 
 # Override the global defaults.
 TOOLS_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
@@ -33,6 +36,10 @@ $(DIR)/dumpgraph: $(DIR)/dumpgraph.o $(LIBS)
 $(DIR)/%.o: $(DIR)/%.cc $(MAKEFILE_LIST)
 	$(call print,CC,$@)
 	$(CC) $(TOOLS_CFLAGS) -o $@ -c $<
+
+# What to build in this directory.
+PHONY += $(DIR)
+$(DIR): $(TOOLS_BINS)
 
 # Don't attempt to rebuild this Makeconf.
 $(DIR)/Makeconf : ;

@@ -48,5 +48,9 @@ lib/jarvis-util.lib: $(DIR)/jarvis-util.lib
 	$(call print,INSTALL,$@)
 	$(INSTALL) -D $< $@
 
+# What to build in this directory.
+PHONY += $(DIR)
+$(DIR): $(DIR)/jarvis-util.lib
+
 # Don't attempt to rebuild this Makeconf.
 $(DIR)/Makeconf : ;

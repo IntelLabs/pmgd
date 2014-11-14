@@ -220,6 +220,54 @@ test_obuild_make_propertytest()
     fi
 }
 
+# Trying building src
+test_make_src()
+{
+    test $verbose -ge 2 && echo "Make src test"
+    reason="Build src test: Nothing was done or build error"
+    make -s clean > /dev/null
+    output=`make -s src`
+    if test $? -ne 0 -o -z "$output"; then
+        return 1
+    fi
+}
+
+# Trying building util
+test_make_util()
+{
+    test $verbose -ge 2 && echo "Make util test"
+    reason="Build util test: Nothing was done or build error"
+    make -s clean > /dev/null
+    output=`make -s util`
+    if test $? -ne 0 -o -z "$output"; then
+        return 1
+    fi
+}
+
+# Trying building tools
+test_make_tools()
+{
+    test $verbose -ge 2 && echo "Make tools test"
+    reason="Build tools test: Nothing was done or build error"
+    make -s clean > /dev/null
+    output=`make -s tools`
+    if test $? -ne 0 -o -z "$output"; then
+        return 1
+    fi
+}
+
+# Trying building test
+test_make_test()
+{
+    test $verbose -ge 2 && echo "Make test test"
+    reason="Build test test: Nothing was done or build error"
+    make -s clean > /dev/null
+    output=`make -s test`
+    if test $? -ne 0 -o -z "$output"; then
+        return 1
+    fi
+}
+
 test_make_all_twice
 if test $? -ne 0; then
     onerror
@@ -276,6 +324,26 @@ if test $? -ne 0; then
 fi
 
 test_obuild_make_propertytest
+if test $? -ne 0; then
+    onerror
+fi
+
+test_make_src
+if test $? -ne 0; then
+    onerror
+fi
+
+test_make_util
+if test $? -ne 0; then
+    onerror
+fi
+
+test_make_tools
+if test $? -ne 0; then
+    onerror
+fi
+
+test_make_test
 if test $? -ne 0; then
     onerror
 fi

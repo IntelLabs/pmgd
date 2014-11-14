@@ -20,8 +20,11 @@ TEST_OBJS := $(patsubst %.cc,%.o, $(TEST_SRCS))
 # Add to the global list of objects.
 OBJS += $(TEST_OBJS)
 
+# What we are building here.
+TEST_TESTS := $(patsubst %.cc,%, $(TEST_SRCS))
+
 # Add to the global list of tests.
-TESTS += $(patsubst %.cc,%, $(TEST_SRCS))
+TESTS += $(TEST_TESTS)
 
 # Override the global defaults.
 TEST_INCLUDES := $(INCLUDES) -Iutil
@@ -51,6 +54,10 @@ $(DIR)/emailindextest: $(DIR)/emailindextest.o $(LIBS)
 $(DIR)/%.o: $(DIR)/%.cc $(MAKEFILE_LIST)
 	$(call print,CC,$@)
 	$(CC) $(TEST_CFLAGS) -o $@ -c $<
+
+# What to build in this directory.
+PHONY += $(DIR)
+$(DIR): $(TEST_TESTS)
 
 # Don't attempt to rebuild this Makeconf.
 $(DIR)/Makeconf : ;
