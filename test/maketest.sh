@@ -268,6 +268,42 @@ test_make_test()
     fi
 }
 
+# Trying building default from src
+test_make_default_from_src()
+{
+    test $verbose -ge 2 && echo "Make default from src test"
+    reason="Build all from src test: Nothing was done or build error"
+    make -s clean > /dev/null
+    output=`make --no-print-directory -s -C src`
+    if test $? -ne 0 -o -z "$output"; then
+        return 1
+    fi
+}
+
+# Trying building util from test
+test_make_util_from_test()
+{
+    test $verbose -ge 2 && echo "Make util from test test"
+    reason="Build util from test test: Nothing was done or build error"
+    make -s clean > /dev/null
+    output=`make --no-print-directory -s -C test util`
+    if test $? -ne 0 -o -z "$output"; then
+        return 1
+    fi
+}
+
+# Trying building dumpgraph from tools
+test_make_dumpgraph_from_tools()
+{
+    test $verbose -ge 2 && echo "Make dumpgraph from tools test"
+    reason="Build dumpgraph from tools test: Nothing was done or build error"
+    make -s clean > /dev/null
+    output=`make --no-print-directory -s -C tools dumpgraph`
+    if test $? -ne 0 -o -z "$output"; then
+        return 1
+    fi
+}
+
 test_make_all_twice
 if test $? -ne 0; then
     onerror
@@ -344,6 +380,21 @@ if test $? -ne 0; then
 fi
 
 test_make_test
+if test $? -ne 0; then
+    onerror
+fi
+
+test_make_default_from_src
+if test $? -ne 0; then
+    onerror
+fi
+
+test_make_util_from_test
+if test $? -ne 0; then
+    onerror
+fi
+
+test_make_dumpgraph_from_tools
 if test $? -ne 0; then
     onerror
 fi
