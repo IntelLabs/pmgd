@@ -14,7 +14,7 @@ OBJS += $(TOOLS_OBJS)
 BINS += $(patsubst %.cc,%, $(TOOLS_SRCS))
 
 # Override the global defaults.
-TOOLS_INCLUDES := $(INCLUDES) -Iutil
+TOOLS_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
 TOOLS_CFLAGS := --std=c++11 $(TOOLS_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
 
 $(DIR)/mkgraph: $(DIR)/mkgraph.o $(LIBS)

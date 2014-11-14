@@ -28,6 +28,14 @@ fi
 root=`echo $cwd | sed 's,\(.*\/jarvis\).*,\1,'`
 cd $root
 
+cleanuplist=""
+trap cleanup 0
+
+cleanup()
+{
+    rm -rf $cleanuplist
+}
+
 onerror()
 {
     echo "$prog: Failure: $reason" >&2
@@ -71,7 +79,7 @@ test_make_clean()
     make -s clean > /dev/null
     make -s > /dev/null
     make -s clean > /dev/null
-    output=`git clean -nxdf | grep -v "Would remove lib/"`
+    output=`git clean -nxdf`
     if test ! -z "$output"; then
         return 1
     fi
@@ -145,6 +153,73 @@ test_make_mkgraph()
     fi
 }
 
+# Trying to build to a remote location
+test_obuild()
+{
+    test $verbose -ge 2 && echo "Remote build test"
+    reason="Remote build test: Build error"
+    make -s clean > /dev/null
+    cleanuplist=`mktemp -d /tmp/maketestXXXX`
+    output=`make -s O=$cleanuplist`
+    status=$?
+    cleanup
+    if test $status -ne 0 -o -z "$output"; then
+        return 1
+    fi
+}
+
+# Trying to clean after a remote location
+test_obuild_clean()
+{
+    test $verbose -ge 2 && echo "Remote clean test"
+    reason="Remote clean test: Clean failed or not thorough"
+    make -s clean > /dev/null
+    cleanuplist=`mktemp -d /tmp/maketestXXXX`
+    make -s O=$cleanuplist > /dev/null
+    make -s O=$cleanuplist clean > /dev/null
+    status=$?
+    exist=0
+    `test -e $cleanuplist` && exist=1
+    cleanup
+    if test $status -ne 0 -o $exist -eq 1; then
+        return 1
+    fi
+}
+
+# Touching an intermediate file should cause make to rebuild a few pieces
+test_obuild_touch()
+{
+    test $verbose -ge 2 && echo "Touch intermediate file and remote make test"
+    reason="Remote touch test: Build failed or did nothing"
+    make -s clean > /dev/null
+    cleanuplist=`mktemp -d /tmp/maketestXXXX`
+    make -s O=$cleanuplist > /dev/null
+    touch $cleanuplist/util/loader.cc
+    output=`make -s O=$cleanuplist`
+    status=$?
+    cleanup
+    if test $status -ne 0 -o -z "$output"; then
+        return 1
+    fi
+}
+
+# Trying to build propertytest at a remote location
+test_obuild_make_propertytest()
+{
+    test $verbose -ge 2 && echo "Make remote propertytest test"
+    reason="Remote build propertytest test: Build failed or didn't build target"
+    make -s clean > /dev/null
+    cleanuplist=`mktemp -d /tmp/maketestXXXX`
+    make -s O=$cleanuplist test/propertytest > /dev/null
+    status=$?
+    binary=0
+    test -x $cleanuplist/test/propertytest && binary=1
+    cleanup
+    if test $status -ne 0 -o $binary -eq 0; then
+        return 1
+    fi
+}
+
 test_make_all_twice
 if test $? -ne 0; then
     onerror
@@ -181,6 +256,26 @@ if test $? -ne 0; then
 fi
 
 test_make_mkgraph
+if test $? -ne 0; then
+    onerror
+fi
+
+test_obuild
+if test $? -ne 0; then
+    onerror
+fi
+
+test_obuild_clean
+if test $? -ne 0; then
+    onerror
+fi
+
+test_obuild_touch
+if test $? -ne 0; then
+    onerror
+fi
+
+test_obuild_make_propertytest
 if test $? -ne 0; then
     onerror
 fi
