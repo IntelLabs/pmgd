@@ -95,6 +95,11 @@ clean:
 	$(RM) $(LIBS) $(BINS) $(TESTS) $(OBJS) $(DEPS) $(CLEANFILES)
 	for i in "$(CLEANDIRS)"; do test -e $$i && $(RMDIR) $$i || $(TRUE); done
 
+# Default rule for building a preprocessed file from a C++ file.
+%.i: %.cc $(MAKEFILE_LIST)
+	$(call print,CPP,$@)
+	$(CC) -E $(CFLAGS) -o $@ -c $<
+
 # Default rule for building an object file from a C++ file.
 %.o: %.cc $(MAKEFILE_LIST)
 	$(call print,CC,$@)

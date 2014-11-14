@@ -50,6 +50,11 @@ $(DIR)/emailindextest: $(DIR)/emailindextest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
+# Override the global rule for building a preprocessed file from a C++ file.
+$(DIR)/%.i: $(DIR)/%.cc $(MAKEFILE_LIST)
+	$(call print,CPP,$@)
+	$(CC) -E $(TEST_CFLAGS) -o $@ -c $<
+
 # Override the global rule for building an object file from a C++ file.
 $(DIR)/%.o: $(DIR)/%.cc $(MAKEFILE_LIST)
 	$(call print,CC,$@)

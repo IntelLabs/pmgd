@@ -32,6 +32,11 @@ $(DIR)/dumpgraph: $(DIR)/dumpgraph.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
+# Override the global rule for building a preprocessed file from a C++ file.
+%.i: %.cc $(MAKEFILE_LIST)
+	$(call print,CPP,$@)
+	$(CC) -E $(TOOLS_CFLAGS) -o $@ -c $<
+
 # Override the global rule for building an object file from a C++ file.
 $(DIR)/%.o: $(DIR)/%.cc $(MAKEFILE_LIST)
 	$(call print,CC,$@)
