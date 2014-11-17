@@ -1,0 +1,38 @@
+DIR := tools
+
+# List of sources for this directory.
+TOOLS_SRCS := $(addprefix $(DIR)/, \
+                          mkgraph.cc loadgraph.cc dumpgraph.cc)
+
+# Derive a list of objects.
+TOOLS_OBJS := $(patsubst %.cc,%.o, $(TOOLS_SRCS))
+
+# Add to the global list of objects.
+OBJS += $(TOOLS_OBJS)
+
+# Add to the global list of binary utilities.
+BINS += $(patsubst %.cc,%, $(TOOLS_SRCS))
+
+# Override the global defaults.
+TOOLS_INCLUDES := $(INCLUDES) -Iutil
+TOOLS_CFLAGS := --std=c++11 $(TOOLS_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
+
+$(DIR)/mkgraph: $(DIR)/mkgraph.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
+
+$(DIR)/loadgraph: $(DIR)/loadgraph.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
+
+$(DIR)/dumpgraph: $(DIR)/dumpgraph.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
+
+# Override the global rule for building an object file from a C++ file.
+$(DIR)/%.o: $(DIR)/%.cc $(MAKEFILE_LIST)
+	$(call print,CC,$@)
+	$(CC) $(TOOLS_CFLAGS) -o $@ -c $<
+
+# Don't attempt to rebuild this Makeconf.
+$(DIR)/Makeconf : ;

@@ -1,0 +1,42 @@
+DIR := src
+
+# List of sources for this directory.
+SRC_SRCS := $(addprefix $(DIR)/, \
+                        graph.cc GraphConfig.cc \
+                        node.cc edge.cc property.cc \
+                        stringid.cc StringTable.cc \
+                        PropertyList.cc \
+                        TransactionManager.cc transaction.cc \
+                        Index.cc IndexManager.cc \
+                        EdgeIndex.cc IndexString.cc \
+                        AvlTree.cc AvlTreeIndex.cc \
+                        FixedAllocator.cc Allocator.cc \
+                        linux.cc)
+
+# Derive a list of objects.
+SRC_OBJS := $(patsubst %.cc,%.o, $(SRC_SRCS))
+
+# Add to the global list of objects.
+OBJS += $(SRC_OBJS)
+
+# Add to the global list of libraries (with path to final destination).
+LIBS += lib/jarvis.lib
+
+# Add the library to the global list of files to clean.
+CLEANFILES += $(DIR)/jarvis.lib
+
+# Add lib to the global list of directories to clean.
+CLEANDIRS += lib
+
+# A rule to build the library.
+$(DIR)/jarvis.lib: $(SRC_OBJS)
+	$(call print,AR,$@)
+	$(AR) cr $@ $(SRC_OBJS)
+
+# How to install said library.
+lib/jarvis.lib: $(DIR)/jarvis.lib
+	$(call print,INSTALL,$@)
+	$(INSTALL) -D $< $@
+
+# Don't attempt to rebuild this Makeconf.
+$(DIR)/Makeconf : ;

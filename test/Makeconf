@@ -1,0 +1,56 @@
+DIR := test
+
+# List of sources for this directory.
+TEST_SRCS := $(addprefix $(DIR)/, \
+                         apitest.cc alloctest.cc soltest.cc nodeedgetest.cc \
+                         listtest.cc edgeindextest.cc \
+                         propertytest.cc propertypredicatetest.cc \
+                         propertychunktest.cc filtertest.cc \
+                         txtest.cc propertylisttest.cc \
+                         stringtabletest.cc setproperty.cc \
+                         load_tsv_test.cc load_gson_test.cc \
+                         avltest.cc chunklisttest.cc indextest.cc \
+                         indexrangetest.cc indexstringtest.cc \
+                         reverseindexrangetest.cc emailindextest.cc \
+                         rotest.cc)
+
+# Derive a list of objects.
+TEST_OBJS := $(patsubst %.cc,%.o, $(TEST_SRCS))
+
+# Add to the global list of objects.
+OBJS += $(TEST_OBJS)
+
+# Add to the global list of tests.
+TESTS += $(patsubst %.cc,%, $(TEST_SRCS))
+
+# Override the global defaults.
+TEST_INCLUDES := $(INCLUDES) -Iutil
+TEST_CFLAGS := --std=c++11 $(TEST_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
+
+# Default rule for linking a test.
+$(DIR)/%: $(DIR)/%.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) -o $@ $< $(LIBS)
+
+# Special case for apitest.
+$(DIR)/apitest: $(DIR)/apitest.o
+	$(call print,LINK,$@)
+	$(CC) -o $@ $<
+
+# Special case for load_gson_test.
+$(DIR)/load_gson_test: $(DIR)/load_gson_test.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
+
+# Special case for emailindextest.
+$(DIR)/emailindextest: $(DIR)/emailindextest.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
+
+# Override the global rule for building an object file from a C++ file.
+$(DIR)/%.o: $(DIR)/%.cc $(MAKEFILE_LIST)
+	$(call print,CC,$@)
+	$(CC) $(TEST_CFLAGS) -o $@ -c $<
+
+# Don't attempt to rebuild this Makeconf.
+$(DIR)/Makeconf : ;
