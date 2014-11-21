@@ -1,104 +1,38 @@
-##
-# Makefile for the Jarvis Lake library.
-
-# Tools.
-CC := g++-4.8
-AR := ar
-CP := cp -a
-RM := rm -f
+MAKE := make --no-print-directory
 ECHO := echo
 
-# Allow builds from a read-only source tree.
-#
-# $(O_SRC) must precede all non-phony targets and dependences (without
-# a separating slash).  Use $(O_ROOT) when the target is a file or
-# directory off the root directory of the project.  O_ROOT and O_SRC
-# must either be empty or end with a slash.
-ifeq ($O,)
-    O_ROOT := ../
-    O_SRC  :=
-else
-    O_ROOT := $O/
-    O_SRC  := $O/src/
-endif
+DIR := $(shell basename $$PWD)
 
-# Target.
-TARGET := $(O_SRC)jarvis.lib
+.PHONY: default all clean cleanall src util tools test help
 
-# Where the target should be installed.
-INSTALLPATH := $(O_ROOT)lib
+default: ; @$(MAKE) -C .. $(DIR)
 
-# Extra stuff to clean whose names cannot be derived from dependences.
-CLEANFILES := 
+all: ; @$(MAKE) -C .. all
 
-# List of source files.
-SRCS := graph.cc GraphConfig.cc node.cc edge.cc property.cc stringid.cc \
-        EdgeIndex.cc \
-        PropertyList.cc StringTable.cc FixedAllocator.cc Allocator.cc \
-        TransactionManager.cc transaction.cc \
-        IndexString.cc AvlTree.cc AvlTreeIndex.cc IndexManager.cc Index.cc \
-        linux.cc
+clean: ; @$(ECHO) "Not implemented"
 
-# Translates source file names to object file names.
-OBJS := $(patsubst %.cc, $(O_SRC)%.o, $(SRCS))
+cleanall: ; @$(MAKE) -C .. clean
 
-# Additional places to look for include files.
-INCLUDES := -I../include
+src: ; @$(MAKE) -C .. src
 
-# Default optimization level.
-OPT ?= -O3
+util: ; @$(MAKE) -C .. util
 
-# Omit the frame pointer unless we are profiling.
-ifeq ($(findstring -pg,$(OPT)),)
-OMIT_FRAME_POINTER := -fomit-frame-pointer
-endif
+tools: ; @$(MAKE) -C .. tools
 
-# Are we building on a platform with support for persistent memory?
-PM ?= $(shell if ! grep pcommit /proc/cpuinfo; then echo "-DNOPM"; fi)
+test: ; @$(MAKE) -C .. test
 
-# Optimization and language options.
-FFLAGS := $(OMIT_FRAME_POINTER) -funit-at-a-time -finline-limit=2000000 \
-          -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics \
-          -fnon-call-exceptions
+%:: force
+	@$(MAKE) -C .. $(DIR)/$@
 
-# Warning options.
-WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
-          -Wno-parentheses -Wno-conversion
+help:
+	@$(ECHO) "make          - Build all, in current directory"
+	@$(ECHO) "make clean    - Clean all, in current directory (not implemented)"
+	@$(ECHO) "make all      - Build everything in the project"
+	@$(ECHO) "make cleanall - Clean everything in the project"
+	@$(ECHO) "make <dir>    - Build all in ../dir"
+	@$(ECHO) "make <target> - Build specified target only, in current directory"
 
-# Flags for C++ compilation.
-CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
+Makefile: ;
 
-# Add a little bit of colorful noise in silent mode.
-ifneq ($(findstring s,$(MAKEFLAGS)),)
-    print = @$(ECHO) -e "\033[00;34m" [$(1)] $(2)"\033[00;00m"
-endif
-
-# The default goal creates the build directory, builds the target,
-# creates the install directory, and copies the target there.
-install: $(O_SRC) $(TARGET)
-	$(call print,INSTALL,$(INSTALLPATH))
-	$(shell if ! test -d $(INSTALLPATH); then mkdir $(INSTALLPATH); fi)
-	$(CP) $(TARGET) $(INSTALLPATH)
-
-$(TARGET): $(OBJS)
-	$(call print,AR,$@)
-	$(AR) cr $@ $(OBJS)
-
-clean:
-	$(call print,CLEAN)
-	$(RM) $(TARGET) $(OBJS) $(DEPS) $(CLEANFILES)
-	$(RM) $(INSTALLPATH)/$(TARGET)
-
-# If the variable $(O_SRC) is non-empty and the corresponding
-# directory does not exist then create it.
-$(O_SRC):
-	mkdir -p $@
-
-# Rule for building an object file from a C++ file.
-$(O_SRC)%.o: %.cc $(MAKEFILE_LIST)
-	$(call print,COMPILE,$@)
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-# Include dependency information if they are available.
-DEPS := $(OBJS:%.o=%.d)
--include $(DEPS)
+.PHONY: force
+force:
