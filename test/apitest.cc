@@ -14,6 +14,7 @@
  * not inline, so it should not be linked against jarvis.lib.
  */
 
+#include <float.h>
 #include "jarvis.h"
 
 using namespace Jarvis;
@@ -109,7 +110,7 @@ double q6(Graph &db, Node &a, Node &b)
 Jarvis::Path q6a(Graph &db, Node &a, Node &b)
 {
     Jarvis::Path path;
-    double min_length;
+    double min_length = DBL_MAX;
     for (PathIterator i = db.get_paths(a, b); i; i.next()) {
         double length = 0;
         EdgeIterator e = i->get_edges();
