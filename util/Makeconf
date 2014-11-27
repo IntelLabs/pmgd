@@ -12,7 +12,7 @@ UTIL_OBJS := $(patsubst %.cc,%.o, \
 OBJS += $(UTIL_OBJS)
 
 # Add to the global list of libraries (with path to final destination).
-LIBS += lib/jarvis-util.lib
+LIBS += lib/jarvis-util.lib lib/libjarvis-util.so
 
 # Add the output of flex and bison to the global list of files to clean.
 CLEANFILES += $(patsubst %.y,%.cc, \
@@ -23,7 +23,7 @@ CLEANFILES += $(patsubst %.y,%.hh, \
                   $(filter %.y %.l, $(UTIL_SRCS))))
 
 # Add the library to the global list of files to clean.
-CLEANFILES += util/jarvis-util.lib
+CLEANFILES += util/jarvis-util.lib util/libjarvis-util.so
 
 # We already added lib to CLEANDIRS in ../src/Makeconf
 
@@ -36,6 +36,14 @@ CLEANFILES += util/jarvis-util.lib
 util/scanner.o: util/loader.hh
 util/loader.hh: util/loader.cc
 
+# Override the global defaults.
+UTIL_CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) -fPIC $(WFLAGS) $(PM) -MP -MMD
+
+# Override the global rule for building an object file from a C++ file.
+util/%.o: util/%.cc $(MAKEFILE_LIST)
+	$(call print,CC,$@)
+	$(CC) $(UTIL_CFLAGS) -o $@ -c $<
+
 # A rule to build the library.
 util/jarvis-util.lib: $(UTIL_OBJS)
 	$(call print,AR,$@)
@@ -46,9 +54,19 @@ lib/jarvis-util.lib: util/jarvis-util.lib
 	$(call print,INSTALL,$@)
 	$(INSTALL) -D $< $@
 
+# A rule to build a shared library.
+util/libjarvis-util.so: $(SRC_OBJS)
+	$(call print,LD,$@)
+	$(CC) -shared -o $@ $(SRC_OBJS)
+
+# How to install said library.
+lib/libjarvis-util.so: util/libjarvis-util.so
+	$(call print,INSTALL,$@)
+	$(INSTALL) -D $< $@
+
 # What to build in this directory.
 PHONY += util
-util: util/jarvis-util.lib
+util: util/jarvis-util.lib util/libjarvis-util.so
 
 # Don't attempt to rebuild this Makeconf.
 util/Makeconf : ;
