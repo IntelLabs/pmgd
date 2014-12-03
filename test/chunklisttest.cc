@@ -6,7 +6,7 @@
 #include "../src/ChunkList.h"
 #include "../src/os.h"
 #include "../src/allocator.h"
-#include "../util/util.h"
+#include "util.h"
 #include "../src/KeyValuePair.h"
 #include "../src/GraphConfig.h"
 

@@ -3,8 +3,8 @@
  */
 
 #include "jarvis.h"
-#include "../util/util.h"
-#include "../util/annotate.h"
+#include "util.h"
+#include "annotate.h"
 
 using namespace Jarvis;
 

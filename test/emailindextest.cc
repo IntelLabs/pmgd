@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include "jarvis.h"
-#include "../util/util.h"
+#include "util.h"
 
 using namespace Jarvis;
 

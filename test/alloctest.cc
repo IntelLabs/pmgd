@@ -4,11 +4,11 @@
 
 #include <iostream>
 #include <string.h>
-#include "../include/jarvis.h"
-#include "../util/util.h"
+#include "jarvis.h"
+#include "util.h"
 #include "../src/allocator.h"
 #include "../src/os.h"
-#include "../include/exception.h"
+#include "exception.h"
 
 using namespace Jarvis;
 

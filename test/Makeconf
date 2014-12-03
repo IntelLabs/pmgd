@@ -27,7 +27,7 @@ TEST_TESTS := $(patsubst %.cc,%, $(TEST_SRCS))
 TESTS += $(TEST_TESTS)
 
 # Override the global defaults.
-TEST_INCLUDES := $(INCLUDES) -Iutil
+TEST_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
 TEST_CFLAGS := --std=c++11 $(TEST_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
 
 # Default rule for linking a test.

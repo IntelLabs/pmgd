@@ -10,7 +10,7 @@
 #include <chrono>
 #include <ctime>
 #include "jarvis.h"
-#include "../util/util.h"
+#include "util.h"
 
 using namespace std;
 using namespace std::chrono;
