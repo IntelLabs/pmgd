@@ -1,0 +1,94 @@
+# List of sources for this directory.
+JAVA_SRCS := $(addprefix java/, \
+                         Property.java PropertyIterator.java \
+                         Node.java NodeIterator.java \
+                         Edge.java EdgeIterator.java \
+                         Transaction.java Graph.java Exception.java \
+                         PropertyPredicate.java)
+
+# Derived lists.
+JAVA_JOBJS := $(patsubst java/%.java,java/jarvis/%.class, $(JAVA_SRCS))
+JAVA_CSRCS := $(patsubst java/%.java,java/%.cc, $(JAVA_SRCS))
+JAVA_CHDRS := $(patsubst java/%.java,java/%.h, $(JAVA_SRCS))
+JAVA_COBJS := $(patsubst java/%.java,java/%.o, $(JAVA_SRCS))
+
+# We must list inner classes explicitly.
+JAVA_JOBJS += java/jarvis/Graph\$$OpenOptions.class
+JAVA_JOBJS += java/jarvis/Graph\$$IndexOptions.class
+JAVA_JOBJS += java/jarvis/Node\$$Direction.class
+JAVA_JOBJS += java/jarvis/PropertyPredicate\$$op_t.class
+
+# Add to the global list of objects.
+OBJS += $(JAVA_COBJS)
+
+# Add the java objects files to the list of files to clean.
+CLEANFILES += $(JAVA_JOBJS)
+
+# Add the generated headers to the list of files to clean.
+CLEANFILES += $(JAVA_CHDRS)
+
+# Add the jarvis subdirectory to the list of directories to clean.
+CLEANDIRS += java/jarvis
+
+# Add to the global list of libraries (with path to final destination).
+LIBS += lib/libjarvis-jni.so lib/jarvis-jni.jar
+
+# Add the library to the global list of files to clean.
+CLEANFILES += java/jarvis-jni.jar java/libjarvis-jni.so
+
+# Override the global defaults.
+JAVA_INCLUDES := $(INCLUDES) -Ijava -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
+JAVA_CFLAGS := --std=c++11 $(JAVA_INCLUDES) $(OPT) $(FFLAGS) -fPIC $(WFLAGS) $(PM) -MP -MMD
+
+# We need the headers before we can build the objects.
+$(JAVA_COBJS): $(JAVA_CHDRS)
+
+# Rule to build bytecodes (we build everything at once).
+CLEANFILES += java/.built
+$(JAVA_JOBJS): java/.built ;
+
+java/.built: $(JAVA_SRCS) $(MAKEFILE_LIST)
+	$(call print,JC,*.class)
+	$(JC) -cp java -d java $(filter %.java,$^)
+	$(TOUCH) $@
+
+# Override the global rule for building an object file from a C++ file.
+java/%.o: java/%.cc $(MAKEFILE_LIST)
+	$(call print,CC,$@)
+	$(CC) $(JAVA_CFLAGS) -o $@ -c $<
+
+# Rule for building a JNI header file for a class.
+java/%.h: java/jarvis/%.class $(MAKEFILE_LIST)
+	$(call print,JH,$@)
+	$(JH) -jni -cp java -o $@ jarvis.$*
+
+# A rule to build a jar file.
+# There is a bug in make version 3.81 that does not handle the
+# presence of substring '\$' properly in automatic variables in some
+# circumstances, so instead of $(subst java/,,$^) we have to write
+# $(subst java/,,$(JAVA_JOBJS).
+java/jarvis-jni.jar: $(JAVA_JOBJS)
+	$(call print,JAR,$@)
+	cd java && $(JAR) cf $(subst java/,,$@) $(subst java/,,$(JAVA_JOBJS))
+
+# How to install said jar file.
+lib/jarvis-jni.jar: java/jarvis-jni.jar
+	$(call print,INSTALL,$@)
+	$(INSTALL) -D $< $@
+
+# A rule to build a shared library.
+java/libjarvis-jni.so: $(JAVA_COBJS) lib/libjarvis-util.so lib/libjarvis.so
+	$(call print,LD,$@)
+	$(CC) -shared -o $@ $(filter %.o,$^) -L lib -ljarvis-util -ljarvis
+
+# How to install said library.
+lib/libjarvis-jni.so: java/libjarvis-jni.so
+	$(call print,INSTALL,$@)
+	$(INSTALL) -D $< $@
+
+# What to build in this directory.
+PHONY += java
+java: java/jarvis-jni.jar java/libjarvis-jni.so
+
+# Don't attempt to rebuild this Makeconf.
+java/Makeconf : ;
