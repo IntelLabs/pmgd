@@ -24,14 +24,17 @@ TEST_TESTS := $(patsubst %.cc,%, $(TEST_SRCS))
 # Add to the global list of tests.
 TESTS += $(TEST_TESTS)
 
+# The jarvis libraries against which we link.
+TEST_LIBS = lib/jarvis.lib lib/jarvis-util.lib
+
 # Override the global defaults.
 TEST_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
 TEST_CFLAGS := --std=c++11 $(TEST_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
 
 # Default rule for linking a test.
-test/%: test/%.o $(LIBS)
+test/%: test/%.o $(TEST_LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIBS)
+	$(CC) -o $@ $< $(TEST_LIBS)
 
 # Special case for apitest.
 test/apitest: test/apitest.o
@@ -39,14 +42,14 @@ test/apitest: test/apitest.o
 	$(CC) -o $@ $<
 
 # Special case for load_gson_test.
-test/load_gson_test: test/load_gson_test.o $(LIBS)
+test/load_gson_test: test/load_gson_test.o $(TEST_LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
+	$(CC) $(OPT) -o $@ $< $(TEST_LIBS) -ljsoncpp
 
 # Special case for emailindextest.
-test/emailindextest: test/emailindextest.o $(LIBS)
+test/emailindextest: test/emailindextest.o $(TEST_LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
+	$(CC) $(OPT) -o $@ $< $(TEST_LIBS) -ljsoncpp
 
 # Override the global rule for building a preprocessed file from a C++ file.
 test/%.i: test/%.cc $(MAKEFILE_LIST)

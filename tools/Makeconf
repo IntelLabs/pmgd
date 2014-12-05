@@ -14,21 +14,24 @@ TOOLS_BINS += $(patsubst %.cc,%, $(TOOLS_SRCS))
 # Add to the global list of binary utilities.
 BINS += $(TOOLS_BINS)
 
+# The jarvis libraries against which we link.
+TOOLS_LIBS = lib/jarvis.lib lib/jarvis-util.lib
+
 # Override the global defaults.
 TOOLS_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
 TOOLS_CFLAGS := --std=c++11 $(TOOLS_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
 
-tools/mkgraph: tools/mkgraph.o $(LIBS)
+tools/mkgraph: tools/mkgraph.o $(TOOLS_LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIBS)
+	$(CC) $(OPT) -o $@ $< $(TOOLS_LIBS)
 
-tools/loadgraph: tools/loadgraph.o $(LIBS)
+tools/loadgraph: tools/loadgraph.o $(TOOLS_LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
+	$(CC) $(OPT) -o $@ $< $(TOOLS_LIBS) -ljsoncpp
 
-tools/dumpgraph: tools/dumpgraph.o $(LIBS)
+tools/dumpgraph: tools/dumpgraph.o $(TOOLS_LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIBS)
+	$(CC) $(OPT) -o $@ $< $(TOOLS_LIBS)
 
 # Override the global rule for building a preprocessed file from a C++ file.
 %.i: %.cc $(MAKEFILE_LIST)
