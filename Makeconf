@@ -93,7 +93,7 @@ PHONY += clean
 clean:
 	$(call print,CLEAN)
 	$(RM) $(LIBS) $(BINS) $(TESTS) $(OBJS) $(DEPS) $(CLEANFILES)
-	for i in "$(CLEANDIRS)"; do test -e $$i && $(RMDIR) $$i || $(TRUE); done
+	for i in $(CLEANDIRS); do test -e $$i && $(RMDIR) $$i || $(TRUE); done
 
 # Default rule for building a preprocessed file from a C++ file.
 %.i: %.cc $(MAKEFILE_LIST)
