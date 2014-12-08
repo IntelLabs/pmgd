@@ -1,7 +1,5 @@
-DIR := tools
-
 # List of sources for this directory.
-TOOLS_SRCS := $(addprefix $(DIR)/, \
+TOOLS_SRCS := $(addprefix tools/, \
                           mkgraph.cc loadgraph.cc dumpgraph.cc)
 
 # Derive a list of objects.
@@ -20,15 +18,15 @@ BINS += $(TOOLS_BINS)
 TOOLS_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
 TOOLS_CFLAGS := --std=c++11 $(TOOLS_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
 
-$(DIR)/mkgraph: $(DIR)/mkgraph.o $(LIBS)
+tools/mkgraph: tools/mkgraph.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
-$(DIR)/loadgraph: $(DIR)/loadgraph.o $(LIBS)
+tools/loadgraph: tools/loadgraph.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
-$(DIR)/dumpgraph: $(DIR)/dumpgraph.o $(LIBS)
+tools/dumpgraph: tools/dumpgraph.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS)
 
@@ -38,13 +36,13 @@ $(DIR)/dumpgraph: $(DIR)/dumpgraph.o $(LIBS)
 	$(CC) -E $(TOOLS_CFLAGS) -o $@ -c $<
 
 # Override the global rule for building an object file from a C++ file.
-$(DIR)/%.o: $(DIR)/%.cc $(MAKEFILE_LIST)
+tools/%.o: tools/%.cc $(MAKEFILE_LIST)
 	$(call print,CC,$@)
 	$(CC) $(TOOLS_CFLAGS) -o $@ -c $<
 
 # What to build in this directory.
-PHONY += $(DIR)
-$(DIR): $(TOOLS_BINS)
+PHONY += tools
+tools: $(TOOLS_BINS)
 
 # Don't attempt to rebuild this Makeconf.
-$(DIR)/Makeconf : ;
+tools/Makeconf : ;

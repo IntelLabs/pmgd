@@ -1,7 +1,5 @@
-DIR := test
-
 # List of sources for this directory.
-TEST_SRCS := $(addprefix $(DIR)/, \
+TEST_SRCS := $(addprefix test/, \
                          apitest.cc alloctest.cc soltest.cc nodeedgetest.cc \
                          listtest.cc edgeindextest.cc \
                          propertytest.cc propertypredicatetest.cc \
@@ -31,38 +29,38 @@ TEST_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
 TEST_CFLAGS := --std=c++11 $(TEST_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
 
 # Default rule for linking a test.
-$(DIR)/%: $(DIR)/%.o $(LIBS)
+test/%: test/%.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(LIBS)
 
 # Special case for apitest.
-$(DIR)/apitest: $(DIR)/apitest.o
+test/apitest: test/apitest.o
 	$(call print,LINK,$@)
 	$(CC) -o $@ $<
 
 # Special case for load_gson_test.
-$(DIR)/load_gson_test: $(DIR)/load_gson_test.o $(LIBS)
+test/load_gson_test: test/load_gson_test.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
 # Special case for emailindextest.
-$(DIR)/emailindextest: $(DIR)/emailindextest.o $(LIBS)
+test/emailindextest: test/emailindextest.o $(LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
 
 # Override the global rule for building a preprocessed file from a C++ file.
-$(DIR)/%.i: $(DIR)/%.cc $(MAKEFILE_LIST)
+test/%.i: test/%.cc $(MAKEFILE_LIST)
 	$(call print,CPP,$@)
 	$(CC) -E $(TEST_CFLAGS) -o $@ -c $<
 
 # Override the global rule for building an object file from a C++ file.
-$(DIR)/%.o: $(DIR)/%.cc $(MAKEFILE_LIST)
+test/%.o: test/%.cc $(MAKEFILE_LIST)
 	$(call print,CC,$@)
 	$(CC) $(TEST_CFLAGS) -o $@ -c $<
 
 # What to build in this directory.
-PHONY += $(DIR)
-$(DIR): $(TEST_TESTS)
+PHONY += test
+test: $(TEST_TESTS)
 
 # Don't attempt to rebuild this Makeconf.
-$(DIR)/Makeconf : ;
+test/Makeconf : ;
