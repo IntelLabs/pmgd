@@ -32,7 +32,7 @@ all: $O
 	+@$(MAKE) -C $O -f $(CURDIR)/Makeconf ROOTDIR=$(CURDIR) $@
 
 clean:
-	@$(MAKE) -C $O -f $(CURDIR)/Makeconf ROOTDIR=$(CURDIR) clean
+	@if test -d $O; then $(MAKE) -C $O -f $(CURDIR)/Makeconf ROOTDIR=$(CURDIR) clean; fi
 	@$(RMDIR) $O/src $O/util $O/tools $O/test $O
 
 .PHONY: $O
