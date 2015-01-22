@@ -35,6 +35,10 @@ RMDIR := rmdir
 TRUE := true
 ECHO := echo
 INSTALL := install
+TOUCH := touch
+JC := javac
+JH := javah
+JAR := jar
 
 # Be a little noisy in silent mode.
 ifneq ($(findstring s,$(MAKEFLAGS)),)
@@ -81,6 +85,7 @@ all: doall
 # Include subordinate Makefiles.
 include $(ROOTDIR)/src/Makeconf
 include $(ROOTDIR)/util/Makeconf
+include $(ROOTDIR)/java/Makeconf
 include $(ROOTDIR)/tools/Makeconf
 include $(ROOTDIR)/test/Makeconf
 
@@ -93,7 +98,7 @@ PHONY += clean
 clean:
 	$(call print,CLEAN)
 	$(RM) $(LIBS) $(BINS) $(TESTS) $(OBJS) $(DEPS) $(CLEANFILES)
-	for i in "$(CLEANDIRS)"; do test -e $$i && $(RMDIR) $$i || $(TRUE); done
+	for i in $(CLEANDIRS); do test -e $$i && $(RMDIR) $$i || $(TRUE); done
 
 # Default rule for building a preprocessed file from a C++ file.
 %.i: %.cc $(MAKEFILE_LIST)

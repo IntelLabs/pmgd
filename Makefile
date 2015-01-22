@@ -32,12 +32,12 @@ all: $O
 	+@$(MAKE) -C $O -f $(CURDIR)/Makeconf ROOTDIR=$(CURDIR) $@
 
 clean:
-	@$(MAKE) -C $O -f $(CURDIR)/Makeconf ROOTDIR=$(CURDIR) clean
-	@$(RMDIR) $O/src $O/util $O/tools $O/test $O
+	@if test -d $O; then $(MAKE) -C $O -f $(CURDIR)/Makeconf ROOTDIR=$(CURDIR) clean; fi
+	-@$(RMDIR) $O/src $O/util $O/java $O/tools $O/test $O
 
 .PHONY: $O
 $O:
-	@$(MKDIR) $@/src $@/util $@/tools $@/test
+	@$(MKDIR) $@/src $@/util $@/java $@/tools $@/test
 endif
 
 .PHONY: help
