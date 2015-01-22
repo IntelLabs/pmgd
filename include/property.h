@@ -2,7 +2,9 @@
 
 #include <stddef.h>
 #include <assert.h>
+#include <time.h>
 #include <string>
+#include "string.h"    // For memset
 #include "exception.h"
 #include "stringid.h"
 
@@ -11,8 +13,44 @@ namespace Jarvis {
                         t_float, t_time, t_blob };
 
     struct Time {
-        bool operator<(const Time &) const { throw Exception(not_implemented); }
+        // Always store time here in UTC for direct comparison.
+        union __attribute__ ((packed)) {
+            int64_t time_val;
+
+            struct __attribute__ ((packed)) {
+                uint64_t unused : 4;
+                uint64_t usec : 20;  // 0-999,999
+                uint64_t sec : 6;    // 0-60
+                uint64_t min : 6;    // 0-59
+                uint64_t hour : 5;   // 0-23
+                uint64_t day : 5;    // 1-31
+                uint64_t mon : 4;    // 1-12
+                int64_t year : 14;   // -8192-8191
+                // Store timezone for user queries to be answered in user's
+                // given timezone.
+                uint8_t tz_min : 2;
+                int8_t tz_hour : 5;  // -12-14
+                uint8_t tz_spare : 1;
+            };
+        };
+
+        void fill_tm_utc(struct tm *) const;
+
+    public:
+        Time() { memset(this, 0, sizeof(Time)); }
+        Time(const struct tm *, int hr_offset, int min_offset);
+
+        // Get time in the user's timezone
+        void get_tm(struct tm *) const;
+        void get_utc(struct tm *) const;
+
+        bool operator<(const Time &t) const
+            { return time_val < t.time_val; }
+        bool operator==(const Time &t) const
+            { return time_val == t.time_val; }
     };
+
+    static_assert(sizeof (Time) == 9, "size of Time structure is wrong");
 
     class Property {
     public:
@@ -48,7 +86,7 @@ namespace Jarvis {
         Property(const std::string str)
             : _type(t_string), v_string(str) { }
         Property(double v) : _type(t_float), v_float(v) { }
-        Property(Time v) : _type(t_time), v_time(v) { }
+        Property(const Time &v) : _type(t_time), v_time(v) { }
         Property(const blob_t &blob)
             : _type(t_blob), v_blob(blob) { }
         Property(const void *blob, std::size_t size)

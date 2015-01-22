@@ -71,6 +71,7 @@ uint16_t StringTable::get(const char *name)
             // Ok to acquire transaction object here again (after StringID)
             // cause this is not a frequented branch
             TransactionImpl *tx = TransactionImpl::get_tx();
+            tx->check_read_write();
             tx->write_nolog(dest, (void *)name, length);
             // Found an empty slot to copy string. Therefore,
             // no need for further string comparison.

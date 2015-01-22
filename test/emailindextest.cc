@@ -1,6 +1,7 @@
 #include <iostream>
+#include <string>
 #include "jarvis.h"
-#include "../util/util.h"
+#include "util.h"
 
 using namespace Jarvis;
 
@@ -20,6 +21,7 @@ int main(int argc, char *argv[])
         db.create_index(Graph::NODE, "Person", "Email", t_string);
         db.create_index(Graph::NODE, "Message", "Size", t_integer);
         db.create_index(Graph::NODE, "Message", "Replied?", t_boolean);
+        db.create_index(Graph::NODE, "Attachment", "Created", t_time);
         tx.commit();
 
         load_gson(db, "email.gson", node_added, edge_added);
@@ -72,6 +74,31 @@ int main(int argc, char *argv[])
         if (count != 20)
             ++fail;
         printf("Number of messages with emails GELT alain.kagi and vishakha.s.gupta@intel.com: %d\n", count);
+
+        count = 0;
+        struct tm tm1, tm2;
+        int hr, min;
+        // There are two entries with the following time value for created.
+        string_to_tm("Wed Jun 04 08:00:43 PDT 2014", &tm1, &hr, &min);
+        Time t1(&tm1, hr, min);
+        // There are three entries with the following time value for created.
+        string_to_tm("Mon Jun 30 10:36:32 PDT 2014", &tm2, &hr, &min);
+        Time t2(&tm2, hr, min);
+        std::string s1 = time_to_string(t1);
+        std::string s2 = time_to_string(t2);
+        printf("## Trying iterator with tag Attachment and created between: %s and %s with GTLT\n",
+                   s1.c_str(), s2.c_str());
+        PropertyPredicate pp5("Created", PropertyPredicate::gtlt, t1, t2);
+        for (NodeIterator i = db.get_nodes("Attachment", pp5); i; i.next()) {
+            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            Time t = i->get_property("Created").time_value();
+            std::string s = time_to_string(t);
+            printf("\tConfirming searched prop value: %s\n", s.c_str());
+            ++count;
+        }
+        if (count != 27)
+            ++fail;
+        printf("Number of attachments created in the range: %d\n", count);
 
         tx1.commit();
     }

@@ -6,6 +6,7 @@
 #include <stack>
 #include "TransactionManager.h"
 #include "exception.h"
+#include "transaction.h"
 
 namespace Jarvis {
     class GraphImpl;
@@ -45,6 +46,12 @@ namespace Jarvis {
 
             void acquire_readlock(Lock *lptr);
             void acquire_writelock(Lock *lptr);
+
+            void check_read_write()
+            {
+                if (!(_tx_type & Transaction::ReadWrite))
+                    throw Exception(read_only);
+            }
 
             // log data; user performs the writes
             void log(void *ptr, size_t len);

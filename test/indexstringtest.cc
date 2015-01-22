@@ -6,7 +6,7 @@
 #include <locale>
 #include "jarvis.h"
 #include "../src/IndexString.h"
-#include "../util/util.h"
+#include "util.h"
 
 using namespace std;
 using namespace Jarvis;

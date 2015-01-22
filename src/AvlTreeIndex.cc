@@ -685,4 +685,5 @@ NodeIterator AvlTreeIndex<K,V>::get_nodes(const K &min, const K& max,
 template class AvlTreeIndex<long long, List<Node *>>;
 template class AvlTreeIndex<bool, List<Node *>>;
 template class AvlTreeIndex<double, List<Node *>>;
+template class AvlTreeIndex<Time, List<Node *>>;
 template class AvlTreeIndex<IndexString, List<Node *>>;

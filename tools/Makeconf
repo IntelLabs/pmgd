@@ -1,0 +1,50 @@
+DIR := tools
+
+# List of sources for this directory.
+TOOLS_SRCS := $(addprefix $(DIR)/, \
+                          mkgraph.cc loadgraph.cc dumpgraph.cc)
+
+# Derive a list of objects.
+TOOLS_OBJS := $(patsubst %.cc,%.o, $(TOOLS_SRCS))
+
+# Add to the global list of objects.
+OBJS += $(TOOLS_OBJS)
+
+# What we are building here.
+TOOLS_BINS += $(patsubst %.cc,%, $(TOOLS_SRCS))
+
+# Add to the global list of binary utilities.
+BINS += $(TOOLS_BINS)
+
+# Override the global defaults.
+TOOLS_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
+TOOLS_CFLAGS := --std=c++11 $(TOOLS_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
+
+$(DIR)/mkgraph: $(DIR)/mkgraph.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
+
+$(DIR)/loadgraph: $(DIR)/loadgraph.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
+
+$(DIR)/dumpgraph: $(DIR)/dumpgraph.o $(LIBS)
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(LIBS)
+
+# Override the global rule for building a preprocessed file from a C++ file.
+%.i: %.cc $(MAKEFILE_LIST)
+	$(call print,CPP,$@)
+	$(CC) -E $(TOOLS_CFLAGS) -o $@ -c $<
+
+# Override the global rule for building an object file from a C++ file.
+$(DIR)/%.o: $(DIR)/%.cc $(MAKEFILE_LIST)
+	$(call print,CC,$@)
+	$(CC) $(TOOLS_CFLAGS) -o $@ -c $<
+
+# What to build in this directory.
+PHONY += $(DIR)
+$(DIR): $(TOOLS_BINS)
+
+# Don't attempt to rebuild this Makeconf.
+$(DIR)/Makeconf : ;

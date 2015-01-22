@@ -4,7 +4,7 @@
 
 #include "jarvis.h"
 #include "../src/IndexManager.h"
-#include "../util/util.h"
+#include "util.h"
 
 using namespace Jarvis;
 

@@ -3,7 +3,7 @@
  */
 #include <stdio.h>
 #include "jarvis.h"
-#include "../util/util.h"
+#include "util.h"
 
 using namespace Jarvis;
 

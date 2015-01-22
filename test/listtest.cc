@@ -7,7 +7,7 @@
 #include "../src/os.h"
 #include "../src/allocator.h"
 #include "../src/GraphConfig.h"
-#include "../util/util.h"
+#include "util.h"
 
 using namespace Jarvis;
 using namespace std;

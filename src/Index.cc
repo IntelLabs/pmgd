@@ -33,13 +33,16 @@ void Index::add(const Property &p, Node *n, GraphImpl *db)
             dest = static_cast<BoolValueIndex *>(this)->add(p.bool_value(),
                                                             allocator);
             break;
+        case t_time:
+            dest = static_cast<TimeValueIndex *>(this)->add(p.time_value(),
+                                                            allocator);
+            break;
         case t_string:
             {
                 TransientIndexString istr(p.string_value(), db->locale());
                 dest = static_cast<StringValueIndex *>(this)->add(istr, allocator);
             }
             break;
-        case t_time:
         case t_novalue:
             throw Exception(not_implemented);
         case t_blob:
@@ -100,6 +103,18 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
                 }
             }
             break;
+        case t_time:
+            {
+                TimeValueIndex *prop_idx = static_cast<TimeValueIndex *>(this);
+                dest = prop_idx->find(p.time_value());
+                if (dest) {
+                    dest->remove(n, allocator);
+                    // TODO: Re-traversal of tree.
+                    if (dest->num_elems() == 0)
+                        prop_idx->remove(p.time_value(), allocator);
+                }
+            }
+            break;
         case t_string:
             {
                 TransientIndexString istr(p.string_value(), db->locale());
@@ -113,7 +128,6 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
                 }
             }
             break;
-        case t_time:
         case t_novalue:
             throw Exception(not_implemented);
         case t_blob:
@@ -170,6 +184,17 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
                     return This->get_nodes(p1.bool_value(), pp.op, reverse);
             }
             break;
+        case t_time:
+            {
+                TimeValueIndex *This = static_cast<TimeValueIndex *>(this);
+                if (pp.op >= PropertyPredicate::gele)
+                    return This->get_nodes(p1.time_value(), p2.time_value(), pp.op, reverse);
+                else if (pp.op == PropertyPredicate::dont_care)
+                    return This->get_nodes(reverse);
+                else
+                    return This->get_nodes(p1.time_value(), pp.op, reverse);
+            }
+            break;
         case t_string:
             {
                 TransientIndexString istr(p1.string_value(), *loc);
@@ -184,7 +209,6 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
                     return This->get_nodes(istr, pp.op, reverse);
             }
             break;
-        case t_time:
         case t_novalue:
             throw Exception(not_implemented);
         case t_blob:

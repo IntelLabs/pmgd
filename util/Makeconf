@@ -1,0 +1,56 @@
+DIR := util
+
+# List of sources for this directory.
+UTIL_SRCS := $(addprefix $(DIR)/, \
+                         exception.cc text.cc dump.cc \
+                         load_tsv.cc load_gson.cc loader.y scanner.l)
+
+# Derive a list of objects.
+UTIL_OBJS := $(patsubst %.cc,%.o, \
+               $(patsubst %.y,%.o, \
+                 $(patsubst %.l,%.o, $(UTIL_SRCS))))
+
+# Add to the global list of objects.
+OBJS += $(UTIL_OBJS)
+
+# Add to the global list of libraries (with path to final destination).
+LIBS += lib/jarvis-util.lib
+
+# Add the output of flex and bison to the global list of files to clean.
+CLEANFILES += $(patsubst %.y,%.cc, \
+                $(patsubst %.l,%.cc, \
+                  $(filter %.y %.l, $(UTIL_SRCS))))
+CLEANFILES += $(patsubst %.y,%.hh, \
+                $(patsubst %.l,%.hh, \
+                  $(filter %.y %.l, $(UTIL_SRCS))))
+
+# Add the library to the global list of files to clean.
+CLEANFILES += $(DIR)/jarvis-util.lib
+
+# We already added lib to CLEANDIRS in ../src/Makeconf
+
+# make does not handle a tool producing two output files well.
+# One solution introduces the two dependences below even though (a)
+# the first one is a duplicate of one that will eventually appear in
+# scanner.d and (b) it may cause make to redo some steps unnecessarily
+# based on the relative timestamps assigned to loader.hh and
+# loader.cc.
+$(DIR)/scanner.o: $(DIR)/loader.hh
+$(DIR)/loader.hh: $(DIR)/loader.cc
+
+# A rule to build the library.
+$(DIR)/jarvis-util.lib: $(UTIL_OBJS)
+	$(call print,AR,$@)
+	$(AR) cr $@ $(UTIL_OBJS)
+
+# How to install said library.
+lib/jarvis-util.lib: $(DIR)/jarvis-util.lib
+	$(call print,INSTALL,$@)
+	$(INSTALL) -D $< $@
+
+# What to build in this directory.
+PHONY += $(DIR)
+$(DIR): $(DIR)/jarvis-util.lib
+
+# Don't attempt to rebuild this Makeconf.
+$(DIR)/Makeconf : ;

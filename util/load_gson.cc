@@ -4,6 +4,8 @@
 #include <assert.h>
 #include <fstream>
 #include <jsoncpp/json/json.h>
+#include <time.h>
+#include <string.h>
 #include "jarvis.h"
 #include "util.h"
 
@@ -130,7 +132,20 @@ static void set_property(T *elem, const char *pkey, Json::Value &pval)
             elem->set_property(pkey, pval.asDouble());
             break;
         case Json::stringValue:
-            elem->set_property(pkey, pval.asString());
+            {
+                // First test if the string complies with time format
+                // Assuming the very specific format that Time property
+                // supports as of now
+                struct tm tm;
+                int hr, min;
+                if (string_to_tm(pval.asString(), &tm, &hr, &min)) {
+                    // It parsed as a time string
+                    Time t(&tm, hr, min);
+                    elem->set_property(pkey, t);
+                }
+                else
+                    elem->set_property(pkey, pval.asString());
+            }
             break;
         case Json::booleanValue:
             elem->set_property(pkey, pval.asBool());
