@@ -1,7 +1,5 @@
-DIR := util
-
 # List of sources for this directory.
-UTIL_SRCS := $(addprefix $(DIR)/, \
+UTIL_SRCS := $(addprefix util/, \
                          exception.cc text.cc dump.cc \
                          load_tsv.cc load_gson.cc loader.y scanner.l)
 
@@ -14,7 +12,7 @@ UTIL_OBJS := $(patsubst %.cc,%.o, \
 OBJS += $(UTIL_OBJS)
 
 # Add to the global list of libraries (with path to final destination).
-LIBS += lib/jarvis-util.lib
+LIBS += lib/jarvis-util.lib lib/libjarvis-util.so
 
 # Add the output of flex and bison to the global list of files to clean.
 CLEANFILES += $(patsubst %.y,%.cc, \
@@ -25,7 +23,7 @@ CLEANFILES += $(patsubst %.y,%.hh, \
                   $(filter %.y %.l, $(UTIL_SRCS))))
 
 # Add the library to the global list of files to clean.
-CLEANFILES += $(DIR)/jarvis-util.lib
+CLEANFILES += util/jarvis-util.lib util/libjarvis-util.so
 
 # We already added lib to CLEANDIRS in ../src/Makeconf
 
@@ -35,22 +33,40 @@ CLEANFILES += $(DIR)/jarvis-util.lib
 # scanner.d and (b) it may cause make to redo some steps unnecessarily
 # based on the relative timestamps assigned to loader.hh and
 # loader.cc.
-$(DIR)/scanner.o: $(DIR)/loader.hh
-$(DIR)/loader.hh: $(DIR)/loader.cc
+util/scanner.o: util/loader.hh
+util/loader.hh: util/loader.cc
+
+# Override the global defaults.
+UTIL_CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) -fPIC $(WFLAGS) $(PM) -MP -MMD
+
+# Override the global rule for building an object file from a C++ file.
+util/%.o: util/%.cc $(MAKEFILE_LIST)
+	$(call print,CC,$@)
+	$(CC) $(UTIL_CFLAGS) -o $@ -c $<
 
 # A rule to build the library.
-$(DIR)/jarvis-util.lib: $(UTIL_OBJS)
+util/jarvis-util.lib: $(UTIL_OBJS)
 	$(call print,AR,$@)
 	$(AR) cr $@ $(UTIL_OBJS)
 
 # How to install said library.
-lib/jarvis-util.lib: $(DIR)/jarvis-util.lib
+lib/jarvis-util.lib: util/jarvis-util.lib
+	$(call print,INSTALL,$@)
+	$(INSTALL) -D $< $@
+
+# A rule to build a shared library.
+util/libjarvis-util.so: $(SRC_OBJS)
+	$(call print,LD,$@)
+	$(CC) -shared -o $@ $(SRC_OBJS)
+
+# How to install said library.
+lib/libjarvis-util.so: util/libjarvis-util.so
 	$(call print,INSTALL,$@)
 	$(INSTALL) -D $< $@
 
 # What to build in this directory.
-PHONY += $(DIR)
-$(DIR): $(DIR)/jarvis-util.lib
+PHONY += util
+util: util/jarvis-util.lib util/libjarvis-util.so
 
 # Don't attempt to rebuild this Makeconf.
-$(DIR)/Makeconf : ;
+util/Makeconf : ;

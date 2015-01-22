@@ -1,7 +1,5 @@
-DIR := test
-
 # List of sources for this directory.
-TEST_SRCS := $(addprefix $(DIR)/, \
+TEST_SRCS := $(addprefix test/, \
                          apitest.cc alloctest.cc soltest.cc nodeedgetest.cc \
                          listtest.cc edgeindextest.cc \
                          propertytest.cc propertypredicatetest.cc \
@@ -12,57 +10,67 @@ TEST_SRCS := $(addprefix $(DIR)/, \
                          avltest.cc chunklisttest.cc indextest.cc \
                          indexrangetest.cc indexstringtest.cc \
                          reverseindexrangetest.cc emailindextest.cc \
-                         rotest.cc)
+                         rotest.cc BindingsTest.java)
 
 # Derive a list of objects.
-TEST_OBJS := $(patsubst %.cc,%.o, $(TEST_SRCS))
+TEST_COBJS := $(patsubst %.cc,%.o, \
+                $(patsubst %.java,, $(TEST_SRCS)))
 
 # Add to the global list of objects.
-OBJS += $(TEST_OBJS)
+OBJS += $(TEST_COBJS)
 
 # What we are building here.
-TEST_TESTS := $(patsubst %.cc,%, $(TEST_SRCS))
+TEST_TESTS := $(patsubst %.cc,%, \
+                $(patsubst %.java,%.class, $(TEST_SRCS)))
 
 # Add to the global list of tests.
 TESTS += $(TEST_TESTS)
+
+# The jarvis libraries against which we link.
+TEST_LIBS = lib/jarvis.lib lib/jarvis-util.lib
 
 # Override the global defaults.
 TEST_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
 TEST_CFLAGS := --std=c++11 $(TEST_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
 
 # Default rule for linking a test.
-$(DIR)/%: $(DIR)/%.o $(LIBS)
+test/%: test/%.o $(TEST_LIBS)
 	$(call print,LINK,$@)
-	$(CC) -o $@ $< $(LIBS)
+	$(CC) -o $@ $< $(TEST_LIBS)
 
 # Special case for apitest.
-$(DIR)/apitest: $(DIR)/apitest.o
+test/apitest: test/apitest.o
 	$(call print,LINK,$@)
 	$(CC) -o $@ $<
 
 # Special case for load_gson_test.
-$(DIR)/load_gson_test: $(DIR)/load_gson_test.o $(LIBS)
+test/load_gson_test: test/load_gson_test.o $(TEST_LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
+	$(CC) $(OPT) -o $@ $< $(TEST_LIBS) -ljsoncpp
 
 # Special case for emailindextest.
-$(DIR)/emailindextest: $(DIR)/emailindextest.o $(LIBS)
+test/emailindextest: test/emailindextest.o $(TEST_LIBS)
 	$(call print,LINK,$@)
-	$(CC) $(OPT) -o $@ $< $(LIBS) -ljsoncpp
+	$(CC) $(OPT) -o $@ $< $(TEST_LIBS) -ljsoncpp
+
+# Special case for BindingsTest.
+test/BindingsTest.class: test/BindingsTest.java lib/libjarvis.so lib/libjarvis-util.so lib/jarvis-jni.jar
+	$(call print,JC,$@)
+	$(JC) -cp lib/jarvis-jni.jar -d test $<
 
 # Override the global rule for building a preprocessed file from a C++ file.
-$(DIR)/%.i: $(DIR)/%.cc $(MAKEFILE_LIST)
+test/%.i: test/%.cc $(MAKEFILE_LIST)
 	$(call print,CPP,$@)
 	$(CC) -E $(TEST_CFLAGS) -o $@ -c $<
 
 # Override the global rule for building an object file from a C++ file.
-$(DIR)/%.o: $(DIR)/%.cc $(MAKEFILE_LIST)
+test/%.o: test/%.cc $(MAKEFILE_LIST)
 	$(call print,CC,$@)
 	$(CC) $(TEST_CFLAGS) -o $@ -c $<
 
 # What to build in this directory.
-PHONY += $(DIR)
-$(DIR): $(TEST_TESTS)
+PHONY += test
+test: $(TEST_TESTS)
 
 # Don't attempt to rebuild this Makeconf.
-$(DIR)/Makeconf : ;
+test/Makeconf : ;

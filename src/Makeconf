@@ -1,7 +1,5 @@
-DIR := src
-
 # List of sources for this directory.
-SRC_SRCS := $(addprefix $(DIR)/, \
+SRC_SRCS := $(addprefix src/, \
                         graph.cc GraphConfig.cc \
                         node.cc edge.cc property.cc \
                         stringid.cc StringTable.cc \
@@ -20,27 +18,45 @@ SRC_OBJS := $(patsubst %.cc,%.o, $(SRC_SRCS))
 OBJS += $(SRC_OBJS)
 
 # Add to the global list of libraries (with path to final destination).
-LIBS += lib/jarvis.lib
+LIBS += lib/jarvis.lib lib/libjarvis.so
 
 # Add the library to the global list of files to clean.
-CLEANFILES += $(DIR)/jarvis.lib
+CLEANFILES += src/jarvis.lib src/libjarvis.so
 
 # Add lib to the global list of directories to clean.
 CLEANDIRS += lib
 
+# Override the global defaults.
+SRC_CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) -fPIC $(WFLAGS) $(PM) -MP -MMD
+
+# Override the global rule for building an object file from a C++ file.
+src/%.o: src/%.cc $(MAKEFILE_LIST)
+	$(call print,CC,$@)
+	$(CC) $(SRC_CFLAGS) -o $@ -c $<
+
 # A rule to build the library.
-$(DIR)/jarvis.lib: $(SRC_OBJS)
+src/jarvis.lib: $(SRC_OBJS)
 	$(call print,AR,$@)
 	$(AR) cr $@ $(SRC_OBJS)
 
 # How to install said library.
-lib/jarvis.lib: $(DIR)/jarvis.lib
+lib/jarvis.lib: src/jarvis.lib
+	$(call print,INSTALL,$@)
+	$(INSTALL) -D $< $@
+
+# A rule to build a shared library.
+src/libjarvis.so: $(SRC_OBJS)
+	$(call print,LD,$@)
+	$(CC) -shared -o $@ $(SRC_OBJS)
+
+# How to install said library.
+lib/libjarvis.so: src/libjarvis.so
 	$(call print,INSTALL,$@)
 	$(INSTALL) -D $< $@
 
 # What to build in this directory.
-PHONY += $(DIR)
-$(DIR): $(DIR)/jarvis.lib
+PHONY += src
+src: src/jarvis.lib src/libjarvis.so
 
 # Don't attempt to rebuild this Makeconf.
-$(DIR)/Makeconf : ;
+src/Makeconf : ;
