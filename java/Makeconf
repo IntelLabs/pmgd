@@ -36,6 +36,9 @@ LIBS += lib/libjarvis-jni.so lib/jarvis-jni.jar
 # Add the library to the global list of files to clean.
 CLEANFILES += java/jarvis-jni.jar java/libjarvis-jni.so
 
+# Where to find some key C header files related to JNI.
+JAVA_HOME := $(shell dirname $$(dirname $$(readlink -f $$(which $(JC)))))
+
 # Override the global defaults.
 JAVA_INCLUDES := $(INCLUDES) -Ijava -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
 JAVA_CFLAGS := --std=c++11 $(JAVA_INCLUDES) $(OPT) $(FFLAGS) -fPIC $(WFLAGS) $(PM) -MP -MMD
