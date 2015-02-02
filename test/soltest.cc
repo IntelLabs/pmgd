@@ -3,6 +3,8 @@
  */
 
 #include <stdio.h>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include "jarvis.h"
 
 using namespace Jarvis;
@@ -32,26 +34,26 @@ std::string tag_text(const T &n)
 
 void dump(Graph &db, const Node &n)
 {
-    printf("Node %lu%s:\n", db.get_id(n), tag_text(n).c_str());
+    printf("Node %" PRIx64 " %s:\n", db.get_id(n), tag_text(n).c_str());
     n.get_properties()
         .process([&db](PropertyRef &p) {
         printf("  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
         });
     n.get_edges(OUTGOING)
         .process([&db](EdgeRef &e) {
-        printf(" %s -> n%lu (e%lu)\n", tag_text(e).c_str(),
+        printf(" %s -> n%" PRIx64 " (e%" PRIx64 ")\n", tag_text(e).c_str(),
             db.get_id(e.get_destination()), db.get_id(e));
         });
     n.get_edges(INCOMING)
         .process([&db](EdgeRef &e) {
-        printf(" %s <- n%lu (e%lu)\n", tag_text(e).c_str(),
+        printf(" %s <- n%" PRIx64 " (e%" PRIx64 ")\n", tag_text(e).c_str(),
             db.get_id(e.get_source()), db.get_id(e));
         });
 }
 
 void dump(Graph &db, const Edge &e)
 {
-    printf("Edge %lu%s: n%lu -> n%lu\n",
+    printf("Edge %" PRIx64 "%s: n%" PRIx64 " -> n%" PRIx64 "\n",
         db.get_id(e), tag_text(e).c_str(),
         db.get_id(e.get_source()), db.get_id(e.get_destination()));
     e.get_properties()

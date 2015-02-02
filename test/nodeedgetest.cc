@@ -2,6 +2,8 @@
  *  Unit test for the node edge index
  */
 #include <stdio.h>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include "jarvis.h"
 #include "util.h"
 
@@ -52,32 +54,32 @@ int main(int argc, char **argv)
 static void test_get_edges(const Graph &db, const Node &n)
 {
     NodeID my_id = db.get_id(n);
-    printf("Node %lu:\n", my_id);
+    printf("Node %" PRIu64 ":\n", my_id);
     printf("All edges: \n");
     for (EdgeIterator i = n.get_edges(); i; i.next()) {
         NodeID other_id = db.get_id(i->get_destination());
         if (other_id == my_id ) { // I am destination
-            printf("  <- n%lu (%s,e%lu)\n", db.get_id(i->get_source()),
+            printf("  <- n%" PRIu64 " (%s,e%" PRIu64 ")\n", db.get_id(i->get_source()),
                     i->get_tag().name().c_str(), db.get_id(*i));
         }
         else {
-            printf("  -> n%lu (%s,e%lu)\n", db.get_id(i->get_destination()),
+            printf("  -> n%" PRIu64 " (%s,e%" PRIu64 ")\n", db.get_id(i->get_destination()),
                     i->get_tag().name().c_str(), db.get_id(*i));
         }
     }
     printf("All outgoing edges: \n");
     for (EdgeIterator i = n.get_edges(OUTGOING); i; i.next()) {
-        printf("  -> n%lu (%s,e%lu)\n", db.get_id(i->get_destination()),
+        printf("  -> n%" PRIu64 " (%s,e%" PRIu64 ")\n", db.get_id(i->get_destination()),
                 i->get_tag().name().c_str(), db.get_id(*i));
     }
     printf("All outgoing edges with tag 0: \n");
     for (EdgeIterator i = n.get_edges(OUTGOING, "tag0"); i; i.next()) {
-        printf("  -> n%lu (%s,e%lu)\n", db.get_id(i->get_destination()),
+        printf("  -> n%" PRIu64 " (%s,e%" PRIu64 ")\n", db.get_id(i->get_destination()),
                 i->get_tag().name().c_str(), db.get_id(*i));
     }
     printf("All incoming edges with tag 1: \n");
     for (EdgeIterator i = n.get_edges(INCOMING, "tag1"); i; i.next()) {
-        printf("  <- n%lu (%s,e%lu)\n", db.get_id(i->get_source()),
+        printf("  <- n%" PRIu64 " (%s,e%" PRIu64 ")\n", db.get_id(i->get_source()),
                 i->get_tag().name().c_str(), db.get_id(*i));
     }
     printf("\n");

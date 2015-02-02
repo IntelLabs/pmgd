@@ -2,6 +2,8 @@
  * This test checks Jarvis iterator filters
  */
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include "jarvis.h"
 #include "util.h"
 
@@ -90,7 +92,7 @@ int main(int argc, char **argv)
                     })
                     .process([&db,&n,&f](PropertyRef &p) {
                         if (!f) {
-                            printf("Node %lu:\n", db.get_id(n));
+                            printf("Node %" PRIu64 ":\n", db.get_id(n));
                             f = true;
                         }
                         std::string id = p.id().name();

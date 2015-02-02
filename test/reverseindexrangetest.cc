@@ -2,6 +2,8 @@
  * This test checks Jarvis Index range iterators
  */
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include "jarvis.h"
 #include "../src/IndexManager.h"
 #include "util.h"
@@ -57,112 +59,112 @@ int main(int argc, char **argv)
         printf("## Trying reverse iterator with tag tag1 and property range:202-205 with GELE\n");
         PropertyPredicate pp1("id1", PropertyPredicate::gele, 202, 205);
         for (NodeIterator i = db.get_nodes("tag1", pp1, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:202-205 with GELT\n");
         PropertyPredicate pp2("id1", PropertyPredicate::gelt, 202, 205);
         for (NodeIterator i = db.get_nodes("tag1", pp2, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:202-205 with GTLE\n");
         PropertyPredicate pp3("id1", PropertyPredicate::gtle, 202, 205);
         for (NodeIterator i = db.get_nodes("tag1", pp3, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:202-205 with GTLT\n");
         PropertyPredicate pp4("id1", PropertyPredicate::gtlt, 202, 205);
         for (NodeIterator i = db.get_nodes("tag1", pp4, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:202 with LT\n");
         PropertyPredicate pp5("id1", PropertyPredicate::lt, 202);
         for (NodeIterator i = db.get_nodes("tag1", pp5, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:203 with LE\n");
         PropertyPredicate pp6("id1", PropertyPredicate::le, 203);
         for (NodeIterator i = db.get_nodes("tag1", pp6, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:202 with GT\n");
         PropertyPredicate pp7("id1", PropertyPredicate::gt, 202);
         for (NodeIterator i = db.get_nodes("tag1", pp7, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:202 with GE\n");
         PropertyPredicate pp8("id1", PropertyPredicate::ge, 202);
         for (NodeIterator i = db.get_nodes("tag1", pp8, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range: DONT_CARE\n");
         PropertyPredicate pp9("id1");
         for (NodeIterator i = db.get_nodes("tag1", pp9, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:202 (non-leaf) NEQ\n");
         PropertyPredicate pp10("id1", PropertyPredicate::ne, 202);
         for (NodeIterator i = db.get_nodes("tag1", pp10, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:203 (leaf) NEQ\n");
         PropertyPredicate pp11("id1", PropertyPredicate::ne, 203);
         for (NodeIterator i = db.get_nodes("tag1", pp11, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:201 (no right child) NEQ\n");
         PropertyPredicate pp12("id1", PropertyPredicate::ne, 201);
         for (NodeIterator i = db.get_nodes("tag1", pp12, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:210 (no left child) NEQ\n");
         PropertyPredicate pp13("id1", PropertyPredicate::ne, 210);
         for (NodeIterator i = db.get_nodes("tag1", pp13, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:214-217 (non-existent) with GELE\n");
         PropertyPredicate pp14("id1", PropertyPredicate::gele, 214, 217);
         for (NodeIterator i = db.get_nodes("tag1", pp14, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:199-200 (non-existent) with GELT\n");
         PropertyPredicate pp15("id1", PropertyPredicate::gelt, 199, 200);
         for (NodeIterator i = db.get_nodes("tag1", pp15, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
         printf("## Trying reverse iterator with tag tag1 and property range:201-201 with GELE\n");
         PropertyPredicate pp16("id1", PropertyPredicate::gele, 201, 201);
         for (NodeIterator i = db.get_nodes("tag1", pp16, reverse); i; i.next()) {
-            printf("Node %lu: tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
         }
 
