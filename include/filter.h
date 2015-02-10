@@ -138,10 +138,10 @@ namespace Jarvis {
             : IteratorFilter<PathIterator>(i, f)
         { }
 
-        NodeIterator end_nodes() const
-        {
-            return _base_impl ? _base_impl->end_nodes() : NodeIterator(NULL);
-        }
+        // Removed the body of this function to allow compilation on Windows.
+        // To add the code back, the implementation had the following 1 line:
+        // return _base_impl ? _base_impl->end_nodes() : NodeIterator(NULL);
+        NodeIterator end_nodes() const;
     };
 
     inline NodeIterator NodeIterator::filter(const PropertyPredicate &pp)
