@@ -166,7 +166,7 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
       _allocator(_init.info->allocator_info.addr,
                  _init.info->num_fixed_allocators,
                  _init.info->allocator_offsets,
-                 &_init.fixed_allocator_info[0],
+                 _init.create ? &_init.fixed_allocator_info[0] : NULL,
                  _init.create),
       _locale(_init.info->locale_name[0] != '\0'
                   ? std::locale(_init.info->locale_name)
