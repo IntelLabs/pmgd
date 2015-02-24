@@ -2,9 +2,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../include/jarvis.h"
-#include "../util/util.h"
-#include "../util/neighbor.h"
+#include "jarvis.h"
+#include "util.h"
+#include "neighbor.h"
 
 #include "Node.h"
 #include "jarvisHandles.h"
