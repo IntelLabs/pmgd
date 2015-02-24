@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <time.h>
 #include <string>
-#include "string.h"    // For memset
+#include <string.h>    // For memset
 #include "exception.h"
 #include "stringid.h"
 
