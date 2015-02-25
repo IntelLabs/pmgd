@@ -25,21 +25,23 @@ extern void dump(Jarvis::Graph &db, Jarvis::EdgeIterator &i, FILE *f = stdout);
 extern void dump(Jarvis::Graph &db, Jarvis::NodeIterator &&i, FILE *f = stdout);
 extern void dump(Jarvis::Graph &db, Jarvis::EdgeIterator &&i, FILE *f = stdout);
 
+extern void do_nothing_node(Jarvis::Node &);
+extern void do_nothing_edge(Jarvis::Edge &);
+
 extern void load_tsv(Jarvis::Graph &db, const char *filename,
-                     std::function<void(Jarvis::Node &)> = NULL,
-                     std::function<void(Jarvis::Edge &)> = NULL);
+                     std::function<void(Jarvis::Node &)> = do_nothing_node,
+                     std::function<void(Jarvis::Edge &)> = do_nothing_edge);
 extern void load_tsv(Jarvis::Graph &db, FILE *f,
-                     std::function<void(Jarvis::Node &)> = NULL,
-                     std::function<void(Jarvis::Edge &)> = NULL);
+                     std::function<void(Jarvis::Node &)> = do_nothing_node,
+                     std::function<void(Jarvis::Edge &)> = do_nothing_edge);
 
 extern void load(Jarvis::Graph &db, const char *filename,
-                 std::function<void(Jarvis::Node &)> = NULL,
-                 std::function<void(Jarvis::Edge &)> = NULL);
+                 std::function<void(Jarvis::Node &)> = do_nothing_node,
+                 std::function<void(Jarvis::Edge &)> = do_nothing_edge);
 extern void load(Jarvis::Graph &db, FILE *f,
-                 std::function<void(Jarvis::Node &)> = NULL,
-                 std::function<void(Jarvis::Edge &)> = NULL);
+                 std::function<void(Jarvis::Node &)> = do_nothing_node,
+                 std::function<void(Jarvis::Edge &)> = do_nothing_edge);
 
 extern void load_gson(Jarvis::Graph &db, const char *filename,
-                      std::function<void(Jarvis::Node &)> = NULL,
-                      std::function<void(Jarvis::Edge &)> = NULL);
-
+                      std::function<void(Jarvis::Node &)> = do_nothing_node,
+                      std::function<void(Jarvis::Edge &)> = do_nothing_edge);

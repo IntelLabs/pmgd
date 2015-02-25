@@ -62,3 +62,6 @@ static Node &get_node(Graph &db, long long id,
         node_func(node);
     return node;
 }
+
+void do_nothing_node(Jarvis::Node &) { }
+void do_nothing_edge(Jarvis::Edge &) { }
