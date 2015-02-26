@@ -90,7 +90,7 @@ static Edge *get_edge(Graph &db, long long id,
 static int get_int_value(Json::Value &obj, const char *key_str, bool remove)
 {
     Json::Value key_obj = obj[key_str];
-    
+
     int val;
     if (key_obj.type() == Json::intValue)
         val = key_obj.asInt();
@@ -160,14 +160,14 @@ template <typename T>
 static void set_properties(T *elem, Json::Value &jnode)
 {
     Json::Value::Members members(jnode.getMemberNames());
-    for(Json::Value::Members::iterator it = members.begin(); 
-        it != members.end(); 
+    for(Json::Value::Members::iterator it = members.begin();
+        it != members.end();
         ++it )
     {
         const std::string &pkey = *it;
         set_property(elem, pkey.c_str(), jnode[pkey]);
     }
-} 
+}
 
 static void load_nodes(Graph &db,
         Json::Value &jnodes,

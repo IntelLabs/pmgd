@@ -38,7 +38,7 @@ namespace Jarvis {
         return NULL;
     }
 
-    void EdgeIndex::remove(StringID key, Edge* edge, Node* node, 
+    void EdgeIndex::remove(StringID key, Edge* edge, Node* node,
             Allocator &allocator)
     {
         // Construct the entry that gets removed from the list

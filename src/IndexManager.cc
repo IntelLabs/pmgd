@@ -74,7 +74,7 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
 bool IndexManager::add_node(Node *n, Allocator &allocator)
 {
     assert(n != NULL);
- 
+
     if (n->get_tag() == 0)
         return false;
 
@@ -82,7 +82,7 @@ bool IndexManager::add_node(Node *n, Allocator &allocator)
     // all nodes/edges based on their tags, create an entry if it
     // doesn't exist.
     IndexList *tag_entry = add_tag_index(Graph::NODE, n->get_tag(), allocator);
- 
+
     // For now, add only to the no property list ==> index via tag
     // This entry should always exist since we add it explicitly when
     // creating a new tag entry

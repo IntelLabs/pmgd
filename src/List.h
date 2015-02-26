@@ -9,8 +9,8 @@ namespace Jarvis {
     // Simple one way sorted list right now that disallows duplicates
     // TODO Remove sorting or make it optional if needed
     // This class *lives* in PM. Therefore, no constructor, just an init
-    // function. That also means it needs an allocator reference each time 
-    // an element is added or removed. 
+    // function. That also means it needs an allocator reference each time
+    // an element is added or removed.
     template <typename T> class List {
         // < 32B even for a pair
         struct ListType {
@@ -65,7 +65,7 @@ namespace Jarvis {
         operator bool() const { return _pos != NULL; }
         bool next()
         {
-            _pos = _pos->next; 
+            _pos = _pos->next;
             return _pos != NULL;
         }
     };
@@ -92,7 +92,7 @@ namespace Jarvis {
         // Since new_node is new allocation, just flush it without logging.
         TransactionImpl::flush_range(new_node, sizeof *new_node);
 
-        if (prev == NULL) { // Insert at the start of list 
+        if (prev == NULL) { // Insert at the start of list
             // Since _list and _num_elems are contiguous, log() makes sense
             tx->log(this, sizeof *this);
             _list = new_node;
@@ -103,14 +103,14 @@ namespace Jarvis {
             tx->write(&(prev->next), new_node);
             tx->write(&_num_elems, _num_elems + 1);
         }
- 
+
         return &(new_node->value);
     }
 
     template <typename T> void List<T>::remove(const T &value, Allocator &allocator)
     {
         ListType *prev = NULL, *temp = _list;
-        
+
         // Since we only implement the < operator on some of the T types,
         // using the reverse condition. The list is sorted, so stop after
         // reaching a larger element

@@ -160,7 +160,7 @@ int main(int argc, char **argv)
         for (NodeIterator i = db.get_nodes("tag3"); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
         }
-        
+
         printf("## Trying plain get_nodes() iterator\n");
         for (NodeIterator i = db.get_nodes(); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());

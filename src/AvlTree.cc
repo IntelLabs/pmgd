@@ -75,8 +75,8 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::leftright_rotate(
    a
     \
      b
-   Also called double right  
-*/   
+   Also called double right
+*/
 template <typename K, typename V>
 typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::rightleft_rotate(
                                        AvlTree<K,V>::TreeNode *hinge,

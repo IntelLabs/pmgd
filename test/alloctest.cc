@@ -35,7 +35,7 @@ int main(int argc, char **argv)
         os::MapRegion region1("alloctestdummy", "region1", start_addr, pool_size, create1, create1, false);
         FixedAllocator allocator1(start_addr, object_size, pool_size, create1);
         long base1 = start_addr + /* sizeof(struct RegionHeader) */64;
-        
+
         void *addr1 = allocator1.alloc();
         passfail(1, base1, (long)addr1);
 

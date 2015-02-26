@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 static void modify_nested(Graph &db, int argc, char **argv)
 {
     try {
-        // Test nested independent transactions 
+        // Test nested independent transactions
         Transaction tx(db, Transaction::ReadWrite);
         modify(db, argc, argv, true);
         modify(db, argc, argv, false);
