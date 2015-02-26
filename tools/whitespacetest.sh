@@ -4,10 +4,10 @@
 
 success=0           # success until otherwise detected
 
-for f in `find . -name \*.h -o -name \*.cc -o -name Makefile`; do
+for f in `find . -name \*.h -o -name \*.cc -o -name Make\* -o -name \*.bat`; do
     okay=0
     msg=''
-    if echo $f | grep -qv 'Makefile$' && grep -q '	' $f; then
+    if echo $f | grep -Eqv 'Makefile$|Makeconf$' && grep -q '	' $f; then
         okay=1
         msg='tabs'
     fi
