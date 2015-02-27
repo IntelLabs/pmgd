@@ -18,6 +18,8 @@ using namespace Jarvis;
 
 static constexpr char info_name[] = "graph.jdb";
 
+extern constexpr char commit_id[] = "Commit id: " COMMIT_ID;
+
 struct GraphImpl::GraphInfo {
     static const uint64_t VERSION = 2;
 

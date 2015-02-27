@@ -6,7 +6,10 @@ setlocal
 set PATH=%PATH%;%ICPP_COMPILER15%\bin\intel64\;C:\GnuWin32\bin\;"C:\Program Files (x86)\Git\bin"
 git rev-list --max-count=1 --abbrev-commit HEAD > %TEMP%\jarvis-commit-id.txt
 set /p COMMITID=<%TEMP%\jarvis-commit-id.txt
-del %TEMP%\jarvis-commit-id.txt
+git status -s -uno >> %TEMP%\jarvis-commit-id.txt
+sed "N;s/\n/ /" %TEMP%\jarvis-commit-id.txt > %TEMP%\jarvis-commit-id-plus.txt
+set /p COMMITIDPLUS=<%TEMP%\jarvis-commit-id-plus.txt
+del %TEMP%\jarvis-commit-id.txt %TEMP%\jarvis-commit-id-plus.txt
 
 rem One-time code generation
 rem There is not unistd.h on Windows platform, remove the line
@@ -22,7 +25,7 @@ sed -e "/#include <unistd.h>/d" ^
 
 rem Debug build of the library with the Intel compiler
 
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\graph.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\graph.cc /DCOMMIT_ID="""%COMMITIDPLUS%"""
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\GraphConfig.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\node.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\edge.cc
@@ -81,7 +84,7 @@ copy 3rdparty\jsoncpp\jsoncpp.lib   3rdparty\lib\Debug
 
 rem Release build of the library with the Intel compiler
 
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\graph.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\graph.cc /DCOMMIT_ID="""%COMMITIDPLUS%"""
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\GraphConfig.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\node.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\edge.cc
