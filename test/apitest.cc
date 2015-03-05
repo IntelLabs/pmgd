@@ -260,6 +260,11 @@ Jarvis::PathIterator Jarvis::Graph::get_paths(Jarvis::Node &, bool)
     return PathIterator(NULL);
 }
 
+Jarvis::NodeIterator Jarvis::PathIteratorFilter::end_nodes() const
+{
+    return NodeIterator(NULL);
+}
+
 Jarvis::NodeIterator Jarvis::PathIteratorImplBaseIntf::end_nodes() const
 {
     throw Exception(not_implemented);
