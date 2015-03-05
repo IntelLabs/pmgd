@@ -8,7 +8,6 @@
 
 using namespace Jarvis;
 
-static const size_t DEFAULT_REGION_SIZE = GraphConfig::SIZE_1TB;
 static const size_t DEFAULT_NODE_SIZE = 64;
 static const size_t DEFAULT_EDGE_SIZE = 32;
 static const size_t DEFAULT_NUM_FIXED_ALLOCATORS = 5;
@@ -16,10 +15,10 @@ static const size_t DEFAULT_NUM_FIXED_ALLOCATORS = 5;
 // The object size of the smallest fixed allocator.
 static const size_t MIN_FIXED_ALLOCATOR = 16;
 
-static const size_t DEFAULT_TRANSACTION_TABLE_SIZE = GraphConfig::SIZE_4KB;
-static const size_t DEFAULT_JOURNAL_SIZE = 64 * GraphConfig::SIZE_2MB;
+static const size_t DEFAULT_TRANSACTION_TABLE_SIZE = SIZE_4KB;
+static const size_t DEFAULT_JOURNAL_SIZE = 64 * SIZE_2MB;
 
-static const size_t INDEX_MANAGER_SIZE = GraphConfig::SIZE_4KB;
+static const size_t INDEX_MANAGER_SIZE = SIZE_4KB;
 
 static const int DEFAULT_MAX_STRINGID_LENGTH = 16;
 static const int DEFAULT_MAX_STRINGIDS = 4096;
@@ -50,7 +49,7 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
             (user_config != NULL && user_config->field != 0 \
                 ? user_config->field : (default))
 
-    size_t default_region_size = VALUE(default_region_size,DEFAULT_REGION_SIZE);
+    size_t default_region_size = VALUE(default_region_size,os::get_default_region_size());
 
     node_size = VALUE(node_size, DEFAULT_NODE_SIZE);
     if (node_size < DEFAULT_NODE_SIZE)
@@ -136,13 +135,7 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
 void GraphConfig::init_region_info(RegionInfo &info, const char *name,
                                    uint64_t &addr, size_t size)
 {
-    size_t alignment;
-    if (size >= SIZE_1GB)
-        alignment = SIZE_1GB;
-    else if (size >= SIZE_2MB)
-        alignment = SIZE_2MB;
-    else
-        alignment = SIZE_4KB;
+    size_t alignment = os::get_alignment(size);
 
     strncpy(info.name, name, RegionInfo::REGION_NAME_LEN);
     info.addr = align(addr, alignment);

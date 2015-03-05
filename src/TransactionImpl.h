@@ -7,6 +7,7 @@
 #include "TransactionManager.h"
 #include "exception.h"
 #include "transaction.h"
+#include "compiler.h"
 
 namespace Jarvis {
     class GraphImpl;
@@ -15,7 +16,7 @@ namespace Jarvis {
     class TransactionImpl {
             struct JournalEntry;
 
-            static thread_local TransactionImpl *_per_thread_tx;
+            static THREAD TransactionImpl *_per_thread_tx;
 
             GraphImpl *_db;
             int _tx_type;
@@ -25,6 +26,8 @@ namespace Jarvis {
             JournalEntry *_jcur;
 
             std::stack<Lock *> _locks;
+
+            TransactionImpl *_outer_tx;
 
             void log_je(void *src, size_t len);
             void release_locks();

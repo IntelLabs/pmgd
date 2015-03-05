@@ -12,12 +12,13 @@ namespace Jarvis {
     enum PropertyType { t_novalue = 1, t_boolean, t_integer, t_string,
                         t_float, t_time, t_blob };
 
+#pragma pack(push, 1)
     struct Time {
         // Always store time here in UTC for direct comparison.
-        union __attribute__ ((packed)) {
+        union {
             int64_t time_val;
 
-            struct __attribute__ ((packed)) {
+            struct {
                 uint64_t unused : 4;
                 uint64_t usec : 20;  // 0-999,999
                 uint64_t sec : 6;    // 0-60
@@ -49,6 +50,7 @@ namespace Jarvis {
         bool operator==(const Time &t) const
             { return time_val == t.time_val; }
     };
+#pragma pack(pop)
 
     static_assert(sizeof (Time) == 9, "size of Time structure is wrong");
 
@@ -62,14 +64,42 @@ namespace Jarvis {
 
     private:
         PropertyType _type;
+
+#if !defined(_MSC_VER)
         union {
             bool v_boolean;
             long long v_integer;
-            std::string v_string;
+            std::string _v_string;
             double v_float;
-            Time v_time;
-            blob_t v_blob;
+            Time _v_time;
+            blob_t _v_blob;
         };
+        std::string &v_string() { return _v_string; }
+        const std::string &v_string() const { return _v_string; }
+        Time &v_time() { return _v_time; }
+        const Time &v_time() const { return _v_time; }
+        blob_t &v_blob() { return _v_blob; }
+        const blob_t &v_blob() const { return _v_blob; }
+#else
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MAX3(a, b, c) MAX(a, MAX(b, c))
+#define UNION_SIZE MAX3(sizeof (std::string), sizeof (Time), sizeof (blob_t))
+        union {
+            bool v_boolean;
+            long long v_integer;
+            double v_float;
+            uint8_t _u[UNION_SIZE];
+        };
+        std::string &v_string() { return *(std::string *)_u; }
+        const std::string &v_string() const { return *(std::string *)_u; }
+        Time &v_time() { return *(Time *)_u; }
+        Time &v_time() const { return *(Time *)_u; }
+        blob_t &v_blob() { return *(blob_t *)_u; }
+        blob_t &v_blob() const { return *(blob_t *)_u; }
+#undef UNION_SIZE
+#undef MAX3
+#undef MAX
+#endif
 
         void check(int t) const { if (_type != t) throw Exception(property_type); }
 
@@ -80,17 +110,35 @@ namespace Jarvis {
         Property(int v) : _type(t_integer), v_integer(v) { }
         Property(long long v) : _type(t_integer), v_integer(v) { }
         Property(unsigned long long v) : _type(t_integer), v_integer(v) { }
-        Property(const char *s) : _type(t_string), v_string(s) { }
-        Property(const char *s, std::size_t len)
-            : _type(t_string), v_string(s, len) { }
-        Property(const std::string str)
-            : _type(t_string), v_string(str) { }
         Property(double v) : _type(t_float), v_float(v) { }
-        Property(const Time &v) : _type(t_time), v_time(v) { }
-        Property(const blob_t &blob)
-            : _type(t_blob), v_blob(blob) { }
+
+#if !defined(_MSC_VER)
+        Property(const char *s) : _type(t_string), _v_string(s) { }
+        Property(const char *s, std::size_t len)
+            : _type(t_string), _v_string(s, len) { }
+        Property(const std::string str)
+            : _type(t_string), _v_string(str) { }
+#else
+        Property(const char *s)
+            : _type(t_string)
+            { new (_u) std::string(s); }
+
+        Property(const char *s, std::size_t len)
+            : _type(t_string)
+            { new (_u) std::string(s, len);  }
+
+        Property(const std::string str)
+            : _type(t_string)
+            { new (_u) std::string(str);  }
+#endif
+
+        Property(const Time &v) : _type(t_time) { v_time() = v; }
+
+        Property(const blob_t &blob) : _type(t_blob) { v_blob() = blob; }
+
         Property(const void *blob, std::size_t size)
-            : _type(t_blob), v_blob(blob, size) { }
+            : _type(t_blob)
+            { v_blob() = blob_t(blob, size);}
 
         ~Property();
 
@@ -98,13 +146,13 @@ namespace Jarvis {
 
         bool operator<(const Property &) const;
 
-        PropertyType type() const { return _type; } 
+        PropertyType type() const { return _type; }
         bool bool_value() const { check(t_boolean); return v_boolean; }
         long long int_value() const { check(t_integer); return v_integer; }
-        const std::string &string_value() const { check(t_string); return v_string; }
+        const std::string &string_value() const { check(t_string); return v_string(); }
         double float_value() const { check(t_float); return v_float; }
-        Time time_value() const { check(t_time); return v_time; }
-        blob_t blob_value() const { check(t_blob); return v_blob; }
+        Time time_value() const { check(t_time); return v_time(); }
+        blob_t blob_value() const { check(t_blob); return v_blob(); }
     };
 
     struct PropertyPredicate {

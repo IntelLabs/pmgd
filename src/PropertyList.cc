@@ -14,10 +14,12 @@
 using namespace Jarvis;
 
 namespace Jarvis {
-    struct PACKED PropertyRef::BlobRef {
+#pragma pack(push, 1)
+    struct PropertyRef::BlobRef {
         void *value;
         uint32_t size;
     };
+#pragma pack(pop)
 
     class PropertyListIteratorImpl : public PropertyIteratorImplIntf {
         PropertyRef _cur;

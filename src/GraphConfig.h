@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "graph.h"
+#include "os.h"
 
 namespace Jarvis {
     struct RegionInfo {
@@ -18,12 +19,6 @@ namespace Jarvis {
     };
 
     struct GraphConfig {
-        // some useful constants
-        static const size_t SIZE_1TB = 0x10000000000;
-        static const size_t SIZE_1GB = 0x40000000;
-        static const size_t SIZE_2MB = 0x200000;
-        static const size_t SIZE_4KB = 0x1000;
-
         static const size_t BASE_ADDRESS = SIZE_1TB;
         static const size_t INFO_SIZE = SIZE_4KB;
 

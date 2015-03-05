@@ -1,4 +1,6 @@
 #include <stdio.h>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include "jarvis.h"
 #include "util.h"
 
@@ -52,26 +54,26 @@ void dump(Graph &db, EdgeIterator &&i, FILE *f)
 
 void dump(Graph &db, const Node &n, FILE *f)
 {
-    fprintf(f, "Node %lu%s:\n", db.get_id(n), tag_text(n).c_str());
+    fprintf(f, "Node %" PRIu64 "%s:\n", db.get_id(n), tag_text(n).c_str());
     n.get_properties()
         .process([&db,&f](PropertyRef &p) {
             fprintf(f, "  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
         });
     n.get_edges(OUTGOING)
         .process([&db,&f](EdgeRef &e) {
-            fprintf(f, " %s -> n%lu (e%lu)\n", tag_text(e).c_str(),
+            fprintf(f, " %s -> n%" PRIu64 " (e%" PRIu64 ")\n", tag_text(e).c_str(),
                     db.get_id(e.get_destination()), db.get_id(e));
         });
     n.get_edges(INCOMING)
         .process([&db,&f](EdgeRef &e) {
-            fprintf(f, " %s <- n%lu (e%lu)\n", tag_text(e).c_str(),
+            fprintf(f, " %s <- n%" PRIu64 " (e%" PRIu64 ")\n", tag_text(e).c_str(),
                     db.get_id(e.get_source()), db.get_id(e));
         });
 }
 
 void dump(Graph &db, const Edge &e, FILE *f)
 {
-    fprintf(f, "Edge %lu%s: n%lu -> n%lu\n",
+    fprintf(f, "Edge %" PRIu64 "%s: n%" PRIu64 " -> n%" PRIu64 "\n",
             db.get_id(e), tag_text(e).c_str(),
             db.get_id(e.get_source()), db.get_id(e.get_destination()));
     e.get_properties()

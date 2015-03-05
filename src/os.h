@@ -3,9 +3,16 @@
 #include <stdint.h>
 
 namespace Jarvis {
+    // some useful constants
+    static const size_t SIZE_1TB = 0x10000000000;
+    static const size_t SIZE_1GB = 0x40000000;
+    static const size_t SIZE_2MB = 0x200000;
+    static const size_t SIZE_4KB = 0x1000;
+
     namespace os {
         class MapRegion {
-            int _fd;
+            class OSMapRegion;
+            OSMapRegion *_s;
 
         public:
             MapRegion(const char *db_name, const char *region_name,
@@ -20,5 +27,8 @@ namespace Jarvis {
         public:
             SigHandler();
         };
+
+        size_t get_default_region_size();
+        size_t get_alignment(size_t size);
     };
 };
