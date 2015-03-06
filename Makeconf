@@ -43,7 +43,7 @@ JAR := jar
 # An ID string to be embedded in the library.
 # In a clean directory, the ID only contains the commit ID of HEAD.
 # In a non-clean directory, the ID also lists modified files.
-COMMIT_ID := $(shell git rev-list --max-count=1 --abbrev-commit HEAD; git status -s -uno)
+COMMIT_ID := $(shell cd $(ROOTDIR); git rev-list --max-count=1 --abbrev-commit HEAD; git status -s -uno)
 
 # Be a little noisy in silent mode.
 ifneq ($(findstring s,$(MAKEFLAGS)),)

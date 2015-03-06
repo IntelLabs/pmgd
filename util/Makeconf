@@ -37,7 +37,8 @@ util/scanner.o: util/loader.hh
 util/loader.hh: util/loader.cc
 
 # Override the global defaults.
-UTIL_CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) -fPIC $(WFLAGS) $(PM) -MP -MMD
+UTIL_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
+UTIL_CFLAGS := --std=c++11 $(UTIL_INCLUDES) -I $(OPT) $(FFLAGS) -fPIC $(WFLAGS) $(PM) -MP -MMD
 
 # Override the global rule for building an object file from a C++ file.
 util/%.o: util/%.cc $(MAKEFILE_LIST)
