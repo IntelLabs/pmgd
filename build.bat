@@ -182,7 +182,8 @@ copy tools\*.exe bin
 rem Archive
 
 zip -q jarvis-%COMMITID%-bin.zip ^
-    include\*.h util\util.h lib\Release\*.lib bin\*.exe ^
+    include\*.h util\util.h util\neighbor.h util\annotate.h ^
+    lib\Release\*.lib bin\*.exe ^
     3rdparty\lib\Release\*.lib 3rdparty\jsoncpp\LICENSE ^
     3rdparty\jsoncpp\ORIGIN 3rdparty\jsoncpp\jsoncpp.cpp ^
     3rdparty\jsoncpp\json\* ^
@@ -190,7 +191,7 @@ zip -q jarvis-%COMMITID%-bin.zip ^
     3rdparty\strptime\ORIGIN 3rdparty\strptime\strptime.c
 zip -q jarvis-%COMMITID%-dbg.zip lib\Debug\*.lib 3rdparty\lib\Debug\*.lib
 zip -q jarvis-%COMMITID%-src.zip src\*.h src\*.cc ^
-    util\*.h util\*.l util\*.y util\dump.cc util\exception.cc ^
+    util\loader.h util\*.l util\*.y util\dump.cc util\exception.cc ^
     util\load_gson.cc util\load_tsv.cc util\text.cc tools\*.cc
 
 rem Build soltest and propertytest
