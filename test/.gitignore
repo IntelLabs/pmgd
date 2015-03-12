@@ -5,6 +5,7 @@ apitest
 edgeindextest
 filtertest
 listtest
+neighbortest
 nodeedgetest
 propertychunktest
 propertylisttest
@@ -20,6 +21,7 @@ apigraph
 edgeindexgraph
 filtergraph
 listgraph
+neighborgraph
 nodeedgegraph
 propertychunkgraph
 propertylistgraph
