@@ -19,7 +19,6 @@ class NeighborIterator : public NodeIteratorImplIntf
 {
     const Node &_node;
     const Direction _dir;
-    const StringID _tag;
     const bool _unique;
     EdgeIterator _ei;
 
@@ -62,15 +61,27 @@ class NeighborIterator : public NodeIteratorImplIntf
     }
 
 public:
-    NeighborIterator(const Node &n,
-                     const Direction dir,
-                     const StringID tag,
+    NeighborIterator(const Node &n, const bool unique)
+        : _node(n), _dir(ANY), _unique(unique), _ei(n.get_edges())
+    {
+        _next();
+    }
+
+    NeighborIterator(const Node &n, const Direction dir, const bool unique)
+        : _node(n), _dir(dir), _unique(unique), _ei(n.get_edges(dir))
+    {
+        _next();
+    }
+
+    NeighborIterator(const Node &n, const StringID tag, const bool unique)
+        : _node(n), _dir(ANY), _unique(unique), _ei(n.get_edges(tag))
+    {
+        _next();
+    }
+
+    NeighborIterator(const Node &n, const Direction dir, const StringID tag,
                      const bool unique)
-        : _node(n),
-          _dir(dir),
-          _tag(tag),
-          _unique(unique),
-          _ei(n.get_edges(dir, tag))
+        : _node(n), _dir(dir), _unique(unique), _ei(n.get_edges(dir, tag))
     {
         _next();
     }
@@ -106,9 +117,22 @@ public:
  * will ignore tag values), and (c) only return a given node once if
  * so requested.
  */
-inline NodeIterator get_neighbors(Node &n,
-                                  Direction dir = ANY,
-                                  StringID tag = 0,
+inline NodeIterator get_neighbors(Node &n, bool unique = true)
+{
+    return NodeIterator(new NeighborIterator(n, unique));
+}
+
+inline NodeIterator get_neighbors(Node &n, Direction dir, bool unique = true)
+{
+    return NodeIterator(new NeighborIterator(n, dir, unique));
+}
+
+inline NodeIterator get_neighbors(Node &n, StringID tag, bool unique = true)
+{
+    return NodeIterator(new NeighborIterator(n, tag, unique));
+}
+
+inline NodeIterator get_neighbors(Node &n, Direction dir, StringID tag,
                                   bool unique = true)
 {
     return NodeIterator(new NeighborIterator(n, dir, tag, unique));
