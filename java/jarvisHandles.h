@@ -2,7 +2,7 @@
 #define JARVISHANDLES_H
 
 #include <jni.h>
-#include "../include/exception.h"
+#include "../include/jarvis.h"
 
 inline jfieldID getHandleField(JNIEnv *env, jobject obj)
 {
@@ -26,6 +26,7 @@ inline void setJarvisHandle(JNIEnv *env, jobject obj, T *t)
 
 
 extern jobject new_java_object(JNIEnv *env, const char *name, void *obj);
+extern jobject java_node_iterator(JNIEnv *env, Jarvis::NodeIterator &&);
 extern void JavaThrow(JNIEnv *env, Jarvis::Exception e);
 
 #endif
