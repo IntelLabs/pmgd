@@ -23,4 +23,24 @@ public class Node {
     private native EdgeIterator get_edges(int dir, String tag) throws Exception;
     public native void set_property(String id, Property prop) throws Exception;
     public native void remove_property(String name) throws Exception;
+
+    public NodeIterator get_neighbors()
+        { return get_neighbors(true); }
+    public native NodeIterator get_neighbors(boolean unique);
+
+    public NodeIterator get_neighbors(Direction dir)
+        { return get_neighbors(dir.ordinal(), true); }
+    public NodeIterator get_neighbors(Direction dir, boolean unique)
+        { return get_neighbors(dir.ordinal(), unique); }
+    private native NodeIterator get_neighbors(int dir, boolean unique);
+
+    public NodeIterator get_neighbors(String tag)
+        { return get_neighbors(tag, true); }
+    public native NodeIterator get_neighbors(String tag, boolean unique);
+
+    public NodeIterator get_neighbors(Direction dir, String tag)
+        { return get_neighbors(dir.ordinal(), tag, true); }
+    public NodeIterator get_neighbors(Direction dir, String tag, boolean unique)
+        { return get_neighbors(dir.ordinal(), tag, unique); }
+    private native NodeIterator get_neighbors(int dir, String tag, boolean unique);
 }

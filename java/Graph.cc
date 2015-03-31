@@ -27,29 +27,7 @@ jint Java_jarvis_Graph_get_1id__Ljarvis_Edge_2(JNIEnv *env, jobject graph, jobje
 jobject JNICALL Java_jarvis_Graph_get_1nodes__(JNIEnv *env, jobject graph)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
-    try {
-        NodeIterator *j_ni = new NodeIterator(j_db.get_nodes());
-        jobject cur;
-
-        if (*j_ni) {
-            Node &j_n = **j_ni;
-            cur = new_java_object(env, "Node", &j_n);
-        }
-        else
-            cur = NULL;
-
-        // create a java nodeiterator
-        jclass cls = env->FindClass("jarvis/NodeIterator");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
-        jobject ni = env->NewObject(cls, cnstrctr,
-                                    reinterpret_cast<jlong>(j_ni),
-                                    cur);
-        return ni;
-    }
-    catch (Exception e) {
-        JavaThrow(env, e);
-        return NULL;
-    }
+    return java_node_iterator(env, j_db.get_nodes());
 }
 
 
@@ -58,29 +36,7 @@ jobject JNICALL Java_jarvis_Graph_get_1nodes__Ljava_lang_String_2(JNIEnv *env,
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
-    try {
-        NodeIterator *j_ni = new NodeIterator(j_db.get_nodes(j_tag));
-        jobject cur;
-
-        if (*j_ni) {
-            Node &j_n = **j_ni;
-            cur = new_java_object(env, "Node", &j_n);
-        }
-        else
-            cur = NULL;
-
-        // create a java nodeiterator
-        jclass cls = env->FindClass("jarvis/NodeIterator");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
-        jobject ni = env->NewObject(cls, cnstrctr,
-                                    reinterpret_cast<jlong>(j_ni),
-                                    cur);
-        return ni;
-    }
-    catch (Exception e) {
-        JavaThrow(env, e);
-        return NULL;
-    }
+    return java_node_iterator(env, j_db.get_nodes(j_tag));
 }
 
 
@@ -90,29 +46,7 @@ jobject JNICALL Java_jarvis_Graph_get_1nodes__Ljava_lang_String_2Ljarvis_Propert
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
     PropertyPredicate &j_pp = *(getJarvisHandle<PropertyPredicate>(env, pp));
-    try {
-        NodeIterator *j_ni = new NodeIterator(j_db.get_nodes(j_tag, j_pp, reverse));
-        jobject cur;
-
-        if (*j_ni) {
-            Node &j_n = **j_ni;
-            cur = new_java_object(env, "Node", &j_n);
-        }
-        else
-            cur = NULL;
-
-        //create a java nodeiterator
-        jclass cls = env->FindClass("jarvis/NodeIterator");
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
-        jobject ni = env->NewObject(cls, cnstrctr,
-                                    reinterpret_cast<jlong>(j_ni),
-                                    cur);
-        return ni;
-    }
-    catch (Exception e) {
-        JavaThrow(env, e);
-        return NULL;
-    }
+    return java_node_iterator(env, j_db.get_nodes(j_tag, j_pp, reverse));
 }
 
 
@@ -243,4 +177,31 @@ jobject new_java_object(JNIEnv *env, const char *name, void *obj)
     jclass cls = env->FindClass(full_name);
     jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
     return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(obj));
+}
+
+jobject java_node_iterator(JNIEnv *env, NodeIterator &&ni)
+{
+    try {
+        NodeIterator *j_ni = new NodeIterator(std::move(ni));
+
+        jobject cur;
+        if (*j_ni) {
+            Node &j_n = **j_ni;
+            cur = new_java_object(env, "Node", &j_n);
+        }
+        else
+            cur = NULL;
+
+        // create a java nodeiterator
+        jclass cls = env->FindClass("jarvis/NodeIterator");
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
+        jobject ni = env->NewObject(cls, cnstrctr,
+                                    reinterpret_cast<jlong>(j_ni),
+                                    cur);
+        return ni;
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return NULL;
+    }
 }

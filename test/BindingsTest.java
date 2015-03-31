@@ -234,6 +234,61 @@ public class BindingsTest {
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
 
+            for (ni = db.get_nodes(); !ni.done(); ni.next()) {
+                System.out.printf("Neighbors of node %d\n",
+                                  db.get_id(ni.get_current()));
+                NodeIterator ni2 = ni.get_current().get_neighbors();
+                for ( ; !ni2.done(); ni2.next())
+                    System.out.printf("Node %d: %s\n",
+                        db.get_id(ni2.get_current()),
+                        ni2.get_property("Name").string_value());
+            }
+            System.out.printf("\n");
+
+            for (ni = db.get_nodes(); !ni.done(); ni.next()) {
+                System.out.printf("Neighbors of node %d (OUT)\n",
+                                  db.get_id(ni.get_current()));
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.OUTGOING);
+                for ( ; !ni2.done(); ni2.next())
+                    System.out.printf("Node %d: %s\n",
+                        db.get_id(ni2.get_current()),
+                        ni2.get_property("Name").string_value());
+            }
+            System.out.printf("\n");
+
+            for (ni = db.get_nodes(); !ni.done(); ni.next()) {
+                System.out.printf("Neighbors of node %d (OUT, \"myTag3\")\n",
+                                  db.get_id(ni.get_current()));
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.OUTGOING, "myTag3");
+                for ( ; !ni2.done(); ni2.next())
+                    System.out.printf("Node %d: %s\n",
+                        db.get_id(ni2.get_current()),
+                        ni2.get_property("Name").string_value());
+            }
+            System.out.printf("\n");
+
+            for (ni = db.get_nodes(); !ni.done(); ni.next()) {
+                System.out.printf("Neighbors of node %d (IN)\n",
+                                  db.get_id(ni.get_current()));
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.INCOMING);
+                for ( ; !ni2.done(); ni2.next())
+                    System.out.printf("Node %d: %s\n",
+                        db.get_id(ni2.get_current()),
+                        ni2.get_property("Name").string_value());
+            }
+            System.out.printf("\n");
+
+            for (ni = db.get_nodes(); !ni.done(); ni.next()) {
+                System.out.printf("Neighbors of node %d (IN, \"myTag3\")\n",
+                                  db.get_id(ni.get_current()));
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.INCOMING, "myTag3");
+                for ( ; !ni2.done(); ni2.next())
+                    System.out.printf("Node %d: %s\n",
+                        db.get_id(ni2.get_current()),
+                        ni2.get_property("Name").string_value());
+            }
+            System.out.printf("\n");
+
             tx6.abort();
 
             // Dump it out for verification purposes
