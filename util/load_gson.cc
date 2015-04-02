@@ -12,9 +12,10 @@
 
 #undef Exception
 
-static const char ID_STR[] = "jarvis.loader.id";
-
 using namespace Jarvis;
+
+static const char ID_STR[] = "jarvis.loader.id";
+static StringID ID;
 
 /* To support reading from a file or standard input */
 class input_t {
@@ -54,11 +55,11 @@ static Node *get_node(Graph &db, long long id, Jarvis::StringID tag,
                         std::function<void(Node &)> node_func)
 {
     NodeIterator nodes = db.get_nodes(0,
-            PropertyPredicate(ID_STR, PropertyPredicate::eq, id));
+            PropertyPredicate(ID, PropertyPredicate::eq, id));
     if (nodes) return &*nodes;
 
     Node &node = db.add_node(tag);
-    node.set_property(ID_STR, id);
+    node.set_property(ID, id);
     if (node_func)
         node_func(node);
     return &node;
@@ -72,7 +73,7 @@ static Edge *get_edge(Graph &db, long long id,
 {
     EdgeIterator edges = db.get_edges();
     EdgeIterator matching_edges = edges.filter([id](const EdgeRef &e)
-            { return e.get_property(ID_STR).int_value() == id
+            { return e.get_property(ID).int_value() == id
                 ? pass : dont_pass; });
 
     if (matching_edges) return &(Edge &)*matching_edges;
@@ -81,7 +82,7 @@ static Edge *get_edge(Graph &db, long long id,
     Node *dst = get_node(db, dst_id, 0, node_func);
 
     Edge &edge = db.add_edge(*src, *dst, tag);
-    edge.set_property(ID_STR, id);
+    edge.set_property(ID, id);
     if (edge_func)
         edge_func(edge);
     return &edge;
@@ -237,6 +238,9 @@ static void load_gson(Graph &db,
     if (jnodes.type() != Json::arrayValue) {
         throw Jarvis::Exception(203, "load failed", "nodes not found", __FILE__, __LINE__);
     }
+    Transaction tx(db, Transaction::ReadWrite);
+    ID = StringID(ID_STR);
+    tx.commit();
     load_nodes(db, jnodes, node_func, edge_func);
 
     Json::Value jedges = jgraph["edges"];
