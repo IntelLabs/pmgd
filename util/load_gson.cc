@@ -101,8 +101,6 @@ static int get_int_value(Json::Value &obj, const char *key_str, bool remove)
         val = stoi(key_obj.asString(), NULL);
     }
 
-    if (remove)
-        obj.removeMember(key_str);
     return val;
 }
 
@@ -112,8 +110,6 @@ get_string_value(Json::Value &obj, const char *key_str, bool remove)
     Json::Value key_obj = obj[key_str];
     assert(key_obj.type() == Json::stringValue);
     std::string val = key_obj.asString();
-    if (remove)
-        obj.removeMember(key_str);
     return val;
 }
 
@@ -167,7 +163,8 @@ static void set_properties(T *elem, Json::Value &jnode)
         ++it )
     {
         const std::string &pkey = *it;
-        set_property(elem, pkey.c_str(), jnode[pkey]);
+        if (pkey[0] != '_')
+            set_property(elem, pkey.c_str(), jnode[pkey]);
     }
 }
 
@@ -179,10 +176,8 @@ static void load_nodes(Graph &db,
     for (unsigned int i=0; i < jnodes.size(); i++) {
         Json::Value jnode = jnodes[i];
 
-        jnode.removeMember("_type");
         int id = get_int_value(jnode, "_id", true);
         std::string label = get_string_value(jnode, "_label", true);
-
 
         Transaction tx(db, Transaction::ReadWrite);
         Node *node = get_node(db, id, label.c_str(), node_func);
@@ -199,8 +194,6 @@ static int load_edges(Graph &db,
     for (unsigned int i=0; i < jedges.size(); i++) {
         Json::Value jedge = jedges[i];
 
-        //std::string _type = get_string_value(jedge, "_type", true);
-        jedge.removeMember("_type");
         int id = get_int_value(jedge, "_id", true);
         int inv = get_int_value(jedge, "_inV", true);
         int outv = get_int_value(jedge, "_outV", true);
