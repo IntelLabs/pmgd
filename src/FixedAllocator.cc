@@ -1,7 +1,6 @@
 /*
  * TODOs
  * - Write random data in regions in debug mode
- * - lock init in constructor actually?
  * - signature checking?
  * - throw an exception instead of returning NULL
  */
@@ -73,7 +72,6 @@ unsigned FixedAllocator::object_size() const
 void *FixedAllocator::alloc()
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
-    tx->acquire_writelock(NULL);
 
     tx->log_range(&_pm->tail_ptr, &_pm->num_allocated);
 
@@ -112,7 +110,6 @@ void *FixedAllocator::alloc()
 void FixedAllocator::free(void *p)
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
-    tx->acquire_writelock(NULL);
 
     tx->log(p, sizeof(uint64_t));
 

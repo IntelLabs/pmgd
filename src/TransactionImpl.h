@@ -11,7 +11,6 @@
 
 namespace Jarvis {
     class GraphImpl;
-    class Lock;
 
     class TransactionImpl {
             struct JournalEntry;
@@ -25,15 +24,12 @@ namespace Jarvis {
             TransactionHandle _tx_handle;
             JournalEntry *_jcur;
 
-            std::stack<Lock *> _locks;
-
             TransactionImpl *_outer_tx;
 
             struct CommitCallbackItem;
             CommitCallbackItem *_commit_callback_list;
 
             void log_je(void *src, size_t len);
-            void release_locks();
             void finalize_commit();
             void call_commit_callbacks();
             static void rollback(const TransactionHandle &h,
@@ -52,9 +48,6 @@ namespace Jarvis {
             ~TransactionImpl();
 
             GraphImpl *get_db() const { return _db; }
-
-            void acquire_readlock(Lock *lptr);
-            void acquire_writelock(Lock *lptr);
 
             void check_read_write()
             {
