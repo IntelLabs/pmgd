@@ -53,7 +53,7 @@ int main()
                 (Node *)allocator1.alloc(16));
         cout << "Elem1 in entry2: " << entry2.key() << ", e2: " << entry2.value() << "\n";
 
-        if (entry1 == entry2) 
+        if (entry1 == entry2)
             cout << "entry1 = entry2\n";
         else if (entry1 < entry2)
             cout << "entry1 < entry2\n";
@@ -61,7 +61,7 @@ int main()
             cout << "entry1 > entry2\n";
 
         entry2.set_key(entry1.key());
-        if (entry1 == entry2) 
+        if (entry1 == entry2)
             cout << "entry1 = entry2\n";
         else if (entry1 < entry2)
             cout << "entry1 < entry2\n";

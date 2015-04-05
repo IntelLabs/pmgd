@@ -1,8 +1,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../include/jarvis.h"
-#include "../util/util.h"
+#include "jarvis.h"
+#include "util.h"
 
 #include "NodeIterator.h"
 #include "jarvisHandles.h"

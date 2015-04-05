@@ -2,7 +2,7 @@
 #define JARVISHANDLES_H
 
 #include <jni.h>
-#include "../include/jarvis.h"
+#include "jarvis.h"
 
 inline jfieldID getHandleField(JNIEnv *env, jobject obj)
 {

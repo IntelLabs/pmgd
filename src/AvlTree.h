@@ -71,7 +71,7 @@ namespace Jarvis {
         // wants to modify the value, it should be a find and modify, which
         // might cause value to become empty, hence triggering a tree node delete.
         // That would mean a repeat search for the node but I don't see another
-        // cleaner option. 
+        // cleaner option.
         void remove(const K &key, Allocator &allocator);
 
         V *find(const K &key);

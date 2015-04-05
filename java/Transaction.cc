@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../include/jarvis.h"
-#include "../util/util.h"
+#include "jarvis.h"
+#include "util.h"
 
 #include "Transaction.h"
 #include "jarvisHandles.h"

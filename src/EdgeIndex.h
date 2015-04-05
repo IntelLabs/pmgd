@@ -10,7 +10,7 @@
 #include "KeyValuePair.h"
 
 namespace Jarvis {
-    // This class sits in PM. No DRAM image. So create a pointer 
+    // This class sits in PM. No DRAM image. So create a pointer
     // and typecast
     class EdgeIndex {
         class EdgeIndexType;
@@ -74,7 +74,7 @@ namespace Jarvis {
 
     public:
         // SInce each of the data structures track their own stuff
-        // this doesn't need a header, just needs to make sure these 
+        // this doesn't need a header, just needs to make sure these
         // data structures place their headers correctly
         void init() { _key_list.init(); }
         static EdgeIndex *create(Allocator &allocator)

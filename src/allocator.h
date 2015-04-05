@@ -59,7 +59,7 @@ namespace Jarvis {
         unsigned object_size() const;
     };
 
-    /** 
+    /**
      *  Generic allocator
      *
      *  This class should be used for graph components other than nodes,
@@ -68,8 +68,8 @@ namespace Jarvis {
      *  This encapsulates a few commonly used fixed size allocators and the
      *  rest of alloc/free requests go to the variable allocator.
      *
-     *  This object lives in DRAM. Since it doesn't know the number of 
-     *  fixed allocators that will be created in graph.cc, we use a 
+     *  This object lives in DRAM. Since it doesn't know the number of
+     *  fixed allocators that will be created in graph.cc, we use a
      *  vector here
      */
     class Allocator {

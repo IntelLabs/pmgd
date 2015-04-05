@@ -40,7 +40,7 @@ CLEANFILES += java/jarvis-jni.jar java/libjarvis-jni.so
 JAVA_HOME := $(shell dirname $$(dirname $$(readlink -f $$(which $(JC)))))
 
 # Override the global defaults.
-JAVA_INCLUDES := $(INCLUDES) -Ijava -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
+JAVA_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util -Ijava -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
 JAVA_CFLAGS := --std=c++11 $(JAVA_INCLUDES) $(OPT) $(FFLAGS) -fPIC $(WFLAGS) $(PM) -MP -MMD
 
 # We need the headers before we can build the objects.

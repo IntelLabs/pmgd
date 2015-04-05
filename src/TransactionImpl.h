@@ -67,7 +67,7 @@ namespace Jarvis {
 
             // log data; user performs the writes
             void log(void *ptr, size_t len);
- 
+
             // log data; base to base+end
             template <typename T>
             void log_range(void *base, T *end)

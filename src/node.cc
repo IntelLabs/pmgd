@@ -60,7 +60,7 @@ namespace Jarvis {
                 _key_pos = _key_pos->next;
                 if (_key_pos != NULL) {
                     _tag = _key_pos->value.get_key();
-                    // Move to the head of <Edge,Node> list for 
+                    // Move to the head of <Edge,Node> list for
                     // tag _tag in EdgeIndexType
                     _pos = _key_pos->value.get_first();
                 }
@@ -165,8 +165,8 @@ EdgeIterator Node::get_edges(Direction dir) const
     if (dir == ANY)
         return get_edges();
     EdgeIndex *idx = (dir == OUTGOING) ? _out_edges : _in_edges;
-    // Ensure there is at least one element in this index for 
-    // the constructors to not crash. Not needed when you pass 
+    // Ensure there is at least one element in this index for
+    // the constructors to not crash. Not needed when you pass
     // tag value because that takes care of returning NULL at the
     // right point
     if (idx->num_elems() <= 0)
@@ -178,8 +178,8 @@ EdgeIterator Node::get_edges(StringID tag) const
 {
     size_t in_elems = _in_edges->num_elems();
     size_t out_elems = _out_edges->num_elems();
-    // Ensure there is at least one element in this index for 
-    // the constructors to not crash. Not needed when you pass 
+    // Ensure there is at least one element in this index for
+    // the constructors to not crash. Not needed when you pass
     // tag value because that takes care of returning NULL at the
     // right point
     if (in_elems <= 0 && out_elems <= 0)
@@ -193,8 +193,8 @@ EdgeIterator Node::get_edges() const
 {
     size_t in_elems = _in_edges->num_elems();
     size_t out_elems = _out_edges->num_elems();
-    // Ensure there is at least one element in this index for 
-    // the constructors to not crash. Not needed when you pass 
+    // Ensure there is at least one element in this index for
+    // the constructors to not crash. Not needed when you pass
     // tag value because that takes care of returning NULL at the
     // right point
     if (in_elems <= 0 && out_elems <= 0)

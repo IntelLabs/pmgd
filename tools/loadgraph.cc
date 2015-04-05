@@ -64,7 +64,7 @@ int main(int argc, char **argv)
         else if (strcmp(file_name + len - 5, ".jtxt") == 0)
             jtxt_format = true;
     }
-            
+
     try {
         Graph db(db_name);
 

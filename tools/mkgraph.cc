@@ -124,7 +124,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "mkgraph: Unrecognized property type\n");
             return 1;
         }
-                         
+
         specs.push_back(IndexSpecification(node_or_edge,
                                            argv[argi + 1],
                                            argv[argi + 2],

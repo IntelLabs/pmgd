@@ -182,7 +182,7 @@ copy tools\*.exe bin
 rem Archive
 
 zip -q jarvis-%COMMITID%-bin.zip ^
-    include\*.h util\util.h util\neighbor.h util\annotate.h ^
+    include\*.h util\util.h util\neighbor.h ^
     lib\Release\*.lib bin\*.exe ^
     3rdparty\lib\Release\*.lib 3rdparty\jsoncpp\LICENSE ^
     3rdparty\jsoncpp\ORIGIN 3rdparty\jsoncpp\jsoncpp.cpp ^

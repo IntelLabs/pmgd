@@ -83,7 +83,7 @@ int main()
         find_val = 50;
         value = tree.find(find_val);
         cout << "50: " << ((value == NULL) ? 0 : *value) << endl;
- 
+
         cout << "Testing remove\n";
         int remove_vals[] = {55, 55, 60, 45, 40, 15, 17, 10};
         int num_removed = 8;
@@ -97,7 +97,7 @@ int main()
             tree.remove(array[i], allocator1);
         cout << "Num elements: " << tree.num_elems() << "\n";
         test.print(tree);
-        
+
         for (int i = 0; i < 8; ++i) {
             value = tree.add(201 + i, allocator1);
             *value = i + 1;
@@ -124,4 +124,3 @@ int main()
     }
     return 0;
 }
-
