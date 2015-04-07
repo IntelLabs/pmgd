@@ -71,13 +71,6 @@ static Edge *get_edge(Graph &db, long long id,
         std::function<void(Node &)> node_func,
         std::function<void(Edge &)> edge_func)
 {
-    EdgeIterator edges = db.get_edges();
-    EdgeIterator matching_edges = edges.filter([id](const EdgeRef &e)
-            { return e.get_property(ID).int_value() == id
-                ? pass : dont_pass; });
-
-    if (matching_edges) return &(Edge &)*matching_edges;
-
     Node *src = get_node(db, src_id, 0, node_func);
     Node *dst = get_node(db, dst_id, 0, node_func);
 
