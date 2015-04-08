@@ -10,7 +10,7 @@ TEST_SRCS := $(addprefix test/, \
                          avltest.cc chunklisttest.cc indextest.cc \
                          indexrangetest.cc indexstringtest.cc \
                          reverseindexrangetest.cc emailindextest.cc \
-                         rotest.cc BindingsTest.java \
+                         rotest.cc BindingsTest.java DateTest.java \
                          neighbortest.cc \
                          test720.cc test750.cc test767.cc)
 
@@ -55,8 +55,7 @@ test/emailindextest: test/emailindextest.o $(TEST_LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(TEST_LIBS) -ljsoncpp
 
-# Special case for BindingsTest.
-test/BindingsTest.class: test/BindingsTest.java lib/libjarvis.so lib/libjarvis-util.so lib/jarvis-jni.jar
+test/%.class: test/%.java lib/libjarvis.so lib/libjarvis-util.so lib/jarvis-jni.jar
 	$(call print,JC,$@)
 	$(JC) -cp lib/jarvis-jni.jar -d test $<
 
