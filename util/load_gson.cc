@@ -226,6 +226,7 @@ static void load_gson(Graph &db,
     }
     Transaction tx(db, Transaction::ReadWrite);
     ID = StringID(ID_STR);
+    db.create_index(Graph::NODE, 0, ID_STR, PropertyType::t_integer);
     tx.commit();
     load_nodes(db, jnodes, node_func, edge_func);
 
