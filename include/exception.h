@@ -3,31 +3,36 @@
 #include <string>
 
 namespace Jarvis {
+    enum ExceptionType {
+        UndefinedException,
+
+        BadAlloc,
+        NullIterator,
+
+        OpenFailed,
+        VersionMismatch,
+        ReadOnly,
+        InvalidConfig,
+        OutOfSpace,
+
+        PropertyTypeMismatch,
+        PropertyNotFound,
+
+        NoTransaction,
+        OutOfTransactions,
+        OutOfJournalSpace,
+
+        InvalidID,
+
+        InternalErrorBase = 100,
+        NotImplemented,
+        PropertyTypeInvalid,
+
+        UtilExceptionBase = 200,
+        AppExceptionBase = 300,
+    };
+
     struct Exception {
-        enum {
-            UndefinedException,
-            BadAlloc,
-            NullIterator,
-
-            OpenFailed,
-            VersionMismatch,
-            ReadOnly,
-            InvalidConfig,
-            OutOfSpace,
-
-            PropertyTypeMismatch,
-            PropertyNotFound,
-
-            NoTransaction,
-            OutOfTransactions,
-            OutOfJournalSpace,
-
-            InvalidID,
-
-            NotImplemented = 100,
-            PropertyTypeInvalid,
-        };
-
         // Which exception
         int num;            ///< Exception number
         const char *name;   ///< Exception name
@@ -64,5 +69,5 @@ namespace Jarvis {
     };
 
 #define Exception(name, ...) \
-    Exception(Exception::name, #name, ##__VA_ARGS__, __FILE__, __LINE__)
+    Exception(Jarvis::name, #name, ##__VA_ARGS__, __FILE__, __LINE__)
 };

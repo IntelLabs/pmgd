@@ -5,6 +5,14 @@
 #include <functional>
 #include "jarvis.h"
 
+namespace Jarvis {
+    enum UtilExceptionType {
+        LoaderOpenFailed = UtilExceptionBase,
+        LoaderParseError,
+        LoaderFormatError,
+    };
+};
+
 extern std::string property_text(const Jarvis::Property &i);
 extern std::string property_text(const Jarvis::PropertyIterator &i);
 template <typename T> std::string tag_text(const T &n);

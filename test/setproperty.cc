@@ -107,14 +107,14 @@ int main(int argc, char **argv)
         }
     }
     catch (Exception e) {
-        if (e.num == Exception::NullIterator) {
+        if (e.num == NullIterator) {
             printf("%s %s not found.\n"
                    "%ss are identified by a property named \"%s\",\n"
                    "which may be an integer or a string.\n",
                    use_node ? "Node" : "Edge", id,
                    use_node ? "Node" : "Edge", id_name);
         }
-        else if (e.num == Exception::PropertyNotFound) {
+        else if (e.num == PropertyNotFound) {
             printf("Some %s did not have an \"%s\" property.\n"
                    "%ss are identified by a property named \"%s\",\n"
                    "which may be an integer or a string.\n",

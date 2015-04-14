@@ -168,15 +168,13 @@ using namespace Jarvis;
 static const char ID_STR[] = "jarvis.loader.id";
 static bool index_created = false;
 
-#undef Exception
-
 void load(Graph &db, const char *filename,
           std::function<void(Node &)> node_func,
           std::function<void(Edge &)> edge_func)
 {
     FILE *f = strcmp(filename, "-") == 0 ? stdin : fopen(filename, "r");
     if (f == NULL)
-        throw Jarvis::Exception(201, "load failed", errno, filename, __FILE__, __LINE__);
+        throw Exception(LoaderOpenFailed, errno, filename);
 
     load(db, f, node_func, edge_func);
 }
@@ -245,5 +243,5 @@ static Node *get_node(Graph &db, const char *id, Jarvis::StringID *tag,
 
 int yyerror(yy_params, const char *err)
 {
-    throw Jarvis::Exception(202, "load failed", err, __FILE__, __LINE__);
+    throw Exception(LoaderParseError, err);
 }
