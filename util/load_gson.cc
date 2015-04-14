@@ -30,9 +30,10 @@ public:
         else {
             _stream = new std::ifstream(filename);
             if (!_stream->is_open()) {
+                int err = errno;
                 delete _stream;
                 _stream = NULL;
-                throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
+                throw Jarvis::Exception(201, "load failed", err, filename, __FILE__, __LINE__);
             }
         }
     }
@@ -221,26 +222,26 @@ static void load_gson(Graph &db,
 {
     Json::Value jgraph = root["graph"];
     if (jgraph.type() != Json::objectValue) {
-        throw Jarvis::Exception(203, "graph_not_found", __FILE__, __LINE__);
+        throw Jarvis::Exception(203, "load failed", "graph not found", __FILE__, __LINE__);
     }
 
     Json::Value jmode = jgraph["mode"];
     if (jmode.type() != Json::stringValue) {
-        throw Jarvis::Exception(203, "mode_not_found", __FILE__, __LINE__);
+        throw Jarvis::Exception(203, "load failed", "mode not found", __FILE__, __LINE__);
     }
     if (jmode.asString().compare("NORMAL")) {
-        throw Jarvis::Exception(203, "mode_not_supported", __FILE__, __LINE__);
+        throw Jarvis::Exception(203, "load failed", "mode not supported", __FILE__, __LINE__);
     }
 
     Json::Value jnodes = jgraph["vertices"];
     if (jnodes.type() != Json::arrayValue) {
-        throw Jarvis::Exception(203, "nodes_not_found", __FILE__, __LINE__);
+        throw Jarvis::Exception(203, "load failed", "nodes not found", __FILE__, __LINE__);
     }
     load_nodes(db, jnodes, node_func, edge_func);
 
     Json::Value jedges = jgraph["edges"];
     if (jedges.type() != Json::arrayValue) {
-        throw Jarvis::Exception(203, "edges_not_found", __FILE__, __LINE__);
+        throw Jarvis::Exception(203, "load failed", "edges not found", __FILE__, __LINE__);
     }
     load_edges(db, jedges, node_func, edge_func);
 }
@@ -256,7 +257,7 @@ void load_gson(Graph &db, const char *filename,
     Json::Reader reader(features);
 
     if (!reader.parse(input, root))
-        throw Jarvis::Exception(202, "parse_failed", __FILE__, __LINE__);
+        throw Jarvis::Exception(202, "load failed", "invalid input format", __FILE__, __LINE__);
 
     input.close();
 

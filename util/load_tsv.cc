@@ -18,7 +18,7 @@ void load_tsv(Graph &db, const char *filename,
 {
     FILE *f = strcmp(filename, "-") == 0 ? stdin : fopen(filename, "r");
     if (f == NULL)
-        throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
+        throw Jarvis::Exception(201, "load failed", errno, filename, __FILE__, __LINE__);
 
     load_tsv(db, f, node_func, edge_func);
 }
@@ -36,7 +36,7 @@ void load_tsv(Graph &db, FILE *f,
     while (fgets(buf, sizeof buf, f) != NULL) {
         long long a, b;
         if (sscanf(buf, "%lld %lld", &a, &b) != 2)
-            throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
+            throw Jarvis::Exception(202, "load failed", "invalid input format", __FILE__, __LINE__);
         Transaction tx(db, Transaction::ReadWrite);
         Node &src = get_node(db, a, node_func);
         Node &dst = get_node(db, b, node_func);

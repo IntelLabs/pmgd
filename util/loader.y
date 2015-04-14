@@ -176,7 +176,7 @@ void load(Graph &db, const char *filename,
 {
     FILE *f = strcmp(filename, "-") == 0 ? stdin : fopen(filename, "r");
     if (f == NULL)
-        throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
+        throw Jarvis::Exception(201, "load failed", errno, filename, __FILE__, __LINE__);
 
     load(db, f, node_func, edge_func);
 }
@@ -245,6 +245,5 @@ static Node *get_node(Graph &db, const char *id, Jarvis::StringID *tag,
 
 int yyerror(yy_params, const char *err)
 {
-    printf("err %s\n", err);
-    throw Jarvis::Exception(201, "load_failed", __FILE__, __LINE__);
+    throw Jarvis::Exception(202, "load failed", err, __FILE__, __LINE__);
 }
