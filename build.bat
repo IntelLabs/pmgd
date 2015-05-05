@@ -25,25 +25,25 @@ sed -e "/#include <unistd.h>/d" ^
 
 rem Debug build of the library with the Intel compiler
 
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\graph.cc /DCOMMIT_ID="""%COMMITIDPLUS%"""
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\GraphConfig.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\node.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\edge.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\property.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\stringid.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\StringTable.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\PropertyList.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\TransactionManager.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\transaction.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\Index.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\IndexManager.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\EdgeIndex.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\IndexString.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\AvlTree.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\AvlTreeIndex.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\FixedAllocator.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\Allocator.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Fosrc\ /c src\windows.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\graph.cc /DCOMMIT_ID="""%COMMITIDPLUS%"""
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\GraphConfig.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\node.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\edge.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\property.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\stringid.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\StringTable.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\PropertyList.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\TransactionManager.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\transaction.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\Index.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\IndexManager.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\EdgeIndex.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\IndexString.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\AvlTree.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\AvlTreeIndex.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\FixedAllocator.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\Allocator.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\windows.cc
 
 lib /nologo /OUT:src\jarvis.lib /MACHINE:X64 src\graph.obj ^
     src\GraphConfig.obj src\node.obj src\edge.obj src\property.obj ^
@@ -53,13 +53,13 @@ lib /nologo /OUT:src\jarvis.lib /MACHINE:X64 src\graph.obj ^
     src\AvlTree.obj src\AvlTreeIndex.obj src\FixedAllocator.obj ^
     src\Allocator.obj src\windows.obj
 
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Foutil\ /c util\loader.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Foutil\ /c util\scanner.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Foutil\ /c util\exception.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Foutil\ /c util\text.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Foutil\ /c util\dump.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Foutil\ /c util\load_tsv.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /DNOPM /Foutil\ /c util\load_gson.cc /I3rdparty
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\loader.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\scanner.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\exception.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\text.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\dump.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\load_tsv.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\load_gson.cc /I3rdparty
 
 lib /nologo /OUT:util\jarvis-util.lib /MACHINE:X64 util\exception.obj ^
     util\text.obj util\dump.obj util\load_tsv.obj util\load_gson.obj ^
@@ -84,25 +84,25 @@ copy 3rdparty\jsoncpp\jsoncpp.lib   3rdparty\lib\Debug
 
 rem Release build of the library with the Intel compiler
 
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\graph.cc /DCOMMIT_ID="""%COMMITIDPLUS%"""
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\GraphConfig.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\node.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\edge.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\property.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\stringid.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\StringTable.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\PropertyList.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\TransactionManager.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\transaction.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\Index.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\IndexManager.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\EdgeIndex.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\IndexString.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\AvlTree.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\AvlTreeIndex.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\FixedAllocator.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\Allocator.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Fosrc\ /c src\windows.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\graph.cc /DCOMMIT_ID="""%COMMITIDPLUS%"""
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\GraphConfig.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\node.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\edge.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\property.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\stringid.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\StringTable.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\PropertyList.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\TransactionManager.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\transaction.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\Index.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\IndexManager.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\EdgeIndex.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\IndexString.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\AvlTree.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\AvlTreeIndex.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\FixedAllocator.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\Allocator.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\windows.cc
 
 lib /nologo /OUT:src\jarvis.lib /MACHINE:X64 src\graph.obj ^
     src\GraphConfig.obj src\node.obj src\edge.obj src\property.obj ^
@@ -112,13 +112,13 @@ lib /nologo /OUT:src\jarvis.lib /MACHINE:X64 src\graph.obj ^
     src\AvlTree.obj src\AvlTreeIndex.obj src\FixedAllocator.obj ^
     src\Allocator.obj src\windows.obj
 
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Foutil\ /c util\loader.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Foutil\ /c util\scanner.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Foutil\ /c util\exception.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Foutil\ /c util\text.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Foutil\ /c util\dump.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Foutil\ /c util\load_tsv.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /DNOPM /Foutil\ /c util\load_gson.cc /I3rdparty
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\loader.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\scanner.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\exception.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\text.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\dump.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\load_tsv.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\load_gson.cc /I3rdparty
 
 lib /nologo /OUT:util\jarvis-util.lib /MACHINE:X64 util\exception.obj ^
     util\text.obj util\dump.obj util\load_tsv.obj util\load_gson.obj ^
@@ -148,9 +148,9 @@ cl /nologo /W2 /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
 link /nologo tools\mkgraph.obj ^
     lib\Release\jarvis-util.lib ^
     lib\Release\jarvis.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     /OUT:tools\mkgraph.exe /MACHINE:X64 ^
     /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
-    /LIBPATH:"%ICPP_COMPILER15%\compiler\lib\intel64" ^
     /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
 
 cl /nologo /W2 /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
@@ -159,9 +159,12 @@ link /nologo tools\dumpgraph.obj ^
     lib\Release\jarvis-util.lib ^
     lib\Release\jarvis.lib ^
     3rdparty\lib\Release\strptime.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
     /OUT:tools\dumpgraph.exe /MACHINE:X64 ^
     /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
-    /LIBPATH:"%ICPP_COMPILER15%\compiler\lib\intel64" ^
     /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
 
 cl /nologo /W2 /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
@@ -171,9 +174,12 @@ link /nologo tools\loadgraph.obj ^
     lib\Release\jarvis.lib ^
     3rdparty\lib\Release\strptime.lib ^
     3rdparty\lib\Release\jsoncpp.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
     /OUT:tools\loadgraph.exe /MACHINE:X64 ^
     /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
-    /LIBPATH:"%ICPP_COMPILER15%\compiler\lib\intel64" ^
     /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
 
 mkdir bin
@@ -199,11 +205,10 @@ rem Build soltest and propertytest
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\soltest.obj /c test\soltest.cc
 link /nologo test\soltest.obj ^
-    lib\Release\jarvis-util.lib ^
     lib\Release\jarvis.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     /OUT:test\soltest.exe /MACHINE:X64 ^
     /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
-    /LIBPATH:"%ICPP_COMPILER15%\compiler\lib\intel64" ^
     /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
 
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
@@ -212,7 +217,10 @@ link /nologo test\propertytest.obj ^
     lib\Release\jarvis-util.lib ^
     lib\Release\jarvis.lib ^
     3rdparty\lib\Release\strptime.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
     /OUT:test\propertytest.exe /MACHINE:X64 ^
     /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
-    /LIBPATH:"%ICPP_COMPILER15%\compiler\lib\intel64" ^
     /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
