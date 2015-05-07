@@ -59,7 +59,8 @@ namespace Jarvis {
         // not set any property until then.
         bool add_node(Node *n, Allocator &allocator);
 
-        Index *get_index(int node_or_edge, StringID tag, StringID property_id);
+        Index *get_index(int node_or_edge, StringID tag, StringID property_id,
+                         PropertyType ptype = PropertyType(0));
         NodeIterator get_nodes(StringID tag);
     };
 }

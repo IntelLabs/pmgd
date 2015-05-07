@@ -136,6 +136,15 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
     }
 }
 
+void Index::update(GraphImpl *db, Node *n, const Property &new_value,
+                   const Property &old_value)
+{
+    // TODO: actual properties with no_value type not handled here.
+    if (old_value.type() != t_novalue)
+        remove(old_value, n, db);
+    add(new_value, n, db);
+}
+
 NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, bool reverse)
 {
     const Property &p1 = pp.v1;

@@ -101,7 +101,8 @@ bool IndexManager::add_node(Node *n, Allocator &allocator)
     return true;
 }
 
-Index *IndexManager::get_index(int node_or_edge, StringID tag, StringID property_id)
+Index *IndexManager::get_index(int node_or_edge, StringID tag,
+                               StringID property_id, PropertyType ptype)
 {
     // Traverse the two chunklists <tag,propADT> and <propid,indexADT>
     // to get to the Index* which is where this Node* needs to be added
@@ -116,7 +117,13 @@ Index *IndexManager::get_index(int node_or_edge, StringID tag, StringID property
     // If property had not been indexed, this will be null.
     Index **idx = tag_entry->find(property_id);
 
-    return (idx != NULL) ? *idx : NULL;
+    if (idx == NULL)
+        return NULL;
+    // This call throws if the types don't match for an
+    // existing index.
+    if (ptype != 0)
+        (*idx)->check_type(ptype);
+    return *idx;
 }
 
 NodeIterator IndexManager::get_nodes(StringID tag)
