@@ -81,7 +81,7 @@ namespace Jarvis {
     };
 
     template <typename Ref_type> class PropertyFilter {
-        const PropertyPredicate &_pp;
+        const PropertyPredicate _pp;
     public:
         PropertyFilter(const PropertyPredicate &pp) : _pp(pp) { }
         Disposition operator()(const Ref_type &);
