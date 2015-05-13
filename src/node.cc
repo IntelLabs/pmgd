@@ -221,19 +221,24 @@ void Jarvis::Node::set_property(StringID id, const Property &new_value)
     Property old_value;
     TransactionImpl *tx = TransactionImpl::get_tx();
     GraphImpl *db = tx->get_db();
-    Index *index = db->index_manager().get_index(Graph::NODE, _tag, id);
-    if (index) {
-        // This call throws if the types don't match for an
-        // existing index.
-        index->check_type(new_value.type());
-        _property_list.set_property(id, new_value, old_value);
-        // TODO: actual properties with no_value type not handled here.
-        if (old_value.type() != t_novalue)
-            index->remove(old_value, this, db);
-        index->add(new_value, this, db);
-    }
-    else
-        _property_list.set_property(id, new_value, old_value);
+
+    // get_index returns NULL if the index doesn.t exist.
+    // get_index throws if the index exists and the index type doesn't
+    // match the property type.
+    // The call to get_index has to be made before the call to set_property,
+    // to ensure that set_property is not done if there is a type mismatch.
+    Index *index = db->index_manager().get_index(Graph::NODE, _tag, id,
+                                                 new_value.type());
+    // Check if there is an index with this property id and tag = 0
+    // This is a general, all tag index for certain properties like loader id.
+    Index *gindex = db->index_manager().get_index(Graph::NODE, 0, id,
+                                                  new_value.type());
+    _property_list.set_property(id, new_value, old_value);
+
+    if (index)
+        index->update(db, this, new_value, old_value);
+    if (gindex)
+        gindex->update(db, this, new_value, old_value);
 }
 
 void Jarvis::Node::remove_property(StringID id)

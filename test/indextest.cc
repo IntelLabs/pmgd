@@ -23,10 +23,15 @@ int main(int argc, char **argv)
         Node **nodes = new Node *[node_count + 1];
         Transaction tx(db, Transaction::ReadWrite);
 
+        db.create_index(Graph::NODE, "tag1", "id1", t_integer);
+        db.create_index(Graph::NODE, "tag1", "id2", t_float);
+        db.create_index(Graph::NODE, "tag2", "id1", t_float);
+        db.create_index(Graph::NODE, "tag2", "id2", t_string);
+        db.create_index(Graph::NODE, 0, "id3", t_integer);
         for (int i = 1; i <= 2; i++) {
-            db.create_index(Graph::NODE, "tag1", "id1", t_integer);
             Node &n = db.add_node("tag1");
             n.set_property("id1", i + 1611);
+            n.set_property("id3", i + 2000);
             nodes[i] = &n;
         }
         for (int i = 3; i <= 4; i++) {
@@ -36,7 +41,6 @@ int main(int argc, char **argv)
             nodes[i] = &n;
         }
         for (int i = 5; i <= 6; i++) {
-            db.create_index(Graph::NODE, "tag1", "id2", t_float);
             Node &n = db.add_node("tag1");
             n.set_property("id2", i + 23.57);
             nodes[i] = &n;
@@ -52,21 +56,21 @@ int main(int argc, char **argv)
             print_exception(e);
         }
         for (int i = 8; i <= 8; i++) {
-            db.create_index(Graph::NODE, "tag2", "id1", t_float);
             Node &n = db.add_node("tag2");
             n.set_property("id1", i + 23.57);
             nodes[i] = &n;
         }
         // String property
         for (int i = 9; i <= 10; i++) {
-            db.create_index(Graph::NODE, "tag2", "id2", t_string);
             Node &n = db.add_node("tag2");
             n.set_property("id2", "This is string test");
+            n.set_property("id3", i + 2000);
             nodes[i] = &n;
         }
         for (int i = 11; i <= 11; i++) {
             Node &n = db.add_node("tag2");
             n.set_property("id2", "This is awesome");
+            n.set_property("id3", i + 2000);
             nodes[i] = &n;
         }
         for (int i = 12; i <= 12; i++) {
@@ -164,6 +168,14 @@ int main(int argc, char **argv)
         printf("## Trying plain get_nodes() iterator\n");
         for (NodeIterator i = db.get_nodes(); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+        }
+
+        printf("## Trying  get_nodes(0,pp) iterator\n");
+        PropertyPredicate pp0("id3", PropertyPredicate::ge, 2000);
+        for (NodeIterator i = db.get_nodes(0, pp0); i; i.next()) {
+            printf("Node %" PRIu64 ": tag %s, value %lld\n",
+                    db.get_id(*i), i->get_tag().name().c_str(),
+                    i->get_property("id3").int_value());
         }
         tx.commit();
     }
