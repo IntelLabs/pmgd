@@ -79,43 +79,11 @@ TransactionImpl::~TransactionImpl()
         }
         TransactionManager *tx_manager = &_db->transaction_manager();
         tx_manager->free_transaction(_tx_handle);
-        release_locks();
     }
 
     _per_thread_tx = _outer_tx;
 }
 
-
-// TODO
-void TransactionImpl::acquire_readlock(Lock *lptr)
-{
-#if 0
-    if (!lptr->acquire_readlock(LOCK_TIMEOUT))
-        throw Exception(e_deadlock);
-    _locks.push(lptr);
-#endif
-}
-
-// TODO
-void TransactionImpl::acquire_writelock(Lock *lptr)
-{
-#if 0
-    if (!lptr->acquire_writelock(LOCK_TIMEOUT))
-        throw Exception(e_deadlock);
-    _locks.push(lptr);
-#endif
-}
-
-// TODO
-void TransactionImpl::release_locks()
-{
-#if 0
-    while (!_locks.empty()) {
-        ret = ret && _locks.top()->release_lock();
-        _locks.pop();
-    }
-#endif
-}
 
 void TransactionImpl::log_je(void *src_ptr, size_t len)
 {
@@ -140,7 +108,6 @@ void TransactionImpl::log(void *ptr, size_t len)
             throw Exception(read_only);
     }
 
-    // TODO: Acquire lock to support multiple threads in a transaction
     for (unsigned i = 0; i < je_entries - 1; i++) {
         log_je(ptr, JE_MAX_LEN);
         ptr = static_cast<char *>(ptr) + JE_MAX_LEN;

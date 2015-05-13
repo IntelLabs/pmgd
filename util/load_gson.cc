@@ -12,9 +12,10 @@
 
 #undef Exception
 
-static const char ID_STR[] = "jarvis.loader.id";
-
 using namespace Jarvis;
+
+static const char ID_STR[] = "jarvis.loader.id";
+static StringID ID;
 
 /* To support reading from a file or standard input */
 class input_t {
@@ -54,11 +55,11 @@ static Node *get_node(Graph &db, long long id, Jarvis::StringID tag,
                         std::function<void(Node &)> node_func)
 {
     NodeIterator nodes = db.get_nodes(0,
-            PropertyPredicate(ID_STR, PropertyPredicate::eq, id));
+            PropertyPredicate(ID, PropertyPredicate::eq, id));
     if (nodes) return &*nodes;
 
     Node &node = db.add_node(tag);
-    node.set_property(ID_STR, id);
+    node.set_property(ID, id);
     if (node_func)
         node_func(node);
     return &node;
@@ -70,18 +71,11 @@ static Edge *get_edge(Graph &db, long long id,
         std::function<void(Node &)> node_func,
         std::function<void(Edge &)> edge_func)
 {
-    EdgeIterator edges = db.get_edges();
-    EdgeIterator matching_edges = edges.filter([id](const EdgeRef &e)
-            { return e.get_property(ID_STR).int_value() == id
-                ? pass : dont_pass; });
-
-    if (matching_edges) return &(Edge &)*matching_edges;
-
     Node *src = get_node(db, src_id, 0, node_func);
     Node *dst = get_node(db, dst_id, 0, node_func);
 
     Edge &edge = db.add_edge(*src, *dst, tag);
-    edge.set_property(ID_STR, id);
+    edge.set_property(ID, id);
     if (edge_func)
         edge_func(edge);
     return &edge;
@@ -100,8 +94,6 @@ static int get_int_value(Json::Value &obj, const char *key_str, bool remove)
         val = stoi(key_obj.asString(), NULL);
     }
 
-    if (remove)
-        obj.removeMember(key_str);
     return val;
 }
 
@@ -111,8 +103,6 @@ get_string_value(Json::Value &obj, const char *key_str, bool remove)
     Json::Value key_obj = obj[key_str];
     assert(key_obj.type() == Json::stringValue);
     std::string val = key_obj.asString();
-    if (remove)
-        obj.removeMember(key_str);
     return val;
 }
 
@@ -166,7 +156,8 @@ static void set_properties(T *elem, Json::Value &jnode)
         ++it )
     {
         const std::string &pkey = *it;
-        set_property(elem, pkey.c_str(), jnode[pkey]);
+        if (pkey[0] != '_')
+            set_property(elem, pkey.c_str(), jnode[pkey]);
     }
 }
 
@@ -178,10 +169,8 @@ static void load_nodes(Graph &db,
     for (unsigned int i=0; i < jnodes.size(); i++) {
         Json::Value jnode = jnodes[i];
 
-        jnode.removeMember("_type");
         int id = get_int_value(jnode, "_id", true);
         std::string label = get_string_value(jnode, "_label", true);
-
 
         Transaction tx(db, Transaction::ReadWrite);
         Node *node = get_node(db, id, label.c_str(), node_func);
@@ -198,8 +187,6 @@ static int load_edges(Graph &db,
     for (unsigned int i=0; i < jedges.size(); i++) {
         Json::Value jedge = jedges[i];
 
-        //std::string _type = get_string_value(jedge, "_type", true);
-        jedge.removeMember("_type");
         int id = get_int_value(jedge, "_id", true);
         int inv = get_int_value(jedge, "_inV", true);
         int outv = get_int_value(jedge, "_outV", true);
@@ -237,6 +224,10 @@ static void load_gson(Graph &db,
     if (jnodes.type() != Json::arrayValue) {
         throw Jarvis::Exception(203, "load failed", "nodes not found", __FILE__, __LINE__);
     }
+    Transaction tx(db, Transaction::ReadWrite);
+    ID = StringID(ID_STR);
+    db.create_index(Graph::NODE, 0, ID_STR, PropertyType::t_integer);
+    tx.commit();
     load_nodes(db, jnodes, node_func, edge_func);
 
     Json::Value jedges = jgraph["edges"];
