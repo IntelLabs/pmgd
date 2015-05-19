@@ -7,7 +7,53 @@
 
 package jarvis;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
+
 public class Property {
+    public class Time {
+        public long time_val;
+
+        public int year;   // -8192-8191
+        public int mon;    // 1-12
+        public int day;    // 1-31
+        public int hour;   // 0-23
+        public int min;    // 0-59
+        public int sec;    // 0-60
+        public int usec;   // 0-999,999
+        public int tz_hour;
+        public int tz_min;
+
+        public Time()
+        {
+            time_val = 0;
+            year = mon = day = 0;
+            hour = min = sec = usec = 0;
+            tz_hour = tz_min = 0;
+        }
+
+        // Returns UTC/GMT date value.
+        public Date getDate() throws Exception
+        {
+            Calendar c = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+            c.set(Calendar.YEAR, year);
+            c.set(Calendar.MONTH, mon - 1);
+            c.set(Calendar.DATE, day);
+            c.set(Calendar.HOUR, hour);
+            c.set(Calendar.MINUTE, min);
+            c.set(Calendar.SECOND, sec);
+            c.set(Calendar.MILLISECOND, usec/1000);
+            return c.getTime();
+        }
+
+        // Return timezone stored with date value.
+        public TimeZone getTimeZone()
+        {
+            return TimeZone.getTimeZone(String.format("GMT+%02d:%02d", tz_hour, tz_min));
+        }
+    }
+
     private long jarvisHandle;
     private Property(long handle) { jarvisHandle = handle; }
 
@@ -53,7 +99,6 @@ public class Property {
 
     // Add operator overrides here
 
-
     // Java enums are messed up. Using constants instead
     public static final int t_novalue = 1;
     public static final int t_boolean = 2;
@@ -68,7 +113,7 @@ public class Property {
     public native long int_value() throws Exception;
     public native String string_value() throws Exception;
     public native double float_value() throws Exception;
-    //    public native Time time_value() throws Exception;
+    public native Time time_value() throws Exception;
     //    public native Blob blob_value() throws Exception;
 
     private native void newPropertyNative() throws Exception;

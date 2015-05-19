@@ -37,7 +37,8 @@ tests=( alloctest avltest chunklisttest edgeindextest
         propertytest propertylisttest
         reverseindexrangetest rotest
         soltest stringtabletest txtest
-        test720 test750 test767 )
+        test720 test750 test767 
+        DateTest )
 
 graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
              emailindexgraph filtergraph indexgraph indexstringgraph
@@ -75,10 +76,21 @@ do
             2	4
             3	4" | ./$test;;
         test750)
-            test750 1 &&
-            test750 2 &&
-            test750 3 &&
-            test750 4;;
+            ./test750 1 &&
+            ./test750 2 &&
+            ./test750 3 &&
+            ./test750 4;;
+        DateTest)
+            RESULT1=`LD_LIBRARY_PATH=../lib java -cp .:../lib/\* $test emailindexgraph "DeliveryTime" 13 | tail -n 1`
+            RESULT2=`LD_LIBRARY_PATH=../lib java -cp .:../lib/\* $test propertygraph "id7" 4 | tail -n 1`
+            if [ "$RESULT1" = "Test passed" ] && [ "$RESULT2" = "Test passed" ]; then
+                echo "PASSED"
+            else
+                # Command to create an error return since Java doesn't
+                # allow main to return a value
+                rm emailindexgraph 2> /dev/zero
+            fi
+            ;;
         *) ./$test n1 n2 n3 n4 ;;
     esac > ./log/${test}.log
 

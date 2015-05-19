@@ -73,6 +73,36 @@ jdouble Java_jarvis_Property_float_1value(JNIEnv *env, jobject prop)
     }
 }
 
+jobject Java_jarvis_Property_time_1value(JNIEnv *env, jobject prop)
+{
+    Property &j_prop = *(getJarvisHandle<Property>(env, prop));
+    try {
+        Time j_t = j_prop.time_value();
+        jclass cls = env->FindClass("jarvis/Property$Time");
+        if (!cls)
+            return 0;
+        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(Ljarvis/Property;)V");
+        if (!cnstrctr)
+            return 0;
+        jobject t = env->NewObject(cls, cnstrctr);
+        env->SetLongField(t, env->GetFieldID(cls, "time_val", "J"), j_t.time_val);
+        env->SetIntField(t, env->GetFieldID(cls, "year", "I"), j_t.year);
+        env->SetIntField(t, env->GetFieldID(cls, "mon", "I"), j_t.mon);
+        env->SetIntField(t, env->GetFieldID(cls, "day", "I"), j_t.day);
+        env->SetIntField(t, env->GetFieldID(cls, "hour", "I"), j_t.hour);
+        env->SetIntField(t, env->GetFieldID(cls, "min", "I"), j_t.min);
+        env->SetIntField(t, env->GetFieldID(cls, "sec", "I"), j_t.sec);
+        env->SetIntField(t, env->GetFieldID(cls, "usec", "I"), j_t.usec);
+        env->SetIntField(t, env->GetFieldID(cls, "tz_hour", "I"), j_t.tz_hour);
+        env->SetIntField(t, env->GetFieldID(cls, "tz_min", "I"), j_t.tz_min*15);
+        return t;
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+        return 0;
+    }
+}
+
 void Java_jarvis_Property_newPropertyNative__(JNIEnv *env, jobject prop)
 {
     try {
