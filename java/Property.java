@@ -50,7 +50,7 @@ public class Property {
         // Return timezone stored with date value.
         public TimeZone getTimeZone()
         {
-            return TimeZone.getTimeZone(String.format("GMT+%02d:%02d", tz_hour, tz_min));
+            return TimeZone.getTimeZone(String.format("GMT%+03d:%02d", tz_hour, tz_min));
         }
     }
 
