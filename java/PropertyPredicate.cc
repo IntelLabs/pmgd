@@ -42,7 +42,7 @@ void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__Ljava_lan
 
 void Java_jarvis_PropertyPredicate_dispose(JNIEnv *env, jobject pp)
 {
-    NodeIterator *j_pp = getJarvisHandle<NodeIterator>(env, pp);
+    PropertyPredicate *j_pp = getJarvisHandle<PropertyPredicate>(env, pp);
     delete j_pp;
-    setJarvisHandle(env, pp, static_cast<NodeIterator *>(NULL));
+    setJarvisHandle(env, pp, static_cast<PropertyPredicate *>(NULL));
 }
