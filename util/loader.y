@@ -212,7 +212,7 @@ static Node *get_node(Graph &db, long long id, Jarvis::StringID *tag,
     }
 
     NodeIterator nodes
-        = db.get_nodes(0, PropertyPredicate(ID_STR, PropertyPredicate::eq, id));
+        = db.get_nodes(0, PropertyPredicate(ID_STR, PropertyPredicate::Eq, id));
     if (nodes) return &*nodes;
 
     // Node not found; add it
@@ -232,7 +232,7 @@ static Node *get_node(Graph &db, const char *id, Jarvis::StringID *tag,
     }
 
     NodeIterator nodes
-        = db.get_nodes(0, PropertyPredicate(ID_STR, PropertyPredicate::eq, id));
+        = db.get_nodes(0, PropertyPredicate(ID_STR, PropertyPredicate::Eq, id));
     if (nodes) return &*nodes;
 
     // Node not found; add it

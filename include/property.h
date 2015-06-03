@@ -157,18 +157,16 @@ namespace Jarvis {
 
     struct PropertyPredicate {
         StringID id;
-        enum op_t { dont_care,
-                    eq, ne, gt, ge, lt, le,
-                    gele, gelt, gtle, gtlt } op;
+        enum Op { DontCare, Eq, Ne, Gt, Ge, Lt, Le, GeLe, GeLt, GtLe, GtLt } op;
         Property v1, v2;
         PropertyPredicate() : id(0) { }
-        PropertyPredicate(StringID i) : id(i), op(dont_care) { }
-        PropertyPredicate(StringID i, op_t o, const Property &v)
-            : id(i), op(o), v1(v) { assert(o > dont_care && o <= le); }
-        PropertyPredicate(StringID i, op_t o,
+        PropertyPredicate(StringID i) : id(i), op(DontCare) { }
+        PropertyPredicate(StringID i, Op o, const Property &v)
+            : id(i), op(o), v1(v) { assert(o > DontCare && o <= Le); }
+        PropertyPredicate(StringID i, Op o,
                 const Property &val1, const Property &val2)
             : id(i), op(o), v1(val1), v2(val2)
-            { assert(o >= gele); }
+            { assert(o >= GeLe); }
     };
 
     inline bool operator==(const Property &a, const Property &b)

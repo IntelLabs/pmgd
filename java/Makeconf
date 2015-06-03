@@ -16,7 +16,7 @@ JAVA_COBJS := $(patsubst java/%.java,java/%.o, $(JAVA_SRCS))
 JAVA_JOBJS += java/jarvis/Graph\$$OpenOptions.class
 JAVA_JOBJS += java/jarvis/Graph\$$IndexType.class
 JAVA_JOBJS += java/jarvis/Node\$$Direction.class
-JAVA_JOBJS += java/jarvis/PropertyPredicate\$$op_t.class
+JAVA_JOBJS += java/jarvis/PropertyPredicate\$$Op.class
 JAVA_JOBJS += java/jarvis/Property\$$Time.class
 
 # Add to the global list of objects.

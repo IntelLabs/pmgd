@@ -613,40 +613,40 @@ NodeIterator AvlTreeIndex<K,V>::get_nodes(bool reverse)
 }
 
 template <typename K, typename V>
-NodeIterator AvlTreeIndex<K,V>::get_nodes(const K &key, PropertyPredicate::op_t op, bool reverse)
+NodeIterator AvlTreeIndex<K,V>::get_nodes(const K &key, PropertyPredicate::Op op, bool reverse)
 {
     NodeIteratorImplIntf *impl = NULL;
     switch (op) {
-        case PropertyPredicate::eq:
+        case PropertyPredicate::Eq:
             impl = new IndexEq_NodeIteratorImpl<K>(this, key);
             break;
-        case PropertyPredicate::ne:
+        case PropertyPredicate::Ne:
             if (!reverse)
                 impl = new IndexRangeNeq_NodeIteratorImpl<K>(this, key);
             else
                 impl = new IndexRangeNeqReverse_NodeIteratorImpl<K>(this, key);
             break;
         // < or <= some max. But start from min of tree.
-        case PropertyPredicate::lt:
+        case PropertyPredicate::Lt:
             if (!reverse)
                 impl = new IndexRange_NodeIteratorImpl<K>(this, key, false);
             else
                 impl = new IndexRangeNomin_NodeIteratorImpl<K>(this, key, false);
             break;
-        case PropertyPredicate::le:
+        case PropertyPredicate::Le:
             if (!reverse)
                 impl = new IndexRange_NodeIteratorImpl<K>(this, key, true);
             else
                 impl = new IndexRangeNomin_NodeIteratorImpl<K>(this, key, true);
             break;
         // > or >= some min. But go till the max of tree.
-        case PropertyPredicate::gt:
+        case PropertyPredicate::Gt:
             if (!reverse)
                 impl = new IndexRangeNomax_NodeIteratorImpl<K>(this, key, false);
             else
                 impl = new IndexRangeReverse_NodeIteratorImpl<K>(this, key, false);
             break;
-        case PropertyPredicate::ge:
+        case PropertyPredicate::Ge:
             if (!reverse)
                 impl = new IndexRangeNomax_NodeIteratorImpl<K>(this, key, true);
             else
@@ -661,18 +661,18 @@ NodeIterator AvlTreeIndex<K,V>::get_nodes(const K &key, PropertyPredicate::op_t 
 
 template <typename K, typename V>
 NodeIterator AvlTreeIndex<K,V>::get_nodes(const K &min, const K& max,
-                                          PropertyPredicate::op_t op,
+                                          PropertyPredicate::Op op,
                                           bool reverse)
 {
     bool incl_min = true, incl_max = true;
 
-    if (op == PropertyPredicate::gtlt) {
+    if (op == PropertyPredicate::GtLt) {
         incl_min = false;
         incl_max = false;
     }
-    else if (op == PropertyPredicate::gelt)
+    else if (op == PropertyPredicate::GeLt)
         incl_max = false;
-    else if (op == PropertyPredicate::gtle)
+    else if (op == PropertyPredicate::GtLe)
         incl_min = false;
 
     if (!reverse)

@@ -23,7 +23,7 @@ void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__Ljava_lan
     (JNIEnv *env, jobject pp, jstring name, jint op, jobject v)
 {
     const char *j_name = env->GetStringUTFChars(name, 0);
-    PropertyPredicate::op_t j_op = PropertyPredicate::op_t(op);
+    PropertyPredicate::Op j_op = PropertyPredicate::Op(op);
     Property &j_v = *(getJarvisHandle<Property>(env, v));
     PropertyPredicate *j_pp = new PropertyPredicate(j_name, j_op, j_v);
     setJarvisHandle(env, pp, j_pp);
@@ -33,7 +33,7 @@ void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__Ljava_lan
     (JNIEnv *env, jobject pp, jstring name, jint op, jobject v1, jobject v2)
 {
     const char *j_name = env->GetStringUTFChars(name, 0);
-    PropertyPredicate::op_t j_op = PropertyPredicate::op_t(op);
+    PropertyPredicate::Op j_op = PropertyPredicate::Op(op);
     Property &j_v1 = *(getJarvisHandle<Property>(env, v1));
     Property &j_v2 = *(getJarvisHandle<Property>(env, v2));
     PropertyPredicate *j_pp = new PropertyPredicate(j_name, j_op, j_v1, j_v2);

@@ -179,21 +179,21 @@ public class BindingsTest {
                 System.out.printf("Node %d has Age\n", db.get_id(ni.get_current()));
 
             System.out.printf("Nodes with name > m\n");
-            ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.op_t.ge, new Property("m")), false);
+            ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.Op.Ge, new Property("m")), false);
             for ( ; !ni.done(); ni.next())
                 System.out.printf("Node %d: %s\n",
                     db.get_id(ni.get_current()),
                     ni.get_property("Name").string_value());
 
             System.out.printf("Nodes with name > f and name < s\n");
-            ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.op_t.gtlt, new Property("f"), new Property("s")), false);
+            ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.Op.GtLt, new Property("f"), new Property("s")), false);
             for ( ; !ni.done(); ni.next())
                 System.out.printf("Node %d: %s\n",
                     db.get_id(ni.get_current()),
                     ni.get_property("Name").string_value());
 
             System.out.printf("Nodes with tag myTag2 and name > a and name < s\n");
-            ni = db.get_nodes("myTag2", new PropertyPredicate("Name", PropertyPredicate.op_t.gtlt, new Property("a"), new Property("s")), false);
+            ni = db.get_nodes("myTag2", new PropertyPredicate("Name", PropertyPredicate.Op.GtLt, new Property("a"), new Property("s")), false);
             for ( ; !ni.done(); ni.next())
                 System.out.printf("Node %d: %s\n",
                     db.get_id(ni.get_current()),

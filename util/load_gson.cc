@@ -55,7 +55,7 @@ static Node *get_node(Graph &db, long long id, Jarvis::StringID tag,
                         std::function<void(Node &)> node_func)
 {
     NodeIterator nodes = db.get_nodes(0,
-            PropertyPredicate(ID, PropertyPredicate::eq, id));
+            PropertyPredicate(ID, PropertyPredicate::Eq, id));
     if (nodes) return &*nodes;
 
     Node &node = db.add_node(tag);

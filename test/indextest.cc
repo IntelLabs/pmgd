@@ -92,7 +92,7 @@ int main(int argc, char **argv)
         dump_edges(db);
 
         printf("## Trying iterator with tag tag1 and property id1:1612\n");
-        PropertyPredicate pp("id1", PropertyPredicate::eq, 1612);
+        PropertyPredicate pp("id1", PropertyPredicate::Eq, 1612);
         for (NodeIterator i = db.get_nodes("tag1", pp); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("id1").int_value());
@@ -130,14 +130,14 @@ int main(int argc, char **argv)
         }
 
         printf("## Trying iterator with tag and float prop\n");
-        PropertyPredicate ppf("id1", PropertyPredicate::eq, 31.57);
+        PropertyPredicate ppf("id1", PropertyPredicate::Eq, 31.57);
         for (NodeIterator i = db.get_nodes("tag2", ppf); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lf\n", i->get_property("id1").float_value());
         }
 
         printf("## Trying iterator with tag and string prop\n");
-        PropertyPredicate pps("id2", PropertyPredicate::eq, "This is string test");
+        PropertyPredicate pps("id2", PropertyPredicate::Eq, "This is string test");
         for (NodeIterator i = db.get_nodes("tag2", pps); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tChecking prop value: %s\n", i->get_property("id2").string_value().c_str());
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
         printf("Property id2 for node 11: %s\n", nodes[11]->get_property("id2").string_value().c_str());
 
         printf("## Trying iterator with tag and string prop AFTER change\n");
-        PropertyPredicate pps1("id2", PropertyPredicate::eq, "Aspiring");
+        PropertyPredicate pps1("id2", PropertyPredicate::Eq, "Aspiring");
         for (NodeIterator i = db.get_nodes("tag2", pps1); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tChecking prop value: %s\n", i->get_property("id2").string_value().c_str());
@@ -171,7 +171,7 @@ int main(int argc, char **argv)
         }
 
         printf("## Trying  get_nodes(0,pp) iterator\n");
-        PropertyPredicate pp0("id3", PropertyPredicate::ge, 2000);
+        PropertyPredicate pp0("id3", PropertyPredicate::Ge, 2000);
         for (NodeIterator i = db.get_nodes(0, pp0); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s, value %lld\n",
                     db.get_id(*i), i->get_tag().name().c_str(),

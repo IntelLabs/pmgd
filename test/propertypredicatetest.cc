@@ -28,37 +28,37 @@ int main(int argc, char **argv)
         // Look for name starting with 'a'
         printf("Nodes starting with 'a'\n");
         dump(db, db.get_nodes()
-            .filter(PropertyPredicate("id", PropertyPredicate::gelt, "a", "b")));
+            .filter(PropertyPredicate("id", PropertyPredicate::GeLt, "a", "b")));
 
         // Look for name starting with 'b'
         printf("Nodes starting with 'b'\n");
         dump(db, db.get_nodes()
-            .filter(PropertyPredicate("id", PropertyPredicate::gelt, "b", "c")));
+            .filter(PropertyPredicate("id", PropertyPredicate::GeLt, "b", "c")));
 
         // Look for value less than 2
         printf("Nodes with value less than 2\n");
         dump(db, db.get_nodes()
-            .filter(PropertyPredicate("value", PropertyPredicate::lt, 2)));
+            .filter(PropertyPredicate("value", PropertyPredicate::Lt, 2)));
 
         // Look for value less or equal to than 4
         printf("Nodes with value less than or equal to 4\n");
         dump(db, db.get_nodes()
-            .filter(PropertyPredicate("value", PropertyPredicate::le, 4)));
+            .filter(PropertyPredicate("value", PropertyPredicate::Le, 4)));
 
         // Look for value greater than 3
         printf("Nodes with value greater than 3\n");
         dump(db, db.get_nodes()
-            .filter(PropertyPredicate("value", PropertyPredicate::gt, 3)));
+            .filter(PropertyPredicate("value", PropertyPredicate::Gt, 3)));
 
         // Look for value greater than or equal to  1
         printf("Nodes with value greater than or equal to 1\n");
         dump(db, db.get_nodes()
-            .filter(PropertyPredicate("value", PropertyPredicate::ge, 1)));
+            .filter(PropertyPredicate("value", PropertyPredicate::Ge, 1)));
 
         // Look for value between 2 and 5
         printf("Nodes with value between 2 and 5\n");
         dump(db, db.get_nodes()
-            .filter(PropertyPredicate("value", PropertyPredicate::gele, 2, 5)));
+            .filter(PropertyPredicate("value", PropertyPredicate::GeLe, 2, 5)));
 
         tx.commit();
     }

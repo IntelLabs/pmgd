@@ -56,8 +56,8 @@ namespace Jarvis {
         using AvlTree<K,V>::remove;
 
         NodeIterator get_nodes(bool reverse);
-        NodeIterator get_nodes(const K &key, PropertyPredicate::op_t op, bool reverse);
-        NodeIterator get_nodes(const K &min, const K &max, PropertyPredicate::op_t op,
+        NodeIterator get_nodes(const K &key, PropertyPredicate::Op op, bool reverse);
+        NodeIterator get_nodes(const K &min, const K &max, PropertyPredicate::Op op,
                                bool reverse);
     };
 

@@ -52,7 +52,7 @@ static Node &get_node(Graph &db, long long id,
                       std::function<void(Node &)> node_func)
 {
     NodeIterator nodes = db.get_nodes(0,
-                             PropertyPredicate(ID_STR, PropertyPredicate::eq, id));
+                             PropertyPredicate(ID_STR, PropertyPredicate::Eq, id));
     if (nodes) return *nodes;
 
     // Node not found; add it

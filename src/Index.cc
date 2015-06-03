@@ -150,10 +150,10 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
     const Property &p1 = pp.v1;
     const Property &p2 = pp.v2;
 
-    if (pp.op != PropertyPredicate::dont_care) {
+    if (pp.op != PropertyPredicate::DontCare) {
         if (_ptype != p1.type())
             throw Exception(PropertyTypeMismatch);
-        if (pp.op >= PropertyPredicate::gele) {
+        if (pp.op >= PropertyPredicate::GeLe) {
             if (_ptype != p2.type())
                 throw Exception(PropertyTypeMismatch);
         }
@@ -163,9 +163,9 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
         case t_integer:
             {
                 LongValueIndex *This = static_cast<LongValueIndex *>(this);
-                if (pp.op >= PropertyPredicate::gele)
+                if (pp.op >= PropertyPredicate::GeLe)
                     return This->get_nodes(p1.int_value(), p2.int_value(), pp.op, reverse);
-                else if (pp.op == PropertyPredicate::dont_care)
+                else if (pp.op == PropertyPredicate::DontCare)
                     return This->get_nodes(reverse);
                 else
                     return This->get_nodes(p1.int_value(), pp.op, reverse);
@@ -174,9 +174,9 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
         case t_float:
             {
                 FloatValueIndex *This = static_cast<FloatValueIndex *>(this);
-                if (pp.op >= PropertyPredicate::gele)
+                if (pp.op >= PropertyPredicate::GeLe)
                     return This->get_nodes(p1.float_value(), p2.float_value(), pp.op, reverse);
-                else if (pp.op == PropertyPredicate::dont_care)
+                else if (pp.op == PropertyPredicate::DontCare)
                     return This->get_nodes(reverse);
                 else
                     return This->get_nodes(p1.float_value(), pp.op, reverse);
@@ -185,9 +185,9 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
         case t_boolean:
             {
                 BoolValueIndex *This = static_cast<BoolValueIndex *>(this);
-                if (pp.op >= PropertyPredicate::gele)
+                if (pp.op >= PropertyPredicate::GeLe)
                     return This->get_nodes(p1.bool_value(), p2.bool_value(), pp.op, reverse);
-                else if (pp.op == PropertyPredicate::dont_care)
+                else if (pp.op == PropertyPredicate::DontCare)
                     return This->get_nodes(reverse);
                 else
                     return This->get_nodes(p1.bool_value(), pp.op, reverse);
@@ -196,9 +196,9 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
         case t_time:
             {
                 TimeValueIndex *This = static_cast<TimeValueIndex *>(this);
-                if (pp.op >= PropertyPredicate::gele)
+                if (pp.op >= PropertyPredicate::GeLe)
                     return This->get_nodes(p1.time_value(), p2.time_value(), pp.op, reverse);
-                else if (pp.op == PropertyPredicate::dont_care)
+                else if (pp.op == PropertyPredicate::DontCare)
                     return This->get_nodes(reverse);
                 else
                     return This->get_nodes(p1.time_value(), pp.op, reverse);
@@ -208,11 +208,11 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
             {
                 TransientIndexString istr(p1.string_value(), *loc);
                 StringValueIndex *This = static_cast<StringValueIndex *>(this);
-                if (pp.op >= PropertyPredicate::gele) {
+                if (pp.op >= PropertyPredicate::GeLe) {
                     TransientIndexString istr2(p2.string_value(), *loc);
                     return This->get_nodes(istr, istr2, pp.op, reverse);
                 }
-                else if (pp.op == PropertyPredicate::dont_care)
+                else if (pp.op == PropertyPredicate::DontCare)
                     return This->get_nodes(reverse);
                 else
                     return This->get_nodes(istr, pp.op, reverse);

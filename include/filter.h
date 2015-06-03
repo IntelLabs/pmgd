@@ -194,17 +194,17 @@ namespace Jarvis {
         Property val;
         if (p.check_property(_pp.id, val)) {
             switch (_pp.op) {
-                case PropertyPredicate::dont_care: r = true; break;
-                case PropertyPredicate::eq: r = val == _pp.v1; break;
-                case PropertyPredicate::ne: r = val != _pp.v1; break;
-                case PropertyPredicate::gt: r = val > _pp.v1; break;
-                case PropertyPredicate::ge: r = val >= _pp.v1; break;
-                case PropertyPredicate::lt: r = val < _pp.v1; break;
-                case PropertyPredicate::le: r = val <= _pp.v1; break;
-                case PropertyPredicate::gele: r = val >= _pp.v1 && val <= _pp.v2; break;
-                case PropertyPredicate::gelt: r = val >= _pp.v1 && val < _pp.v2; break;
-                case PropertyPredicate::gtle: r = val > _pp.v1 && val <= _pp.v2; break;
-                case PropertyPredicate::gtlt: r = val > _pp.v1 && val < _pp.v2; break;
+                case PropertyPredicate::DontCare: r = true; break;
+                case PropertyPredicate::Eq: r = val == _pp.v1; break;
+                case PropertyPredicate::Ne: r = val != _pp.v1; break;
+                case PropertyPredicate::Gt: r = val > _pp.v1; break;
+                case PropertyPredicate::Ge: r = val >= _pp.v1; break;
+                case PropertyPredicate::Lt: r = val < _pp.v1; break;
+                case PropertyPredicate::Le: r = val <= _pp.v1; break;
+                case PropertyPredicate::GeLe: r = val >= _pp.v1 && val <= _pp.v2; break;
+                case PropertyPredicate::GeLt: r = val >= _pp.v1 && val < _pp.v2; break;
+                case PropertyPredicate::GtLe: r = val > _pp.v1 && val <= _pp.v2; break;
+                case PropertyPredicate::GtLt: r = val > _pp.v1 && val < _pp.v2; break;
                 default: assert(0);
             }
         }
