@@ -5,28 +5,27 @@
 namespace Jarvis {
     struct Exception {
         enum {
-            e_undefined_exception,
-            e_bad_alloc,
-            e_null_iterator,
+            UndefinedException,
+            BadAlloc,
+            NullIterator,
 
-            e_open_failed,
-            e_version_mismatch,
-            e_read_only,
-            e_invalid_config,
-            e_out_of_space,
+            OpenFailed,
+            VersionMismatch,
+            ReadOnly,
+            InvalidConfig,
+            OutOfSpace,
 
-            e_property_type,
-            e_property_not_found,
+            PropertyTypeMismatch,
+            PropertyNotFound,
 
-            e_no_transaction,
-            e_tx_recovery_failed,
-            e_tx_alloc_failed,
-            e_tx_small_journal,
-            e_tx_aborted,
+            NoTransaction,
+            OutOfTransactions,
+            OutOfJournalSpace,
 
-            e_invalid_id,
+            InvalidID,
 
-            e_not_implemented = 100,
+            NotImplemented = 100,
+            PropertyTypeInvalid,
         };
 
         // Which exception
@@ -65,5 +64,5 @@ namespace Jarvis {
     };
 
 #define Exception(name, ...) \
-    Exception(Exception::e_##name, #name, ##__VA_ARGS__, __FILE__, __LINE__)
+    Exception(Exception::name, #name, ##__VA_ARGS__, __FILE__, __LINE__)
 };

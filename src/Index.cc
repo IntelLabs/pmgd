@@ -12,7 +12,7 @@ using namespace Jarvis;
 void Index::add(const Property &p, Node *n, GraphImpl *db)
 {
     if (_ptype != p.type())
-        throw Exception(property_type);
+        throw Exception(PropertyTypeMismatch);
 
     Allocator &allocator = db->allocator();
 
@@ -44,10 +44,10 @@ void Index::add(const Property &p, Node *n, GraphImpl *db)
             }
             break;
         case t_novalue:
-            throw Exception(not_implemented);
+            throw Exception(NotImplemented);
         case t_blob:
         default:
-            throw Exception(property_type);
+            throw Exception(PropertyTypeInvalid);
     }
     // dest will never be null since it gets allocated at the add time.
     // Also, if it was a new element, the add code does a placement new.
@@ -61,7 +61,7 @@ void Index::add(const Property &p, Node *n, GraphImpl *db)
 void Index::remove(const Property &p, Node *n, GraphImpl *db)
 {
     if (_ptype != p.type())
-        throw Exception(property_type);
+        throw Exception(PropertyTypeMismatch);
 
     Allocator &allocator = db->allocator();
 
@@ -129,10 +129,10 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
             }
             break;
         case t_novalue:
-            throw Exception(not_implemented);
+            throw Exception(NotImplemented);
         case t_blob:
         default:
-            throw Exception(property_type);
+            throw Exception(PropertyTypeInvalid);
     }
 }
 
@@ -152,10 +152,10 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
 
     if (pp.op != PropertyPredicate::dont_care) {
         if (_ptype != p1.type())
-            throw Exception(property_type);
+            throw Exception(PropertyTypeMismatch);
         if (pp.op >= PropertyPredicate::gele) {
             if (_ptype != p2.type())
-                throw Exception(property_type);
+                throw Exception(PropertyTypeMismatch);
         }
     }
 
@@ -219,9 +219,9 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
             }
             break;
         case t_novalue:
-            throw Exception(not_implemented);
+            throw Exception(NotImplemented);
         case t_blob:
         default:
-            throw Exception(property_type);
+            throw Exception(PropertyTypeInvalid);
     }
 }

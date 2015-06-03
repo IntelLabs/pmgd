@@ -52,7 +52,7 @@ namespace Jarvis {
             void check_read_write()
             {
                 if (!(_tx_type & Transaction::ReadWrite))
-                    throw Exception(read_only);
+                    throw Exception(ReadOnly);
             }
 
             typedef void (*CommitCallback)(TransactionImpl *tx, void *, void *);
@@ -106,7 +106,7 @@ namespace Jarvis {
             static inline TransactionImpl *get_tx()
             {
                 if (_per_thread_tx == NULL)
-                    throw Exception(no_transaction);
+                    throw Exception(NoTransaction);
                 return _per_thread_tx;
             }
 

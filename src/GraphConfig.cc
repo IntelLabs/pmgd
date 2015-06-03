@@ -40,7 +40,7 @@ template <typename T>
 void check_power_of_two(T val)
 {
     if ((val & (val - 1)) != 0)
-        throw Exception(invalid_config);
+        throw Exception(InvalidConfig);
 }
 
 GraphConfig::GraphConfig(const Graph::Config *user_config)
@@ -53,12 +53,12 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
 
     node_size = VALUE(node_size, DEFAULT_NODE_SIZE);
     if (node_size < DEFAULT_NODE_SIZE)
-        throw Exception(invalid_config);
+        throw Exception(InvalidConfig);
     check_power_of_two(node_size);
 
     edge_size = VALUE(edge_size, DEFAULT_EDGE_SIZE);
     if (edge_size < DEFAULT_EDGE_SIZE)
-        throw Exception(invalid_config);
+        throw Exception(InvalidConfig);
     check_power_of_two(edge_size);
 
     max_stringid_length = VALUE(max_stringid_length, DEFAULT_MAX_STRINGID_LENGTH);
@@ -72,11 +72,11 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
 
     size_t node_table_size = VALUE(node_table_size, default_region_size);
     if (node_table_size % node_size != 0)
-        throw Exception(invalid_config);
+        throw Exception(InvalidConfig);
 
     size_t edge_table_size = VALUE(edge_table_size, default_region_size);
     if (edge_table_size % edge_size != 0)
-        throw Exception(invalid_config);
+        throw Exception(InvalidConfig);
 
     size_t string_table_size = VALUE(string_table_size, DEFAULT_STRING_TABLE_SIZE);
     check_power_of_two(string_table_size);
@@ -101,7 +101,7 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
 
     if (user_config != NULL && user_config->fixed_allocators.size() != 0) {
         if (user_config->fixed_allocators.size() > GraphImpl::MAX_FIXED_ALLOCATORS)
-            throw Exception(invalid_config);
+            throw Exception(InvalidConfig);
 
         unsigned next_size = MIN_FIXED_ALLOCATOR;
         for (auto a : user_config->fixed_allocators) {
@@ -111,7 +111,7 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
             if (object_size < next_size
                     || (object_size & (object_size - 1)) != 0
                     || (allocator_size & (object_size - 1)) != 0)
-                throw Exception(invalid_config);
+                throw Exception(InvalidConfig);
 
             add_allocator(object_size, offset, allocator_size);
 

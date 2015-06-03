@@ -111,7 +111,7 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
     }
     else {
         if (info->version != GraphInfo::VERSION)
-            throw Exception(version_mismatch);
+            throw Exception(VersionMismatch);
     }
 }
 
@@ -130,7 +130,7 @@ void GraphImpl::GraphInfo::init(const GraphConfig &config)
 
     unsigned size = config.locale_name.length() + 1;
     if (size > sizeof locale_name)
-        throw Exception(invalid_config);
+        throw Exception(InvalidConfig);
     memcpy(locale_name, config.locale_name.c_str(), size);
 
     num_fixed_allocators = config.fixed_allocator_info.size();

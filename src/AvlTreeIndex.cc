@@ -653,7 +653,7 @@ NodeIterator AvlTreeIndex<K,V>::get_nodes(const K &key, PropertyPredicate::op_t 
                 impl = new IndexRangeReverse_NodeIteratorImpl<K>(this, key, true);
             break;
         default: // Since Index already checks ops, this shouldn't happen.
-            throw Exception(invalid_id);
+            throw Exception(InvalidID);
     }
 
     return NodeIterator(impl);

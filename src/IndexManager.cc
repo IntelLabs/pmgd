@@ -64,9 +64,9 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
                 *prop_idx = new (allocator.alloc(sizeof(StringValueIndex))) StringValueIndex(ptype);
                 break;
             case t_novalue:
-                throw Exception(not_implemented);
+                throw Exception(NotImplemented);
             case t_blob:
-                throw Exception(property_type);
+                throw Exception(PropertyTypeInvalid);
         }
     }
 }

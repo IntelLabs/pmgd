@@ -91,7 +91,7 @@ Property PropertyList::get_property(StringID id) const
     PropertyRef p;
 
     if (!find_property(id, p))
-        throw Exception(property_not_found);
+        throw Exception(PropertyNotFound);
 
     return p.get_value();
 }
@@ -485,7 +485,7 @@ void PropertyRef::set_value(const Property &p, unsigned size,
 void PropertyRef::set_blob(const void *value, std::size_t size,
                            Allocator &allocator)
 {
-    if (size > UINT_MAX) throw Exception(not_implemented);
+    if (size > UINT_MAX) throw Exception(NotImplemented);
     void *p = allocator.alloc(size);
     memcpy(p, value, size);
     TransactionImpl::flush_range(p, size);
@@ -504,7 +504,7 @@ bool PropertyRef::bool_value() const
         case p_boolean_false: return false;
         case p_boolean_true: return true;
     }
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 long long PropertyRef::int_value() const
@@ -517,7 +517,7 @@ long long PropertyRef::int_value() const
             v >>= CHAR_BIT * shift;
         return v;
     }
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 std::string PropertyRef::string_value() const
@@ -535,21 +535,21 @@ std::string PropertyRef::string_value() const
             return std::string((const char *)v->value, v->size);
         }
     }
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 double PropertyRef::float_value() const
 {
     if (ptype() == p_float)
         return *(double *)val();
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 Time PropertyRef::time_value() const
 {
     if (ptype() == p_time)
         return *(Time *)val();
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 Property::blob_t PropertyRef::blob_value() const
@@ -558,7 +558,7 @@ Property::blob_t PropertyRef::blob_value() const
         BlobRef *v = (BlobRef *)val();
         return Property::blob_t(v->value, v->size);
     }
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 

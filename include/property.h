@@ -101,7 +101,7 @@ namespace Jarvis {
 #undef MAX
 #endif
 
-        void check(int t) const { if (_type != t) throw Exception(property_type); }
+        void check(int t) const { if (_type != t) throw Exception(PropertyTypeMismatch); }
 
     public:
         Property() : _type(t_novalue) { }

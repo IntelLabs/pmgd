@@ -36,7 +36,7 @@ void *Allocator::alloc(size_t size)
     // TODO This restriction will go away when we have the variable
     // allocator
     if (size > _fixed_allocators[_fixed_allocators.size() - 1]->object_size())
-        throw Exception(not_implemented);
+        throw Exception(NotImplemented);
     unsigned index = find_alloc_index(size);
     return _fixed_allocators[index]->alloc();
 }

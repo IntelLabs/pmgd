@@ -21,7 +21,7 @@ std::string property_text(const Property &p)
         case t_float: return std::to_string(p.float_value());
         case t_time: return time_to_string(p.time_value());
         case t_blob: return "<blob value>";
-        default: throw Exception(property_type);
+        default: throw Exception(PropertyTypeInvalid);
     }
 }
 
@@ -35,7 +35,7 @@ std::string property_text(const PropertyRef &p)
         case t_float: return std::to_string(p.float_value());
         case t_time: return time_to_string(p.time_value());
         case t_blob: return "<blob value>";
-        default: throw Exception(property_type);
+        default: throw Exception(PropertyTypeInvalid);
     }
 }
 

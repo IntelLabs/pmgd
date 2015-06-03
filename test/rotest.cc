@@ -42,7 +42,7 @@ void test2a(Graph &db)
         db.add_node(0);
     }
     catch (Exception e) {
-        if (e.num != Exception::e_read_only)
+        if (e.num != Exception::ReadOnly)
             throw e;
         return;
     }
@@ -56,7 +56,7 @@ void test2b(Graph &db)
         StringID id("y");
     }
     catch (Exception e) {
-        if (e.num != Exception::e_read_only)
+        if (e.num != Exception::ReadOnly)
             throw e;
         return;
     }
@@ -78,7 +78,7 @@ void test3(Graph &db)
         Transaction tx(db, Transaction::ReadWrite);
     }
     catch (Exception e) {
-        if (e.num != Exception::e_read_only)
+        if (e.num != Exception::ReadOnly)
             throw e;
         return;
     }
@@ -105,7 +105,7 @@ void test4c(Graph &db)
         Transaction tx(db, Transaction::ReadWrite);
     }
     catch (Exception e) {
-        if (e.num != Exception::e_not_implemented)
+        if (e.num != Exception::NotImplemented)
             throw e;
         return;
     }

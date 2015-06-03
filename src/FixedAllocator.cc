@@ -91,7 +91,7 @@ void *FixedAllocator::alloc()
     else
     {
         if (((uint64_t)_pm->tail_ptr + _pm->size) > _pm->max_addr)
-            throw Exception(bad_alloc);
+            throw Exception(BadAlloc);
 
         /* Free list exhausted, we are growing our pool of objects by one */
         p = _pm->tail_ptr;

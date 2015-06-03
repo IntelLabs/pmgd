@@ -218,17 +218,17 @@ Jarvis::Graph::~Graph()
 
 Jarvis::Node &Jarvis::Graph::add_node(StringID)
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::Edge &Jarvis::Graph::add_edge(Node &, Node &, StringID)
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::NodeIterator Jarvis::Graph::get_nodes()
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::PathIterator Jarvis::Graph::get_paths(Node &, Node&, bool)
@@ -238,17 +238,17 @@ Jarvis::PathIterator Jarvis::Graph::get_paths(Node &, Node&, bool)
 
 Jarvis::EdgeIterator Jarvis::Graph::get_edges()
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 bool Jarvis::StringID::get(const char *, StringID &, bool)
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::Property Jarvis::Edge::get_property(StringID) const
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::PathRef::operator Jarvis::Path() const
@@ -268,7 +268,7 @@ Jarvis::NodeIterator Jarvis::PathIteratorFilter::end_nodes() const
 
 Jarvis::NodeIterator Jarvis::PathIteratorImplBaseIntf::end_nodes() const
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::Property::Property(const Property &a)
@@ -281,15 +281,15 @@ Jarvis::Property::~Property()
 
 bool Jarvis::Property::operator<(const Property &a) const
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 bool Jarvis::Node::check_property(StringID, Property &) const
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 bool Jarvis::Edge::check_property(StringID, Property &) const
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }

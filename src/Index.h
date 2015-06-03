@@ -19,7 +19,7 @@ namespace Jarvis {
         void update(GraphImpl *db, Node *n, const Property &new_value,
                     const Property &old_value);
         void check_type(const PropertyType ptype)
-            { if (_ptype != ptype) throw Exception(property_type); }
+            { if (_ptype != ptype) throw Exception(PropertyTypeMismatch); }
 
         // Use a locale pointer here so that callers of get_nodes, where locale is
         // irrelevant, do not need to acquire it from the GraphImpl object.

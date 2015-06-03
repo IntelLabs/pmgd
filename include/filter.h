@@ -23,7 +23,7 @@ namespace Jarvis {
                     case pass: return true;
                     case stop: done(); return false;
                     case pass_stop: _done = true; return true;
-                    default: throw Exception(not_implemented);
+                    default: throw Exception(NotImplemented);
                 }
             }
             return false;
@@ -42,28 +42,28 @@ namespace Jarvis {
         const typename B::Ref_type &operator*() const
         {
             if (_base_impl == NULL)
-                throw Exception(null_iterator);
+                throw Exception(NullIterator);
             return (*_base_impl).operator*();
         }
 
         const typename B::Ref_type *operator->() const
         {
             if (_base_impl == NULL)
-                throw Exception(null_iterator);
+                throw Exception(NullIterator);
             return (*_base_impl).operator->();
         }
 
         typename B::Ref_type &operator*()
         {
             if (_base_impl == NULL)
-                throw Exception(null_iterator);
+                throw Exception(NullIterator);
             return (*_base_impl).operator*();
         }
 
         typename B::Ref_type *operator->()
         {
             if (_base_impl == NULL)
-                throw Exception(null_iterator);
+                throw Exception(NullIterator);
             return (*_base_impl).operator->();
         }
 

@@ -61,13 +61,13 @@ namespace Jarvis {
 
         operator bool() const { return _impl != NULL; }
         const Ref_type &operator*() const
-            { if (!_impl) throw Exception(null_iterator); return (*_impl).operator*(); }
+            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator*(); }
         const Ref_type *operator->() const
-            { if (!_impl) throw Exception(null_iterator); return (*_impl).operator->(); }
+            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator->(); }
         Ref_type &operator*()
-            { if (!_impl) throw Exception(null_iterator); return (*_impl).operator*(); }
+            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator*(); }
         Ref_type *operator->()
-            { if (!_impl) throw Exception(null_iterator); return (*_impl).operator->(); }
+            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator->(); }
         void next() { if (_impl) if (!_impl->next()) done(); }
 
         void process(std::function<void(Ref_type &)> f)
