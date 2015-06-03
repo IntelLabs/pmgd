@@ -25,18 +25,18 @@ public:
     Current() { }
     Jarvis::Node *operator=(Jarvis::Node *n) { _is_node = true; _node = n; return n; }
     void operator=(Jarvis::Edge &e) { _is_node = false; _edge = &e; }
-    void set_property(const char *id, const Jarvis::Property &p) {
+    void set_property(const Jarvis::StringID *id, const Jarvis::Property &p) {
         if (_is_node)
-            _node->set_property(id, p);
+            _node->set_property(*id, p);
         else
-            _edge->set_property(id, p);
+            _edge->set_property(*id, p);
     }
 } current;
 
 static Jarvis::Node *get_node(Jarvis::Graph &db, long long id,
                               Jarvis::StringID *tag,
                               std::function<void(Jarvis::Node &)> node_func);
-static Jarvis::Node *get_node(Jarvis::Graph &db, const char *id,
+static Jarvis::Node *get_node(Jarvis::Graph &db, std::string *id,
                               Jarvis::StringID *tag,
                               std::function<void(Jarvis::Node &)> node_func);
 %}
@@ -46,15 +46,18 @@ static Jarvis::Node *get_node(Jarvis::Graph &db, const char *id,
 
 %parse-param { yy_params params }
 
-/* Note: because this is a union, no object types with constructors may
- * be used, so all object types are referenced with pointers.
- * All pointers point to objects or strings allocated with new and
- * must be deleted at the point of use.
- * The scanner returns token types STRING and QUOTED_STRING;
- * in both cases the scanner allocates the space with new. */
+/* Note: because this is a union, no object types with constructors
+ * are used; instead object types are referenced with pointers.
+ * The pointers point to objects allocated with new, which must be
+ * deleted at the point of use.
+ * The scanner returns token types STRING and QUOTED_STRING, both of
+ * type std::string, also allocated with new and deleted when used.
+ * The Node type is an exception: it is a pointer to an actual Jarvis
+ * Node, so it doesn't need to be deleted.
+ */
 %union {
     long long i;
-    char *s;
+    std::string *s;
     Jarvis::Node *n;
     Jarvis::StringID *id;
 }
@@ -76,7 +79,7 @@ extern int yyerror(Jarvis::Graph &, const char *);
 /* non-terminals with values */
 %type <n> node
 %type <id> tag
-%type <s> property_id
+%type <id> property_id
 
 %destructor { delete $$; } STRING
 %destructor { delete $$; } QUOTED_STRING
@@ -127,7 +130,7 @@ node:     INTEGER tag
         ;
 
 tag :     /* empty */ { $$ = new Jarvis::StringID(0); }
-        | '#' STRING { $$ = new Jarvis::StringID($2); }
+        | '#' STRING { $$ = new Jarvis::StringID($2->c_str()); }
         ;
 
 properties:
@@ -159,7 +162,8 @@ property:
               { current.set_property($1, false); }
         ;
 
-property_id: STRING;
+property_id: STRING { $$ = new Jarvis::StringID($1->c_str()); }
+        ;
 
 %%
 
@@ -221,7 +225,7 @@ static Node *get_node(Graph &db, long long id, Jarvis::StringID *tag,
     return &node;
 }
 
-static Node *get_node(Graph &db, const char *id, Jarvis::StringID *tag,
+static Node *get_node(Graph &db, std::string *id, Jarvis::StringID *tag,
                       std::function<void(Node &)> node_func)
 {
     if (!index_created) {
@@ -230,12 +234,12 @@ static Node *get_node(Graph &db, const char *id, Jarvis::StringID *tag,
     }
 
     NodeIterator nodes
-        = db.get_nodes(0, PropertyPredicate(ID_STR, PropertyPredicate::Eq, id));
+        = db.get_nodes(0, PropertyPredicate(ID_STR, PropertyPredicate::Eq, *id));
     if (nodes) return &*nodes;
 
     // Node not found; add it
     Node &node = db.add_node(*tag);
-    node.set_property(ID_STR, id);
+    node.set_property(ID_STR, id->c_str());
     if (node_func)
         node_func(node);
     return &node;

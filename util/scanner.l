@@ -53,9 +53,6 @@ static int cvt_string(bool quoted)
     if (quoted)
         p += 1, len -= 2;
 
-    char *q = new char[len + 1];
-    memcpy(q, p, len);
-    q[len] = '\0';
-    yylval.s = q;
+    yylval.s = new std::string(p, len);
     return quoted ? QUOTED_STRING : STRING;
 }
