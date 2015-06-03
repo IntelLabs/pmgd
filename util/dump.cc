@@ -59,12 +59,12 @@ void dump(Graph &db, const Node &n, FILE *f)
         .process([&db,&f](PropertyRef &p) {
             fprintf(f, "  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
         });
-    n.get_edges(OUTGOING)
+    n.get_edges(Outgoing)
         .process([&db,&f](EdgeRef &e) {
             fprintf(f, " %s -> n%" PRIu64 " (e%" PRIu64 ")\n", tag_text(e).c_str(),
                     db.get_id(e.get_destination()), db.get_id(e));
         });
-    n.get_edges(INCOMING)
+    n.get_edges(Incoming)
         .process([&db,&f](EdgeRef &e) {
             fprintf(f, " %s <- n%" PRIu64 " (e%" PRIu64 ")\n", tag_text(e).c_str(),
                     db.get_id(e.get_source()), db.get_id(e));

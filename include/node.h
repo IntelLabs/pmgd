@@ -9,7 +9,7 @@ namespace Jarvis {
     class EdgeIndex;
     class Allocator;
 
-    enum Direction { ANY, OUTGOING, INCOMING };
+    enum Direction { Any, Outgoing, Incoming };
 
     class Node {
         EdgeIndex *_out_edges;

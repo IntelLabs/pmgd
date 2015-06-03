@@ -42,43 +42,43 @@ int main(int argc, char **argv)
         db.add_edge(n1, n2, "tag1");
 
         CHECK(n1.get_edges(), 1);
-        CHECK(n1.get_edges(OUTGOING), 1);
-        CHECK(n1.get_edges(INCOMING), 0);
+        CHECK(n1.get_edges(Outgoing), 1);
+        CHECK(n1.get_edges(Incoming), 0);
 
         CHECK(n1.get_edges("tag1"), 1);
         CHECK(n1.get_edges("tag2"), 0);
-        CHECK(n1.get_edges(OUTGOING, "tag1"), 1);
-        CHECK(n1.get_edges(OUTGOING, "tag2"), 0);
-        CHECK(n1.get_edges(INCOMING, "tag1"), 0);
-        CHECK(n1.get_edges(INCOMING, "tag2"), 0);
+        CHECK(n1.get_edges(Outgoing, "tag1"), 1);
+        CHECK(n1.get_edges(Outgoing, "tag2"), 0);
+        CHECK(n1.get_edges(Incoming, "tag1"), 0);
+        CHECK(n1.get_edges(Incoming, "tag2"), 0);
 
         db.add_edge(n3, n1, "tag2");
 
         CHECK(n1.get_edges(), 2);
-        CHECK(n1.get_edges(OUTGOING), 1);
-        CHECK(n1.get_edges(INCOMING), 1);
+        CHECK(n1.get_edges(Outgoing), 1);
+        CHECK(n1.get_edges(Incoming), 1);
 
         CHECK(n1.get_edges("tag1"), 1);
         CHECK(n1.get_edges("tag2"), 1);
-        CHECK(n1.get_edges(OUTGOING, "tag1"), 1);
-        CHECK(n1.get_edges(OUTGOING, "tag2"), 0);
-        CHECK(n1.get_edges(INCOMING, "tag1"), 0);
-        CHECK(n1.get_edges(INCOMING, "tag2"), 1);
+        CHECK(n1.get_edges(Outgoing, "tag1"), 1);
+        CHECK(n1.get_edges(Outgoing, "tag2"), 0);
+        CHECK(n1.get_edges(Incoming, "tag1"), 0);
+        CHECK(n1.get_edges(Incoming, "tag2"), 1);
 
         db.add_edge(n1, n3, "tag1");
         db.add_edge(n4, n1, "tag1");
         db.add_edge(n1, n4, "tag2");
 
         CHECK(n1.get_edges(), 5);
-        CHECK(n1.get_edges(OUTGOING), 3);
-        CHECK(n1.get_edges(INCOMING), 2);
+        CHECK(n1.get_edges(Outgoing), 3);
+        CHECK(n1.get_edges(Incoming), 2);
 
         CHECK(n1.get_edges("tag1"), 3);
         CHECK(n1.get_edges("tag2"), 2);
-        CHECK(n1.get_edges(OUTGOING, "tag1"), 2);
-        CHECK(n1.get_edges(OUTGOING, "tag2"), 1);
-        CHECK(n1.get_edges(INCOMING, "tag1"), 1);
-        CHECK(n1.get_edges(INCOMING, "tag2"), 1);
+        CHECK(n1.get_edges(Outgoing, "tag1"), 2);
+        CHECK(n1.get_edges(Outgoing, "tag2"), 1);
+        CHECK(n1.get_edges(Incoming, "tag1"), 1);
+        CHECK(n1.get_edges(Incoming, "tag2"), 1);
 
         return r;
     }

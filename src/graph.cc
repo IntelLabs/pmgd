@@ -78,8 +78,8 @@ Edge &Graph::add_edge(Node &src, Node &dest, StringID tag)
 {
     Edge *edge = (Edge *)_impl->edge_table().alloc();
     edge->init(src, dest, tag, _impl->edge_table().object_size());
-    src.add_edge(edge, OUTGOING, tag, _impl->allocator());
-    dest.add_edge(edge, INCOMING, tag, _impl->allocator());
+    src.add_edge(edge, Outgoing, tag, _impl->allocator());
+    dest.add_edge(edge, Incoming, tag, _impl->allocator());
     return *edge;
 }
 

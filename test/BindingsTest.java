@@ -205,7 +205,7 @@ public class BindingsTest {
             System.out.printf("\n");
 
             System.out.printf("All edges to/from node 1:");
-            ei = n1.get_edges(Node.Direction.ANY);
+            ei = n1.get_edges(Node.Direction.Any);
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
@@ -217,19 +217,19 @@ public class BindingsTest {
             System.out.printf("\n");
 
             System.out.printf("Edges to/from node 1 with tag:");
-            ei = n1.get_edges(Node.Direction.ANY, "myTag3");
+            ei = n1.get_edges(Node.Direction.Any, "myTag3");
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
 
             System.out.printf("Edges from node 1 with tag:");
-            ei = n1.get_edges(Node.Direction.OUTGOING, "myTag3");
+            ei = n1.get_edges(Node.Direction.Outgoing, "myTag3");
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
 
             System.out.printf("Edges to node 2 with tag:");
-            ei = n2.get_edges(Node.Direction.INCOMING, "myTag3");
+            ei = n2.get_edges(Node.Direction.Incoming, "myTag3");
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
@@ -248,7 +248,7 @@ public class BindingsTest {
             for (ni = db.get_nodes(); !ni.done(); ni.next()) {
                 System.out.printf("Neighbors of node %d (OUT)\n",
                                   db.get_id(ni.get_current()));
-                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.OUTGOING);
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Outgoing);
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
@@ -259,7 +259,7 @@ public class BindingsTest {
             for (ni = db.get_nodes(); !ni.done(); ni.next()) {
                 System.out.printf("Neighbors of node %d (OUT, \"myTag3\")\n",
                                   db.get_id(ni.get_current()));
-                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.OUTGOING, "myTag3");
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Outgoing, "myTag3");
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
@@ -270,7 +270,7 @@ public class BindingsTest {
             for (ni = db.get_nodes(); !ni.done(); ni.next()) {
                 System.out.printf("Neighbors of node %d (IN)\n",
                                   db.get_id(ni.get_current()));
-                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.INCOMING);
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Incoming);
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
@@ -281,7 +281,7 @@ public class BindingsTest {
             for (ni = db.get_nodes(); !ni.done(); ni.next()) {
                 System.out.printf("Neighbors of node %d (IN, \"myTag3\")\n",
                                   db.get_id(ni.get_current()));
-                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.INCOMING, "myTag3");
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Incoming, "myTag3");
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
@@ -316,12 +316,12 @@ public class BindingsTest {
         for (PropertyIterator i = n.get_properties(); !i.done(); i.next())
             System.out.printf("  %s: %s\n", i.id(), property_text(i.get_current()));
 
-        for (EdgeIterator i = n.get_edges(Node.Direction.OUTGOING); !i.done(); i.next())
+        for (EdgeIterator i = n.get_edges(Node.Direction.Outgoing); !i.done(); i.next())
             System.out.printf(" %s -> n%d (e%d)\n", tag_text(i.get_tag()),
                               db.get_id(i.get_destination()),
                               db.get_id(i.get_current()));
 
-        for (EdgeIterator i = n.get_edges(Node.Direction.INCOMING); !i.done(); i.next())
+        for (EdgeIterator i = n.get_edges(Node.Direction.Incoming); !i.done(); i.next())
             System.out.printf(" %s <- n%d (e%d)\n", tag_text(i.get_tag()),
                               db.get_id(i.get_source()),
                               db.get_id(i.get_current()));

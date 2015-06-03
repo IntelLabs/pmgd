@@ -29,16 +29,16 @@ class NeighborIterator : public NodeIteratorImplIntf
     Node *get_neighbor(const Node &n, const EdgeRef &e)
     {
         switch (_dir) {
-        case ANY: {
+        case Any: {
             Node &neighbor = e.get_source();
             if (&neighbor == &_node)
                 return &(e.get_destination());
             else
                 return &neighbor;
         }
-        case OUTGOING:
+        case Outgoing:
             return &(e.get_destination());
-        case INCOMING:
+        case Incoming:
             return &(e.get_source());
         default:
             UNREACHABLE;
@@ -62,7 +62,7 @@ class NeighborIterator : public NodeIteratorImplIntf
 
 public:
     NeighborIterator(const Node &n, const bool unique)
-        : _node(n), _dir(ANY), _unique(unique), _ei(n.get_edges())
+        : _node(n), _dir(Any), _unique(unique), _ei(n.get_edges())
     {
         _next();
     }
@@ -74,7 +74,7 @@ public:
     }
 
     NeighborIterator(const Node &n, const StringID tag, const bool unique)
-        : _node(n), _dir(ANY), _unique(unique), _ei(n.get_edges(tag))
+        : _node(n), _dir(Any), _unique(unique), _ei(n.get_edges(tag))
     {
         _next();
     }

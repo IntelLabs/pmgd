@@ -39,12 +39,12 @@ void dump(Graph &db, const Node &n)
         .process([&db](PropertyRef &p) {
         printf("  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
         });
-    n.get_edges(OUTGOING)
+    n.get_edges(Outgoing)
         .process([&db](EdgeRef &e) {
         printf(" %s -> n%" PRIx64 " (e%" PRIx64 ")\n", tag_text(e).c_str(),
             db.get_id(e.get_destination()), db.get_id(e));
         });
-    n.get_edges(INCOMING)
+    n.get_edges(Incoming)
         .process([&db](EdgeRef &e) {
         printf(" %s <- n%" PRIx64 " (e%" PRIx64 ")\n", tag_text(e).c_str(),
             db.get_id(e.get_source()), db.get_id(e));

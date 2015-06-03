@@ -25,7 +25,7 @@ public class Node {
         return Objects.hash(jarvisHandle);
     }
 
-    public enum Direction { ANY, OUTGOING, INCOMING };
+    public enum Direction { Any, Outgoing, Incoming };
 
     public native String get_tag() throws Exception;
     public native Property get_property(String property) throws Exception;

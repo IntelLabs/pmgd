@@ -68,17 +68,17 @@ static void test_get_edges(const Graph &db, const Node &n)
         }
     }
     printf("All outgoing edges: \n");
-    for (EdgeIterator i = n.get_edges(OUTGOING); i; i.next()) {
+    for (EdgeIterator i = n.get_edges(Outgoing); i; i.next()) {
         printf("  -> n%" PRIu64 " (%s,e%" PRIu64 ")\n", db.get_id(i->get_destination()),
                 i->get_tag().name().c_str(), db.get_id(*i));
     }
     printf("All outgoing edges with tag 0: \n");
-    for (EdgeIterator i = n.get_edges(OUTGOING, "tag0"); i; i.next()) {
+    for (EdgeIterator i = n.get_edges(Outgoing, "tag0"); i; i.next()) {
         printf("  -> n%" PRIu64 " (%s,e%" PRIu64 ")\n", db.get_id(i->get_destination()),
                 i->get_tag().name().c_str(), db.get_id(*i));
     }
     printf("All incoming edges with tag 1: \n");
-    for (EdgeIterator i = n.get_edges(INCOMING, "tag1"); i; i.next()) {
+    for (EdgeIterator i = n.get_edges(Incoming, "tag1"); i; i.next()) {
         printf("  <- n%" PRIu64 " (%s,e%" PRIu64 ")\n", db.get_id(i->get_source()),
                 i->get_tag().name().c_str(), db.get_id(*i));
     }
