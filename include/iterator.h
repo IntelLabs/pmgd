@@ -14,7 +14,7 @@
 #endif
 
 namespace Jarvis {
-    enum Disposition { dont_pass, pass, stop, pass_stop, prune, pass_prune };
+    enum Disposition { DontPass, Pass, Stop, PassStop, Prune, PassPrune };
 
     template <typename R> class IteratorImplIntf {
     public:

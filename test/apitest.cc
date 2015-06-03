@@ -43,7 +43,7 @@ int q1(Graph &db, Node &a, Node &b)
         Disposition operator()(const PathRef &p) {
             if (p.length() < min_length)
                 min_length = p.length();
-            return Jarvis::pass;
+            return Jarvis::Pass;
         }
         int get_length() { return min_length; }
     };
@@ -62,7 +62,7 @@ int q1(Graph &db, Node &a, Node &b)
 int q1a(Graph &db, Node &a, Node &b)
 {
     return db.get_paths(a, b, false)
-               .filter([](const PathRef &) { return Jarvis::pass_stop; })
+               .filter([](const PathRef &) { return Jarvis::PassStop; })
                ->length();
 }
 
@@ -74,7 +74,7 @@ int q1a(Graph &db, Node &a, Node &b)
 int q5(Graph &db, Node &a, Node &b)
 {
     return db.get_paths(a, b, false)
-               .filter([](const PathRef &) { return Jarvis::pass_stop; });
+               .filter([](const PathRef &) { return Jarvis::PassStop; });
 }
 
 
@@ -95,7 +95,7 @@ double q6(Graph &db, Node &a, Node &b)
             }
             if (length < min_length)
                 min_length = length;
-            return Jarvis::stop;
+            return Jarvis::Stop;
         }
         double get_length() { return min_length; }
     };
@@ -133,7 +133,7 @@ Jarvis::Path q6a(Graph &db, Node &a, Node &b)
 bool q4(Graph &db, Node &a, Node &b)
 {
     return bool(db.get_paths(a, b)
-                .filter([](const PathRef &) { return Jarvis::pass_stop; }));
+                .filter([](const PathRef &) { return Jarvis::PassStop; }));
 }
 
 
@@ -143,7 +143,7 @@ void q8(Graph &db, Node &a, Node &b, int N, void (*process)(Path &))
 {
     PathIterator i = db.get_paths(a, b)
         .filter([N](const PathRef &p)
-            { return p.length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
+            { return p.length() < N ? Jarvis::DontPass : Jarvis::PassStop; });
 
     while (i) {
         //process(*i);
@@ -158,7 +158,7 @@ NodeIterator q3(Graph &db, Node &a, int N)
 {
     return db.get_paths(a)
         .filter([N](const PathRef &p)
-            { return p.length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; })
+            { return p.length() < N ? Jarvis::DontPass : Jarvis::PassStop; })
         .end_nodes();
 }
 
@@ -169,7 +169,7 @@ NodeIterator q2(Graph &db, Node &a, int N)
 {
     return db.get_paths(a)
         .filter([N](const PathRef &p)
-            { return p.length() < N ? Jarvis::pass : Jarvis::pass_stop; })
+            { return p.length() < N ? Jarvis::Pass : Jarvis::PassStop; })
         .end_nodes();
 }
 
@@ -184,7 +184,7 @@ void q3a(Graph &db, Node &a, int N, void (*process)(Node &))
 {
     PathIterator i = db.get_paths(a)
         .filter([N](const PathRef &p)
-           { return p.length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
+           { return p.length() < N ? Jarvis::DontPass : Jarvis::PassStop; });
 
     while (i) {
         process(i->end_node());
@@ -199,7 +199,7 @@ void q2a(Graph &db, Node &a, int N, void (*process)(Node &))
 {
     PathIterator i = db.get_paths(a)
         .filter([N](const PathRef &p)
-            { return p.length() < N ? Jarvis::pass : Jarvis::pass_stop; });
+            { return p.length() < N ? Jarvis::Pass : Jarvis::PassStop; });
 
     while (i) {
         process(i->end_node());

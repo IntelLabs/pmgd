@@ -55,7 +55,7 @@ int main(int argc, char **argv)
                     Property p = n.get_property(id_name);
                     return (p.type() == t_string && p.string_value() == id
                             || p.type() == t_integer && p.int_value() == strtoll(id, 0, 10))
-                        ? pass_stop : dont_pass;
+                        ? PassStop : DontPass;
                 });
         else
             edge = &*db.get_edges()
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
                     Property p = e.get_property(id_name);
                     return (p.type() == t_string && p.string_value() == id
                             || p.type() == t_integer && p.int_value() == strtoll(id, 0, 10))
-                        ? pass_stop : dont_pass;
+                        ? PassStop : DontPass;
                 });
 
         if (argi + 2 <= argc) {

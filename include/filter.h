@@ -19,10 +19,10 @@ namespace Jarvis {
         virtual bool _next() {
             while (bool(*_base_impl)) {
                 switch (func(_base_impl->operator*())) {
-                    case dont_pass: _base_impl->next(); break;
-                    case pass: return true;
-                    case stop: done(); return false;
-                    case pass_stop: _done = true; return true;
+                    case DontPass: _base_impl->next(); break;
+                    case Pass: return true;
+                    case Stop: done(); return false;
+                    case PassStop: _done = true; return true;
                     default: throw Exception(NotImplemented);
                 }
             }
@@ -208,7 +208,7 @@ namespace Jarvis {
                 default: assert(0);
             }
         }
-        return r ? pass : dont_pass;
+        return r ? Pass : DontPass;
     }
 
     template Disposition PropertyFilter<NodeRef>::operator()(const NodeRef &);

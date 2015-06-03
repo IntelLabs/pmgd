@@ -39,7 +39,7 @@ int main(int argc, char **argv)
         db.get_nodes()
             .filter([](const NodeRef &n) {
                 return n.get_property("id1").string_value()[0] == 'a'
-                           ? pass : dont_pass;
+                           ? Pass : DontPass;
             })
             .process([&db](Node &n) { dump(db, n); });
 
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
         db.get_nodes()
             .filter([](const NodeRef &n) {
                 return n.get_property("id1").string_value()[0] == 'a'
-                           ? pass : dont_pass;
+                           ? Pass : DontPass;
             })
             .process([&db](Node &n)
                 { n.set_property("id2", n.get_property("id2").int_value() + 1); });
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
         db.get_nodes()
             .filter([](const NodeRef &n) {
                 return n.get_property("id1").string_value()[0] == 'a'
-                           ? pass : dont_pass;
+                           ? Pass : DontPass;
             })
             .process([&db](Node &n) { dump(db, n); });
 
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
         db.get_nodes()
             .filter([](const NodeRef &n) {
                 return n.get_property("id2").int_value() < 20
-                           ? pass : dont_pass;
+                           ? Pass : DontPass;
             })
             .process([&db](Node &n) { dump(db, n); });
 
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
             .filter([](const EdgeRef &e) {
                 return e.get_source().get_property("id1").string_value()[0] == 'b'
                        || e.get_destination().get_property("id1").string_value()[0] == 'b'
-                           ? pass : dont_pass;
+                           ? Pass : DontPass;
             })
             .process([&db](EdgeRef &e) { dump(db, e); });
 
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
                 n.get_properties()
                     .filter([](const PropertyRef &p) {
                         return p.type() == t_integer && p.int_value() < 20
-                               ? pass : dont_pass;
+                               ? Pass : DontPass;
                     })
                     .process([&db,&n,&f](PropertyRef &p) {
                         if (!f) {
