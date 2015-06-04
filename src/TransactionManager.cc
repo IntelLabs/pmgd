@@ -8,12 +8,10 @@
 using namespace Jarvis;
 
 TransactionManager::TransactionManager(
-            uint64_t *tx_id,
             uint64_t transaction_table_addr, uint64_t transaction_table_size,
             uint64_t journal_addr, uint64_t journal_size,
             bool create, bool read_only)
-    : _cur_tx_id(tx_id),
-      _tx_table(reinterpret_cast<TransactionHdr *>(transaction_table_addr)),
+    : _tx_table(reinterpret_cast<TransactionHdr *>(transaction_table_addr)),
       _journal_addr(reinterpret_cast<void *>(journal_addr)),
       _max_transactions(transaction_table_size / sizeof (TransactionHdr)),
       _extent_size(journal_size / _max_transactions),
@@ -30,11 +28,10 @@ TransactionManager::TransactionManager(
 
     if (create) {
         reset_table();
-        *_cur_tx_id = 0;
-    } else if (!read_only)
-        recover();
+        _cur_tx_id = 0;
+    }
     else
-        check_clean();
+        recover(read_only);
 }
 
 void *TransactionManager::tx_jbegin(int index)
@@ -49,7 +46,7 @@ void *TransactionManager::tx_jend(int index)
     return static_cast<uint8_t *>(_journal_addr) + ((index+1) * _extent_size);
 }
 
-void TransactionManager::reset_table(void)
+void TransactionManager::reset_table()
 {
     for (int i = 0; i < _max_transactions; i++)
     {
@@ -61,27 +58,36 @@ void TransactionManager::reset_table(void)
     }
 }
 
-void TransactionManager::recover(void) {
-    // create a Transaction(tx) object for each in_use entry and
-    // call tx.abort (with no locks)
+void TransactionManager::recover(bool read_only)
+{
+    // If there are any active transactions in the transaction table,
+    // create a TransactionHandle and call recover_tx for each one.
+    // At the same time, determine the highest transaction ID that
+    // has been used.
+    // We can't open a graph read-only if it needs recovery. If there
+    // are active transactions and the graph is read-only, throw an
+    // exception.
+    TransactionId max_tx_id = 0;
     for (int i = 0; i < _max_transactions; i++) {
         TransactionHdr *hdr = &_tx_table[i];
-        if (hdr->tx_id != 0) {
-            TransactionHandle handle(hdr->tx_id, i, hdr->jbegin, hdr->jend);
-            TransactionImpl::recover_tx(handle);
-        }
-    }
-    reset_table(); // If successful, reset the journal
-}
+        TransactionId tx_id = hdr->tx_id;
 
-void TransactionManager::check_clean()
-{
-    // We can't open a graph read-only if it needs recovery.
-    // Check that there are no pending transactions, which would
-    // indicate a prior un-clean close.
-    for (int i = 0; i < _max_transactions; i++)
-        if (_tx_table[i].tx_id != 0)
-            throw Exception(ReadOnly);
+        if (tx_id & TransactionHdr::ACTIVE) {
+            if (read_only)
+                throw Exception(ReadOnly);
+
+            tx_id &= ~TransactionHdr::ACTIVE;
+            TransactionHandle handle(tx_id, i, hdr->jbegin, hdr->jend);
+            TransactionImpl::recover_tx(handle);
+
+            hdr->tx_id = tx_id;
+            clflush(hdr);
+        }
+
+        if (tx_id > max_tx_id)
+            max_tx_id = tx_id;
+    }
+    _cur_tx_id = max_tx_id;
 }
 
 TransactionHandle TransactionManager::alloc_transaction(bool read_only)
@@ -98,12 +104,14 @@ TransactionHandle TransactionManager::alloc_transaction(bool read_only)
         return TransactionHandle(-1, -1, dummy, dummy);
     }
 
-    TransactionId tx_id = atomic_inc(*_cur_tx_id) + 1;
-    clflush(_cur_tx_id);
+    TransactionId tx_id = atomic_inc(_cur_tx_id) + 1;
 
     for (int i = 0; i < _max_transactions; i++) {
         TransactionHdr *hdr = &_tx_table[i];
-        if (hdr->tx_id == 0 && cmpxchg(hdr->tx_id, (TransactionId)0, tx_id)) {
+        TransactionId prev_tx_id = hdr->tx_id;
+        if ((prev_tx_id & TransactionHdr::ACTIVE) == 0
+            && cmpxchg(hdr->tx_id, prev_tx_id, tx_id | TransactionHdr::ACTIVE))
+        {
             clflush(hdr);
             return TransactionHandle(tx_id, i, tx_jbegin(i), tx_jend(i));
         }
@@ -118,7 +126,7 @@ void TransactionManager::free_transaction(const TransactionHandle &handle)
     if (handle.index != -1) {
         // Writing 0 to the transaction-id commits the transaction
         TransactionHdr *hdr = &_tx_table[handle.index];
-        hdr->tx_id = 0;
+        hdr->tx_id &= ~TransactionHdr::ACTIVE;
         clflush(hdr);
         persistent_barrier(24);
     }
