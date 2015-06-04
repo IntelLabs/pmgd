@@ -227,11 +227,11 @@ void Jarvis::Node::set_property(StringID id, const Property &new_value)
     // match the property type.
     // The call to get_index has to be made before the call to set_property,
     // to ensure that set_property is not done if there is a type mismatch.
-    Index *index = db->index_manager().get_index(Graph::NODE, _tag, id,
+    Index *index = db->index_manager().get_index(Graph::NodeIndex, _tag, id,
                                                  new_value.type());
     // Check if there is an index with this property id and tag = 0
     // This is a general, all tag index for certain properties like loader id.
-    Index *gindex = db->index_manager().get_index(Graph::NODE, 0, id,
+    Index *gindex = db->index_manager().get_index(Graph::NodeIndex, 0, id,
                                                   new_value.type());
     _property_list.set_property(id, new_value, old_value);
 

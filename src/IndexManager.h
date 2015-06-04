@@ -30,11 +30,11 @@ namespace Jarvis {
 
         // A pair for the node or edge tag that will have multiple property
         // indexes
-        // An array of 2 chunk lists NODE first, edge next
+        // An array of 2 chunk lists, NodeIndex first, EdgeIndex next
         // This is a pointer so we can typecast it in PM at the constructor
         TagList *_tag_prop_map;
 
-        IndexList *add_tag_index(int node_or_edge,
+        IndexList *add_tag_index(Graph::IndexType index_type,
                                      StringID tag,
                                      Allocator &allocator);
     public:
@@ -47,7 +47,7 @@ namespace Jarvis {
             }
         }
 
-        void create_index(int node_or_edge, StringID tag,
+        void create_index(Graph::IndexType index_type, StringID tag,
                             StringID property_id,
                             PropertyType ptype,
                             Allocator &allocator);
@@ -59,7 +59,8 @@ namespace Jarvis {
         // not set any property until then.
         bool add_node(Node *n, Allocator &allocator);
 
-        Index *get_index(int node_or_edge, StringID tag, StringID property_id,
+        Index *get_index(Graph::IndexType index_type, StringID tag,
+                         StringID property_id,
                          PropertyType ptype = PropertyType(0));
         NodeIterator get_nodes(StringID tag);
     };

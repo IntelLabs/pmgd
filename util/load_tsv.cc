@@ -30,7 +30,7 @@ void load_tsv(Graph &db, FILE *f,
     char buf[500];
 
     Transaction tx(db, Transaction::ReadWrite);
-    db.create_index(Graph::NODE, 0, ID_STR, PropertyType::t_integer);
+    db.create_index(Graph::NodeIndex, 0, ID_STR, PropertyType::t_integer);
     tx.commit();
 
     while (fgets(buf, sizeof buf, f) != NULL) {

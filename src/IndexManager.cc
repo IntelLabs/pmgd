@@ -6,13 +6,14 @@
 
 using namespace Jarvis;
 
-IndexManager::IndexList *IndexManager::add_tag_index(int node_or_edge,
+IndexManager::IndexList *IndexManager::add_tag_index(
+                                           Graph::IndexType index_type,
                                            StringID tag,
                                            Allocator &allocator)
 {
     // ChunkList should call the empty constructor if this element was
     // newly added. So the entry will always be correctly initialized
-    IndexList *tag_entry = _tag_prop_map[node_or_edge - 1].add(tag, allocator);
+    IndexList *tag_entry = _tag_prop_map[index_type].add(tag, allocator);
     // If there is no other property id entry for this tag, make that
     // 0th entry be an entry for NO property id (represented by 0). So
     // all nodes/edges for this tag will get indexed here apart from their
@@ -30,7 +31,7 @@ IndexManager::IndexList *IndexManager::add_tag_index(int node_or_edge,
 
 // The general order of data structures is:
 // IndexManager->_tag_prop_map[node/edge]->_propid_propvalueadt_map->the index
-void IndexManager::create_index(int node_or_edge, StringID tag,
+void IndexManager::create_index(Graph::IndexType index_type, StringID tag,
                                 StringID property_id,
                                 PropertyType ptype,
                                 Allocator &allocator)
@@ -40,7 +41,7 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
     // which will get returned to us and then we can add a new
     // property ID. If not, this add_tag_index function will
     // allocate it and create an entry with id 0 for default (for tag!=0).
-    IndexList *tag_entry = add_tag_index(node_or_edge, tag, allocator);
+    IndexList *tag_entry = add_tag_index(index_type, tag, allocator);
 
     // The goal is to create an index for property type ptype at the given
     // (tag,propid) combination for node or edge
@@ -81,7 +82,7 @@ bool IndexManager::add_node(Node *n, Allocator &allocator)
     // Check first if that tag index exists. Since we are indexing
     // all nodes/edges based on their tags, create an entry if it
     // doesn't exist.
-    IndexList *tag_entry = add_tag_index(Graph::NODE, n->get_tag(), allocator);
+    IndexList *tag_entry = add_tag_index(Graph::NodeIndex, n->get_tag(), allocator);
 
     // For now, add only to the no property list ==> index via tag
     // This entry should always exist since we add it explicitly when
@@ -101,12 +102,12 @@ bool IndexManager::add_node(Node *n, Allocator &allocator)
     return true;
 }
 
-Index *IndexManager::get_index(int node_or_edge, StringID tag,
+Index *IndexManager::get_index(Graph::IndexType index_type, StringID tag,
                                StringID property_id, PropertyType ptype)
 {
     // Traverse the two chunklists <tag,propADT> and <propid,indexADT>
     // to get to the Index* which is where this Node* needs to be added
-    IndexList *tag_entry = _tag_prop_map[node_or_edge - 1].find(tag);
+    IndexList *tag_entry = _tag_prop_map[index_type].find(tag);
     // Check first if that tag index exists. Since we add every new tag
     // to our tag index, this shouldn't happen.
     if (!tag_entry)
@@ -129,7 +130,7 @@ Index *IndexManager::get_index(int node_or_edge, StringID tag,
 NodeIterator IndexManager::get_nodes(StringID tag)
 {
     Index *prop0_idx;
-    prop0_idx = get_index(Graph::NODE, tag, 0);
+    prop0_idx = get_index(Graph::NodeIndex, tag, 0);
     if (!prop0_idx)
         return NodeIterator(NULL);
     // This index can never be null cause we create it for each non-zero tag.

@@ -83,10 +83,10 @@ Edge &Graph::add_edge(Node &src, Node &dest, StringID tag)
     return *edge;
 }
 
-void Graph::create_index(int node_or_edge, StringID tag,
+void Graph::create_index(IndexType index_type, StringID tag,
                          StringID property_id, const PropertyType ptype)
 {
-    _impl->index_manager().create_index(node_or_edge, tag,
+    _impl->index_manager().create_index(index_type, tag,
                                         property_id, ptype, _impl->allocator());
 }
 
@@ -279,7 +279,7 @@ NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp, bool re
 {
     if (pp.id == 0)
         return get_nodes(tag);
-    Index *index = _impl->index_manager().get_index(NODE, tag, pp.id);
+    Index *index = _impl->index_manager().get_index(NodeIndex, tag, pp.id);
     if (index)
         return index->get_nodes(pp, &_impl->locale(), reverse);
     else

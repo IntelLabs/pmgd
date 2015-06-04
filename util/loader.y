@@ -207,7 +207,7 @@ static Node *get_node(Graph &db, long long id, Jarvis::StringID *tag,
                       std::function<void(Node &)> node_func)
 {
     if (!index_created) {
-        db.create_index(Graph::NODE, 0, ID_STR, PropertyType::t_integer);
+        db.create_index(Graph::NodeIndex, 0, ID_STR, PropertyType::t_integer);
         index_created = true;
     }
 
@@ -227,7 +227,7 @@ static Node *get_node(Graph &db, const char *id, Jarvis::StringID *tag,
                       std::function<void(Node &)> node_func)
 {
     if (!index_created) {
-        db.create_index(Graph::NODE, 0, ID_STR, PropertyType::t_string);
+        db.create_index(Graph::NodeIndex, 0, ID_STR, PropertyType::t_string);
         index_created = true;
     }
 

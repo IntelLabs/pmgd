@@ -12,7 +12,7 @@ public class Graph {
     private long jarvisHandle;
 
     public enum OpenOptions { NONE, CREATE, READONLY };
-    public enum IndexOptions { DUMMY, NODE, EDGE };
+    public enum IndexType { NodeIndex, EdgeIndex };
 
     public Graph(String db_name, OpenOptions options) throws Exception
     {
@@ -44,8 +44,8 @@ public class Graph {
     public native void remove(Node n) throws Exception;
     public native void remove(Edge e) throws Exception;
 
-    //    public native void create_index(int node_or_edge, String tag,
-    //                                    String property_id, PropertyType ptype);
+    // public native void create_index(IndexType index_type, String tag,
+    //                                 String property_id, PropertyType ptype);
 
     private native void loadGraphNative(String db_name, int options);
     public void finalize() { dispose(); }

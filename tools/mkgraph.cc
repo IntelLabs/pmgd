@@ -11,15 +11,15 @@
 using namespace Jarvis;
 
 struct IndexSpecification {
-    int _node_or_edge;
+    Graph::IndexType _index_type;
     char *_tag;
     bool _tag_is_zero;
     char *_property_id;
     PropertyType _type;
 
-    IndexSpecification(int node_or_edge, char *tag, char *pid, PropertyType type)
+    IndexSpecification(Graph::IndexType index_type, char *tag, char *pid, PropertyType type)
     {
-        _node_or_edge = node_or_edge;
+        _index_type = index_type;
         _tag = tag;
         _property_id = pid;
         _type = type;
@@ -99,11 +99,11 @@ int main(int argc, char **argv)
 
     // Index specifications
     while (argi + 3 < argc) {
-        int node_or_edge;
+        Graph::IndexType index_type;
         if (strcmp(argv[argi], "node") == 0)
-            node_or_edge = Graph::NODE;
+            index_type = Graph::NodeIndex;
         else if (strcmp(argv[argi + 0], "edge") == 0)
-            node_or_edge = Graph::EDGE;
+            index_type = Graph::EdgeIndex;
         else {
             fprintf(stderr, "mkgraph: Unrecognized index type, expected either 'node' or 'edge'\n");
             return 1;
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        specs.push_back(IndexSpecification(node_or_edge,
+        specs.push_back(IndexSpecification(index_type,
                                            argv[argi + 1],
                                            argv[argi + 2],
                                            type));
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 
         for (auto i:specs) {
             Transaction tx(db, Transaction::ReadWrite);
-            db.create_index(i._node_or_edge, i._tag_is_zero ? 0 : i._tag,
+            db.create_index(i._index_type, i._tag_is_zero ? 0 : i._tag,
                             i._property_id, i._type);
             tx.commit();
         }
