@@ -4,9 +4,26 @@
 
 package jarvis;
 
+import java.util.Objects;
+
 public class Node {
     private long jarvisHandle;
     private Node(long handle) { jarvisHandle = handle; }
+
+    // Override equals method to support equal hash on nodes
+    // that point to the same object in PM
+    @Override
+    public boolean equals(Object other)
+    {
+        Node no = (Node)other;
+        return jarvisHandle == no.jarvisHandle;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(jarvisHandle);
+    }
 
     public enum Direction { ANY, OUTGOING, INCOMING };
 
