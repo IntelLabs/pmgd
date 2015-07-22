@@ -15,7 +15,7 @@ using namespace std;
 
 #define NUM_TEST_ELEMS 50
 
-#define REGION_SIZE 8092
+#define REGION_SIZE 8192
 #define NUM_FIXED_ALLOCATORS 5
 
 static constexpr AllocatorInfo default_allocators[] = {

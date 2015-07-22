@@ -43,6 +43,8 @@ FixedAllocator::FixedAllocator(uint64_t pool_addr,
         // Object size must be a power of 2 and at least 8 bytes.
         assert(object_size >= sizeof(uint64_t));
         assert(!(object_size & (object_size - 1)));
+        // Make sure we have a well-aligned pool_addr.
+        assert((pool_addr & (object_size - 1)) == 0);
 
         // Start allocation at a natural boundary.
         _alloc_offset = ALLOC_OFFSET(object_size);
@@ -109,6 +111,12 @@ void *FixedAllocator::alloc()
  */
 void FixedAllocator::free(void *p)
 {
+    // Check to make sure given address was allocated from this allocator.
+    assert(p >= (void *)((uint64_t)_pm + _alloc_offset) && p < _pm->tail_ptr);
+    // Check to make sure it is a multiple of the size.
+    assert((uint64_t)p % _pm->size == 0);
+    // Check to make sure this object was indeed allocated.
+    // assert(Check free list for p);
     TransactionImpl *tx = TransactionImpl::get_tx();
 
     tx->log(p, sizeof(uint64_t));
