@@ -87,7 +87,7 @@ int main(int argc, char **argv)
                 bool f = false;
                 n.get_properties()
                     .filter([](const PropertyRef &p) {
-                        return p.type() == t_integer && p.int_value() < 20
+                        return p.type() == PropertyType::Integer && p.int_value() < 20
                                ? Pass : DontPass;
                     })
                     .process([&db,&n,&f](PropertyRef &p) {

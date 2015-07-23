@@ -12,13 +12,13 @@ using namespace Jarvis;
 std::string property_text(const Property &p)
 {
     switch (p.type()) {
-        case t_novalue: return "no value";
-        case t_boolean: return p.bool_value() ? "T" : "F";
-        case t_integer: return std::to_string(p.int_value());
-        case t_string: return p.string_value();
-        case t_float: return std::to_string(p.float_value());
-        case t_time: return "<time value>";
-        case t_blob: return "<blob value>";
+        case PropertyType::NoValue: return "no value";
+        case PropertyType::Boolean: return p.bool_value() ? "T" : "F";
+        case PropertyType::Integer: return std::to_string(p.int_value());
+        case PropertyType::String: return p.string_value();
+        case PropertyType::Float: return std::to_string(p.float_value());
+        case PropertyType::Time: return "<time value>";
+        case PropertyType::Blob: return "<blob value>";
         default: throw Exception(PropertyTypeInvalid);
     }
 }

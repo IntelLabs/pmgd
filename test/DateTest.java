@@ -42,7 +42,7 @@ public class DateTest {
             for (NodeIterator ni = db.get_nodes(); !ni.done(); ni.next()) {
                 Node n = ni.get_current();
                 Property np;
-                if ( (np = n.get_property(prop_id)) != null && np.type() == Property.t_time) {
+                if ( (np = n.get_property(prop_id)) != null && np.type() == Property.Time) {
                     Date d = np.time_value().getDate();
                     if (d.after(start))
                         ++count;

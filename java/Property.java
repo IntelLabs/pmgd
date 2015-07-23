@@ -50,7 +50,7 @@ public class Property {
         // Return timezone stored with date value.
         public TimeZone getTimeZone()
         {
-            return TimeZone.getTimeZone(String.format("GMT%+03d:%02d", tz_hour, tz_min));
+            return TimeZone.getTimeZone(java.lang.String.format("GMT%+03d:%02d", tz_hour, tz_min));
         }
     }
 
@@ -99,14 +99,14 @@ public class Property {
 
     // Add operator overrides here
 
-    // Java enums are messed up. Using constants instead
-    public static final int t_novalue = 1;
-    public static final int t_boolean = 2;
-    public static final int t_integer = 3;
-    public static final int t_string = 4;
-    public static final int t_float = 5;
-    public static final int t_time = 6;
-    public static final int t_blob = 7;
+    // Java enums are inconvenient. Using constants instead.
+    public static final int NoValue = 1;
+    public static final int Boolean = 2;
+    public static final int Integer = 3;
+    public static final int String = 4;
+    public static final int Float = 5;
+    public static final int Time = 6;
+    public static final int Blob = 7;
 
     public native int type() throws Exception;
     public native boolean bool_value() throws Exception;

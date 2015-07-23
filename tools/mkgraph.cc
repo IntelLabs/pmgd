@@ -111,15 +111,15 @@ int main(int argc, char **argv)
 
         PropertyType type;
         if (strcmp(argv[argi + 3], "integer") == 0)
-            type = t_integer;
+            type = PropertyType::Integer;
         else if (strcmp(argv[argi + 3], "string") == 0)
-            type = t_string;
+            type = PropertyType::String;
         else if (strcmp(argv[argi + 3], "float") == 0)
-            type = t_float;
+            type = PropertyType::Float;
         else if (strcmp(argv[argi + 3], "time") == 0)
-            type = t_time;
+            type = PropertyType::Time;
         else if (strcmp(argv[argi + 3], "boolean") == 0)
-            type = t_boolean;
+            type = PropertyType::Boolean;
         else {
             fprintf(stderr, "mkgraph: Unrecognized property type\n");
             return 1;

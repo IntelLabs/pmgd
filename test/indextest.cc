@@ -23,11 +23,11 @@ int main(int argc, char **argv)
         Node **nodes = new Node *[node_count + 1];
         Transaction tx(db, Transaction::ReadWrite);
 
-        db.create_index(Graph::NodeIndex, "tag1", "id1", t_integer);
-        db.create_index(Graph::NodeIndex, "tag1", "id2", t_float);
-        db.create_index(Graph::NodeIndex, "tag2", "id1", t_float);
-        db.create_index(Graph::NodeIndex, "tag2", "id2", t_string);
-        db.create_index(Graph::NodeIndex, 0, "id3", t_integer);
+        db.create_index(Graph::NodeIndex, "tag1", "id1", PropertyType::Integer);
+        db.create_index(Graph::NodeIndex, "tag1", "id2", PropertyType::Float);
+        db.create_index(Graph::NodeIndex, "tag2", "id1", PropertyType::Float);
+        db.create_index(Graph::NodeIndex, "tag2", "id2", PropertyType::String);
+        db.create_index(Graph::NodeIndex, 0, "id3", PropertyType::Integer);
         for (int i = 1; i <= 2; i++) {
             Node &n = db.add_node("tag1");
             n.set_property("id1", i + 1611);

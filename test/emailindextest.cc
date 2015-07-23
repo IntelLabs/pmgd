@@ -20,10 +20,10 @@ int main(int argc, char *argv[])
         printf("Running index range tests on file email.gson\n");
         Graph db("emailindexgraph", Graph::Create);
         Transaction tx(db, Transaction::ReadWrite);
-        db.create_index(Graph::NodeIndex, "Person", "Email", t_string);
-        db.create_index(Graph::NodeIndex, "Message", "Size", t_integer);
-        db.create_index(Graph::NodeIndex, "Message", "Replied?", t_boolean);
-        db.create_index(Graph::NodeIndex, "Attachment", "Created", t_time);
+        db.create_index(Graph::NodeIndex, "Person", "Email", PropertyType::String);
+        db.create_index(Graph::NodeIndex, "Message", "Size", PropertyType::Integer);
+        db.create_index(Graph::NodeIndex, "Message", "Replied?", PropertyType::Boolean);
+        db.create_index(Graph::NodeIndex, "Attachment", "Created", PropertyType::Time);
         tx.commit();
 
         load_gson(db, "email.gson", node_added, edge_added);

@@ -117,18 +117,18 @@ public class BindingsTest {
                 for (PropertyIterator pi = ni.get_properties(); !pi.done(); pi.next()) {
                     System.out.printf("  %s [%d] ", pi.id(), pi.type());
                     switch (pi.type()) {
-                        case Property.t_novalue:
+                        case Property.NoValue:
                             break;
-                        case Property.t_boolean:
+                        case Property.Boolean:
                             System.out.printf("%s", pi.bool_value() ? "T" : "F");
                             break;
-                        case Property.t_integer:
+                        case Property.Integer:
                             System.out.printf("%d", pi.int_value());
                             break;
-                        case Property.t_string:
+                        case Property.String:
                             System.out.printf("%s", pi.string_value());
                             break;
-                        case Property.t_float:
+                        case Property.Float:
                             System.out.printf("%f", pi.float_value());
                             break;
                         default:
@@ -147,18 +147,18 @@ public class BindingsTest {
                 for (PropertyIterator pi = ei.get_properties(); !pi.done(); pi.next()) {
                     System.out.printf("  %s [%d] ", pi.id(), pi.type());
                     switch (pi.type()) {
-                        case Property.t_novalue:
+                        case Property.NoValue:
                             break;
-                        case Property.t_boolean:
+                        case Property.Boolean:
                             System.out.printf("%s", pi.bool_value() ? "T" : "F");
                             break;
-                        case Property.t_integer:
+                        case Property.Integer:
                             System.out.printf("%d", pi.int_value());
                             break;
-                        case Property.t_string:
+                        case Property.String:
                             System.out.printf("%s", pi.string_value());
                             break;
-                        case Property.t_float:
+                        case Property.Float:
                             System.out.printf("%f", pi.float_value());
                             break;
                         default:
@@ -348,13 +348,13 @@ public class BindingsTest {
     static String property_text(Property p) throws jarvis.Exception
     {
         switch (p.type()) {
-            case Property.t_novalue: return "no value";
-            case Property.t_boolean: return p.bool_value() ? "T" : "F";
-            case Property.t_integer: return Long.toString(p.int_value());
-            case Property.t_string: return p.string_value();
-            case Property.t_float: return Double.toString(p.float_value());
-            case Property.t_time: return "<time value>";
-            case Property.t_blob: return "<blob value>";
+            case Property.NoValue: return "no value";
+            case Property.Boolean: return p.bool_value() ? "T" : "F";
+            case Property.Integer: return Long.toString(p.int_value());
+            case Property.String: return p.string_value();
+            case Property.Float: return Double.toString(p.float_value());
+            case Property.Time: return "<time value>";
+            case Property.Blob: return "<blob value>";
             default: return "<unknown property type>";
         }
     }

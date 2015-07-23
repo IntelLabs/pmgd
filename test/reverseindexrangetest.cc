@@ -24,7 +24,7 @@ int main(int argc, char **argv)
         Node **nodes = new Node *[node_count + 1];
         Transaction tx(db, Transaction::ReadWrite);
 
-        db.create_index(Graph::NodeIndex, "tag1", "id1", t_integer);
+        db.create_index(Graph::NodeIndex, "tag1", "id1", PropertyType::Integer);
         for (int i = 1; i <= 8; i++) {
             Node &n = db.add_node("tag1");
             n.set_property("id1", i + 200);

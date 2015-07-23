@@ -176,8 +176,11 @@ namespace Jarvis {
         {
             assert(ptype() >= p_novalue && ptype() <= p_blob);
             static const PropertyType type_map[] = {
-                t_novalue, t_boolean, t_boolean, t_integer, t_float,
-                t_time, t_string, t_string, t_blob
+                PropertyType::NoValue, PropertyType::Boolean,
+                PropertyType::Boolean, PropertyType::Integer,
+                PropertyType::Float, PropertyType::Time,
+                PropertyType::String, PropertyType::String,
+                PropertyType::Blob
             };
             return type_map[ptype() - p_novalue];
         }
