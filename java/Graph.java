@@ -11,7 +11,7 @@ package jarvis;
 public class Graph {
     private long jarvisHandle;
 
-    public enum OpenOptions { NONE, CREATE, READONLY };
+    public enum OpenOptions { ReadWrite, Create, ReadOnly };
     public enum IndexType { NodeIndex, EdgeIndex };
 
     public Graph(String db_name, OpenOptions options) throws Exception

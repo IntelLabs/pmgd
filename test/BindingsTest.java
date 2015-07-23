@@ -6,7 +6,7 @@ public class BindingsTest {
         String sample_loc = args.length > 0 ? args[0] : "bindingsgraph";
 
         try {
-            Graph db = new Graph(sample_loc, Graph.OpenOptions.NONE);
+            Graph db = new Graph(sample_loc, Graph.OpenOptions.ReadWrite);
 
             // Adding Node, getting ID, tag
             Transaction tx1 = new Transaction(db, true, false);

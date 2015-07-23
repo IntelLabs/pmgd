@@ -37,7 +37,7 @@ public class DateTest {
         Date start = c.getTime();
         int count = 0;
         try {
-            Graph db = new Graph(graph_name, Graph.OpenOptions.READONLY);
+            Graph db = new Graph(graph_name, Graph.OpenOptions.ReadOnly);
             Transaction tx = new Transaction(db, false, true);
             for (NodeIterator ni = db.get_nodes(); !ni.done(); ni.next()) {
                 Node n = ni.get_current();
