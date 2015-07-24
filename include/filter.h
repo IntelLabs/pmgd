@@ -129,21 +129,6 @@ namespace Jarvis {
         { }
     };
 
-    class PathIteratorFilter : public IteratorFilter<PathIterator> {
-        using IteratorFilter<PathIterator>::_base_impl;
-
-    public:
-        PathIteratorFilter(PathIterator::Impl_type *i,
-                std::function<Disposition(const PathRef &)> f)
-            : IteratorFilter<PathIterator>(i, f)
-        { }
-
-        // Removed the body of this function to allow compilation on Windows.
-        // To add the code back, the implementation had the following 1 line:
-        // return _base_impl ? _base_impl->end_nodes() : NodeIterator(NULL);
-        NodeIterator end_nodes() const;
-    };
-
     inline NodeIterator NodeIterator::filter(const PropertyPredicate &pp)
     {
         Impl_type *impl = _impl;
@@ -177,13 +162,6 @@ namespace Jarvis {
         Impl_type *impl = _impl;
         _impl = NULL;
         return PropertyIterator(impl ? new PropertyIteratorFilter(impl, f) : NULL);
-    }
-
-    inline PathIterator PathIterator::filter(std::function<Disposition(const Ref_type &)> f)
-    {
-        Impl_type *impl = _impl;
-        _impl = NULL;
-        return PathIterator(impl ? new PathIteratorFilter(impl, f) : NULL);
     }
 
 
