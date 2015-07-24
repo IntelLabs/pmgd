@@ -34,9 +34,6 @@ public class Graph {
                                          PropertyPredicate ppred,
                                          boolean reverse) throws Exception;
 
-    //    public native PathIterator get_paths(Node a, bool depth_first);
-    //    public native PathIterator get_paths(Node a, Node b, bool depth_first);
-
     public native Node add_node(String tag) throws Exception;
     public native Edge add_edge(Node src, Node dest, String tag)
                            throws Exception;
