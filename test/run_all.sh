@@ -10,14 +10,25 @@ if test $# != 2 ; then
 fi
 
 SCRIPT_DIR=`dirname $0`
+GRAPH_DIR=$1
+mkdir -p ${GRAPH_DIR}
+# First get an absolute path for the graph dir, just in case
+cd $GRAPH_DIR
+GRAPH_DIR=$PWD
+echo "Graphs in $GRAPH_DIR"
+cd -
+
 source ${SCRIPT_DIR}/common.sh
 find_test_dir
 if [ $? != 0 ]; then
     exit -2
 fi
 
-GRAPH_DIR=$1
 DEL_GRAPH=$2
+
+cd ..
+make -s
+cd -
 
 echo "Moving to test directory $TEST_DIR and clearing old logs"
 cd ${TEST_DIR}
@@ -49,9 +60,6 @@ graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
              solgraph stringtablegraph txgraph
              test720graph test750graph test767graph )
 
-#make -s clean
-make -s
-
 if [ "${DEL_GRAPH}" = "y" ]; then
     rm_graph_dirs $GRAPH_DIR
 fi
@@ -60,6 +68,7 @@ set +e
 
 echo "Launching tests"
 echo "Individual test output will be stored in log/<testname>.log"
+cd ${GRAPH_DIR}
 for test in ${tests[@]}
 do
     echo -n "$test "
@@ -68,21 +77,23 @@ do
     # doesn't really need these. Eventually we can
     # specify the arguments in the array itself
     case "$test" in
-        propertychunktest) ./$test 1000;;
-        propertylisttest) ./$test propertylistgraph 100000;;
-        load_gson_test) ./$test email.gson;;
+        propertychunktest) ${TEST_DIR}/$test 1000;;
+        propertylisttest) ${TEST_DIR}/$test propertylistgraph 100000;;
+        load_gson_test) ${TEST_DIR}/$test email.gson;;
         load_tsv_test) echo "1	2
             1	3
             2	4
-            3	4" | ./$test;;
+            3	4" | ${TEST_DIR}/$test;;
         test750)
-            ./test750 1 &&
-            ./test750 2 &&
-            ./test750 3 &&
-            ./test750 4;;
+            ${TEST_DIR}/test750 1 &&
+            ${TEST_DIR}/test750 2 &&
+            ${TEST_DIR}/test750 3 &&
+            ${TEST_DIR}/test750 4;;
         DateTest)
-            RESULT1=`LD_LIBRARY_PATH=../lib java -cp .:../lib/\* $test emailindexgraph "DeliveryTime" 13 | tail -n 1`
-            RESULT2=`LD_LIBRARY_PATH=../lib java -cp .:../lib/\* $test propertygraph "id7" 4 | tail -n 1`
+            # For java, we need to be where the class is, for simplicity.
+            cd ${TEST_DIR}
+            RESULT1=`LD_LIBRARY_PATH=../lib java -cp .:../lib/\* $test ${GRAPH_DIR}/emailindexgraph "DeliveryTime" 13 | tail -n 1`
+            RESULT2=`LD_LIBRARY_PATH=../lib java -cp .:../lib/\* $test ${GRAPH_DIR}/propertygraph "id7" 4 | tail -n 1`
             if [ "$RESULT1" = "Test passed" ] && [ "$RESULT2" = "Test passed" ]; then
                 echo "PASSED"
             else
@@ -90,9 +101,10 @@ do
                 # allow main to return a value
                 rm emailindexgraph 2> /dev/zero
             fi
+            cd -
             ;;
-        *) ./$test n1 n2 n3 n4 ;;
-    esac > ./log/${test}.log
+        *) ${TEST_DIR}/$test n1 n2 n3 n4 ;;
+    esac > ${TEST_DIR}/log/${test}.log
 
     if [ $? -ne 0 ]; then
         echo "FAILED"
