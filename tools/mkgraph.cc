@@ -149,11 +149,11 @@ int main(int argc, char **argv)
         }
     }
     catch (Exception e) {
-        print_exception(e);
+        print_exception(e, stderr);
         return 1;
     }
     catch (std::runtime_error e) {
-        printf("[Exception] %s\n", e.what());
+        fprintf(stderr, "[Exception] %s\n", e.what());
         return 1;
     };
 

@@ -84,7 +84,7 @@ int main(int argc, char **argv)
             load_tsv(db, file_name);
     }
     catch (Exception e) {
-        print_exception(e);
+        print_exception(e, stderr);
         return 1;
     }
 

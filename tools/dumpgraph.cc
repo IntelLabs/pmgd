@@ -40,7 +40,7 @@ int main(int argc, char **argv)
         dump_edges(db);
     }
     catch (Exception e) {
-        print_exception(e);
+        print_exception(e, stderr);
         return 1;
     }
 
