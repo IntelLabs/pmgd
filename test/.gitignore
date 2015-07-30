@@ -1,5 +1,6 @@
 *.o
 *.d
+aborttest
 alloctest
 apitest
 avltest
@@ -27,6 +28,7 @@ test720
 test750
 test767
 txtest
+abortgraph
 allocgraph
 alloctestdummy
 apigraph
