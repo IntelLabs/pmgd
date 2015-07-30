@@ -35,11 +35,8 @@ void Transaction::commit()
 const static uint8_t JE_MAX_LEN = 48;
 
 struct TransactionImpl::JournalEntry {
-    TransactionId tx_id;
-    union {
-        uint8_t len;
-        uint8_t type;
-    };
+    TransactionId tx_id : 56;
+    uint8_t len : 8;
     void *addr;
     uint8_t data[JE_MAX_LEN];
 };
@@ -52,6 +49,8 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
       _committed(false),
       _commit_callback_list(NULL)
 {
+    static_assert(sizeof (TransactionImpl::JournalEntry) == 64, "Journal entry size is not 64 bytes.");
+
     bool read_write = _tx_type & Transaction::ReadWrite;
 
     if (read_write)
