@@ -6,13 +6,14 @@
 
 using namespace Jarvis;
 
-IndexManager::IndexList *IndexManager::add_tag_index(int node_or_edge,
+IndexManager::IndexList *IndexManager::add_tag_index(
+                                           Graph::IndexType index_type,
                                            StringID tag,
                                            Allocator &allocator)
 {
     // ChunkList should call the empty constructor if this element was
     // newly added. So the entry will always be correctly initialized
-    IndexList *tag_entry = _tag_prop_map[node_or_edge - 1].add(tag, allocator);
+    IndexList *tag_entry = _tag_prop_map[index_type].add(tag, allocator);
     // If there is no other property id entry for this tag, make that
     // 0th entry be an entry for NO property id (represented by 0). So
     // all nodes/edges for this tag will get indexed here apart from their
@@ -20,7 +21,7 @@ IndexManager::IndexList *IndexManager::add_tag_index(int node_or_edge,
     if (tag_entry->num_elems() == 0 && !(tag == 0)) {
         // All we need is one value in the tree. Hopefully we will have different
         // type of data structure options eventually.
-        Index *prop0_idx = new (allocator.alloc(sizeof(BoolValueIndex))) BoolValueIndex(t_boolean);
+        Index *prop0_idx = new (allocator.alloc(sizeof(BoolValueIndex))) BoolValueIndex(PropertyType::Boolean);
         Index **value = tag_entry->add(0, allocator);
         *value = prop0_idx;
     }
@@ -30,7 +31,7 @@ IndexManager::IndexList *IndexManager::add_tag_index(int node_or_edge,
 
 // The general order of data structures is:
 // IndexManager->_tag_prop_map[node/edge]->_propid_propvalueadt_map->the index
-void IndexManager::create_index(int node_or_edge, StringID tag,
+void IndexManager::create_index(Graph::IndexType index_type, StringID tag,
                                 StringID property_id,
                                 PropertyType ptype,
                                 Allocator &allocator)
@@ -40,7 +41,7 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
     // which will get returned to us and then we can add a new
     // property ID. If not, this add_tag_index function will
     // allocate it and create an entry with id 0 for default (for tag!=0).
-    IndexList *tag_entry = add_tag_index(node_or_edge, tag, allocator);
+    IndexList *tag_entry = add_tag_index(index_type, tag, allocator);
 
     // The goal is to create an index for property type ptype at the given
     // (tag,propid) combination for node or edge
@@ -48,25 +49,25 @@ void IndexManager::create_index(int node_or_edge, StringID tag,
 
     if (*prop_idx == NULL) {
         switch(ptype) {
-            case t_integer:
+            case PropertyType::Integer:
                 *prop_idx = new (allocator.alloc(sizeof(LongValueIndex))) LongValueIndex(ptype);
                 break;
-            case t_float:
+            case PropertyType::Float:
                 *prop_idx = new (allocator.alloc(sizeof(FloatValueIndex))) FloatValueIndex(ptype);
                 break;
-            case t_boolean:
+            case PropertyType::Boolean:
                 *prop_idx = new (allocator.alloc(sizeof(BoolValueIndex))) BoolValueIndex(ptype);
                 break;
-            case t_time:
+            case PropertyType::Time:
                 *prop_idx = new (allocator.alloc(sizeof(TimeValueIndex))) TimeValueIndex(ptype);
                 break;
-            case t_string:
+            case PropertyType::String:
                 *prop_idx = new (allocator.alloc(sizeof(StringValueIndex))) StringValueIndex(ptype);
                 break;
-            case t_novalue:
-                throw Exception(not_implemented);
-            case t_blob:
-                throw Exception(property_type);
+            case PropertyType::NoValue:
+                throw Exception(NotImplemented);
+            case PropertyType::Blob:
+                throw Exception(PropertyTypeInvalid);
         }
     }
 }
@@ -81,12 +82,12 @@ bool IndexManager::add_node(Node *n, Allocator &allocator)
     // Check first if that tag index exists. Since we are indexing
     // all nodes/edges based on their tags, create an entry if it
     // doesn't exist.
-    IndexList *tag_entry = add_tag_index(Graph::NODE, n->get_tag(), allocator);
+    IndexList *tag_entry = add_tag_index(Graph::NodeIndex, n->get_tag(), allocator);
 
     // For now, add only to the no property list ==> index via tag
     // This entry should always exist since we add it explicitly when
     // creating a new tag entry
-    // TODO: Perhaps use t_novalue in this case instead of boolean.
+    // TODO: Perhaps use NoValue in this case instead of Boolean.
     // TODO: Tree is unnecessary and Node* needs better arrangement for
     // quick search and remove operations
     BoolValueIndex *idx = (BoolValueIndex *)*(tag_entry->find(0));
@@ -101,12 +102,12 @@ bool IndexManager::add_node(Node *n, Allocator &allocator)
     return true;
 }
 
-Index *IndexManager::get_index(int node_or_edge, StringID tag,
+Index *IndexManager::get_index(Graph::IndexType index_type, StringID tag,
                                StringID property_id, PropertyType ptype)
 {
     // Traverse the two chunklists <tag,propADT> and <propid,indexADT>
     // to get to the Index* which is where this Node* needs to be added
-    IndexList *tag_entry = _tag_prop_map[node_or_edge - 1].find(tag);
+    IndexList *tag_entry = _tag_prop_map[index_type].find(tag);
     // Check first if that tag index exists. Since we add every new tag
     // to our tag index, this shouldn't happen.
     if (!tag_entry)
@@ -121,7 +122,7 @@ Index *IndexManager::get_index(int node_or_edge, StringID tag,
         return NULL;
     // This call throws if the types don't match for an
     // existing index.
-    if (ptype != 0)
+    if (ptype != PropertyType(0))
         (*idx)->check_type(ptype);
     return *idx;
 }
@@ -129,11 +130,11 @@ Index *IndexManager::get_index(int node_or_edge, StringID tag,
 NodeIterator IndexManager::get_nodes(StringID tag)
 {
     Index *prop0_idx;
-    prop0_idx = get_index(Graph::NODE, tag, 0);
+    prop0_idx = get_index(Graph::NodeIndex, tag, 0);
     if (!prop0_idx)
         return NodeIterator(NULL);
     // This index can never be null cause we create it for each non-zero tag.
     // The second parameter here is the locale which we surely do not need for
     // a boolean property.
-    return prop0_idx->get_nodes(PropertyPredicate(0, PropertyPredicate::eq, true), NULL, false);
+    return prop0_idx->get_nodes(PropertyPredicate(0, PropertyPredicate::Eq, true), NULL, false);
 }

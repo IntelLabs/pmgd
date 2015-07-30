@@ -50,14 +50,14 @@ Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
     int open_flags = read_only * O_RDONLY | !read_only * O_RDWR
                      | create * O_CREAT | truncate * O_TRUNC;
     if ((_fd = open(filename.c_str(), open_flags, 0666)) < 0)
-        throw Exception(open_failed, errno, filename + " (open)");
+        throw Exception(OpenFailed, errno, filename + " (open)");
 
     // check for size before mmap'ing
     struct stat sb;
     if (fstat(_fd, &sb) < 0) {
         int err = errno;
         close(_fd);
-        throw Exception(open_failed, err, filename + " (fstat)");
+        throw Exception(OpenFailed, err, filename + " (fstat)");
     }
 
     if (sb.st_size == off_t(map_len)) {
@@ -65,17 +65,17 @@ Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
     }
     else if (sb.st_size == 0 && create) {
         if (read_only)
-            throw Exception(read_only);
+            throw Exception(ReadOnly);
 
         if (ftruncate(_fd, map_len) < 0) {
             int err = errno;
             close(_fd);
-            throw Exception(open_failed, err, filename + " (ftruncate)");
+            throw Exception(OpenFailed, err, filename + " (ftruncate)");
         }
     }
     else {
         close(_fd);
-        throw Exception(open_failed, filename + " was not the expected size");
+        throw Exception(OpenFailed, filename + " was not the expected size");
     }
 
     if (mmap((void *)map_addr, map_len,
@@ -84,7 +84,7 @@ Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
     {
         int err = errno;
         close(_fd);
-        throw Exception(open_failed, err, filename + " (mmap)");
+        throw Exception(OpenFailed, err, filename + " (mmap)");
     }
 }
 
@@ -117,7 +117,7 @@ Jarvis::os::SigHandler::SigHandler()
 
 void Jarvis::os::SigHandler::sigbus_handler(int)
 {
-    throw Exception(out_of_space);
+    throw Exception(OutOfSpace);
 }
 
 size_t Jarvis::os::get_default_region_size() { return SIZE_1TB; }

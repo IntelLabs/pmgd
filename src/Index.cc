@@ -12,7 +12,7 @@ using namespace Jarvis;
 void Index::add(const Property &p, Node *n, GraphImpl *db)
 {
     if (_ptype != p.type())
-        throw Exception(property_type);
+        throw Exception(PropertyTypeMismatch);
 
     Allocator &allocator = db->allocator();
 
@@ -21,33 +21,33 @@ void Index::add(const Property &p, Node *n, GraphImpl *db)
     List<Node*> *dest = NULL;
 
     switch(_ptype) {
-        case t_integer:
+        case PropertyType::Integer:
             dest = static_cast<LongValueIndex *>(this)->add(p.int_value(),
                                                             allocator);
             break;
-        case t_float:
+        case PropertyType::Float:
             dest = static_cast<FloatValueIndex *>(this)->add(p.float_value(),
                                                              allocator);
             break;
-        case t_boolean:
+        case PropertyType::Boolean:
             dest = static_cast<BoolValueIndex *>(this)->add(p.bool_value(),
                                                             allocator);
             break;
-        case t_time:
+        case PropertyType::Time:
             dest = static_cast<TimeValueIndex *>(this)->add(p.time_value(),
                                                             allocator);
             break;
-        case t_string:
+        case PropertyType::String:
             {
                 TransientIndexString istr(p.string_value(), db->locale());
                 dest = static_cast<StringValueIndex *>(this)->add(istr, allocator);
             }
             break;
-        case t_novalue:
-            throw Exception(not_implemented);
-        case t_blob:
+        case PropertyType::NoValue:
+            throw Exception(NotImplemented);
+        case PropertyType::Blob:
         default:
-            throw Exception(property_type);
+            throw Exception(PropertyTypeInvalid);
     }
     // dest will never be null since it gets allocated at the add time.
     // Also, if it was a new element, the add code does a placement new.
@@ -61,13 +61,13 @@ void Index::add(const Property &p, Node *n, GraphImpl *db)
 void Index::remove(const Property &p, Node *n, GraphImpl *db)
 {
     if (_ptype != p.type())
-        throw Exception(property_type);
+        throw Exception(PropertyTypeMismatch);
 
     Allocator &allocator = db->allocator();
 
     List<Node*> *dest;
     switch(_ptype) {
-        case t_integer:
+        case PropertyType::Integer:
             {
                 LongValueIndex *prop_idx = static_cast<LongValueIndex *>(this);
                 dest = prop_idx->find(p.int_value());
@@ -79,7 +79,7 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
                 }
             }
             break;
-        case t_float:
+        case PropertyType::Float:
             {
                 FloatValueIndex *prop_idx = static_cast<FloatValueIndex *>(this);
                 dest = prop_idx->find(p.float_value());
@@ -91,7 +91,7 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
                 }
             }
             break;
-        case t_boolean:
+        case PropertyType::Boolean:
             {
                 BoolValueIndex *prop_idx = static_cast<BoolValueIndex *>(this);
                 dest = prop_idx->find(p.bool_value());
@@ -103,7 +103,7 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
                 }
             }
             break;
-        case t_time:
+        case PropertyType::Time:
             {
                 TimeValueIndex *prop_idx = static_cast<TimeValueIndex *>(this);
                 dest = prop_idx->find(p.time_value());
@@ -115,7 +115,7 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
                 }
             }
             break;
-        case t_string:
+        case PropertyType::String:
             {
                 TransientIndexString istr(p.string_value(), db->locale());
                 StringValueIndex *prop_idx = static_cast<StringValueIndex *>(this);
@@ -128,11 +128,11 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
                 }
             }
             break;
-        case t_novalue:
-            throw Exception(not_implemented);
-        case t_blob:
+        case PropertyType::NoValue:
+            throw Exception(NotImplemented);
+        case PropertyType::Blob:
         default:
-            throw Exception(property_type);
+            throw Exception(PropertyTypeInvalid);
     }
 }
 
@@ -140,7 +140,7 @@ void Index::update(GraphImpl *db, Node *n, const Property &new_value,
                    const Property &old_value)
 {
     // TODO: actual properties with no_value type not handled here.
-    if (old_value.type() != t_novalue)
+    if (old_value.type() != PropertyType::NoValue)
         remove(old_value, n, db);
     add(new_value, n, db);
 }
@@ -150,78 +150,78 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
     const Property &p1 = pp.v1;
     const Property &p2 = pp.v2;
 
-    if (pp.op != PropertyPredicate::dont_care) {
+    if (pp.op != PropertyPredicate::DontCare) {
         if (_ptype != p1.type())
-            throw Exception(property_type);
-        if (pp.op >= PropertyPredicate::gele) {
+            throw Exception(PropertyTypeMismatch);
+        if (pp.op >= PropertyPredicate::GeLe) {
             if (_ptype != p2.type())
-                throw Exception(property_type);
+                throw Exception(PropertyTypeMismatch);
         }
     }
 
     switch(_ptype) {
-        case t_integer:
+        case PropertyType::Integer:
             {
                 LongValueIndex *This = static_cast<LongValueIndex *>(this);
-                if (pp.op >= PropertyPredicate::gele)
+                if (pp.op >= PropertyPredicate::GeLe)
                     return This->get_nodes(p1.int_value(), p2.int_value(), pp.op, reverse);
-                else if (pp.op == PropertyPredicate::dont_care)
+                else if (pp.op == PropertyPredicate::DontCare)
                     return This->get_nodes(reverse);
                 else
                     return This->get_nodes(p1.int_value(), pp.op, reverse);
             }
             break;
-        case t_float:
+        case PropertyType::Float:
             {
                 FloatValueIndex *This = static_cast<FloatValueIndex *>(this);
-                if (pp.op >= PropertyPredicate::gele)
+                if (pp.op >= PropertyPredicate::GeLe)
                     return This->get_nodes(p1.float_value(), p2.float_value(), pp.op, reverse);
-                else if (pp.op == PropertyPredicate::dont_care)
+                else if (pp.op == PropertyPredicate::DontCare)
                     return This->get_nodes(reverse);
                 else
                     return This->get_nodes(p1.float_value(), pp.op, reverse);
             }
             break;
-        case t_boolean:
+        case PropertyType::Boolean:
             {
                 BoolValueIndex *This = static_cast<BoolValueIndex *>(this);
-                if (pp.op >= PropertyPredicate::gele)
+                if (pp.op >= PropertyPredicate::GeLe)
                     return This->get_nodes(p1.bool_value(), p2.bool_value(), pp.op, reverse);
-                else if (pp.op == PropertyPredicate::dont_care)
+                else if (pp.op == PropertyPredicate::DontCare)
                     return This->get_nodes(reverse);
                 else
                     return This->get_nodes(p1.bool_value(), pp.op, reverse);
             }
             break;
-        case t_time:
+        case PropertyType::Time:
             {
                 TimeValueIndex *This = static_cast<TimeValueIndex *>(this);
-                if (pp.op >= PropertyPredicate::gele)
+                if (pp.op >= PropertyPredicate::GeLe)
                     return This->get_nodes(p1.time_value(), p2.time_value(), pp.op, reverse);
-                else if (pp.op == PropertyPredicate::dont_care)
+                else if (pp.op == PropertyPredicate::DontCare)
                     return This->get_nodes(reverse);
                 else
                     return This->get_nodes(p1.time_value(), pp.op, reverse);
             }
             break;
-        case t_string:
+        case PropertyType::String:
             {
                 TransientIndexString istr(p1.string_value(), *loc);
                 StringValueIndex *This = static_cast<StringValueIndex *>(this);
-                if (pp.op >= PropertyPredicate::gele) {
+                if (pp.op >= PropertyPredicate::GeLe) {
                     TransientIndexString istr2(p2.string_value(), *loc);
                     return This->get_nodes(istr, istr2, pp.op, reverse);
                 }
-                else if (pp.op == PropertyPredicate::dont_care)
+                else if (pp.op == PropertyPredicate::DontCare)
                     return This->get_nodes(reverse);
                 else
                     return This->get_nodes(istr, pp.op, reverse);
             }
             break;
-        case t_novalue:
-            throw Exception(not_implemented);
-        case t_blob:
+        case PropertyType::NoValue:
+            throw Exception(NotImplemented);
+        case PropertyType::Blob:
         default:
-            throw Exception(property_type);
+            throw Exception(PropertyTypeInvalid);
     }
 }

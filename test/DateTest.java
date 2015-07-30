@@ -37,12 +37,12 @@ public class DateTest {
         Date start = c.getTime();
         int count = 0;
         try {
-            Graph db = new Graph(graph_name, Graph.OpenOptions.READONLY);
+            Graph db = new Graph(graph_name, Graph.OpenOptions.ReadOnly);
             Transaction tx = new Transaction(db, false, true);
             for (NodeIterator ni = db.get_nodes(); !ni.done(); ni.next()) {
                 Node n = ni.get_current();
                 Property np;
-                if ( (np = n.get_property(prop_id)) != null && np.type() == Property.t_time) {
+                if ( (np = n.get_property(prop_id)) != null && np.type() == Property.Time) {
                     Date d = np.time_value().getDate();
                     if (d.after(start))
                         ++count;

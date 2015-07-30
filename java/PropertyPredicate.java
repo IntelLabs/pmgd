@@ -10,16 +10,16 @@ package jarvis;
 public class PropertyPredicate {
     private long jarvisHandle;
 
-    public enum op_t { dont_care, eq, ne, gt, ge, lt, le,
-                       gele, gelt, gtle, gtlt };
+    public enum Op { DontCare, Eq, Ne, Gt, Ge, Lt, Le,
+                     GeLe, GeLt, GtLe, GtLt };
 
     public PropertyPredicate()
         { newPropertyPredicateNative(); }
     public PropertyPredicate(String name)
         { newPropertyPredicateNative(name); }
-    public PropertyPredicate(String name, op_t op, Property v)
+    public PropertyPredicate(String name, Op op, Property v)
         { newPropertyPredicateNative(name, op.ordinal(), v); }
-    public PropertyPredicate(String name, op_t op, Property v1, Property v2)
+    public PropertyPredicate(String name, Op op, Property v1, Property v2)
         { newPropertyPredicateNative(name, op.ordinal(), v1, v2); }
 
     private native void newPropertyPredicateNative();

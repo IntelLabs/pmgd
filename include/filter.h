@@ -19,11 +19,11 @@ namespace Jarvis {
         virtual bool _next() {
             while (bool(*_base_impl)) {
                 switch (func(_base_impl->operator*())) {
-                    case dont_pass: _base_impl->next(); break;
-                    case pass: return true;
-                    case stop: done(); return false;
-                    case pass_stop: _done = true; return true;
-                    default: throw Exception(not_implemented);
+                    case DontPass: _base_impl->next(); break;
+                    case Pass: return true;
+                    case Stop: done(); return false;
+                    case PassStop: _done = true; return true;
+                    default: throw Exception(NotImplemented);
                 }
             }
             return false;
@@ -42,28 +42,28 @@ namespace Jarvis {
         const typename B::Ref_type &operator*() const
         {
             if (_base_impl == NULL)
-                throw Exception(null_iterator);
+                throw Exception(NullIterator);
             return (*_base_impl).operator*();
         }
 
         const typename B::Ref_type *operator->() const
         {
             if (_base_impl == NULL)
-                throw Exception(null_iterator);
+                throw Exception(NullIterator);
             return (*_base_impl).operator->();
         }
 
         typename B::Ref_type &operator*()
         {
             if (_base_impl == NULL)
-                throw Exception(null_iterator);
+                throw Exception(NullIterator);
             return (*_base_impl).operator*();
         }
 
         typename B::Ref_type *operator->()
         {
             if (_base_impl == NULL)
-                throw Exception(null_iterator);
+                throw Exception(NullIterator);
             return (*_base_impl).operator->();
         }
 
@@ -194,21 +194,21 @@ namespace Jarvis {
         Property val;
         if (p.check_property(_pp.id, val)) {
             switch (_pp.op) {
-                case PropertyPredicate::dont_care: r = true; break;
-                case PropertyPredicate::eq: r = val == _pp.v1; break;
-                case PropertyPredicate::ne: r = val != _pp.v1; break;
-                case PropertyPredicate::gt: r = val > _pp.v1; break;
-                case PropertyPredicate::ge: r = val >= _pp.v1; break;
-                case PropertyPredicate::lt: r = val < _pp.v1; break;
-                case PropertyPredicate::le: r = val <= _pp.v1; break;
-                case PropertyPredicate::gele: r = val >= _pp.v1 && val <= _pp.v2; break;
-                case PropertyPredicate::gelt: r = val >= _pp.v1 && val < _pp.v2; break;
-                case PropertyPredicate::gtle: r = val > _pp.v1 && val <= _pp.v2; break;
-                case PropertyPredicate::gtlt: r = val > _pp.v1 && val < _pp.v2; break;
+                case PropertyPredicate::DontCare: r = true; break;
+                case PropertyPredicate::Eq: r = val == _pp.v1; break;
+                case PropertyPredicate::Ne: r = val != _pp.v1; break;
+                case PropertyPredicate::Gt: r = val > _pp.v1; break;
+                case PropertyPredicate::Ge: r = val >= _pp.v1; break;
+                case PropertyPredicate::Lt: r = val < _pp.v1; break;
+                case PropertyPredicate::Le: r = val <= _pp.v1; break;
+                case PropertyPredicate::GeLe: r = val >= _pp.v1 && val <= _pp.v2; break;
+                case PropertyPredicate::GeLt: r = val >= _pp.v1 && val < _pp.v2; break;
+                case PropertyPredicate::GtLe: r = val > _pp.v1 && val <= _pp.v2; break;
+                case PropertyPredicate::GtLt: r = val > _pp.v1 && val < _pp.v2; break;
                 default: assert(0);
             }
         }
-        return r ? pass : dont_pass;
+        return r ? Pass : DontPass;
     }
 
     template Disposition PropertyFilter<NodeRef>::operator()(const NodeRef &);

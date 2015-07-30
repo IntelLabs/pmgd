@@ -12,14 +12,14 @@ using namespace Jarvis;
 std::string property_text(const Property &p)
 {
     switch (p.type()) {
-        case t_novalue: return "no value";
-        case t_boolean: return p.bool_value() ? "T" : "F";
-        case t_integer: return std::to_string(p.int_value());
-        case t_string: return p.string_value();
-        case t_float: return std::to_string(p.float_value());
-        case t_time: return "<time value>";
-        case t_blob: return "<blob value>";
-        default: throw Exception(property_type);
+        case PropertyType::NoValue: return "no value";
+        case PropertyType::Boolean: return p.bool_value() ? "T" : "F";
+        case PropertyType::Integer: return std::to_string(p.int_value());
+        case PropertyType::String: return p.string_value();
+        case PropertyType::Float: return std::to_string(p.float_value());
+        case PropertyType::Time: return "<time value>";
+        case PropertyType::Blob: return "<blob value>";
+        default: throw Exception(PropertyTypeInvalid);
     }
 }
 
@@ -39,12 +39,12 @@ void dump(Graph &db, const Node &n)
         .process([&db](PropertyRef &p) {
         printf("  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
         });
-    n.get_edges(OUTGOING)
+    n.get_edges(Outgoing)
         .process([&db](EdgeRef &e) {
         printf(" %s -> n%" PRIx64 " (e%" PRIx64 ")\n", tag_text(e).c_str(),
             db.get_id(e.get_destination()), db.get_id(e));
         });
-    n.get_edges(INCOMING)
+    n.get_edges(Incoming)
         .process([&db](EdgeRef &e) {
         printf(" %s <- n%" PRIx64 " (e%" PRIx64 ")\n", tag_text(e).c_str(),
             db.get_id(e.get_source()), db.get_id(e));

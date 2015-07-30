@@ -68,7 +68,7 @@ int main()
             r = 1;
         }
         catch (Exception e) {
-            if (e.num != Exception::e_invalid_id) {
+            if (e.num != InvalidID) {
                 print_exception(e);
                 r = 1;
             }

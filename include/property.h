@@ -9,8 +9,8 @@
 #include "stringid.h"
 
 namespace Jarvis {
-    enum PropertyType { t_novalue = 1, t_boolean, t_integer, t_string,
-                        t_float, t_time, t_blob };
+    enum class PropertyType { NoValue = 1, Boolean, Integer, String,
+                              Float, Time, Blob };
 
 #pragma pack(push, 1)
     struct Time {
@@ -101,43 +101,43 @@ namespace Jarvis {
 #undef MAX
 #endif
 
-        void check(int t) const { if (_type != t) throw Exception(property_type); }
+        void check(PropertyType t) const { if (_type != t) throw Exception(PropertyTypeMismatch); }
 
     public:
-        Property() : _type(t_novalue) { }
+        Property() : _type(PropertyType::NoValue) { }
         Property(const Property &);
-        Property(bool v) : _type(t_boolean), v_boolean(v) { }
-        Property(int v) : _type(t_integer), v_integer(v) { }
-        Property(long long v) : _type(t_integer), v_integer(v) { }
-        Property(unsigned long long v) : _type(t_integer), v_integer(v) { }
-        Property(double v) : _type(t_float), v_float(v) { }
+        Property(bool v) : _type(PropertyType::Boolean), v_boolean(v) { }
+        Property(int v) : _type(PropertyType::Integer), v_integer(v) { }
+        Property(long long v) : _type(PropertyType::Integer), v_integer(v) { }
+        Property(unsigned long long v) : _type(PropertyType::Integer), v_integer(v) { }
+        Property(double v) : _type(PropertyType::Float), v_float(v) { }
 
 #if !defined(_MSC_VER)
-        Property(const char *s) : _type(t_string), _v_string(s) { }
+        Property(const char *s) : _type(PropertyType::String), _v_string(s) { }
         Property(const char *s, std::size_t len)
-            : _type(t_string), _v_string(s, len) { }
+            : _type(PropertyType::String), _v_string(s, len) { }
         Property(const std::string str)
-            : _type(t_string), _v_string(str) { }
+            : _type(PropertyType::String), _v_string(str) { }
 #else
         Property(const char *s)
-            : _type(t_string)
+            : _type(PropertyType::String)
             { new (_u) std::string(s); }
 
         Property(const char *s, std::size_t len)
-            : _type(t_string)
+            : _type(PropertyType::String)
             { new (_u) std::string(s, len);  }
 
         Property(const std::string str)
-            : _type(t_string)
+            : _type(PropertyType::String)
             { new (_u) std::string(str);  }
 #endif
 
-        Property(const Time &v) : _type(t_time) { v_time() = v; }
+        Property(const Time &v) : _type(PropertyType::Time) { v_time() = v; }
 
-        Property(const blob_t &blob) : _type(t_blob) { v_blob() = blob; }
+        Property(const blob_t &blob) : _type(PropertyType::Blob) { v_blob() = blob; }
 
         Property(const void *blob, std::size_t size)
-            : _type(t_blob)
+            : _type(PropertyType::Blob)
             { v_blob() = blob_t(blob, size);}
 
         ~Property();
@@ -147,28 +147,26 @@ namespace Jarvis {
         bool operator<(const Property &) const;
 
         PropertyType type() const { return _type; }
-        bool bool_value() const { check(t_boolean); return v_boolean; }
-        long long int_value() const { check(t_integer); return v_integer; }
-        const std::string &string_value() const { check(t_string); return v_string(); }
-        double float_value() const { check(t_float); return v_float; }
-        Time time_value() const { check(t_time); return v_time(); }
-        blob_t blob_value() const { check(t_blob); return v_blob(); }
+        bool bool_value() const { check(PropertyType::Boolean); return v_boolean; }
+        long long int_value() const { check(PropertyType::Integer); return v_integer; }
+        const std::string &string_value() const { check(PropertyType::String); return v_string(); }
+        double float_value() const { check(PropertyType::Float); return v_float; }
+        Time time_value() const { check(PropertyType::Time); return v_time(); }
+        blob_t blob_value() const { check(PropertyType::Blob); return v_blob(); }
     };
 
     struct PropertyPredicate {
         StringID id;
-        enum op_t { dont_care,
-                    eq, ne, gt, ge, lt, le,
-                    gele, gelt, gtle, gtlt } op;
+        enum Op { DontCare, Eq, Ne, Gt, Ge, Lt, Le, GeLe, GeLt, GtLe, GtLt } op;
         Property v1, v2;
         PropertyPredicate() : id(0) { }
-        PropertyPredicate(StringID i) : id(i), op(dont_care) { }
-        PropertyPredicate(StringID i, op_t o, const Property &v)
-            : id(i), op(o), v1(v) { assert(o > dont_care && o <= le); }
-        PropertyPredicate(StringID i, op_t o,
+        PropertyPredicate(StringID i) : id(i), op(DontCare) { }
+        PropertyPredicate(StringID i, Op o, const Property &v)
+            : id(i), op(o), v1(v) { assert(o > DontCare && o <= Le); }
+        PropertyPredicate(StringID i, Op o,
                 const Property &val1, const Property &val2)
             : id(i), op(o), v1(val1), v2(val2)
-            { assert(o >= gele); }
+            { assert(o >= GeLe); }
     };
 
     inline bool operator==(const Property &a, const Property &b)

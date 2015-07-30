@@ -14,7 +14,7 @@
 #endif
 
 namespace Jarvis {
-    enum Disposition { dont_pass, pass, stop, pass_stop, prune, pass_prune };
+    enum Disposition { DontPass, Pass, Stop, PassStop, Prune, PassPrune };
 
     template <typename R> class IteratorImplIntf {
     public:
@@ -61,13 +61,13 @@ namespace Jarvis {
 
         operator bool() const { return _impl != NULL; }
         const Ref_type &operator*() const
-            { if (!_impl) throw Exception(null_iterator); return (*_impl).operator*(); }
+            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator*(); }
         const Ref_type *operator->() const
-            { if (!_impl) throw Exception(null_iterator); return (*_impl).operator->(); }
+            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator->(); }
         Ref_type &operator*()
-            { if (!_impl) throw Exception(null_iterator); return (*_impl).operator*(); }
+            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator*(); }
         Ref_type *operator->()
-            { if (!_impl) throw Exception(null_iterator); return (*_impl).operator->(); }
+            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator->(); }
         void next() { if (_impl) if (!_impl->next()) done(); }
 
         void process(std::function<void(Ref_type &)> f)
@@ -176,8 +176,11 @@ namespace Jarvis {
         {
             assert(ptype() >= p_novalue && ptype() <= p_blob);
             static const PropertyType type_map[] = {
-                t_novalue, t_boolean, t_boolean, t_integer, t_float,
-                t_time, t_string, t_string, t_blob
+                PropertyType::NoValue, PropertyType::Boolean,
+                PropertyType::Boolean, PropertyType::Integer,
+                PropertyType::Float, PropertyType::Time,
+                PropertyType::String, PropertyType::String,
+                PropertyType::Blob
             };
             return type_map[ptype() - p_novalue];
         }

@@ -60,7 +60,7 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
     // nested dependent transactions not supported yet
     if (_per_thread_tx != NULL && read_write
             && !(_tx_type & Transaction::Independent))
-        throw Exception(not_implemented);
+        throw Exception(NotImplemented);
 
     _tx_handle = db->transaction_manager().alloc_transaction(!read_write);
 
@@ -103,9 +103,9 @@ void TransactionImpl::log(void *ptr, size_t len)
 
     if (_jcur + je_entries >= jend()) {
         if (_tx_type & Transaction::ReadWrite)
-            throw Exception(tx_small_journal);
+            throw Exception(OutOfJournalSpace);
         else
-            throw Exception(read_only);
+            throw Exception(ReadOnly);
     }
 
     for (unsigned i = 0; i < je_entries - 1; i++) {

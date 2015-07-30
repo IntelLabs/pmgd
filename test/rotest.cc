@@ -9,7 +9,12 @@
 
 using namespace Jarvis;
 
-#undef Exception
+// Add an exception to the list of Jarvis exceptions.
+namespace Jarvis {
+    enum AppExceptionType {
+        TestFailure = AppExceptionBase,
+    };
+};
 
 void create_db(const char *name)
 {
@@ -30,9 +35,9 @@ void test1(Graph &db)
     StringID id3("x");
     StringID id;
     if (!StringID::lookup("x", id))
-        throw Exception(111, "unexpected", __FILE__, __LINE__);
+        throw Exception(TestFailure);
     if (StringID::lookup("y", id))
-        throw Exception(111, "unexpected", __FILE__, __LINE__);
+        throw Exception(TestFailure);
 }
 
 // Test that a read-only transaction cannot be used to modify the db.
@@ -42,11 +47,11 @@ void test2a(Graph &db)
         db.add_node(0);
     }
     catch (Exception e) {
-        if (e.num != Exception::e_read_only)
+        if (e.num != Jarvis::ReadOnly)
             throw e;
         return;
     }
-    throw Exception(111, "unexpected", __FILE__, __LINE__);
+    throw Exception(TestFailure);
 }
 
 void test2b(Graph &db)
@@ -56,11 +61,11 @@ void test2b(Graph &db)
         StringID id("y");
     }
     catch (Exception e) {
-        if (e.num != Exception::e_read_only)
+        if (e.num != Jarvis::ReadOnly)
             throw e;
         return;
     }
-    throw Exception(111, "unexpected", __FILE__, __LINE__);
+    throw Exception(TestFailure);
 }
 
 void test2(Graph &db)
@@ -78,11 +83,11 @@ void test3(Graph &db)
         Transaction tx(db, Transaction::ReadWrite);
     }
     catch (Exception e) {
-        if (e.num != Exception::e_read_only)
+        if (e.num != ReadOnly)
             throw e;
         return;
     }
-    throw Exception(111, "unexpected", __FILE__, __LINE__);
+    throw Exception(TestFailure);
 }
 
 
@@ -105,11 +110,11 @@ void test4c(Graph &db)
         Transaction tx(db, Transaction::ReadWrite);
     }
     catch (Exception e) {
-        if (e.num != Exception::e_not_implemented)
+        if (e.num != NotImplemented)
             throw e;
         return;
     }
-    throw Exception(111, "unexpected", __FILE__, __LINE__);
+    throw Exception(TestFailure);
 }
 
 // Test that the outer transaction is still usable.

@@ -50,7 +50,7 @@ jint JNICALL Java_jarvis_PropertyIterator_type(JNIEnv *env, jobject pi)
     PropertyIterator &j_pi = *(getJarvisHandle<PropertyIterator>(env, pi));
 
     try {
-        return j_pi->type();
+        return int(j_pi->type());
     }
     catch (Exception e) {
         JavaThrow(env, e);

@@ -91,7 +91,7 @@ Property PropertyList::get_property(StringID id) const
     PropertyRef p;
 
     if (!find_property(id, p))
-        throw Exception(property_not_found);
+        throw Exception(PropertyNotFound);
 
     return p.get_value();
 }
@@ -307,17 +307,17 @@ static unsigned get_int_len(long long v)
 unsigned PropertyList::get_space(const Property &p)
 {
     switch (p.type()) {
-        case t_novalue: return 0;
-        case t_boolean: return 0;
-        case t_integer: return get_int_len(p.int_value());
-        case t_string: {
+        case PropertyType::NoValue: return 0;
+        case PropertyType::Boolean: return 0;
+        case PropertyType::Integer: return get_int_len(p.int_value());
+        case PropertyType::String: {
             size_t len = p.string_value().length();
             if (len <= 13) return len;
             return sizeof (PropertyRef::BlobRef);
         }
-        case t_float: return sizeof (double);
-        case t_time: return sizeof (Time);
-        case t_blob: return sizeof (PropertyRef::BlobRef);
+        case PropertyType::Float: return sizeof (double);
+        case PropertyType::Time: return sizeof (Time);
+        case PropertyType::Blob: return sizeof (PropertyRef::BlobRef);
         default: assert(0); return 0;
     }
 }
@@ -434,20 +434,20 @@ void PropertyRef::set_value(const Property &p, unsigned size,
     assert(_offset <= chunk_end());
     unsigned type;
     switch (p.type()) {
-        case t_novalue:
+        case PropertyType::NoValue:
             type = p_novalue;
             break;
-        case t_boolean:
+        case PropertyType::Boolean:
             type = p.bool_value() ? p_boolean_true : p_boolean_false;
             break;
-        case t_integer: {
+        case PropertyType::Integer: {
             long long v = p.int_value();
             assert(size == get_int_len(v) + 3);
             memcpy(val(), &v, size - 3);
             type = p_integer;
             break;
         }
-        case t_string: {
+        case PropertyType::String: {
             const std::string &value = p.string_value();
             size_t len = value.length();
             if (len <= 13) {
@@ -461,15 +461,15 @@ void PropertyRef::set_value(const Property &p, unsigned size,
             }
             break;
         }
-        case t_float:
+        case PropertyType::Float:
             *(double *)val() = p.float_value();
             type = p_float;
             break;
-        case t_time:
+        case PropertyType::Time:
             *(Time *)val() = p.time_value();
             type = p_time;
             break;
-        case t_blob: {
+        case PropertyType::Blob: {
             Property::blob_t value = p.blob_value();
             set_blob(value.value, value.size, allocator);
             type = p_blob;
@@ -485,7 +485,7 @@ void PropertyRef::set_value(const Property &p, unsigned size,
 void PropertyRef::set_blob(const void *value, std::size_t size,
                            Allocator &allocator)
 {
-    if (size > UINT_MAX) throw Exception(not_implemented);
+    if (size > UINT_MAX) throw Exception(NotImplemented);
     void *p = allocator.alloc(size);
     memcpy(p, value, size);
     TransactionImpl::flush_range(p, size);
@@ -504,7 +504,7 @@ bool PropertyRef::bool_value() const
         case p_boolean_false: return false;
         case p_boolean_true: return true;
     }
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 long long PropertyRef::int_value() const
@@ -517,7 +517,7 @@ long long PropertyRef::int_value() const
             v >>= CHAR_BIT * shift;
         return v;
     }
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 std::string PropertyRef::string_value() const
@@ -535,21 +535,21 @@ std::string PropertyRef::string_value() const
             return std::string((const char *)v->value, v->size);
         }
     }
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 double PropertyRef::float_value() const
 {
     if (ptype() == p_float)
         return *(double *)val();
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 Time PropertyRef::time_value() const
 {
     if (ptype() == p_time)
         return *(Time *)val();
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 Property::blob_t PropertyRef::blob_value() const
@@ -558,7 +558,7 @@ Property::blob_t PropertyRef::blob_value() const
         BlobRef *v = (BlobRef *)val();
         return Property::blob_t(v->value, v->size);
     }
-    throw Exception(property_type);
+    throw Exception(PropertyTypeMismatch);
 }
 
 

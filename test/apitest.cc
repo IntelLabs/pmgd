@@ -43,7 +43,7 @@ int q1(Graph &db, Node &a, Node &b)
         Disposition operator()(const PathRef &p) {
             if (p.length() < min_length)
                 min_length = p.length();
-            return Jarvis::pass;
+            return Jarvis::Pass;
         }
         int get_length() { return min_length; }
     };
@@ -62,7 +62,7 @@ int q1(Graph &db, Node &a, Node &b)
 int q1a(Graph &db, Node &a, Node &b)
 {
     return db.get_paths(a, b, false)
-               .filter([](const PathRef &) { return Jarvis::pass_stop; })
+               .filter([](const PathRef &) { return Jarvis::PassStop; })
                ->length();
 }
 
@@ -74,7 +74,7 @@ int q1a(Graph &db, Node &a, Node &b)
 int q5(Graph &db, Node &a, Node &b)
 {
     return db.get_paths(a, b, false)
-               .filter([](const PathRef &) { return Jarvis::pass_stop; });
+               .filter([](const PathRef &) { return Jarvis::PassStop; });
 }
 
 
@@ -95,7 +95,7 @@ double q6(Graph &db, Node &a, Node &b)
             }
             if (length < min_length)
                 min_length = length;
-            return Jarvis::stop;
+            return Jarvis::Stop;
         }
         double get_length() { return min_length; }
     };
@@ -133,7 +133,7 @@ Jarvis::Path q6a(Graph &db, Node &a, Node &b)
 bool q4(Graph &db, Node &a, Node &b)
 {
     return bool(db.get_paths(a, b)
-                .filter([](const PathRef &) { return Jarvis::pass_stop; }));
+                .filter([](const PathRef &) { return Jarvis::PassStop; }));
 }
 
 
@@ -143,7 +143,7 @@ void q8(Graph &db, Node &a, Node &b, int N, void (*process)(Path &))
 {
     PathIterator i = db.get_paths(a, b)
         .filter([N](const PathRef &p)
-            { return p.length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
+            { return p.length() < N ? Jarvis::DontPass : Jarvis::PassStop; });
 
     while (i) {
         //process(*i);
@@ -158,7 +158,7 @@ NodeIterator q3(Graph &db, Node &a, int N)
 {
     return db.get_paths(a)
         .filter([N](const PathRef &p)
-            { return p.length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; })
+            { return p.length() < N ? Jarvis::DontPass : Jarvis::PassStop; })
         .end_nodes();
 }
 
@@ -169,7 +169,7 @@ NodeIterator q2(Graph &db, Node &a, int N)
 {
     return db.get_paths(a)
         .filter([N](const PathRef &p)
-            { return p.length() < N ? Jarvis::pass : Jarvis::pass_stop; })
+            { return p.length() < N ? Jarvis::Pass : Jarvis::PassStop; })
         .end_nodes();
 }
 
@@ -184,7 +184,7 @@ void q3a(Graph &db, Node &a, int N, void (*process)(Node &))
 {
     PathIterator i = db.get_paths(a)
         .filter([N](const PathRef &p)
-           { return p.length() < N ? Jarvis::dont_pass : Jarvis::pass_stop; });
+           { return p.length() < N ? Jarvis::DontPass : Jarvis::PassStop; });
 
     while (i) {
         process(i->end_node());
@@ -199,7 +199,7 @@ void q2a(Graph &db, Node &a, int N, void (*process)(Node &))
 {
     PathIterator i = db.get_paths(a)
         .filter([N](const PathRef &p)
-            { return p.length() < N ? Jarvis::pass : Jarvis::pass_stop; });
+            { return p.length() < N ? Jarvis::Pass : Jarvis::PassStop; });
 
     while (i) {
         process(i->end_node());
@@ -218,17 +218,17 @@ Jarvis::Graph::~Graph()
 
 Jarvis::Node &Jarvis::Graph::add_node(StringID)
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::Edge &Jarvis::Graph::add_edge(Node &, Node &, StringID)
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::NodeIterator Jarvis::Graph::get_nodes()
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::PathIterator Jarvis::Graph::get_paths(Node &, Node&, bool)
@@ -238,17 +238,17 @@ Jarvis::PathIterator Jarvis::Graph::get_paths(Node &, Node&, bool)
 
 Jarvis::EdgeIterator Jarvis::Graph::get_edges()
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 bool Jarvis::StringID::get(const char *, StringID &, bool)
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::Property Jarvis::Edge::get_property(StringID) const
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::PathRef::operator Jarvis::Path() const
@@ -268,7 +268,7 @@ Jarvis::NodeIterator Jarvis::PathIteratorFilter::end_nodes() const
 
 Jarvis::NodeIterator Jarvis::PathIteratorImplBaseIntf::end_nodes() const
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 Jarvis::Property::Property(const Property &a)
@@ -281,15 +281,15 @@ Jarvis::Property::~Property()
 
 bool Jarvis::Property::operator<(const Property &a) const
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 bool Jarvis::Node::check_property(StringID, Property &) const
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }
 
 bool Jarvis::Edge::check_property(StringID, Property &) const
 {
-    throw Exception(not_implemented);
+    throw Exception(NotImplemented);
 }

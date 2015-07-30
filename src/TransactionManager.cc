@@ -26,7 +26,7 @@ TransactionManager::TransactionManager(
     // However, the computation of _max_transactions and _max_extents
     // and the following requirement will not need to change.
     if (_max_extents < _max_transactions)
-        throw Exception(invalid_config);
+        throw Exception(InvalidConfig);
 
     if (create) {
         reset_table();
@@ -81,7 +81,7 @@ void TransactionManager::check_clean()
     // indicate a prior un-clean close.
     for (int i = 0; i < _max_transactions; i++)
         if (_tx_table[i].tx_id != 0)
-            throw Exception(read_only);
+            throw Exception(ReadOnly);
 }
 
 TransactionHandle TransactionManager::alloc_transaction(bool read_only)
@@ -108,7 +108,7 @@ TransactionHandle TransactionManager::alloc_transaction(bool read_only)
             return TransactionHandle(tx_id, i, tx_jbegin(i), tx_jend(i));
         }
     }
-    throw Exception(tx_alloc_failed);
+    throw Exception(OutOfTransactions);
 }
 
 void TransactionManager::free_transaction(const TransactionHandle &handle)

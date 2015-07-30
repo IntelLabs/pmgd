@@ -20,10 +20,10 @@ int main(int argc, char *argv[])
         printf("Running index range tests on file email.gson\n");
         Graph db("emailindexgraph", Graph::Create);
         Transaction tx(db, Transaction::ReadWrite);
-        db.create_index(Graph::NODE, "Person", "Email", t_string);
-        db.create_index(Graph::NODE, "Message", "Size", t_integer);
-        db.create_index(Graph::NODE, "Message", "Replied?", t_boolean);
-        db.create_index(Graph::NODE, "Attachment", "Created", t_time);
+        db.create_index(Graph::NodeIndex, "Person", "Email", PropertyType::String);
+        db.create_index(Graph::NodeIndex, "Message", "Size", PropertyType::Integer);
+        db.create_index(Graph::NodeIndex, "Message", "Replied?", PropertyType::Boolean);
+        db.create_index(Graph::NodeIndex, "Attachment", "Created", PropertyType::Time);
         tx.commit();
 
         load_gson(db, "email.gson", node_added, edge_added);
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
         count = 0;
         printf("## Trying iterator with tag Message and size between:10K-11K with GELE\n");
-        PropertyPredicate pp2("Size", PropertyPredicate::gele, 10000, 11000);
+        PropertyPredicate pp2("Size", PropertyPredicate::GeLe, 10000, 11000);
         for (NodeIterator i = db.get_nodes("Message", pp2); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %lld\n", i->get_property("Size").int_value());
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 
         count = 0;
         printf("## Trying iterator with tag Message and Replied?:true with EQ\n");
-        PropertyPredicate pp3("Replied?", PropertyPredicate::eq, true);
+        PropertyPredicate pp3("Replied?", PropertyPredicate::Eq, true);
         for (NodeIterator i = db.get_nodes("Message", pp3); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %d\n", i->get_property("Replied?").bool_value());
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 
         count = 0;
         printf("## Trying iterator with tag Person and email range:alain.kagi to vishakha.s.gupta@intel.com with GELT\n");
-        PropertyPredicate pp4("Email", PropertyPredicate::gelt, "alain.kagi", "vishakha.s.gupta@intel.com");
+        PropertyPredicate pp4("Email", PropertyPredicate::GeLt, "alain.kagi", "vishakha.s.gupta@intel.com");
         for (NodeIterator i = db.get_nodes("Person", pp4); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             printf("\tConfirming searched prop value: %s\n", i->get_property("Email").string_value().c_str());
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
         std::string s2 = time_to_string(t2);
         printf("## Trying iterator with tag Attachment and created between: %s and %s with GTLT\n",
                    s1.c_str(), s2.c_str());
-        PropertyPredicate pp5("Created", PropertyPredicate::gtlt, t1, t2);
+        PropertyPredicate pp5("Created", PropertyPredicate::GtLt, t1, t2);
         for (NodeIterator i = db.get_nodes("Attachment", pp5); i; i.next()) {
             printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
             Time t = i->get_property("Created").time_value();

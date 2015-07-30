@@ -53,17 +53,17 @@ int main(int argc, char **argv)
             node = &*db.get_nodes()
                 .filter([id](const NodeRef &n) {
                     Property p = n.get_property(id_name);
-                    return (p.type() == t_string && p.string_value() == id
-                            || p.type() == t_integer && p.int_value() == strtoll(id, 0, 10))
-                        ? pass_stop : dont_pass;
+                    return (p.type() == PropertyType::String && p.string_value() == id
+                            || p.type() == PropertyType::Integer && p.int_value() == strtoll(id, 0, 10))
+                        ? PassStop : DontPass;
                 });
         else
             edge = &*db.get_edges()
                 .filter([id](const EdgeRef &e) {
                     Property p = e.get_property(id_name);
-                    return (p.type() == t_string && p.string_value() == id
-                            || p.type() == t_integer && p.int_value() == strtoll(id, 0, 10))
-                        ? pass_stop : dont_pass;
+                    return (p.type() == PropertyType::String && p.string_value() == id
+                            || p.type() == PropertyType::Integer && p.int_value() == strtoll(id, 0, 10))
+                        ? PassStop : DontPass;
                 });
 
         if (argi + 2 <= argc) {
@@ -107,14 +107,14 @@ int main(int argc, char **argv)
         }
     }
     catch (Exception e) {
-        if (e.num == Exception::e_null_iterator) {
+        if (e.num == NullIterator) {
             printf("%s %s not found.\n"
                    "%ss are identified by a property named \"%s\",\n"
                    "which may be an integer or a string.\n",
                    use_node ? "Node" : "Edge", id,
                    use_node ? "Node" : "Edge", id_name);
         }
-        else if (e.num == Exception::e_property_not_found) {
+        else if (e.num == PropertyNotFound) {
             printf("Some %s did not have an \"%s\" property.\n"
                    "%ss are identified by a property named \"%s\",\n"
                    "which may be an integer or a string.\n",

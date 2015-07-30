@@ -6,7 +6,7 @@ public class BindingsTest {
         String sample_loc = args.length > 0 ? args[0] : "bindingsgraph";
 
         try {
-            Graph db = new Graph(sample_loc, Graph.OpenOptions.NONE);
+            Graph db = new Graph(sample_loc, Graph.OpenOptions.ReadWrite);
 
             // Adding Node, getting ID, tag
             Transaction tx1 = new Transaction(db, true, false);
@@ -117,18 +117,18 @@ public class BindingsTest {
                 for (PropertyIterator pi = ni.get_properties(); !pi.done(); pi.next()) {
                     System.out.printf("  %s [%d] ", pi.id(), pi.type());
                     switch (pi.type()) {
-                        case Property.t_novalue:
+                        case Property.NoValue:
                             break;
-                        case Property.t_boolean:
+                        case Property.Boolean:
                             System.out.printf("%s", pi.bool_value() ? "T" : "F");
                             break;
-                        case Property.t_integer:
+                        case Property.Integer:
                             System.out.printf("%d", pi.int_value());
                             break;
-                        case Property.t_string:
+                        case Property.String:
                             System.out.printf("%s", pi.string_value());
                             break;
-                        case Property.t_float:
+                        case Property.Float:
                             System.out.printf("%f", pi.float_value());
                             break;
                         default:
@@ -147,18 +147,18 @@ public class BindingsTest {
                 for (PropertyIterator pi = ei.get_properties(); !pi.done(); pi.next()) {
                     System.out.printf("  %s [%d] ", pi.id(), pi.type());
                     switch (pi.type()) {
-                        case Property.t_novalue:
+                        case Property.NoValue:
                             break;
-                        case Property.t_boolean:
+                        case Property.Boolean:
                             System.out.printf("%s", pi.bool_value() ? "T" : "F");
                             break;
-                        case Property.t_integer:
+                        case Property.Integer:
                             System.out.printf("%d", pi.int_value());
                             break;
-                        case Property.t_string:
+                        case Property.String:
                             System.out.printf("%s", pi.string_value());
                             break;
-                        case Property.t_float:
+                        case Property.Float:
                             System.out.printf("%f", pi.float_value());
                             break;
                         default:
@@ -179,21 +179,21 @@ public class BindingsTest {
                 System.out.printf("Node %d has Age\n", db.get_id(ni.get_current()));
 
             System.out.printf("Nodes with name > m\n");
-            ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.op_t.ge, new Property("m")), false);
+            ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.Op.Ge, new Property("m")), false);
             for ( ; !ni.done(); ni.next())
                 System.out.printf("Node %d: %s\n",
                     db.get_id(ni.get_current()),
                     ni.get_property("Name").string_value());
 
             System.out.printf("Nodes with name > f and name < s\n");
-            ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.op_t.gtlt, new Property("f"), new Property("s")), false);
+            ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.Op.GtLt, new Property("f"), new Property("s")), false);
             for ( ; !ni.done(); ni.next())
                 System.out.printf("Node %d: %s\n",
                     db.get_id(ni.get_current()),
                     ni.get_property("Name").string_value());
 
             System.out.printf("Nodes with tag myTag2 and name > a and name < s\n");
-            ni = db.get_nodes("myTag2", new PropertyPredicate("Name", PropertyPredicate.op_t.gtlt, new Property("a"), new Property("s")), false);
+            ni = db.get_nodes("myTag2", new PropertyPredicate("Name", PropertyPredicate.Op.GtLt, new Property("a"), new Property("s")), false);
             for ( ; !ni.done(); ni.next())
                 System.out.printf("Node %d: %s\n",
                     db.get_id(ni.get_current()),
@@ -205,7 +205,7 @@ public class BindingsTest {
             System.out.printf("\n");
 
             System.out.printf("All edges to/from node 1:");
-            ei = n1.get_edges(Node.Direction.ANY);
+            ei = n1.get_edges(Node.Direction.Any);
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
@@ -217,19 +217,19 @@ public class BindingsTest {
             System.out.printf("\n");
 
             System.out.printf("Edges to/from node 1 with tag:");
-            ei = n1.get_edges(Node.Direction.ANY, "myTag3");
+            ei = n1.get_edges(Node.Direction.Any, "myTag3");
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
 
             System.out.printf("Edges from node 1 with tag:");
-            ei = n1.get_edges(Node.Direction.OUTGOING, "myTag3");
+            ei = n1.get_edges(Node.Direction.Outgoing, "myTag3");
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
 
             System.out.printf("Edges to node 2 with tag:");
-            ei = n2.get_edges(Node.Direction.INCOMING, "myTag3");
+            ei = n2.get_edges(Node.Direction.Incoming, "myTag3");
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
@@ -248,7 +248,7 @@ public class BindingsTest {
             for (ni = db.get_nodes(); !ni.done(); ni.next()) {
                 System.out.printf("Neighbors of node %d (OUT)\n",
                                   db.get_id(ni.get_current()));
-                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.OUTGOING);
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Outgoing);
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
@@ -259,7 +259,7 @@ public class BindingsTest {
             for (ni = db.get_nodes(); !ni.done(); ni.next()) {
                 System.out.printf("Neighbors of node %d (OUT, \"myTag3\")\n",
                                   db.get_id(ni.get_current()));
-                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.OUTGOING, "myTag3");
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Outgoing, "myTag3");
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
@@ -270,7 +270,7 @@ public class BindingsTest {
             for (ni = db.get_nodes(); !ni.done(); ni.next()) {
                 System.out.printf("Neighbors of node %d (IN)\n",
                                   db.get_id(ni.get_current()));
-                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.INCOMING);
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Incoming);
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
@@ -281,7 +281,7 @@ public class BindingsTest {
             for (ni = db.get_nodes(); !ni.done(); ni.next()) {
                 System.out.printf("Neighbors of node %d (IN, \"myTag3\")\n",
                                   db.get_id(ni.get_current()));
-                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.INCOMING, "myTag3");
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Incoming, "myTag3");
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
@@ -316,12 +316,12 @@ public class BindingsTest {
         for (PropertyIterator i = n.get_properties(); !i.done(); i.next())
             System.out.printf("  %s: %s\n", i.id(), property_text(i.get_current()));
 
-        for (EdgeIterator i = n.get_edges(Node.Direction.OUTGOING); !i.done(); i.next())
+        for (EdgeIterator i = n.get_edges(Node.Direction.Outgoing); !i.done(); i.next())
             System.out.printf(" %s -> n%d (e%d)\n", tag_text(i.get_tag()),
                               db.get_id(i.get_destination()),
                               db.get_id(i.get_current()));
 
-        for (EdgeIterator i = n.get_edges(Node.Direction.INCOMING); !i.done(); i.next())
+        for (EdgeIterator i = n.get_edges(Node.Direction.Incoming); !i.done(); i.next())
             System.out.printf(" %s <- n%d (e%d)\n", tag_text(i.get_tag()),
                               db.get_id(i.get_source()),
                               db.get_id(i.get_current()));
@@ -348,13 +348,13 @@ public class BindingsTest {
     static String property_text(Property p) throws jarvis.Exception
     {
         switch (p.type()) {
-            case Property.t_novalue: return "no value";
-            case Property.t_boolean: return p.bool_value() ? "T" : "F";
-            case Property.t_integer: return Long.toString(p.int_value());
-            case Property.t_string: return p.string_value();
-            case Property.t_float: return Double.toString(p.float_value());
-            case Property.t_time: return "<time value>";
-            case Property.t_blob: return "<blob value>";
+            case Property.NoValue: return "no value";
+            case Property.Boolean: return p.bool_value() ? "T" : "F";
+            case Property.Integer: return Long.toString(p.int_value());
+            case Property.String: return p.string_value();
+            case Property.Float: return Double.toString(p.float_value());
+            case Property.Time: return "<time value>";
+            case Property.Blob: return "<blob value>";
             default: return "<unknown property type>";
         }
     }
