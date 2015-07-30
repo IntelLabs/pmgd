@@ -59,9 +59,6 @@ namespace Jarvis {
         EdgeIterator get_edges(StringID tag);
         EdgeIterator get_edges(StringID tag, const PropertyPredicate &, bool reverse = false);
 
-        PathIterator get_paths(Node &a, bool depth_first = false);
-        PathIterator get_paths(Node &a, Node &b, bool depth_first = false);
-
         Node &add_node(StringID tag);
         Edge &add_edge(Node &source, Node &destination, StringID tag);
         void remove(Node &node);

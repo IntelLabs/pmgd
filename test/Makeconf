@@ -1,6 +1,6 @@
 # List of sources for this directory.
 TEST_SRCS := $(addprefix test/, \
-                         apitest.cc alloctest.cc soltest.cc nodeedgetest.cc \
+                         alloctest.cc soltest.cc nodeedgetest.cc \
                          listtest.cc edgeindextest.cc \
                          propertytest.cc propertypredicatetest.cc \
                          propertychunktest.cc filtertest.cc \
@@ -39,11 +39,6 @@ TEST_CFLAGS := --std=c++11 $(TEST_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP
 test/%: test/%.o $(TEST_LIBS)
 	$(call print,LINK,$@)
 	$(CC) -o $@ $< $(TEST_LIBS)
-
-# Special case for apitest.
-test/apitest: test/apitest.o
-	$(call print,LINK,$@)
-	$(CC) -o $@ $<
 
 # Special case for load_gson_test.
 test/load_gson_test: test/load_gson_test.o $(TEST_LIBS)

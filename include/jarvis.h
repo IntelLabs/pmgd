@@ -11,6 +11,5 @@
 #include "graph.h"
 #include "node.h"
 #include "edge.h"
-#include "path.h"
 #include "transaction.h"
 #include "filter.h"
