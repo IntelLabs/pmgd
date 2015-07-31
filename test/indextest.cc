@@ -88,8 +88,7 @@ int main(int argc, char **argv)
             Edge &e = db.add_edge(*nodes[i], *nodes[i+1], 0);
             e.set_property("id", i + 2611);
         }
-        dump_nodes(db);
-        dump_edges(db);
+        dump_debug(db);
 
         printf("## Trying iterator with tag tag1 and property id1:1612\n");
         PropertyPredicate pp("id1", PropertyPredicate::Eq, 1612);

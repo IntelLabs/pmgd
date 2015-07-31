@@ -88,8 +88,7 @@ static void modify(Graph &db, int argc, char **argv, bool commit)
 static void dump_no_tx(Graph &db)
 {
     try {
-        dump_nodes(db);
-        dump_edges(db);
+        dump_debug(db);
     }
     catch (Exception e) {
         print_exception(e);
@@ -101,8 +100,7 @@ static void dump(Graph &db)
 {
     try {
         Transaction tx(db, Transaction::Independent);
-        dump_nodes(db);
-        dump_edges(db);
+        dump_debug(db);
         tx.commit();
     }
     catch (Exception e) {

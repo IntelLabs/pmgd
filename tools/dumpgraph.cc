@@ -27,7 +27,8 @@ int main(int argc, char **argv)
     }
 
     if (!(argi < argc)) {
-        print_usage(stdout);
+        fprintf(stderr, "dumpgraph: No graphstore specified\n");
+        print_usage(stderr);
         return 1;
     }
 
@@ -36,8 +37,7 @@ int main(int argc, char **argv)
     try {
         Graph db(db_name, recover ? Graph::ReadWrite : Graph::ReadOnly);
         Transaction tx(db);
-        dump_nodes(db);
-        dump_edges(db);
+        dump_debug(db);
     }
     catch (Exception e) {
         print_exception(e, stderr);

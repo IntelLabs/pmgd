@@ -70,8 +70,7 @@ int main(int argc, char **argv)
             prev = &n;
         }
 
-        dump_nodes(db);
-        dump_edges(db);
+        dump_debug(db);
         tx.commit();
     }
     catch (Exception e) {

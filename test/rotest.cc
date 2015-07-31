@@ -29,7 +29,7 @@ void create_db(const char *name)
 void test1(Graph &db)
 {
     Transaction tx(db);
-    dump_nodes(db);
+    dump_debug(db);
     StringID id1(0);
     StringID id2("");
     StringID id3("x");

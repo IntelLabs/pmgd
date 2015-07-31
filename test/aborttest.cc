@@ -56,8 +56,7 @@ int main(int argc, char **argv)
 
                     case 'a':
                         printf("====\n");
-                        dump_nodes(db);
-                        dump_edges(db);
+                        dump_debug(db);
                         printf("====\n");
                         exit(0);
                 }
@@ -65,8 +64,7 @@ int main(int argc, char **argv)
 
             if (i > 1)
                 printf("----\n");
-            dump_nodes(db);
-            dump_edges(db);
+            dump_debug(db);
             tx.commit();
         }
     }

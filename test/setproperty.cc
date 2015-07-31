@@ -102,8 +102,7 @@ int main(int argc, char **argv)
 
         if (dump_graph) {
             Transaction tx(db);
-            dump_nodes(db);
-            dump_edges(db);
+            dump_debug(db);
         }
     }
     catch (Exception e) {
