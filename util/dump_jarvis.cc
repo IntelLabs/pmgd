@@ -67,7 +67,21 @@ static void print_property(const PropertyIterator &p, FILE *f)
         case PropertyType::NoValue: return;
         case PropertyType::Boolean: value = p->bool_value() ? "true" : "false"; break;
         case PropertyType::Integer: value = std::to_string(p->int_value()); break;
-        case PropertyType::String: value = "\"" + p->string_value() + "\""; break;
+        case PropertyType::String: {
+            std::string tmp = p->string_value();
+            std::string::size_type pos = 0;
+            std::string::size_type prev = 0;
+            value.append("\"");
+            while ((pos = tmp.find_first_of("\"\\", pos)) != tmp.npos) {
+                value.append(tmp, prev, pos - prev);
+                value.append("\\");
+                prev = pos;
+                pos++;
+            }
+            value.append(tmp, prev, tmp.npos);
+            value.append("\"");
+            break;
+        }
         case PropertyType::Float: value = std::to_string(p->float_value()); break;
         case PropertyType::Time: /* TBD */ return; // break;
         case PropertyType::Blob: /* TBD */ return; // break;

@@ -153,7 +153,18 @@ property:
               { current.set_property($1, $3); }
 
         | property_id '=' QUOTED_STRING
-              { current.set_property($1, $3); }
+              {
+                  const std::string &s = *$3;
+                  std::string value;
+                  std::string::size_type pos;
+                  std::string::size_type prev = 0;
+                  while ((pos = s.find('\\', prev)) != s.npos) {
+                      value.append(s, prev, pos - prev);
+                      prev = pos + 1;
+                  }
+                  value.append(s, prev, s.npos);
+                  current.set_property($1, value);
+              }
 
         | property_id '=' TRUE
               { current.set_property($1, true); }
