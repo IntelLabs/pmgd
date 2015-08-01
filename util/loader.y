@@ -160,6 +160,9 @@ property:
 
         | property_id '=' FALSE
               { current.set_property($1, false); }
+
+        | property_id
+              { current.set_property($1, Jarvis::Property()); }
         ;
 
 property_id: STRING { $$ = new Jarvis::StringID($1->c_str()); }
