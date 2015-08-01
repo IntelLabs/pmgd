@@ -7,6 +7,7 @@ using namespace Jarvis;
 
 static void print_node(Graph &db, const Node &n, FILE *f);
 static void print_edge(Graph &db, const Edge &n, FILE *f);
+static void print_property_list(PropertyIterator p, FILE *f);
 static void print_property(const PropertyIterator &p, FILE *f);
 
 void dump_jarvis(Graph &db, FILE *f)
@@ -27,15 +28,9 @@ static void print_node(Graph &db, const Node &n, FILE *f)
         if (e.num != ExceptionType::ReadOnly)
             throw;
     }
-    PropertyIterator p = n.get_properties()
-        .filter([id](const PropertyRef &p)
-                { return p.id() == id ? DontPass : Pass; });
-    if (p) {
-        fprintf(f, " { ");
-        for (; p; p.next())
-            print_property(p, f);
-        fprintf(f, "}");
-    }
+    print_property_list(n.get_properties()
+                        .filter([id](const PropertyRef &p)
+                                { return p.id() == id ? DontPass : Pass; }), f);
     fprintf(f, ";\n");
 }
 
@@ -44,31 +39,39 @@ static void print_edge(Graph &db, const Edge &e, FILE *f)
 {
     fprintf(f, "%lu %lu :",
             db.get_id(e.get_source()), db.get_id(e.get_destination()));
-    PropertyIterator p = e.get_properties();
     fprintf(f, "%s", tag_text(e).c_str());
-    if (p) {
-        fprintf(f, " { ");
-        for (; p; p.next())
-            print_property(p, f);
-        fprintf(f, "}");
-    }
+    print_property_list(e.get_properties(), f);
     fprintf(f, ";\n");
 }
 
 
+static void print_property_list(PropertyIterator p, FILE *f)
+{
+    if (p) {
+        bool first = true;
+        fprintf(f, " { ");
+        for (; p; p.next()) {
+            if (!first) fprintf(f, ", ");
+            first = false;
+            print_property(p, f);
+        }
+        fprintf(f, " }");
+    }
+}
+
 static void print_property(const PropertyIterator &p, FILE *f)
 {
-    fprintf(f, "%s ", p->id().name().c_str());
-    std::string s;
+    fprintf(f, "%s", p->id().name().c_str());
+    std::string value;
     switch (p->type()) {
         case PropertyType::NoValue: return;
-        case PropertyType::Boolean: s = p->bool_value()?"TRUE":"FALSE"; break;
-        case PropertyType::Integer: s = std::to_string(p->int_value()); break;
-        case PropertyType::String: s = "\"" + p->string_value() + "\""; break;
-        case PropertyType::Float: s = std::to_string(p->float_value()); break;
-        case PropertyType::Time: s = "<Time value>"; break;
-        case PropertyType::Blob: s = "<blob>"; break;
+        case PropertyType::Boolean: value = p->bool_value() ? "true" : "false"; break;
+        case PropertyType::Integer: value = std::to_string(p->int_value()); break;
+        case PropertyType::String: value = "\"" + p->string_value() + "\""; break;
+        case PropertyType::Float: value = std::to_string(p->float_value()); break;
+        case PropertyType::Time: /* TBD */ return; // break;
+        case PropertyType::Blob: /* TBD */ return; // break;
         default: throw Exception(PropertyTypeInvalid);
     }
-    fprintf(f, "= %s ", s.c_str());
+    fprintf(f, " = %s", value.c_str());
 }
