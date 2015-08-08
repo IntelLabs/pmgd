@@ -2,13 +2,13 @@
 
 #include <vector>
 #include "stringid.h"
-#include "node.h"
-#include "edge.h"
 #include "iterator.h"
 #include "property.h"
 
 namespace Jarvis {
     class GraphImpl;
+    class Node;
+    class Edge;
 
     typedef uint64_t NodeID;
     typedef uint64_t EdgeID;

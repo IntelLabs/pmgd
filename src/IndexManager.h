@@ -3,10 +3,11 @@
 #include "ChunkList.h"
 #include "property.h"
 #include "Index.h"
+#include "node.h"
+#include "edge.h"
 #include "iterator.h"
 
 namespace Jarvis {
-    class Node;
     class Allocator;
 
     // This class creates/maintains all indexes in Jarvis.
