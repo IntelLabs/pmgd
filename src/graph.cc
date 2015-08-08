@@ -137,7 +137,8 @@ void GraphImpl::GraphInfo::init(const GraphConfig &config)
     for (unsigned i = 0; i < num_fixed_allocators; i++)
         allocator_offsets[i] = config.fixed_allocator_info[i].offset;
 
-    TransactionImpl::flush_range(this, sizeof *this);
+    TransactionImpl::flush_range(this,
+        sizeof *this + num_fixed_allocators * sizeof allocator_offsets[0]);
 }
 
 GraphImpl::MapRegion::MapRegion(
