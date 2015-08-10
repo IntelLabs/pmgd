@@ -127,16 +127,17 @@ Index *IndexManager::get_index(Graph::IndexType index_type, StringID tag,
     return *idx;
 }
 
-NodeIterator IndexManager::get_nodes(StringID tag)
+Index::Index_IteratorImplIntf *IndexManager::get_iterator
+    (Graph::IndexType index_type, StringID tag)
 {
     Index *prop0_idx;
-    prop0_idx = get_index(Graph::NodeIndex, tag, 0);
+    prop0_idx = get_index(index_type, tag, 0);
     if (!prop0_idx)
-        return NodeIterator(NULL);
+        return NULL;
     // This index can never be null cause we create it for each non-zero tag.
     // The second parameter here is the locale which we surely do not need for
     // a boolean property.
-    return prop0_idx->get_nodes(PropertyPredicate(0, PropertyPredicate::Eq, true), NULL, false);
+    return prop0_idx->get_iterator(PropertyPredicate(0, PropertyPredicate::Eq, true), NULL, false);
 }
 
 void IndexManager::update

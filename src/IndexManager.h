@@ -68,6 +68,8 @@ namespace Jarvis {
         Index *get_index(Graph::IndexType index_type, StringID tag,
                          StringID property_id,
                          PropertyType ptype = PropertyType(0));
-        NodeIterator get_nodes(StringID tag);
+
+        Index::Index_IteratorImplIntf *get_iterator(Graph::IndexType index_type,
+                                                    StringID tag);
     };
 }
