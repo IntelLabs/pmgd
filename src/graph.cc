@@ -320,10 +320,31 @@ NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp, bool re
         return get_nodes(tag).filter(pp); // TODO Causes re-lookup of tag
 }
 
+
 EdgeIterator Graph::get_edges()
 {
     return EdgeIterator(new Graph_EdgeIteratorImpl(_impl->edge_table()));
 }
+
+EdgeIterator Graph::get_edges(StringID tag)
+{
+    if (tag.id() == 0)
+        return get_edges();
+    else
+        return EdgeIterator(new Index_EdgeIteratorImpl(_impl->index_manager().get_iterator(EdgeIndex, tag)));
+}
+
+EdgeIterator Graph::get_edges(StringID tag, const PropertyPredicate &pp, bool reverse)
+{
+    if (pp.id == 0)
+        return get_edges(tag);
+    Index *index = _impl->index_manager().get_index(EdgeIndex, tag, pp.id);
+    if (index)
+        return EdgeIterator(new Index_EdgeIteratorImpl(index->get_iterator(pp, &_impl->locale(), reverse)));
+    else
+        return get_edges(tag).filter(pp); // TODO Causes re-lookup of tag
+}
+
 
 NodeID Graph::get_id(const Node &node) const
 {
