@@ -55,11 +55,7 @@ namespace Jarvis {
                 _pos = NULL;
         }
         ListTraverser(List<T> *l) { set(l); }
-
-        T &operator*() { return _pos->value; }
-        T *operator->() { return &_pos->value; }
-        const T &operator*() const { return _pos->value; }
-        const T *operator->() const { return &_pos->value; }
+        const T &ref() const { return _pos->value; }
         operator bool() const { return _pos != NULL; }
         bool next()
         {

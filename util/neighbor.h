@@ -96,10 +96,7 @@ public:
         return _next();
     }
 
-    const Node &operator*() const { return *_neighbor; }
-    const Node *operator->() const { return _neighbor; }
-    Node &operator*() { return *_neighbor; }
-    Node *operator->() { return _neighbor; }
+    Node *ref() { return _neighbor; }
 };
 
 /**

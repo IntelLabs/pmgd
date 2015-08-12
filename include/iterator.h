@@ -21,16 +21,14 @@ namespace Jarvis {
         typedef R Ref_type;
         virtual ~IteratorImplIntf() { }
         virtual operator bool() const = 0;
-        virtual const Ref_type &operator*() const = 0;
-        virtual const Ref_type *operator->() const = 0;
-        virtual Ref_type &operator*() = 0;
-        virtual Ref_type *operator->() = 0;
+        virtual Ref_type *ref() = 0;
         virtual bool next() = 0;
     };
 
     template <typename Impl> class Iterator {
     protected:
         Impl *_impl;
+
         void done() { delete _impl; _impl = NULL; }
 
         explicit Iterator(Impl *i)
@@ -60,14 +58,21 @@ namespace Jarvis {
         ~Iterator() { delete _impl; }
 
         operator bool() const { return _impl != NULL; }
-        const Ref_type &operator*() const
-            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator*(); }
-        const Ref_type *operator->() const
-            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator->(); }
-        Ref_type &operator*()
-            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator*(); }
-        Ref_type *operator->()
-            { if (!_impl) throw Exception(NullIterator); return (*_impl).operator->(); }
+
+        Ref_type &operator*() const
+        {
+            if (!_impl)
+                throw Exception(NullIterator);
+            return *_impl->ref();
+        }
+
+        Ref_type *operator->() const
+        {
+            if (!_impl)
+                throw Exception(NullIterator);
+            return _impl->ref();
+        }
+
         void next() { if (_impl) if (!_impl->next()) done(); }
 
         void process(std::function<void(Ref_type &)> f)
@@ -255,7 +260,7 @@ namespace Jarvis {
     };
 
     class EdgeRef {
-        EdgeIteratorImplIntf *_impl;
+        EdgeIteratorImplIntf *const _impl;
 
         Edge *edge() const { return _impl->get_edge(); }
 

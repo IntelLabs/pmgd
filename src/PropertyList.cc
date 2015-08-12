@@ -29,10 +29,7 @@ namespace Jarvis {
             { _cur.skip_to_next(); }
 
         operator bool() const { return _cur.not_done(); }
-        const PropertyRef &operator*() const { return _cur; }
-        const PropertyRef *operator->() const { return &_cur; }
-        PropertyRef &operator*() { return _cur; }
-        PropertyRef *operator->() { return &_cur; }
+        PropertyRef *ref() { return &_cur; }
         bool next() { return _cur.next(); }
     };
 

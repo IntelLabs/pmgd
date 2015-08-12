@@ -137,10 +137,7 @@ namespace Jarvis {
         }
 
         operator bool() const { return _pos != NULL; }
-        const EdgeRef &operator*() const { return _ref; }
-        const EdgeRef *operator->() const { return &_ref; }
-        EdgeRef &operator*() { return _ref; }
-        EdgeRef *operator->() { return &_ref; }
+        EdgeRef *ref() { return &_ref; }
 
         bool next()
         {

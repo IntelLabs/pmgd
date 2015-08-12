@@ -204,10 +204,7 @@ namespace Jarvis {
         Graph_NodeIteratorImpl(const FixedAllocator &a)
             : Graph_Iterator<NodeIteratorImplIntf, Node>(a)
             { }
-        const Node &operator*() const { return *_cur; }
-        const Node *operator->() const { return _cur; }
-        Node &operator*() { return *_cur; }
-        Node *operator->() { return _cur; }
+        Node *ref() { return _cur; }
     };
 
     class Graph_EdgeIteratorImpl : public Graph_Iterator<EdgeIteratorImplIntf, Edge> {
@@ -222,10 +219,7 @@ namespace Jarvis {
         Graph_EdgeIteratorImpl(const FixedAllocator &a)
             : Graph_Iterator<EdgeIteratorImplIntf, Edge>(a), _ref(this)
             {}
-        const EdgeRef &operator*() const { return _ref; }
-        const EdgeRef *operator->() const { return &_ref; }
-        EdgeRef &operator*() { return _ref; }
-        EdgeRef *operator->() { return &_ref; }
+        EdgeRef *ref() { return &_ref; }
     };
 
     class Index_NodeIteratorImpl : public NodeIteratorImplIntf {
@@ -234,10 +228,7 @@ namespace Jarvis {
         Index_NodeIteratorImpl(Index::Index_IteratorImplIntf *iter)
             : _iter(iter) { }
         ~Index_NodeIteratorImpl() { delete _iter; }
-        const Node &operator*() const { return *(Node *)_iter->ref(); }
-        const Node *operator->() const { return (Node *)_iter->ref(); }
-        Node &operator*() { return *(Node *)_iter->ref(); }
-        Node *operator->() { return (Node *)_iter->ref(); }
+        Node *ref() { return (Node *)_iter->ref(); }
         operator bool() const { return _iter && *_iter; }
         bool next() { return _iter->next(); }
     };
@@ -255,10 +246,7 @@ namespace Jarvis {
         Index_EdgeIteratorImpl(Index::Index_IteratorImplIntf *iter)
             : _iter(iter), _ref(this) { }
         ~Index_EdgeIteratorImpl() { delete _iter; }
-        const EdgeRef &operator*() const { return _ref; }
-        const EdgeRef *operator->() const { return &_ref; }
-        EdgeRef &operator*() { return _ref; }
-        EdgeRef *operator->() { return &_ref; }
+        EdgeRef *ref() { return &_ref; }
         operator bool() const { return _iter && *_iter; }
         bool next() { return _iter->next(); }
     };

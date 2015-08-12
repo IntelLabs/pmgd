@@ -18,7 +18,7 @@ namespace Jarvis {
 
         virtual bool _next() {
             while (bool(*_base_impl)) {
-                switch (func(_base_impl->operator*())) {
+                switch (func(*_base_impl->ref())) {
                     case DontPass: _base_impl->next(); break;
                     case Pass: return true;
                     case Stop: done(); return false;
@@ -39,32 +39,11 @@ namespace Jarvis {
 
         operator bool() const { return _base_impl && bool(*_base_impl); }
 
-        const typename B::Ref_type &operator*() const
+        typename B::Ref_type *ref()
         {
             if (_base_impl == NULL)
                 throw Exception(NullIterator);
-            return (*_base_impl).operator*();
-        }
-
-        const typename B::Ref_type *operator->() const
-        {
-            if (_base_impl == NULL)
-                throw Exception(NullIterator);
-            return (*_base_impl).operator->();
-        }
-
-        typename B::Ref_type &operator*()
-        {
-            if (_base_impl == NULL)
-                throw Exception(NullIterator);
-            return (*_base_impl).operator*();
-        }
-
-        typename B::Ref_type *operator->()
-        {
-            if (_base_impl == NULL)
-                throw Exception(NullIterator);
-            return (*_base_impl).operator->();
+            return _base_impl->ref();
         }
 
         bool next()

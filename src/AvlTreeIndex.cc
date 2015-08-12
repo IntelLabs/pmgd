@@ -248,8 +248,8 @@ namespace Jarvis {
     public:
         Index_IteratorImplBase(List<void *> *l) : _list_it(l) { }
 
-        void *ref() const { return *_list_it; }
-        operator bool() const { return _list_it; }
+        void *ref() const { return _list_it.ref(); }
+        operator bool() const { return bool(_list_it); }
         virtual bool next() = 0;
     };
 
