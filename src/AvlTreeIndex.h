@@ -24,6 +24,8 @@ namespace Jarvis {
         void add_full_right_tree(TreeNode *root, Stack &path);
         void find_start_all(TreeNode *root, Stack &path);
         void add_nodes_neq(TreeNode *root, const K &neq, Stack &path);
+        void find_node_neq(TreeNode *root, const Compare &cur,
+                           const K &neq, Stack &path);
 
         // For reverse iterators
         void find_start_reverse(TreeNode *root, const Compare &cmin, const Compare &cmax,
@@ -37,6 +39,8 @@ namespace Jarvis {
         void find_start_all_reverse(TreeNode *root, Stack &path);
         void add_full_left_tree(TreeNode *root, Stack &path);
         void add_nodes_neq_reverse(TreeNode *root, const K &neq, Stack &path);
+        void find_node_neq_reverse(TreeNode *root, const Compare &cur,
+                                   const K &neq, Stack &path);
 
         template <class D> friend class Index_IteratorImplBase;
         template <class D> friend class IndexEq_IteratorImpl;

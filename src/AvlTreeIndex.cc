@@ -3,6 +3,7 @@
 #include "iterator.h"
 #include "List.h"
 #include "IndexString.h"
+#include "GraphImpl.h"
 
 using namespace Jarvis;
 
@@ -143,6 +144,31 @@ void AvlTreeIndex<K,V>::add_nodes_neq(TreeNode *root, const K &neq,
     add_nodes_neq(root->left, neq, path);
 }
 
+template <typename K, typename V>
+void AvlTreeIndex<K,V>::find_node_neq(TreeNode *root, const Compare &cur,
+                                 const K &neq, Stack &path)
+{
+    if (root == NULL)
+        return;
+
+    if (neq == root->key) { // Found the unwanted node.
+        // Skip the root then
+        if (cur.lessthan(root->key))
+            find_start_max(root->left, cur, path);
+        else if (cur.equals(root->key))
+            find_start_all(root->right, path);
+        else
+            find_start_max(root->right, cur, path);
+    }
+    else {
+        path.push(root);
+        if (cur.lessthan(root->key))
+            find_node_neq(root->left, cur, neq, path);
+        else if (cur.greaterthan(root->key)) // equal to already taken care of
+            find_node_neq(root->right, cur, neq, path);
+    }
+}
+
 // Support functions for reverse iterators
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_reverse(TreeNode *root,
@@ -247,6 +273,31 @@ void AvlTreeIndex<K,V>::add_nodes_neq_reverse(TreeNode *root, const K &neq,
     add_nodes_neq_reverse(root->right, neq, path);
 }
 
+template <typename K, typename V>
+void AvlTreeIndex<K,V>::find_node_neq_reverse(TreeNode *root, const Compare &cur,
+                                     const K &neq, Stack &path)
+{
+    if (root == NULL)
+        return;
+
+    if (neq == root->key) { // Found the unwanted node.
+        // Skip the root then
+        if (cur.greaterthan(root->key))
+            find_start_min_reverse(root->right, cur, path);
+        else if (cur.equals(root->key))
+            find_start_all_reverse(root->left, path);
+        else 
+            find_start_min_reverse(root->left, cur, path);
+    }
+    else {
+        path.push(root);
+        if (cur.greaterthan(root->key))
+            find_node_neq_reverse(root->right, cur, neq, path);
+        else if (cur.lessthan(root->key))
+            find_node_neq_reverse(root->left, cur, neq, path);
+    }
+}
+
 namespace Jarvis {
 
 // The BASE_DECLS macro is used to avoid repeating the list of typedefs
@@ -259,6 +310,7 @@ namespace Jarvis {
         using Index_IteratorImplBase<K>::_curr; \
         using Index_IteratorImplBase<K>::_path; \
         using Index_IteratorImplBase<K>::_list_it; \
+        using Index_IteratorImplBase<K>::_vacant_flag; \
         using Index_IteratorImplBase<K>::finish_init;
 
     // These iterator implementations are specific to instantiations
@@ -273,8 +325,9 @@ namespace Jarvis {
         IndexNode *const _tree;
         typename IndexNode::TreeNode *_curr;
         Stack _path;
-
         ListTraverser<void *> _list_it;
+        bool _vacant_flag = false;
+        IndexManager &_index_manager;
 
         void finish_init() {
             if (!_path.empty()) {
@@ -285,17 +338,35 @@ namespace Jarvis {
         }
 
         virtual void _next() = 0;
+        virtual void find_node(const typename IndexNode::Compare &) = 0;
 
     public:
         Index_IteratorImplBase(IndexNode *tree)
-            : _tree(tree), _curr(NULL), _list_it(NULL)
-            { }
+            : _tree(tree), _curr(NULL), _list_it(NULL),
+              _index_manager(TransactionImpl::get_tx()->get_db()->index_manager())
+        {
+            _index_manager.register_iterator(this,
+                [this](void *list_node) { remove_notify(list_node); },
+                [this](void *tree)
+                    { rebalance_notify(static_cast<IndexNode *>(tree)); });
+        }
 
-        void *ref() const { return _list_it.ref(); }
-        operator bool() const { return bool(_list_it); }
+        ~Index_IteratorImplBase()
+        {
+            _index_manager.unregister_iterator(this);
+        }
+
+        operator bool() const { return _vacant_flag || bool(_list_it); }
 
         bool next()
         {
+            // If _vacant_flag is set, the iterator has already advanced
+            // to the next object, so just clear _vacant_flag.
+            if (EXPECT_FALSE(_vacant_flag)) {
+                _vacant_flag = false;
+                return operator bool();
+            }
+
             if (_list_it.next())
                 return true;
 
@@ -308,6 +379,41 @@ namespace Jarvis {
             _path.pop();
             _list_it.set(&_curr->value);
             return true;
+        }
+
+        void *ref() const
+        {
+            // _vacant_flag indicates that the object referred to by the
+            // iterator has been removed from the index.
+            if (EXPECT_FALSE(_vacant_flag))
+                throw Exception(VacantIterator);
+            return _list_it.ref();
+        }
+
+        void remove_notify(void *list_node)
+        {
+            // If the object referred to by the iterator is being removed
+            // from the index, move to the next object.
+            if (_list_it.check(list_node)) {
+                // Clear _vacant_flag to ensure that next actually advances
+                // the iterator, and then set _vacant_flag to indicate that
+                // the current object has been removed from the index.
+                _vacant_flag = false;
+                next();
+                _vacant_flag = true;
+            }
+        }
+
+        void rebalance_notify(IndexNode *tree)
+        {
+            if (tree == _tree && _curr != NULL && bool(_list_it)) {
+                _path.clear();
+                typename IndexNode::Compare cur(_curr->key, true);
+                find_node(cur);
+                assert(!_path.empty());
+                _curr = _path.top();
+                _path.pop();
+            }
         }
     };
 
@@ -322,6 +428,9 @@ namespace Jarvis {
 
         void _next()
             { /* Once we finish the original list, we're done. */  }
+
+        void find_node(const typename IndexNode::Compare &)
+            { /* not called because _curr is NULL */ }
     };
 
     // Handle gele, gelt, gtle, gtlt, le, lt.
@@ -354,6 +463,9 @@ namespace Jarvis {
 
         void _next()
             { _tree->add_right_tree(_curr->right, _cmax, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_start(_tree->_tree, cur, _cmax, _path); }
     };
 
     // Handle ge, gt, dont_care.
@@ -382,6 +494,9 @@ namespace Jarvis {
 
         void _next()
             { _tree->add_full_right_tree(_curr->right, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_start_max(_tree->_tree, cur, _path); }
     };
 
     template <typename K>
@@ -402,6 +517,9 @@ namespace Jarvis {
 
         void _next()
             { _tree->add_nodes_neq(_curr->right, _neq, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_node_neq(_tree->_tree, cur, _neq, _path); }
     };
 
     // Reverse iterators.
@@ -435,6 +553,9 @@ namespace Jarvis {
 
         void _next()
             { _tree->add_left_tree(_curr->left, _cmin, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_start_reverse(_tree->_tree, _cmin, cur, _path); }
     };
 
     // Handle lt, le, dont_care
@@ -461,6 +582,9 @@ namespace Jarvis {
 
         void _next()
             { _tree->add_full_left_tree(_curr->left, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_start_min_reverse(_tree->_tree, cur, _path); }
     };
 
     template <typename K>
@@ -481,6 +605,9 @@ namespace Jarvis {
 
         void _next()
             { _tree->add_nodes_neq_reverse(_curr->left, _neq, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_node_neq_reverse(_tree->_tree, cur, _neq, _path); }
     };
 }
 
