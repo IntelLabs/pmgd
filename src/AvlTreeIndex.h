@@ -38,6 +38,8 @@ namespace Jarvis {
         void add_full_left_tree(TreeNode *root, Stack &path);
         void add_nodes_neq_reverse(TreeNode *root, const K &neq, Stack &path);
 
+        template <class D> friend class Index_IteratorImplBase;
+        template <class D> friend class IndexEq_IteratorImpl;
         template <class D> friend class IndexRange_IteratorImpl;
         template <class D> friend class IndexRangeNomax_IteratorImpl;
         template <class D> friend class IndexRangeNeq_IteratorImpl;

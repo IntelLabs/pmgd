@@ -248,13 +248,37 @@ void AvlTreeIndex<K,V>::add_nodes_neq_reverse(TreeNode *root, const K &neq,
 }
 
 namespace Jarvis {
+
+// The BASE_DECLS macro is used to avoid repeating the list of typedefs
+// and using declarations in all seven derived classes.
+#define BASE_DECLS \
+        typedef typename Index_IteratorImplBase<K>::IndexValue IndexValue; \
+        typedef typename Index_IteratorImplBase<K>::IndexNode IndexNode; \
+        typedef typename Index_IteratorImplBase<K>::Stack Stack; \
+        using Index_IteratorImplBase<K>::_tree; \
+        using Index_IteratorImplBase<K>::_curr; \
+        using Index_IteratorImplBase<K>::_path; \
+        using Index_IteratorImplBase<K>::_list_it;
+
     // These iterator implementations are specific to instantiations
     // of AvlTreeIndex<K, V> with V = List<void *>.
+    template <typename K>
     class Index_IteratorImplBase : public Index::Index_IteratorImplIntf {
     protected:
+        typedef List<void *> IndexValue;
+        typedef AvlTreeIndex<K, IndexValue> IndexNode;
+        typedef typename IndexNode::Stack Stack;
+
+        IndexNode *const _tree;
+        typename IndexNode::TreeNode *_curr;
+        Stack _path;
+
         ListTraverser<void *> _list_it;
+
     public:
-        Index_IteratorImplBase(List<void *> *l) : _list_it(l) { }
+        Index_IteratorImplBase(IndexNode *tree)
+            : _tree(tree), _curr(NULL), _list_it(NULL)
+            { }
 
         void *ref() const { return _list_it.ref(); }
         operator bool() const { return bool(_list_it); }
@@ -262,32 +286,28 @@ namespace Jarvis {
     };
 
     template <typename K>
-    class IndexEq_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
+    class IndexEq_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
+
     public:
         IndexEq_IteratorImpl(IndexNode *tree, const K &key)
-            : Index_IteratorImplBase(tree->find(key))
-        { }
+            : Index_IteratorImplBase<K>(tree)
+            { _list_it.set(tree->find(key)); }
+
         bool next() { return _list_it.next(); }
     };
 
     // Handle gele, gelt, gtle, gtlt, le, lt.
     template <typename K>
-    class IndexRange_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
-        typename IndexNode::TreeNode *_curr;
+    class IndexRange_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
         typename IndexNode::Compare _cmax;
-        typename IndexNode::Stack _path;
 
     public:
         IndexRange_IteratorImpl(IndexNode *tree,
                                     const K &min, const K &max,
                                     bool incl_min, bool incl_max)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL),
+            : Index_IteratorImplBase<K>(tree),
               _cmax(max, incl_max)
         {
             typename IndexNode::Compare cmin(min, incl_min);
@@ -303,8 +323,7 @@ namespace Jarvis {
         // When a max is given but no min is specified, next is same as
         // that for gele kind of cases. So just add a constructor.
         IndexRange_IteratorImpl(IndexNode *tree, const K &max, bool incl_max)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL),
+            : Index_IteratorImplBase<K>(tree),
               _cmax(max, incl_max)
         {
             _tree->find_start_min(tree->_tree, _cmax, _path);
@@ -338,19 +357,14 @@ namespace Jarvis {
 
     // Handle ge, gt, dont_care.
     template <typename K>
-    class IndexRangeNomax_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
-        typename IndexNode::TreeNode *_curr;
-        typename IndexNode::Stack _path;
+    class IndexRangeNomax_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
 
     public:
         IndexRangeNomax_IteratorImpl(IndexNode *tree,
                                     const K &min,
                                     bool incl_min)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL)
+            : Index_IteratorImplBase<K>(tree)
         {
             typename IndexNode::Compare cmin(min, incl_min);
             _tree->find_start_max(tree->_tree, cmin, _path);
@@ -364,8 +378,7 @@ namespace Jarvis {
 
         // The dont_care case where no min and max are given.
         IndexRangeNomax_IteratorImpl(IndexNode *tree)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL)
+            : Index_IteratorImplBase<K>(tree)
         {
             _tree->find_start_all(tree->_tree, _path);
             if (!_path.empty()) {
@@ -397,19 +410,14 @@ namespace Jarvis {
     };
 
     template <typename K>
-    class IndexRangeNeq_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
+    class IndexRangeNeq_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
         K _neq;
-        typename IndexNode::TreeNode *_curr;
-        typename IndexNode::Stack _path;
 
     public:
         IndexRangeNeq_IteratorImpl(IndexNode *tree, const K &neq)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _neq(neq),
-              _curr(NULL)
+            : Index_IteratorImplBase<K>(tree),
+              _neq(neq)
         {
             // Get to the minimum of the tree but make sure that is
             // not the key itself
@@ -445,20 +453,16 @@ namespace Jarvis {
     // Reverse iterators.
     // Handle gele, gelt, gtle, gtlt, gt, ge.
     template <typename K>
-    class IndexRangeReverse_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
-        typename IndexNode::TreeNode *_curr;
+    class IndexRangeReverse_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
         typename IndexNode::Compare _cmin;
-        typename IndexNode::Stack _path;
 
     public:
         IndexRangeReverse_IteratorImpl(IndexNode *tree,
                                     const K &min, const K &max,
                                     bool incl_min, bool incl_max)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL), _cmin(min, incl_min)
+            : Index_IteratorImplBase<K>(tree),
+              _cmin(min, incl_min)
         {
             typename IndexNode::Compare cmax(max, incl_max);
             _tree->find_start_reverse(tree->_tree, _cmin, cmax, _path);
@@ -473,8 +477,8 @@ namespace Jarvis {
         // When a min is given but no max is specified, next is same as
         // that for gele kind of cases. So just add a constructor.
         IndexRangeReverse_IteratorImpl(IndexNode *tree, const K &min, bool incl_min)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL), _cmin(min, incl_min)
+            : Index_IteratorImplBase<K>(tree),
+              _cmin(min, incl_min)
         {
             _tree->find_start_max_reverse(tree->_tree, _cmin, _path);
             if (!_path.empty()) {
@@ -507,16 +511,12 @@ namespace Jarvis {
 
     // Handle lt, le, dont_care
     template <typename K>
-    class IndexRangeNomin_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
-        typename IndexNode::TreeNode *_curr;
-        typename IndexNode::Stack _path;
+    class IndexRangeNomin_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
 
     public:
         IndexRangeNomin_IteratorImpl(IndexNode *tree, const K &max, bool incl_max)
-            : Index_IteratorImplBase(NULL), _tree(tree), _curr(NULL)
+            : Index_IteratorImplBase<K>(tree)
         {
             typename IndexNode::Compare cmax(max, incl_max);
             _tree->find_start_min_reverse(tree->_tree, cmax, _path);
@@ -530,7 +530,7 @@ namespace Jarvis {
 
         // The dont_care case where no min and max are given.
         IndexRangeNomin_IteratorImpl(IndexNode *tree)
-            : Index_IteratorImplBase(NULL), _tree(tree), _curr(NULL)
+            : Index_IteratorImplBase<K>(tree)
         {
             _tree->find_start_all_reverse(tree->_tree, _path);
             if (!_path.empty()) {
@@ -562,18 +562,14 @@ namespace Jarvis {
     };
 
     template <typename K>
-    class IndexRangeNeqReverse_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
+    class IndexRangeNeqReverse_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
         K _neq;
-        typename IndexNode::TreeNode *_curr;
-        typename IndexNode::Stack _path;
 
     public:
         IndexRangeNeqReverse_IteratorImpl(IndexNode *tree, const K &neq)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _neq(neq), _curr(NULL)
+            : Index_IteratorImplBase<K>(tree),
+              _neq(neq)
         {
             // Get to the minimum of the tree but make sure that is
             // not the key itself
@@ -619,7 +615,7 @@ Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(bool reverse)
 template <typename K, typename V>
 Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(const K &key, PropertyPredicate::Op op, bool reverse)
 {
-    Index_IteratorImplBase *impl = NULL;
+    Index_IteratorImplBase<K> *impl = NULL;
     switch (op) {
         case PropertyPredicate::Eq:
             impl = new IndexEq_IteratorImpl<K>(this, key);
