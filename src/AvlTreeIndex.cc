@@ -1,3 +1,4 @@
+#include <stack>
 #include "AvlTreeIndex.h"
 #include "iterator.h"
 #include "List.h"
@@ -29,12 +30,19 @@ namespace Jarvis {
         bool greaterthanequal(const K &val1) const
             { return (_val > val1) || equals(val1); }
     };
+
+    template <typename K, typename V> class AvlTreeIndex<K,V>::Stack
+        : public std::stack<TreeNode *>
+    {
+    public:
+        void clear() { std::stack<TreeNode *>::c.clear(); }
+    };
 }
 
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start(TreeNode *root,
                                    const Compare &cmin, const Compare &cmax,
-                                   std::stack<TreeNode *> &path)
+                                   Stack &path)
 {
     if (root == NULL)
         return;
@@ -54,7 +62,7 @@ void AvlTreeIndex<K,V>::find_start(TreeNode *root,
 // make is that the value <(=) max.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_right_tree(TreeNode *root, const Compare &cmax,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -66,7 +74,7 @@ void AvlTreeIndex<K,V>::add_right_tree(TreeNode *root, const Compare &cmax,
 // Find first element when no min given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_min(TreeNode *root, const Compare &cmax,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -79,7 +87,7 @@ void AvlTreeIndex<K,V>::find_start_min(TreeNode *root, const Compare &cmax,
 // Find first element when no max given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_max(TreeNode *root, const Compare &cmin,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -97,7 +105,7 @@ void AvlTreeIndex<K,V>::find_start_max(TreeNode *root, const Compare &cmin,
 // Add all elements when no max limit given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_full_right_tree(TreeNode *root,
-                                            std::stack<TreeNode *> &path)
+                                            Stack &path)
 {
     if (root == NULL)
         return;
@@ -107,7 +115,7 @@ void AvlTreeIndex<K,V>::add_full_right_tree(TreeNode *root,
 
 // Find first element when no min/max given
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::find_start_all(TreeNode *root, std::stack<TreeNode *> &path)
+void AvlTreeIndex<K,V>::find_start_all(TreeNode *root, Stack &path)
 {
     if (root == NULL)
         return;
@@ -119,7 +127,7 @@ void AvlTreeIndex<K,V>::find_start_all(TreeNode *root, std::stack<TreeNode *> &p
 // Same function works for traversing the remaining tree too.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_nodes_neq(TreeNode *root, const K &neq,
-                                      std::stack<TreeNode *> &path)
+                                      Stack &path)
 {
     if (root == NULL)
         return;
@@ -139,7 +147,7 @@ void AvlTreeIndex<K,V>::add_nodes_neq(TreeNode *root, const K &neq,
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_reverse(TreeNode *root,
                                    const Compare &cmin, const Compare &cmax,
-                                   std::stack<TreeNode *> &path)
+                                   Stack &path)
 {
     if (root == NULL)
         return;
@@ -157,7 +165,7 @@ void AvlTreeIndex<K,V>::find_start_reverse(TreeNode *root,
 // Find first element when no max given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_max_reverse(TreeNode *root, const Compare &cmin,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -171,7 +179,7 @@ void AvlTreeIndex<K,V>::find_start_max_reverse(TreeNode *root, const Compare &cm
 // make is that the value >(=) min.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_left_tree(TreeNode *root, const Compare &cmin,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -183,7 +191,7 @@ void AvlTreeIndex<K,V>::add_left_tree(TreeNode *root, const Compare &cmin,
 // Find first element when no min given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_min_reverse(TreeNode *root, const Compare &cmax,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -200,7 +208,7 @@ void AvlTreeIndex<K,V>::find_start_min_reverse(TreeNode *root, const Compare &cm
 
 // Find first element when no min/max given
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::find_start_all_reverse(TreeNode *root, std::stack<TreeNode *> &path)
+void AvlTreeIndex<K,V>::find_start_all_reverse(TreeNode *root, Stack &path)
 {
     if (root == NULL)
         return;
@@ -211,7 +219,7 @@ void AvlTreeIndex<K,V>::find_start_all_reverse(TreeNode *root, std::stack<TreeNo
 // Add all elements when no max limit given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_full_left_tree(TreeNode *root,
-                                           std::stack<TreeNode *> &path)
+                                           Stack &path)
 {
     if (root == NULL)
         return;
@@ -223,7 +231,7 @@ void AvlTreeIndex<K,V>::add_full_left_tree(TreeNode *root,
 // Same function works for traversing the remaining tree too.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_nodes_neq_reverse(TreeNode *root, const K &neq,
-                                      std::stack<TreeNode *> &path)
+                                      Stack &path)
 {
     if (root == NULL)
         return;
@@ -272,7 +280,7 @@ namespace Jarvis {
         IndexNode *_tree;
         typename IndexNode::TreeNode *_curr;
         typename IndexNode::Compare _cmax;
-        std::stack<typename IndexNode::TreeNode *> _path;
+        typename IndexNode::Stack _path;
 
     public:
         IndexRange_IteratorImpl(IndexNode *tree,
@@ -335,7 +343,7 @@ namespace Jarvis {
         typedef AvlTreeIndex<K, IndexValue> IndexNode;
         IndexNode *_tree;
         typename IndexNode::TreeNode *_curr;
-        std::stack<typename IndexNode::TreeNode *> _path;
+        typename IndexNode::Stack _path;
 
     public:
         IndexRangeNomax_IteratorImpl(IndexNode *tree,
@@ -395,7 +403,7 @@ namespace Jarvis {
         IndexNode *_tree;
         K _neq;
         typename IndexNode::TreeNode *_curr;
-        std::stack<typename IndexNode::TreeNode *> _path;
+        typename IndexNode::Stack _path;
 
     public:
         IndexRangeNeq_IteratorImpl(IndexNode *tree, const K &neq)
@@ -443,7 +451,7 @@ namespace Jarvis {
         IndexNode *_tree;
         typename IndexNode::TreeNode *_curr;
         typename IndexNode::Compare _cmin;
-        std::stack<typename IndexNode::TreeNode *> _path;
+        typename IndexNode::Stack _path;
 
     public:
         IndexRangeReverse_IteratorImpl(IndexNode *tree,
@@ -504,7 +512,7 @@ namespace Jarvis {
         typedef AvlTreeIndex<K, IndexValue> IndexNode;
         IndexNode *_tree;
         typename IndexNode::TreeNode *_curr;
-        std::stack<typename IndexNode::TreeNode *> _path;
+        typename IndexNode::Stack _path;
 
     public:
         IndexRangeNomin_IteratorImpl(IndexNode *tree, const K &max, bool incl_max)
@@ -560,7 +568,7 @@ namespace Jarvis {
         IndexNode *_tree;
         K _neq;
         typename IndexNode::TreeNode *_curr;
-        std::stack<typename IndexNode::TreeNode *> _path;
+        typename IndexNode::Stack _path;
 
     public:
         IndexRangeNeqReverse_IteratorImpl(IndexNode *tree, const K &neq)
