@@ -89,48 +89,53 @@ namespace Jarvis {
             }
         }
 
+        Node_EdgeIteratorImpl(const Node *n,
+                              Direction dir,
+                              EdgeIndex *out_idx,
+                              const EdgeIndex::KeyPosition *key_pos,
+                              StringID tag,
+                              const EdgeIndex::EdgePosition *pos)
+            : _ref(this),
+              _n1(const_cast<Node *>(n)),
+              _dir(dir),
+              _out_idx(out_idx),
+              _key_pos(const_cast<EdgeIndex::KeyPosition *>(key_pos)),
+              _tag(tag),
+              _pos(pos)
+        {
+        }
+
+        Node_EdgeIteratorImpl(const Node *n, Direction dir, EdgeIndex *out_idx,
+                              const EdgeIndex::KeyPosition *key_pos)
+            : Node_EdgeIteratorImpl(n, dir, out_idx, key_pos,
+                                    key_pos->value.get_key(),
+                                    key_pos->value.get_first())
+        {
+        }
+
     public:
         Node_EdgeIteratorImpl(EdgeIndex *idx, const Node *n, Direction dir, StringID tag)
-            : _ref(this),
-              _n1(const_cast<Node *>(n)),
-              _dir(dir),
-              _out_idx(NULL),
-              _key_pos(NULL),
-              _tag(tag),
-              _pos(idx->get_first(_tag))
+            : Node_EdgeIteratorImpl(n, dir, NULL, NULL, tag, idx->get_first(tag))
         { }
+
         Node_EdgeIteratorImpl(EdgeIndex *idx, const Node *n, Direction dir)
-            : _ref(this),
-              _n1(const_cast<Node *>(n)),
-              _dir(dir),
-              _out_idx(NULL),
-              _key_pos(const_cast<EdgeIndex::KeyPosition *>(idx->get_first())),
-              _tag(_key_pos->value.get_key()),
-              _pos(_key_pos->value.get_first())
+            : Node_EdgeIteratorImpl(n, dir, NULL, idx->get_first())
         { }
 
         // Always starts with incoming first
         Node_EdgeIteratorImpl(EdgeIndex *idx, EdgeIndex *out_idx, const Node *n, StringID tag)
-            : _ref(this),
-              _n1(const_cast<Node *>(n)),
-              _dir(Incoming),
-              _out_idx((out_idx->num_elems() > 0) ? out_idx : NULL),
-              _key_pos(NULL),
-              _tag(tag),
-              _pos(idx->get_first(_tag))
+            : Node_EdgeIteratorImpl(n, Incoming,
+                                    out_idx->num_elems() > 0 ? out_idx : NULL,
+                                    NULL, tag, idx->get_first(tag))
         {
             if (_pos == NULL)
                 _next();
         }
 
         Node_EdgeIteratorImpl(EdgeIndex *idx, EdgeIndex *out_idx, const Node *n)
-            : _ref(this),
-              _n1(const_cast<Node *>(n)),
-              _dir(Incoming),
-              _out_idx((out_idx->num_elems() > 0) ? out_idx : NULL),
-              _key_pos(const_cast<EdgeIndex::KeyPosition *>(idx->get_first())),
-              _tag(_key_pos->value.get_key()),
-              _pos(_key_pos->value.get_first())
+            : Node_EdgeIteratorImpl(n, Incoming,
+                                    out_idx->num_elems() > 0 ? out_idx : NULL,
+                                    idx->get_first())
         {
             if (_pos == NULL)
                 _next();
