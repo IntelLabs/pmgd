@@ -44,6 +44,8 @@ namespace Jarvis {
         EdgeIndex::KeyPosition *_key_pos;
         StringID _tag;
         const EdgeIndex::EdgePosition *_pos;
+        bool _vacant_flag = false;
+        IndexManager &_index_manager;
 
         friend class EdgeRef;
         Edge *get_edge() const { return _pos->value.key(); }
@@ -101,8 +103,11 @@ namespace Jarvis {
               _out_idx(out_idx),
               _key_pos(const_cast<EdgeIndex::KeyPosition *>(key_pos)),
               _tag(tag),
-              _pos(pos)
+              _pos(pos),
+              _index_manager(TransactionImpl::get_tx()->get_db()->index_manager())
         {
+            _index_manager.register_iterator(this,
+                    [this](void *list_node) { remove_notify(list_node); });
         }
 
         Node_EdgeIteratorImpl(const Node *n, Direction dir, EdgeIndex *out_idx,
@@ -141,15 +146,47 @@ namespace Jarvis {
                 _next();
         }
 
-        operator bool() const { return _pos != NULL; }
-        EdgeRef *ref() { return &_ref; }
+        ~Node_EdgeIteratorImpl()
+        {
+            _index_manager.unregister_iterator(this);
+        }
+
+        operator bool() const { return _vacant_flag || _pos != NULL; }
+
+        EdgeRef *ref()
+        {
+            // _vacant_flag indicates that the edge referred to by the iterator
+            // has been deleted.
+            if (_vacant_flag)
+                throw Exception(VacantIterator);
+            return &_ref;
+        }
 
         bool next()
         {
-            _pos = _pos->next;
+            // If _vacant_flag is set, the iterator has already been advanced to
+            // the next edge, so we just clear _vacant_flag.
+            if (_vacant_flag) {
+                _vacant_flag = false;
+                return operator bool();
+            }
+            if (_pos != NULL)
+                _pos = _pos->next;
             if (_pos == NULL)
                 _next();
             return _pos != NULL;
+        }
+
+        void remove_notify(void *list_node)
+        {
+            if (list_node == _pos) {
+                // Clear _vacant_flag to ensure that next actually advances
+                // the iterator, and then set _vacant_flag to indicate that
+                // the current edge has been deleted.
+                _vacant_flag = false;
+                next();
+                _vacant_flag = true;
+            }
         }
     };
 };
