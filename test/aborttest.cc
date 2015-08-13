@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 
                     case 'e': {
                         if (strlen(p) < 3) {
-                            fprintf(stderr, "aborttest: invalid e parameter");
+                            fprintf(stderr, "aborttest: invalid e parameter\n");
                             exit(1);
                         }
                         int a = p[1] - '1';        // node 1: 1 - 9
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 
                     case 'p': {
                         if (strlen(p) < 5) {
-                            fprintf(stderr, "aborttest: invalid p parameter");
+                            fprintf(stderr, "aborttest: invalid p parameter\n");
                             exit(1);
                         }
                         int a = p[1] == 'n' ? 1 : 2; // node or edge: n or e
@@ -51,6 +51,37 @@ int main(int argc, char **argv)
                             case 2: edges.at(b)->set_property(c, d); break;
                         }
                         p += 4;
+                        break;
+                    }
+
+                    case 'r': {
+                        if (p[1] == 'p') {
+                            if (strlen(p) < 5) {
+                                fprintf(stderr, "aborttest: invalid r parameter\n");
+                                exit(1);
+                            }
+                            int a = p[2] == 'n' ? 1 : 2; // node or edge: n or e
+                            int b = p[3] - '1';        // which node or edge: 1 - 9
+                            char c[] = { p[4], '\0' };   // property name: a - z
+                            switch (a) {
+                                case 1: nodes.at(b)->remove_property(c); break;
+                                case 2: edges.at(b)->remove_property(c); break;
+                            }
+                            p += 4;
+                        }
+                        else {
+                            if (strlen(p) < 3) {
+                                fprintf(stderr, "aborttest: invalid r parameter\n");
+                                exit(1);
+                            }
+                            int a = p[1] == 'n' ? 1 : 2; // node or edge: n or e
+                            int b = p[2] - '1';        // which node or edge: 1 - 9
+                            switch (a) {
+                                case 1: db.remove(*nodes.at(b)); break;
+                                case 2: db.remove(*edges.at(b)); break;
+                            }
+                            p += 2;
+                        }
                         break;
                     }
 
