@@ -39,9 +39,11 @@ namespace Jarvis {
         TreeNode *rightleft_rotate(TreeNode *hinge, TransactionImpl *tx);
         int max(int val1, int val2) { return (val1 > val2) ? val1 : val2; }
         TreeNode *add_recursive(TreeNode *curr, const K &data, V*&r,
-                                Allocator &allocator, TransactionImpl *tx);
+                                Allocator &allocator, TransactionImpl *tx,
+                                bool &rebalanced);
         TreeNode *remove_recursive(TreeNode *curr, const K &data,
-                                   Allocator &allocator, TransactionImpl *tx);
+                                   Allocator &allocator, TransactionImpl *tx,
+                                   bool &rebalanced);
 
         int height(TreeNode *node)
         {

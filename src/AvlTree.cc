@@ -91,7 +91,7 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::rightleft_rotate(
 template <typename K, typename V>
 typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::add_recursive(AvlTree<K,V>::TreeNode *curr,
                                                 const K &key, V *&r, Allocator &allocator,
-                                                TransactionImpl *tx)
+                                                TransactionImpl *tx, bool &rebalanced)
 {
     if (curr == NULL) {
         TreeNode *temp = (TreeNode *)allocator.alloc(sizeof(TreeNode));
@@ -114,24 +114,26 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::add_recursive(AvlTree<K,V>::TreeN
         // Log only the left pointer because the rotates might log a lot
         // more with some overlap
         tx->log(&curr->left, sizeof(curr->left));
-        curr->left = add_recursive(curr->left, key, r, allocator, tx);
+        curr->left = add_recursive(curr->left, key, r, allocator, tx, rebalanced);
         if (height(curr->left) - height(curr->right) == 2) { // intolerable imbalance
             if (key > curr->left->key)
                 curr = rightleft_rotate(curr, tx);
             else
                 curr = right_rotate(curr, tx);
+            rebalanced = true;
         }
     }
     else {
         // Log only the right pointer because the rotates might log a lot
         // more with some overlap
         tx->log(&curr->right, sizeof(curr->right));
-        curr->right = add_recursive(curr->right, key, r, allocator, tx);
+        curr->right = add_recursive(curr->right, key, r, allocator, tx, rebalanced);
         if (height(curr->left) - height(curr->right) == -2) { // intolerable imbalance
             if (key < curr->right->key)
                 curr = leftright_rotate(curr, tx);
             else
                 curr = left_rotate(curr, tx);
+            rebalanced = true;
         }
     }
 
@@ -151,15 +153,20 @@ V *AvlTree<K,V>::add(const K &key, Allocator &allocator)
 {
     V *r = NULL;
     TransactionImpl *tx = TransactionImpl::get_tx();
+    bool rebalanced = false;
     tx->log(&_tree, sizeof(_tree));
-    _tree = add_recursive(_tree, key, r, allocator, tx);
+    _tree = add_recursive(_tree, key, r, allocator, tx, rebalanced);
+
+    if (rebalanced)
+        tx->get_db()->index_manager().iterator_rebalance_notify(this);
+
     return r;
 }
 
 template <typename K, typename V>
 typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::remove_recursive(AvlTree<K,V>::TreeNode *curr,
                                                 const K &key, Allocator &allocator,
-                                                TransactionImpl *tx)
+                                                TransactionImpl *tx, bool &rebalanced)
 {
     if (curr == NULL) {
         return NULL;
@@ -190,14 +197,14 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::remove_recursive(AvlTree<K,V>::Tr
         curr->key = to_replace->key;
         curr->value = to_replace->value;
         tx->log(&curr->left, sizeof(curr->left));
-        curr->left = remove_recursive(curr->left, to_replace->key, allocator, tx);
+        curr->left = remove_recursive(curr->left, to_replace->key, allocator, tx, rebalanced);
         return curr;
     }
     else if (key < curr->key) {
         // Log only the left pointer because the rotates might log a lot
         // more with some overlap
         tx->log(&curr->left, sizeof(curr->left));
-        curr->left = remove_recursive(curr->left, key, allocator, tx);
+        curr->left = remove_recursive(curr->left, key, allocator, tx, rebalanced);
         // Right tree too large?
         if (height(curr->left) - height(curr->right) == -2) {
             //if (key < curr->right->key)
@@ -205,13 +212,14 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::remove_recursive(AvlTree<K,V>::Tr
                 curr = leftright_rotate(curr, tx);
             else
                 curr = left_rotate(curr, tx);
+            rebalanced = true;
         }
     }
     else {
         // Log only the right pointer because the rotates might log a lot
         // more with some overlap
         tx->log(&curr->right, sizeof(curr->right));
-        curr->right = remove_recursive(curr->right, key, allocator, tx);
+        curr->right = remove_recursive(curr->right, key, allocator, tx, rebalanced);
         // Left tree too large?
         if (height(curr->left) - height(curr->right) == 2) {
             //if (key > curr->left->key)
@@ -219,6 +227,7 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::remove_recursive(AvlTree<K,V>::Tr
                 curr = rightleft_rotate(curr, tx);
             else
                 curr = right_rotate(curr, tx);
+            rebalanced = true;
         }
     }
 
@@ -237,8 +246,12 @@ template <typename K, typename V>
 void AvlTree<K,V>::remove(const K &key, Allocator &allocator)
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
+    bool rebalanced = false;
     tx->log(&_tree, sizeof(_tree));
-    _tree = remove_recursive(_tree, key, allocator, tx);
+    _tree = remove_recursive(_tree, key, allocator, tx, rebalanced);
+
+    if (rebalanced)
+        tx->get_db()->index_manager().iterator_rebalance_notify(this);
 }
 
 template <typename K, typename V>

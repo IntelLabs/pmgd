@@ -6,6 +6,7 @@
 #include "node.h"
 #include "edge.h"
 #include "iterator.h"
+#include "callback.h"
 
 namespace Jarvis {
     class Allocator;
@@ -34,6 +35,9 @@ namespace Jarvis {
         // An array of 2 chunk lists, NodeIndex first, EdgeIndex next
         // This is a pointer so we can typecast it in PM at the constructor
         TagList *_tag_prop_map;
+
+        CallbackList<void *, void *> _iterator_remove_list;
+        CallbackList<void *, void *> _iterator_rebalance_list;
 
         IndexList *add_tag_index(Graph::IndexType index_type,
                                      StringID tag,
@@ -79,5 +83,30 @@ namespace Jarvis {
 
         Index::Index_IteratorImplIntf *get_iterator(Graph::IndexType index_type,
                                                     StringID tag);
+
+        void register_iterator(void *key,
+                               std::function<void(void *)> remove_callback)
+        {
+            _iterator_remove_list.register_callback(key, remove_callback);
+        }
+
+        void register_iterator(void *key,
+                               std::function<void(void *)> remove_callback,
+                               std::function<void(void *)> rebalance_callback)
+        {
+            _iterator_remove_list.register_callback(key, remove_callback);
+            _iterator_rebalance_list.register_callback(key, rebalance_callback);
+        }
+
+        void unregister_iterator(void *key)
+        {
+            _iterator_remove_list.unregister_callback(key);
+            _iterator_rebalance_list.unregister_callback(key);
+        }
+
+        void iterator_remove_notify(void *list_node) const
+            { _iterator_remove_list.do_callbacks(list_node); }
+        void iterator_rebalance_notify(void *tree) const
+            { _iterator_rebalance_list.do_callbacks(tree); }
     };
 }
