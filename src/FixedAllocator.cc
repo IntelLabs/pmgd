@@ -122,7 +122,7 @@ void FixedAllocator::free(void *p)
     tx->log(p, sizeof(uint64_t));
 
     void *&free_list = tx->register_commit_callback(this, clean_free_list);
-    *(uint64_t *)p = (uint64_t)free_list;
+    *(uint64_t *)p = (uint64_t)free_list | FREE_BIT;
     free_list = p;
 }
 
@@ -130,18 +130,18 @@ void FixedAllocator::clean_free_list(TransactionImpl *tx, void *obj, void *free_
 {
     FixedAllocator *This = (FixedAllocator *)obj;
     tx->log_range(&This->_pm->free_ptr, &This->_pm->num_allocated);
-    void *free_ptr = This->_pm->free_ptr;
+    uint64_t *free_ptr = This->_pm->free_ptr;
     int64_t num_allocated = This->_pm->num_allocated;
 
-    void *q;
-    for (void *p = free_list; p != NULL; p = q) {
-        q = *(void **)p;
-        *(uint64_t *)p = (uint64_t)free_ptr | FREE_BIT;
+    uint64_t *q;
+    for (uint64_t *p = (uint64_t *)free_list; p != NULL; p = q) {
+        q = (uint64_t *)(*p & ~FREE_BIT);
+        *p = (uint64_t)free_ptr | FREE_BIT;
         free_ptr = p;
         num_allocated--;
     }
 
-    This->_pm->free_ptr = (uint64_t *)free_ptr;
+    This->_pm->free_ptr = free_ptr;
     This->_pm->num_allocated = num_allocated;
 }
 
