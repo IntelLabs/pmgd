@@ -43,7 +43,7 @@ set -e
 # by mistake.
 tests=( alloctest avltest chunklisttest edgeindextest
         emailindextest filtertest indextest indexstringtest
-        listtest load_gson_test load_tsv_test
+        indexrangetest listtest load_gson_test load_tsv_test
         neighbortest nodeedgetest propertychunktest propertypredicatetest
         propertytest propertylisttest
         reverseindexrangetest rotest
@@ -53,7 +53,7 @@ tests=( alloctest avltest chunklisttest edgeindextest
 
 graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
              emailindexgraph filtergraph indexgraph indexstringgraph
-             listgraph load_gson_graph load_tsv_graph
+             indexrangegraph listgraph load_gson_graph load_tsv_graph
              neighborgraph nodeedgegraph propertychunkgraph ppgraph
              propertygraph propertylistgraph
              reverseindexrangegraph rograph
