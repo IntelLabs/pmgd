@@ -258,7 +258,8 @@ namespace Jarvis {
         using Index_IteratorImplBase<K>::_tree; \
         using Index_IteratorImplBase<K>::_curr; \
         using Index_IteratorImplBase<K>::_path; \
-        using Index_IteratorImplBase<K>::_list_it;
+        using Index_IteratorImplBase<K>::_list_it; \
+        using Index_IteratorImplBase<K>::finish_init;
 
     // These iterator implementations are specific to instantiations
     // of AvlTreeIndex<K, V> with V = List<void *>.
@@ -275,6 +276,16 @@ namespace Jarvis {
 
         ListTraverser<void *> _list_it;
 
+        void finish_init() {
+            if (!_path.empty()) {
+                _curr = _path.top();
+                _path.pop();
+                _list_it.set(&_curr->value);
+            }
+        }
+
+        virtual void _next() = 0;
+
     public:
         Index_IteratorImplBase(IndexNode *tree)
             : _tree(tree), _curr(NULL), _list_it(NULL)
@@ -282,7 +293,22 @@ namespace Jarvis {
 
         void *ref() const { return _list_it.ref(); }
         operator bool() const { return bool(_list_it); }
-        virtual bool next() = 0;
+
+        bool next()
+        {
+            if (_list_it.next())
+                return true;
+
+            // current list iterator empty; move to the next TreeNode
+            _next();
+            if (_path.empty())
+                return false;
+
+            _curr = _path.top();
+            _path.pop();
+            _list_it.set(&_curr->value);
+            return true;
+        }
     };
 
     template <typename K>
@@ -294,7 +320,8 @@ namespace Jarvis {
             : Index_IteratorImplBase<K>(tree)
             { _list_it.set(tree->find(key)); }
 
-        bool next() { return _list_it.next(); }
+        void _next()
+            { /* Once we finish the original list, we're done. */  }
     };
 
     // Handle gele, gelt, gtle, gtlt, le, lt.
@@ -312,12 +339,7 @@ namespace Jarvis {
         {
             typename IndexNode::Compare cmin(min, incl_min);
             _tree->find_start(tree->_tree, cmin, _cmax, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
         // When a max is given but no min is specified, next is same as
@@ -327,32 +349,11 @@ namespace Jarvis {
               _cmax(max, incl_max)
         {
             _tree->find_start_min(tree->_tree, _cmax, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->right;
-                _curr = NULL;
-                _tree->add_right_tree(temp, _cmax, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_right_tree(_curr->right, _cmax, _path); }
     };
 
     // Handle ge, gt, dont_care.
@@ -368,12 +369,7 @@ namespace Jarvis {
         {
             typename IndexNode::Compare cmin(min, incl_min);
             _tree->find_start_max(tree->_tree, cmin, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
         // The dont_care case where no min and max are given.
@@ -381,32 +377,11 @@ namespace Jarvis {
             : Index_IteratorImplBase<K>(tree)
         {
             _tree->find_start_all(tree->_tree, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->right;
-                _curr = NULL;
-                _tree->add_full_right_tree(temp, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_full_right_tree(_curr->right, _path); }
     };
 
     template <typename K>
@@ -422,32 +397,11 @@ namespace Jarvis {
             // Get to the minimum of the tree but make sure that is
             // not the key itself
             _tree->add_nodes_neq(tree->_tree, _neq, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->right;
-                _curr = NULL;
-                _tree->add_nodes_neq(temp, _neq, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_nodes_neq(_curr->right, _neq, _path); }
     };
 
     // Reverse iterators.
@@ -466,12 +420,7 @@ namespace Jarvis {
         {
             typename IndexNode::Compare cmax(max, incl_max);
             _tree->find_start_reverse(tree->_tree, _cmin, cmax, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
         // When a min is given but no max is specified, next is same as
@@ -481,32 +430,11 @@ namespace Jarvis {
               _cmin(min, incl_min)
         {
             _tree->find_start_max_reverse(tree->_tree, _cmin, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->left;
-                _curr = NULL;
-                _tree->add_left_tree(temp, _cmin, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_left_tree(_curr->left, _cmin, _path); }
     };
 
     // Handle lt, le, dont_care
@@ -520,12 +448,7 @@ namespace Jarvis {
         {
             typename IndexNode::Compare cmax(max, incl_max);
             _tree->find_start_min_reverse(tree->_tree, cmax, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
         // The dont_care case where no min and max are given.
@@ -533,32 +456,11 @@ namespace Jarvis {
             : Index_IteratorImplBase<K>(tree)
         {
             _tree->find_start_all_reverse(tree->_tree, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->left;
-                _curr = NULL;
-                _tree->add_full_left_tree(temp, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_full_left_tree(_curr->left, _path); }
     };
 
     template <typename K>
@@ -574,32 +476,11 @@ namespace Jarvis {
             // Get to the minimum of the tree but make sure that is
             // not the key itself
             _tree->add_nodes_neq_reverse(tree->_tree, _neq, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->left;
-                _curr = NULL;
-                _tree->add_nodes_neq_reverse(temp, _neq, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_nodes_neq_reverse(_curr->left, _neq, _path); }
     };
 }
 
