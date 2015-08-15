@@ -256,4 +256,4 @@ void Jarvis::Node::set_property(StringID id, const Property &new_value)
     { _property_list.set_property(id, new_value, Graph::NodeIndex, _tag, this); }
 
 void Jarvis::Node::remove_property(StringID id)
-    { _property_list.remove_property(id); }
+    { _property_list.remove_property(id, Graph::NodeIndex, _tag, this); }

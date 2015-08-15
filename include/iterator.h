@@ -243,7 +243,8 @@ namespace Jarvis {
         PropertyIterator get_properties() const;
         void set_property(StringID id, const Property &new_value,
                 /*Graph::IndexType*/ int index_type, StringID tag, void *obj);
-        void remove_property(StringID name);
+        void remove_property(StringID name,
+                /*Graph::IndexType*/ int index_type, StringID tag, void *obj);
     };
 };
 

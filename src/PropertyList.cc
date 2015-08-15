@@ -156,11 +156,18 @@ void PropertyList::set_property(StringID id, const Property &new_value,
     space.set_property(id, new_value, tx, allocator);
 }
 
-void PropertyList::remove_property(StringID id)
+
+void PropertyList::remove_property(StringID id,
+            /*Graph::IndexType*/ int index_type, StringID tag, void *obj)
 {
     PropertyRef p;
-    if (find_property(id, p))
-        p.free(TransactionImpl::get_tx());
+    if (find_property(id, p)) {
+        TransactionImpl *tx = TransactionImpl::get_tx();
+        GraphImpl *db = tx->get_db();
+        db->index_manager().update(db, Graph::IndexType(index_type), tag, obj,
+                                   id, &p, NULL);
+        p.free(tx);
+    }
 }
 
 
