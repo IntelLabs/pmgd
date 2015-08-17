@@ -192,6 +192,7 @@ namespace Jarvis {
 
     protected:
         T *_cur;
+        void check_vacant();
 
     public:
         Graph_Iterator(const FixedAllocator &);
@@ -204,7 +205,12 @@ namespace Jarvis {
         Graph_NodeIteratorImpl(const FixedAllocator &a)
             : Graph_Iterator<NodeIteratorImplIntf, Node>(a)
             { }
-        Node *ref() { return _cur; }
+
+        Node *ref()
+        {
+            check_vacant();
+            return _cur;
+        }
     };
 
     class Graph_EdgeIteratorImpl : public Graph_Iterator<EdgeIteratorImplIntf, Edge> {
@@ -219,7 +225,12 @@ namespace Jarvis {
         Graph_EdgeIteratorImpl(const FixedAllocator &a)
             : Graph_Iterator<EdgeIteratorImplIntf, Edge>(a), _ref(this)
             {}
-        EdgeRef *ref() { return &_ref; }
+
+        EdgeRef *ref()
+        {
+            check_vacant();
+            return &_ref;
+        }
     };
 
     class Index_NodeIteratorImpl : public NodeIteratorImplIntf {
@@ -283,6 +294,14 @@ void Graph_Iterator<B, T>::_skip()
 {
     _cur = static_cast<T *>(table.next(_cur));
 }
+
+template <typename B, typename T>
+void Graph_Iterator<B, T>::check_vacant()
+{
+    if (table.is_free(_cur))
+        throw Exception(VacantIterator);
+}
+
 
 NodeIterator Graph::get_nodes()
 {
