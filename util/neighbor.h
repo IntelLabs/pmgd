@@ -96,7 +96,14 @@ public:
         return _next();
     }
 
-    Node *ref() { return _neighbor; }
+    Node *ref()
+    {
+        // Check that *_ei still exists. If it does, then
+        // _neighbor still exists and is still a neighbor.
+        // If not, the edge iterator will throw VacantIterator.
+        (void)*_ei;
+        return _neighbor;
+    }
 };
 
 /**
