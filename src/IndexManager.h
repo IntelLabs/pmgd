@@ -38,6 +38,7 @@ namespace Jarvis {
 
         CallbackList<void *, void *> _iterator_remove_list;
         CallbackList<void *, void *> _iterator_rebalance_list;
+        CallbackList<void *, const PropertyRef &> _property_iterator_list;
 
         IndexList *add_tag_index(Graph::IndexType index_type,
                                      StringID tag,
@@ -108,5 +109,12 @@ namespace Jarvis {
             { _iterator_remove_list.do_callbacks(list_node); }
         void iterator_rebalance_notify(void *tree) const
             { _iterator_rebalance_list.do_callbacks(tree); }
+
+        void register_property_iterator(void *key, std::function<void(const PropertyRef &)> f)
+            { _property_iterator_list.register_callback(key, f); }
+        void unregister_property_iterator(void *key)
+            { _property_iterator_list.unregister_callback(key); }
+        void property_iterator_notify(const PropertyRef &p) const
+            { _property_iterator_list.do_callbacks(p); }
     };
 }

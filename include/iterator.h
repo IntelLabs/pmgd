@@ -180,6 +180,9 @@ namespace Jarvis {
         PropertyRef(const PropertyRef &p, unsigned size)
             : _chunk(p._chunk), _offset(p._offset + size)
             { assert(_offset <= chunk_size()); }
+        PropertyRef(uint8_t *chunk, unsigned  offset)
+            : _chunk(chunk), _offset(offset)
+            { }
 
     public:
         StringID id() const { return const_cast<PropertyRef *>(this)->get_id(); }
