@@ -83,7 +83,7 @@ static void print_property(const PropertyIterator &p, FILE *f)
             break;
         }
         case PropertyType::Float: value = std::to_string(p->float_value()); break;
-        case PropertyType::Time: /* TBD */ return; // break;
+        case PropertyType::Time: value = time_to_string(p->time_value()); break;
         case PropertyType::Blob: /* TBD */ return; // break;
         default: throw Exception(PropertyTypeInvalid);
     }

@@ -166,6 +166,16 @@ property:
                   current.set_property($1, value);
               }
 
+        | property_id '=' STRING
+              {
+                  struct tm tm;
+                  int hr_offset, min_offset;
+                  if (!string_to_tm(*$3, &tm, &hr_offset, &min_offset))
+                      throw Jarvis::Exception(LoaderFormatError);
+                  Jarvis::Time time(&tm, hr_offset, min_offset);
+                  current.set_property($1, time);
+              }
+
         | property_id '=' TRUE
               { current.set_property($1, true); }
 
