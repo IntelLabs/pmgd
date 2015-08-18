@@ -48,7 +48,8 @@ tests=( alloctest avltest chunklisttest edgeindextest
         propertytest propertylisttest
         reverseindexrangetest rotest
         soltest stringtabletest txtest
-        test720 test750 test767 
+        test720 test750 test767
+        load_jarvis_tests
         DateTest )
 
 graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
@@ -102,6 +103,12 @@ do
                 rm emailindexgraph 2> /dev/zero
             fi
             cd -
+            ;;
+        load_jarvis_tests)
+            COUNT=`sh load_jarvis_tests.sh | grep "Test Passed" | wc -l`
+            if [ $COUNT != 5 ]; then
+                false
+            fi
             ;;
         *) ${TEST_DIR}/$test n1 n2 n3 n4 ;;
     esac > ${TEST_DIR}/log/${test}.log
