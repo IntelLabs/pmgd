@@ -22,8 +22,6 @@ namespace Jarvis {
         size_t _num_elems;
 
         // For iterators
-        friend class Node_EdgeIteratorImpl;
-        friend class EdgeIndexType;
         friend class EdgeIndex;
 
         template <typename D> friend class ListTraverser;
