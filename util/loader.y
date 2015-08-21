@@ -107,6 +107,7 @@ edge_def: node properties node properties
                   if (params.edge_func)
                       params.edge_func(edge);
                   current = edge;
+                  delete $6;
               }
               edge_properties
         | node properties node properties
@@ -124,13 +125,25 @@ edge_properties:
         ;
 
 node:     INTEGER tag
-              { $$ = current = get_node(params.db, $1, $2, params.node_func); }
+              {
+                  $$ = current = get_node(params.db, $1, $2, params.node_func);
+                  delete $2;
+              }
+
         | STRING tag
-              { $$ = current = get_node(params.db, $1, $2, params.node_func); }
+              {
+                  $$ = current = get_node(params.db, $1, $2, params.node_func);
+                  delete $1;
+                  delete $2;
+              }
         ;
 
 tag :     /* empty */ { $$ = new Jarvis::StringID(0); }
-        | '#' STRING { $$ = new Jarvis::StringID($2->c_str()); }
+        | '#' STRING
+              {
+                  $$ = new Jarvis::StringID($2->c_str());
+                  delete $2;
+              }
         ;
 
 properties:
@@ -150,7 +163,10 @@ opt_comma:
 
 property:
           property_id '=' INTEGER
-              { current.set_property($1, $3); }
+              {
+                  current.set_property($1, $3);
+                  delete $1;
+              }
 
         | property_id '=' QUOTED_STRING
               {
@@ -164,6 +180,8 @@ property:
                   }
                   value.append(s, prev, s.npos);
                   current.set_property($1, value);
+                  delete $1;
+                  delete $3;
               }
 
         | property_id '=' STRING
@@ -174,19 +192,34 @@ property:
                       throw Jarvis::Exception(LoaderFormatError);
                   Jarvis::Time time(&tm, hr_offset, min_offset);
                   current.set_property($1, time);
+                  delete $1;
+                  delete $3;
               }
 
         | property_id '=' TRUE
-              { current.set_property($1, true); }
+              {
+                  current.set_property($1, true);
+                  delete $1;
+              }
 
         | property_id '=' FALSE
-              { current.set_property($1, false); }
+              {
+                  current.set_property($1, false);
+                  delete $1;
+              }
 
         | property_id
-              { current.set_property($1, Jarvis::Property()); }
+              {
+                  current.set_property($1, Jarvis::Property());
+                  delete $1;
+              }
         ;
 
-property_id: STRING { $$ = new Jarvis::StringID($1->c_str()); }
+property_id: STRING
+              {
+                  $$ = new Jarvis::StringID($1->c_str());
+                  delete $1;
+              }
         ;
 
 %%
