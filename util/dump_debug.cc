@@ -6,18 +6,25 @@
 
 using namespace Jarvis;
 
-void dump_nodes(Graph &db, FILE *f)
+static void dump_nodes(Graph &db, FILE *f);
+static void dump_edges(Graph &db, FILE *f);
+
+void dump_debug(Graph &db, FILE *f)
 {
-    for (NodeIterator i = db.get_nodes(); i; i.next()) {
-        dump(db, *i, f);
-    }
+    dump_nodes(db, f);
+    dump_edges(db, f);
 }
 
-void dump_edges(Graph &db, FILE *f)
+static void dump_nodes(Graph &db, FILE *f)
 {
-    for (EdgeIterator i = db.get_edges(); i; i.next()) {
+    for (NodeIterator i = db.get_nodes(); i; i.next())
         dump(db, *i, f);
-    }
+}
+
+static void dump_edges(Graph &db, FILE *f)
+{
+    for (EdgeIterator i = db.get_edges(); i; i.next())
+        dump(db, *i, f);
 }
 
 void dump(Graph &db, NodeIterator &i, FILE *f)

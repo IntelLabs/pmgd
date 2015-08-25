@@ -29,9 +29,9 @@ true                    { return TRUE; }
 false                   { return FALSE; }
 
 {NUMBER}                { return cvt_int(); }
-"\""[^"\n]*"\""         { return cvt_string(true); }
-[-a-zA-Z0-9.~!@$%_]+    { return cvt_string(false); }
+\"([^"\n\\]|\\["\\])*\" { return cvt_string(true); }
 [{}=,:;#]               { return yytext[0]; }
+[-a-zA-Z0-9.~!@$%_?:]+  { return cvt_string(false); }
 .                       { return ERROR; }
 
 %%
@@ -53,9 +53,6 @@ static int cvt_string(bool quoted)
     if (quoted)
         p += 1, len -= 2;
 
-    char *q = new char[len + 1];
-    memcpy(q, p, len);
-    q[len] = '\0';
-    yylval.s = q;
+    yylval.s = new std::string(p, len);
     return quoted ? QUOTED_STRING : STRING;
 }

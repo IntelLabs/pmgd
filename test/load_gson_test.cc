@@ -22,8 +22,7 @@ int main(int argc, char *argv[])
 
         load_gson(db, argv[1], node_added, edge_added);
         Transaction tx(db);
-        dump_nodes(db);
-        dump_edges(db);
+        dump_debug(db);
         tx.commit();
     }
     catch (Exception e) {

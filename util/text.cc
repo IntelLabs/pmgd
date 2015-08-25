@@ -115,9 +115,35 @@ bool string_to_tm(const std::string &tstr, struct tm *user_tz_tm,
     // strptime does not fill in all fields.
     memset(user_tz_tm, 0, sizeof(struct tm));
 
+    const char *left_over;
+
+    // First check for ISO 8601 representation.
+    left_over = strptime(tstr.c_str(), "%FT%T", user_tz_tm);
+    if (left_over != NULL) {
+        if (left_over == '\0') {
+            *hr_offset = *min_offset = 0;
+            return true;
+        }
+        else {
+            // Use %R instead of %z and get the timezone value from tm_hour
+            // and tm_min, because struct tm doesn't have fields for timezone.
+            struct tm tz;
+            if (strptime(left_over, "+%R", &tz) != NULL) {
+                *hr_offset = tz.tm_hour;
+                *min_offset = tz.tm_min;
+                return true;
+            }
+            if (strptime(left_over, "-%R", &tz) != NULL) {
+                *hr_offset = -tz.tm_hour;
+                *min_offset = tz.tm_min;
+                return true;
+            }
+        }
+    }
+
     // The function does not parse timezones. So add a different
     // parsing step to extract year that follows the timezone string.
-    const char *left_over = strptime(tstr.c_str(), "%a %b %d %X ", user_tz_tm);
+    left_over = strptime(tstr.c_str(), "%a %b %d %X ", user_tz_tm);
     if (left_over == NULL) // Incomplete format.
         return false;
 
