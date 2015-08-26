@@ -38,6 +38,10 @@ namespace Jarvis {
         IndexList *add_tag_index(Graph::IndexType index_type,
                                      StringID tag,
                                      Allocator &allocator);
+
+        bool add(Graph::IndexType index_type, StringID tag, void *obj,
+                 Allocator &allocator);
+
     public:
         IndexManager(const uint64_t region_addr, bool create)
             : _tag_prop_map(reinterpret_cast<TagList *>(region_addr))
@@ -58,11 +62,22 @@ namespace Jarvis {
         // the set_property state. We cannot wait until first set_property
         // since the user might just want to query based on tag and
         // not set any property until then.
-        bool add_node(Node *n, Allocator &allocator);
+        bool add_node(Node *node, Allocator &allocator)
+            { return add(Graph::NodeIndex, node->get_tag(), node, allocator); }
+
+        bool add_edge(Edge *edge, Allocator &allocator)
+            { return add(Graph::EdgeIndex, edge->get_tag(), edge, allocator); }
+
+        void update(GraphImpl *db,
+                    Graph::IndexType index_type, StringID tag, void *obj,
+                    StringID id,
+                    const PropertyRef *old_value, const Property *new_value);
 
         Index *get_index(Graph::IndexType index_type, StringID tag,
                          StringID property_id,
                          PropertyType ptype = PropertyType(0));
-        NodeIterator get_nodes(StringID tag);
+
+        Index::Index_IteratorImplIntf *get_iterator(Graph::IndexType index_type,
+                                                    StringID tag);
     };
 }

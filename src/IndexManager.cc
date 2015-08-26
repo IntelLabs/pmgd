@@ -72,17 +72,18 @@ void IndexManager::create_index(Graph::IndexType index_type, StringID tag,
     }
 }
 
-bool IndexManager::add_node(Node *n, Allocator &allocator)
+bool IndexManager::add(Graph::IndexType index_type, StringID tag, void *obj,
+                       Allocator &allocator)
 {
-    assert(n != NULL);
+    assert(obj != NULL);
 
-    if (n->get_tag() == 0)
+    if (tag == 0)
         return false;
 
     // Check first if that tag index exists. Since we are indexing
     // all nodes/edges based on their tags, create an entry if it
     // doesn't exist.
-    IndexList *tag_entry = add_tag_index(Graph::NodeIndex, n->get_tag(), allocator);
+    IndexList *tag_entry = add_tag_index(index_type, tag, allocator);
 
     // For now, add only to the no property list ==> index via tag
     // This entry should always exist since we add it explicitly when
@@ -96,11 +97,12 @@ bool IndexManager::add_node(Node *n, Allocator &allocator)
     // This particular property only has one value = true and should
     // be the first and only node in the tree.
     bool value = true;
-    List<Node *> *list = idx->add(value, allocator);
-    list->add(n, allocator);
+    List<void *> *list = idx->add(value, allocator);
+    list->add(obj, allocator);
 
     return true;
 }
+
 
 Index *IndexManager::get_index(Graph::IndexType index_type, StringID tag,
                                StringID property_id, PropertyType ptype)
@@ -127,14 +129,43 @@ Index *IndexManager::get_index(Graph::IndexType index_type, StringID tag,
     return *idx;
 }
 
-NodeIterator IndexManager::get_nodes(StringID tag)
+Index::Index_IteratorImplIntf *IndexManager::get_iterator
+    (Graph::IndexType index_type, StringID tag)
 {
     Index *prop0_idx;
-    prop0_idx = get_index(Graph::NodeIndex, tag, 0);
+    prop0_idx = get_index(index_type, tag, 0);
     if (!prop0_idx)
-        return NodeIterator(NULL);
+        return NULL;
     // This index can never be null cause we create it for each non-zero tag.
     // The second parameter here is the locale which we surely do not need for
     // a boolean property.
-    return prop0_idx->get_nodes(PropertyPredicate(0, PropertyPredicate::Eq, true), NULL, false);
+    return prop0_idx->get_iterator(PropertyPredicate(0, PropertyPredicate::Eq, true), NULL, false);
+}
+
+void IndexManager::update
+    (GraphImpl *db, Graph::IndexType index_type, StringID tag, void *obj,
+     StringID id, const PropertyRef *old_value, const Property *new_value)
+{
+    // get_index throws if the property type doesn't match the index.
+    PropertyType ptype = new_value ? new_value->type() : PropertyType(0);
+    Index *index = get_index(index_type, tag, id, ptype);
+
+    // Check if there is an index with this property id and tag = 0.
+    // This is a general all-tag index for certain properties such as loader id.
+    Index *gindex = get_index(Graph::IndexType(index_type), 0, id, ptype);
+
+    if (old_value != NULL && (index != NULL || gindex != NULL)) {
+        Property tmp(*old_value);
+        if (index)
+            index->remove(tmp, obj, db);
+        if (gindex)
+            gindex->remove(tmp, obj, db);
+    }
+
+    if (new_value != NULL) {
+        if (index)
+            index->add(*new_value, obj, db);
+        if (gindex)
+            gindex->add(*new_value, obj, db);
+    }
 }

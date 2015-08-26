@@ -101,18 +101,52 @@ PropertyIterator PropertyList::get_properties() const
     return PropertyIterator(new PropertyListIteratorImpl(this));
 }
 
+
+// PropertyList:set_property handles updating the index as well
+// as updating the property list.
+// This is because we need to check whether there is an existing
+// property with the given id and remove it from the index before
+// setting the new property value and adding it to the index.
+// The index manager also checks that the index, if any, is the
+// same type as the property value being set.
+//
+// index_type is of type int because otherwise there would be a circular
+// dependency between graph.h and iterator.h.
+// graph.h needs Iterator, and iterator.h would need Graph::IndexType.
+// Breaking PropertyList.h out into a separate include file wouldn't help;
+// it would just make the circular dependency more complicated.
 void PropertyList::set_property(StringID id, const Property &new_value,
-                                Property &old_value)
+            /*Graph::IndexType*/ int index_type, StringID tag, void *obj)
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
-    Allocator &allocator = tx->get_db()->allocator();
+    GraphImpl *db = tx->get_db();
+    Allocator &allocator = db->allocator();
     PropertyRef pos;
     PropertySpace space(get_space(new_value) + 3);
 
     if (find_property(id, pos, &space)) {
-        old_value = Property(pos);
+        db->index_manager().update(db, Graph::IndexType(index_type), tag, obj,
+                                   id, &pos, &new_value);
         pos.free(tx);
     }
+    else {
+        db->index_manager().update(db, Graph::IndexType(index_type), tag, obj,
+                                   id, NULL, &new_value);
+    }
+
+    // Mantis #802
+    // If any of the following steps throws BadAlloc, these changes
+    // have already been made to the graph:
+    // 1. The old property value has been removed from the property list.
+    // 2. The old property value has been removed from the index.
+    // 3. The new property value has been added to the index, if there is
+    //    one. This can leave a reference in the index to a node or edge
+    //    that doesn't have the indexed property.
+    // If the exception causes the transaction to be aborted, these changes
+    // will be reverted, but if the application catches the exception and
+    // commits the transaction, these incorrect changes will become persistent.
+    // This might be a good place to use a dependent nested transaction,
+    // once that is implemented.
 
     if (space.size() == 0) {
         if (!find_space(space, pos)) {

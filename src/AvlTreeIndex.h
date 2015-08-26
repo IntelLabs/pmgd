@@ -38,12 +38,12 @@ namespace Jarvis {
         void add_full_left_tree(TreeNode *root, std::stack<TreeNode *> &path);
         void add_nodes_neq_reverse(TreeNode *root, const K &neq, std::stack<TreeNode *> &path);
 
-        template <class D> friend class IndexRange_NodeIteratorImpl;
-        template <class D> friend class IndexRangeNomax_NodeIteratorImpl;
-        template <class D> friend class IndexRangeNeq_NodeIteratorImpl;
-        template <class D> friend class IndexRangeReverse_NodeIteratorImpl;
-        template <class D> friend class IndexRangeNomin_NodeIteratorImpl;
-        template <class D> friend class IndexRangeNeqReverse_NodeIteratorImpl;
+        template <class D> friend class IndexRange_IteratorImpl;
+        template <class D> friend class IndexRangeNomax_IteratorImpl;
+        template <class D> friend class IndexRangeNeq_IteratorImpl;
+        template <class D> friend class IndexRangeReverse_IteratorImpl;
+        template <class D> friend class IndexRangeNomin_IteratorImpl;
+        template <class D> friend class IndexRangeNeqReverse_IteratorImpl;
     public:
         // Initialize both and they do their own transaction flush
         AvlTreeIndex(PropertyType ptype) : Index(ptype), AvlTree<K,V>()
@@ -55,19 +55,18 @@ namespace Jarvis {
         using AvlTree<K,V>::add;
         using AvlTree<K,V>::remove;
 
-        NodeIterator get_nodes(bool reverse);
-        NodeIterator get_nodes(const K &key, PropertyPredicate::Op op, bool reverse);
-        NodeIterator get_nodes(const K &min, const K &max, PropertyPredicate::Op op,
+        Index::Index_IteratorImplIntf *get_iterator(bool reverse);
+        Index::Index_IteratorImplIntf *get_iterator(const K &key, PropertyPredicate::Op op, bool reverse);
+        Index::Index_IteratorImplIntf *get_iterator(const K &min, const K &max, PropertyPredicate::Op op,
                                bool reverse);
     };
 
     // For the actual property value indices
-    class Node;
     class IndexString;
     template <class T> class List;
-    typedef AvlTreeIndex<long long, List<Node *>> LongValueIndex;
-    typedef AvlTreeIndex<double, List<Node *>> FloatValueIndex;
-    typedef AvlTreeIndex<bool, List<Node *>> BoolValueIndex;
-    typedef AvlTreeIndex<Time, List<Node *>> TimeValueIndex;
-    typedef AvlTreeIndex<IndexString, List<Node *>> StringValueIndex;
+    typedef AvlTreeIndex<long long, List<void *>> LongValueIndex;
+    typedef AvlTreeIndex<double, List<void *>> FloatValueIndex;
+    typedef AvlTreeIndex<bool, List<void *>> BoolValueIndex;
+    typedef AvlTreeIndex<Time, List<void *>> TimeValueIndex;
+    typedef AvlTreeIndex<IndexString, List<void *>> StringValueIndex;
 }

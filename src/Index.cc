@@ -9,7 +9,7 @@
 
 using namespace Jarvis;
 
-void Index::add(const Property &p, Node *n, GraphImpl *db)
+void Index::add(const Property &p, void *n, GraphImpl *db)
 {
     if (_ptype != p.type())
         throw Exception(PropertyTypeMismatch);
@@ -18,7 +18,7 @@ void Index::add(const Property &p, Node *n, GraphImpl *db)
 
     // TODO: Tree is unnecessary and Node* needs better arrangement for
     // quick search and remove operations
-    List<Node*> *dest = NULL;
+    List<void*> *dest = NULL;
 
     switch(_ptype) {
         case PropertyType::Integer:
@@ -58,14 +58,14 @@ void Index::add(const Property &p, Node *n, GraphImpl *db)
     dest->add(n, allocator);
 }
 
-void Index::remove(const Property &p, Node *n, GraphImpl *db)
+void Index::remove(const Property &p, void *n, GraphImpl *db)
 {
     if (_ptype != p.type())
         throw Exception(PropertyTypeMismatch);
 
     Allocator &allocator = db->allocator();
 
-    List<Node*> *dest;
+    List<void*> *dest;
     switch(_ptype) {
         case PropertyType::Integer:
             {
@@ -136,16 +136,7 @@ void Index::remove(const Property &p, Node *n, GraphImpl *db)
     }
 }
 
-void Index::update(GraphImpl *db, Node *n, const Property &new_value,
-                   const Property &old_value)
-{
-    // TODO: actual properties with no_value type not handled here.
-    if (old_value.type() != PropertyType::NoValue)
-        remove(old_value, n, db);
-    add(new_value, n, db);
-}
-
-NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, bool reverse)
+Index::Index_IteratorImplIntf *Index::get_iterator(const PropertyPredicate &pp, std::locale *loc, bool reverse)
 {
     const Property &p1 = pp.v1;
     const Property &p2 = pp.v2;
@@ -164,44 +155,44 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
             {
                 LongValueIndex *This = static_cast<LongValueIndex *>(this);
                 if (pp.op >= PropertyPredicate::GeLe)
-                    return This->get_nodes(p1.int_value(), p2.int_value(), pp.op, reverse);
+                    return This->get_iterator(p1.int_value(), p2.int_value(), pp.op, reverse);
                 else if (pp.op == PropertyPredicate::DontCare)
-                    return This->get_nodes(reverse);
+                    return This->get_iterator(reverse);
                 else
-                    return This->get_nodes(p1.int_value(), pp.op, reverse);
+                    return This->get_iterator(p1.int_value(), pp.op, reverse);
             }
             break;
         case PropertyType::Float:
             {
                 FloatValueIndex *This = static_cast<FloatValueIndex *>(this);
                 if (pp.op >= PropertyPredicate::GeLe)
-                    return This->get_nodes(p1.float_value(), p2.float_value(), pp.op, reverse);
+                    return This->get_iterator(p1.float_value(), p2.float_value(), pp.op, reverse);
                 else if (pp.op == PropertyPredicate::DontCare)
-                    return This->get_nodes(reverse);
+                    return This->get_iterator(reverse);
                 else
-                    return This->get_nodes(p1.float_value(), pp.op, reverse);
+                    return This->get_iterator(p1.float_value(), pp.op, reverse);
             }
             break;
         case PropertyType::Boolean:
             {
                 BoolValueIndex *This = static_cast<BoolValueIndex *>(this);
                 if (pp.op >= PropertyPredicate::GeLe)
-                    return This->get_nodes(p1.bool_value(), p2.bool_value(), pp.op, reverse);
+                    return This->get_iterator(p1.bool_value(), p2.bool_value(), pp.op, reverse);
                 else if (pp.op == PropertyPredicate::DontCare)
-                    return This->get_nodes(reverse);
+                    return This->get_iterator(reverse);
                 else
-                    return This->get_nodes(p1.bool_value(), pp.op, reverse);
+                    return This->get_iterator(p1.bool_value(), pp.op, reverse);
             }
             break;
         case PropertyType::Time:
             {
                 TimeValueIndex *This = static_cast<TimeValueIndex *>(this);
                 if (pp.op >= PropertyPredicate::GeLe)
-                    return This->get_nodes(p1.time_value(), p2.time_value(), pp.op, reverse);
+                    return This->get_iterator(p1.time_value(), p2.time_value(), pp.op, reverse);
                 else if (pp.op == PropertyPredicate::DontCare)
-                    return This->get_nodes(reverse);
+                    return This->get_iterator(reverse);
                 else
-                    return This->get_nodes(p1.time_value(), pp.op, reverse);
+                    return This->get_iterator(p1.time_value(), pp.op, reverse);
             }
             break;
         case PropertyType::String:
@@ -210,12 +201,12 @@ NodeIterator Index::get_nodes(const PropertyPredicate &pp, std::locale *loc, boo
                 StringValueIndex *This = static_cast<StringValueIndex *>(this);
                 if (pp.op >= PropertyPredicate::GeLe) {
                     TransientIndexString istr2(p2.string_value(), *loc);
-                    return This->get_nodes(istr, istr2, pp.op, reverse);
+                    return This->get_iterator(istr, istr2, pp.op, reverse);
                 }
                 else if (pp.op == PropertyPredicate::DontCare)
-                    return This->get_nodes(reverse);
+                    return This->get_iterator(reverse);
                 else
-                    return This->get_nodes(istr, pp.op, reverse);
+                    return This->get_iterator(istr, pp.op, reverse);
             }
             break;
         case PropertyType::NoValue:

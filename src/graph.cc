@@ -78,6 +78,7 @@ Edge &Graph::add_edge(Node &src, Node &dest, StringID tag)
     edge->init(src, dest, tag, _impl->edge_table().object_size());
     src.add_edge(edge, Outgoing, tag, _impl->allocator());
     dest.add_edge(edge, Incoming, tag, _impl->allocator());
+    _impl->index_manager().add_edge(edge, _impl->allocator());
     return *edge;
 }
 
@@ -226,6 +227,41 @@ namespace Jarvis {
         EdgeRef &operator*() { return _ref; }
         EdgeRef *operator->() { return &_ref; }
     };
+
+    class Index_NodeIteratorImpl : public NodeIteratorImplIntf {
+        Index::Index_IteratorImplIntf *_iter;
+    public:
+        Index_NodeIteratorImpl(Index::Index_IteratorImplIntf *iter)
+            : _iter(iter) { }
+        ~Index_NodeIteratorImpl() { delete _iter; }
+        const Node &operator*() const { return *(Node *)_iter->ref(); }
+        const Node *operator->() const { return (Node *)_iter->ref(); }
+        Node &operator*() { return *(Node *)_iter->ref(); }
+        Node *operator->() { return (Node *)_iter->ref(); }
+        operator bool() const { return _iter && *_iter; }
+        bool next() { return _iter->next(); }
+    };
+
+    class Index_EdgeIteratorImpl : public EdgeIteratorImplIntf {
+        Index::Index_IteratorImplIntf *_iter;
+        EdgeRef _ref;
+
+        friend class EdgeRef;
+        Edge *get_edge() const { return (Edge *)_iter->ref(); }
+        StringID get_tag() const { return get_edge()->get_tag(); }
+        Node &get_source() const { return get_edge()->get_source(); }
+        Node &get_destination() const { return get_edge()->get_destination(); }
+    public:
+        Index_EdgeIteratorImpl(Index::Index_IteratorImplIntf *iter)
+            : _iter(iter), _ref(this) { }
+        ~Index_EdgeIteratorImpl() { delete _iter; }
+        const EdgeRef &operator*() const { return _ref; }
+        const EdgeRef *operator->() const { return &_ref; }
+        EdgeRef &operator*() { return _ref; }
+        EdgeRef *operator->() { return &_ref; }
+        operator bool() const { return _iter && *_iter; }
+        bool next() { return _iter->next(); }
+    };
 };
 
 template <typename B, typename T>
@@ -270,7 +306,7 @@ NodeIterator Graph::get_nodes(StringID tag)
     if (tag.id() == 0)
         return get_nodes();
     else
-        return _impl->index_manager().get_nodes(tag);
+        return NodeIterator(new Index_NodeIteratorImpl(_impl->index_manager().get_iterator(NodeIndex, tag)));
 }
 
 NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp, bool reverse)
@@ -279,15 +315,36 @@ NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp, bool re
         return get_nodes(tag);
     Index *index = _impl->index_manager().get_index(NodeIndex, tag, pp.id);
     if (index)
-        return index->get_nodes(pp, &_impl->locale(), reverse);
+        return NodeIterator(new Index_NodeIteratorImpl(index->get_iterator(pp, &_impl->locale(), reverse)));
     else
         return get_nodes(tag).filter(pp); // TODO Causes re-lookup of tag
 }
+
 
 EdgeIterator Graph::get_edges()
 {
     return EdgeIterator(new Graph_EdgeIteratorImpl(_impl->edge_table()));
 }
+
+EdgeIterator Graph::get_edges(StringID tag)
+{
+    if (tag.id() == 0)
+        return get_edges();
+    else
+        return EdgeIterator(new Index_EdgeIteratorImpl(_impl->index_manager().get_iterator(EdgeIndex, tag)));
+}
+
+EdgeIterator Graph::get_edges(StringID tag, const PropertyPredicate &pp, bool reverse)
+{
+    if (pp.id == 0)
+        return get_edges(tag);
+    Index *index = _impl->index_manager().get_index(EdgeIndex, tag, pp.id);
+    if (index)
+        return EdgeIterator(new Index_EdgeIteratorImpl(index->get_iterator(pp, &_impl->locale(), reverse)));
+    else
+        return get_edges(tag).filter(pp); // TODO Causes re-lookup of tag
+}
+
 
 NodeID Graph::get_id(const Node &node) const
 {
