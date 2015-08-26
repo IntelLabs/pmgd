@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Exit at first sign of trouble
+set -e
+
 # Compile and run the entire test suite. Useful before checking new
 # code. This will exit at the first error that happens 
 # *** Make sure to add new test files here by hand along with the
@@ -35,9 +39,6 @@ cd ${TEST_DIR}
 rm -f log/*.log
 mkdir -p log
 
-# Exit at first sign of trouble
-set -e
-
 # While this list could be constructed dynamically, keep it static
 # to allow for choosing and making sure we don't delete wrong dirs
 # by mistake.
@@ -65,59 +66,71 @@ if [ "${DEL_GRAPH}" = "y" ]; then
     rm_graph_dirs $GRAPH_DIR
 fi
 
-set +e
+function javatest
+{
+    # For java, we need to be where the class is, for simplicity.
+    (cd ${TEST_DIR}
+    export LD_LIBRARY_PATH=../lib
+    java -cp .:../lib/\* "$@" | tee >(cat >&3) | tail -1 | grep -q "Test passed"
+    ) 3>&1
+}
 
+overall_status=0
 echo "Launching tests"
 echo "Individual test output will be stored in log/<testname>.log"
 cd ${GRAPH_DIR}
 for test in ${tests[@]}
 do
+    status=0
     echo -n "$test "
 
     # Assuming these arguments are ignored when the test
     # doesn't really need these. Eventually we can
     # specify the arguments in the array itself
     case "$test" in
-        propertychunktest) ${TEST_DIR}/$test 1000;;
-        propertylisttest) ${TEST_DIR}/$test propertylistgraph 100000;;
-        load_gson_test) ${TEST_DIR}/$test email.gson;;
+        propertychunktest) ${TEST_DIR}/$test 1000 || status=1;;
+        propertylisttest) ${TEST_DIR}/$test propertylistgraph 100000 || status=1;;
+        load_gson_test) ${TEST_DIR}/$test email.gson || status=1;;
         load_tsv_test) echo "1	2
             1	3
             2	4
-            3	4" | ${TEST_DIR}/$test;;
+            3	4" | ${TEST_DIR}/$test || status=1;;
         test750)
             ${TEST_DIR}/test750 1 &&
             ${TEST_DIR}/test750 2 &&
             ${TEST_DIR}/test750 3 &&
-            ${TEST_DIR}/test750 4;;
+            ${TEST_DIR}/test750 4 || status=1;;
         DateTest)
-            # For java, we need to be where the class is, for simplicity.
-            cd ${TEST_DIR}
-            RESULT1=`LD_LIBRARY_PATH=../lib java -cp .:../lib/\* $test ${GRAPH_DIR}/emailindexgraph "DeliveryTime" 13 | tail -n 1`
-            RESULT2=`LD_LIBRARY_PATH=../lib java -cp .:../lib/\* $test ${GRAPH_DIR}/propertygraph "id7" 4 | tail -n 1`
-            if [ "$RESULT1" = "Test passed" ] && [ "$RESULT2" = "Test passed" ]; then
-                echo "PASSED"
-            else
-                # Command to create an error return since Java doesn't
-                # allow main to return a value
-                rm emailindexgraph 2> /dev/zero
+            cmd="$test ${GRAPH_DIR}/emailindexgraph DeliveryTime 13"
+            echo $cmd
+            if ! javatest $cmd
+            then
+                echo "Test failed"
+                status=1
             fi
-            cd -
+            cmd="$test ${GRAPH_DIR}/propertygraph id7 4"
+            echo $cmd
+            if ! javatest $cmd
+            then
+                status=1
+            fi
             ;;
         load_jarvis_tests)
             COUNT=`sh load_jarvis_tests.sh | grep "Test Passed" | wc -l`
-            if [ $COUNT != 5 ]; then
-                false
+            if [ $COUNT -ne 5 ]; then
+                status=1
             fi
             ;;
-        *) ${TEST_DIR}/$test n1 n2 n3 n4 ;;
+        *) ${TEST_DIR}/$test n1 n2 n3 n4 || status=1;;
     esac > ${TEST_DIR}/log/${test}.log
 
-    if [ $? -ne 0 ]; then
+    if [ $status -ne 0 ]; then
         echo "FAILED"
+        overall_status=1
     else
         echo "SUCCEEDED"
     fi
 done
 
 echo "Done"
+exit $overall_status
