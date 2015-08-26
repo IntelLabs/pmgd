@@ -51,7 +51,7 @@ tests=( alloctest avltest chunklisttest edgeindextest
         soltest stringtabletest txtest removetest
         test720 test750 test767
         load_jarvis_tests
-        DateTest )
+        BindingsTest DateTest )
 
 graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
              emailindexgraph filtergraph indexgraph indexstringgraph
@@ -100,6 +100,10 @@ do
             ${TEST_DIR}/test750 2 &&
             ${TEST_DIR}/test750 3 &&
             ${TEST_DIR}/test750 4 || status=1;;
+        BindingsTest)
+            # BindingsTest doesn't check whether it passed
+            mkgraph bindingsgraph
+            javatest $test || true;;
         DateTest)
             cmd="$test ${GRAPH_DIR}/emailindexgraph DeliveryTime 13"
             echo $cmd
