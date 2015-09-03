@@ -250,6 +250,8 @@ EdgeIterator Node::get_edges(Direction dir) const
 
 EdgeIterator Node::get_edges(StringID tag) const
 {
+    if (tag == 0)
+        return get_edges();
     size_t in_elems = _in_edges->num_elems();
     size_t out_elems = _out_edges->num_elems();
     // Ensure there is at least one element in this index for
