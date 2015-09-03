@@ -63,24 +63,6 @@ class NeighborIterator : public NodeIteratorImplIntf
     }
 
 public:
-    NeighborIterator(const Node &n, const bool unique)
-        : _node(n), _dir(Any), _unique(unique), _ei(n.get_edges())
-    {
-        _next();
-    }
-
-    NeighborIterator(const Node &n, const Direction dir, const bool unique)
-        : _node(n), _dir(dir), _unique(unique), _ei(n.get_edges(dir))
-    {
-        _next();
-    }
-
-    NeighborIterator(const Node &n, const StringID tag, const bool unique)
-        : _node(n), _dir(Any), _unique(unique), _ei(n.get_edges(tag))
-    {
-        _next();
-    }
-
     NeighborIterator(const Node &n, const Direction dir, const StringID tag,
                      const bool unique)
         : _node(n), _dir(dir), _unique(unique), _ei(n.get_edges(dir, tag))
@@ -125,17 +107,17 @@ public:
  */
 inline NodeIterator get_neighbors(Node &n, bool unique = true)
 {
-    return NodeIterator(new NeighborIterator(n, unique));
+    return NodeIterator(new NeighborIterator(n, Any, 0, unique));
 }
 
 inline NodeIterator get_neighbors(Node &n, Direction dir, bool unique = true)
 {
-    return NodeIterator(new NeighborIterator(n, dir, unique));
+    return NodeIterator(new NeighborIterator(n, dir, 0, unique));
 }
 
 inline NodeIterator get_neighbors(Node &n, StringID tag, bool unique = true)
 {
-    return NodeIterator(new NeighborIterator(n, tag, unique));
+    return NodeIterator(new NeighborIterator(n, Any, tag, unique));
 }
 
 inline NodeIterator get_neighbors(Node &n, Direction dir, StringID tag,
