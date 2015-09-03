@@ -105,22 +105,24 @@ public:
  * will ignore tag values), and (c) only return a given node once if
  * so requested.
  */
-inline NodeIterator get_neighbors(Node &n, bool unique = true)
+inline NodeIterator get_neighbors(const Node &n, bool unique = true)
 {
     return NodeIterator(new NeighborIterator(n, Any, 0, unique));
 }
 
-inline NodeIterator get_neighbors(Node &n, Direction dir, bool unique = true)
+inline NodeIterator get_neighbors(const Node &n, Direction dir,
+                                  bool unique = true)
 {
     return NodeIterator(new NeighborIterator(n, dir, 0, unique));
 }
 
-inline NodeIterator get_neighbors(Node &n, StringID tag, bool unique = true)
+inline NodeIterator get_neighbors(const Node &n, StringID tag,
+                                  bool unique = true)
 {
     return NodeIterator(new NeighborIterator(n, Any, tag, unique));
 }
 
-inline NodeIterator get_neighbors(Node &n, Direction dir, StringID tag,
+inline NodeIterator get_neighbors(const Node &n, Direction dir, StringID tag,
                                   bool unique = true)
 {
     return NodeIterator(new NeighborIterator(n, dir, tag, unique));
