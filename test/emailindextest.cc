@@ -24,6 +24,9 @@ int main(int argc, char *argv[])
         db.create_index(Graph::NodeIndex, "Message", "Size", PropertyType::Integer);
         db.create_index(Graph::NodeIndex, "Message", "Replied?", PropertyType::Boolean);
         db.create_index(Graph::NodeIndex, "Attachment", "Created", PropertyType::Time);
+        db.create_index(Graph::EdgeIndex, "Target", "type", PropertyType::String);
+        db.create_index(Graph::EdgeIndex, "Target", "order", PropertyType::Integer);
+        db.create_index(Graph::EdgeIndex, "Sent", "SubmitTime", PropertyType::Time);
         tx.commit();
 
         load_gson(db, "email.gson", node_added, edge_added);
@@ -33,8 +36,8 @@ int main(int argc, char *argv[])
         PropertyPredicate pp1("Size");
         int count = 0;
         for (NodeIterator i = db.get_nodes("Message", pp1); i; i.next()) {
-            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
-            printf("\tConfirming searched prop value: %lld\n", i->get_property("Size").int_value());
+            printf("Node %" PRIu64 ": tag %s", db.get_id(*i), i->get_tag().name().c_str());
+            printf(", searched prop value: %lld\n", i->get_property("Size").int_value());
             ++count;
         }
         if (count != 127)
@@ -45,8 +48,8 @@ int main(int argc, char *argv[])
         printf("## Trying iterator with tag Message and size between:10K-11K with GELE\n");
         PropertyPredicate pp2("Size", PropertyPredicate::GeLe, 10000, 11000);
         for (NodeIterator i = db.get_nodes("Message", pp2); i; i.next()) {
-            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
-            printf("\tConfirming searched prop value: %lld\n", i->get_property("Size").int_value());
+            printf("Node %" PRIu64 ": tag %s", db.get_id(*i), i->get_tag().name().c_str());
+            printf(", searched prop value: %lld\n", i->get_property("Size").int_value());
             ++count;
         }
         if (count != 3)
@@ -57,8 +60,8 @@ int main(int argc, char *argv[])
         printf("## Trying iterator with tag Message and Replied?:true with EQ\n");
         PropertyPredicate pp3("Replied?", PropertyPredicate::Eq, true);
         for (NodeIterator i = db.get_nodes("Message", pp3); i; i.next()) {
-            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
-            printf("\tConfirming searched prop value: %d\n", i->get_property("Replied?").bool_value());
+            printf("Node %" PRIu64 ": tag %s", db.get_id(*i), i->get_tag().name().c_str());
+            printf(", searched prop value: %d\n", i->get_property("Replied?").bool_value());
             ++count;
         }
         if (count != 41)
@@ -69,8 +72,8 @@ int main(int argc, char *argv[])
         printf("## Trying iterator with tag Person and email range:alain.kagi to vishakha.s.gupta@intel.com with GELT\n");
         PropertyPredicate pp4("Email", PropertyPredicate::GeLt, "alain.kagi", "vishakha.s.gupta@intel.com");
         for (NodeIterator i = db.get_nodes("Person", pp4); i; i.next()) {
-            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
-            printf("\tConfirming searched prop value: %s\n", i->get_property("Email").string_value().c_str());
+            printf("Node %" PRIu64 ": tag %s", db.get_id(*i), i->get_tag().name().c_str());
+            printf(", searched prop value: %s\n", i->get_property("Email").string_value().c_str());
             ++count;
         }
         if (count != 20)
@@ -92,10 +95,10 @@ int main(int argc, char *argv[])
                    s1.c_str(), s2.c_str());
         PropertyPredicate pp5("Created", PropertyPredicate::GtLt, t1, t2);
         for (NodeIterator i = db.get_nodes("Attachment", pp5); i; i.next()) {
-            printf("Node %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            printf("Node %" PRIu64 ": tag %s", db.get_id(*i), i->get_tag().name().c_str());
             Time t = i->get_property("Created").time_value();
             std::string s = time_to_string(t);
-            printf("\tConfirming searched prop value: %s\n", s.c_str());
+            printf(", searched prop value: %s\n", s.c_str());
             ++count;
         }
         if (count != 27)
@@ -103,6 +106,63 @@ int main(int argc, char *argv[])
         printf("Number of attachments created in the range: %d\n", count);
 
         tx1.commit();
+
+
+        printf("######Edge index tests#####\n");
+        Transaction tx2(db, Transaction::ReadOnly);
+        printf("## Trying iterator with tag Target and order NEQ 0\n");
+        PropertyPredicate ppe1("order", PropertyPredicate::Ne, 0);
+        count = 0;
+        for (EdgeIterator i = db.get_edges("Target", ppe1); i; i.next()) {
+            printf("Edge %" PRIu64 ": tag %s", db.get_id(*i), i->get_tag().name().c_str());
+            printf(", searched prop value: %lld\n", i->get_property("order").int_value());
+            ++count;
+        }
+        if (count != 157)
+            ++fail;
+        printf("Number of From edges with order != 0: %d\n", count);
+
+        count = 0;
+        string_to_tm("Wed Jun 04 08:00:02 PDT 2014", &tm1, &hr, &min);
+        Time t(&tm1, hr, min);
+        std::string s = time_to_string(t);
+        printf("## Trying edge iterator with tag Sent and submitted starting: %s Ge\n",
+                   s.c_str());
+        PropertyPredicate ppe2("SubmitTime", PropertyPredicate::Ge, t);
+        for (EdgeIterator i = db.get_edges("Sent", ppe2); i; i.next()) {
+            printf("Edge %" PRIu64 ": tag %s", db.get_id(*i), i->get_tag().name().c_str());
+            Time t = i->get_property("SubmitTime").time_value();
+            std::string s = time_to_string(t);
+            printf(", searched prop value: %s\n", s.c_str());
+            ++count;
+        }
+        if (count != 113)
+            ++fail;
+        printf("Number of submissions starting from the date: %d\n", count);
+
+        count = 0;
+        printf("## Trying edge iterator with tag Target and type = cc\n");
+        PropertyPredicate ppe3("type", PropertyPredicate::Eq, "cc");
+        for (EdgeIterator i = db.get_edges("Target", ppe3); i; i.next()) {
+            printf("Node %" PRIu64 ": tag %s", db.get_id(*i), i->get_tag().name().c_str());
+            printf(", searched prop value: %s\n", i->get_property("type").string_value().c_str());
+            ++count;
+        }
+        if (count != 82)
+            ++fail;
+        printf("Number of Target edges with type = cc: %d\n", count);
+
+        count = 0;
+        printf("## Trying edge iterator with tag Attachment\n");
+        for (EdgeIterator i = db.get_edges("Attachment"); i; i.next()) {
+            printf("Edge %" PRIu64 ": tag %s\n", db.get_id(*i), i->get_tag().name().c_str());
+            ++count;
+        }
+        if (count != 38)
+            ++fail;
+        printf("Number of Attachment edges: %d\n", count);
+
+        tx2.commit();
     }
     catch (Exception e) {
         print_exception(e);
