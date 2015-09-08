@@ -90,6 +90,12 @@ namespace Jarvis {
         explicit NodeIterator(NodeIteratorImplIntf *i)
             : Iterator<NodeIteratorImplIntf>(i) { }
 
+        NodeIterator(NodeIterator &i)
+            : Iterator<NodeIteratorImplIntf>(i) { }
+
+        NodeIterator(NodeIterator &&i)
+            : Iterator<NodeIteratorImplIntf>(i) { }
+
         NodeIterator filter(const PropertyPredicate &pp);
         NodeIterator filter(std::function<Disposition(const Ref_type &)> f);
     };
@@ -201,6 +207,12 @@ namespace Jarvis {
         explicit PropertyIterator(PropertyIteratorImplIntf *i)
             : Iterator<PropertyIteratorImplIntf>(i) { }
 
+        PropertyIterator(PropertyIterator &i)
+            : Iterator<PropertyIteratorImplIntf>(i) { }
+
+        PropertyIterator(PropertyIterator &&i)
+            : Iterator<PropertyIteratorImplIntf>(i) { }
+
         PropertyIterator filter(std::function<Disposition(const Ref_type &)> f);
     };
 
@@ -265,6 +277,12 @@ namespace Jarvis {
     class EdgeIterator : public Iterator<IteratorImplIntf<EdgeRef>> {
     public:
         explicit EdgeIterator(IteratorImplIntf<EdgeRef> *i)
+            : Iterator<IteratorImplIntf<EdgeRef>>(i) { }
+
+        EdgeIterator(EdgeIterator &i)
+            : Iterator<IteratorImplIntf<EdgeRef>>(i) { }
+
+        EdgeIterator(EdgeIterator &&i)
             : Iterator<IteratorImplIntf<EdgeRef>>(i) { }
 
         EdgeIterator filter(const PropertyPredicate &pp);

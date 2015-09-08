@@ -36,7 +36,7 @@ const static uint8_t JE_MAX_LEN = 48;
 
 struct TransactionImpl::JournalEntry {
     TransactionId tx_id : 56;
-    uint8_t len : 8;
+    uint64_t len : 8;
     void *addr;
     uint8_t data[JE_MAX_LEN];
 };
