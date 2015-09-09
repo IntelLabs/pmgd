@@ -206,7 +206,7 @@ zip -q jarvis-%COMMITID%-src.zip src\*.h src\*.cc ^
     util\loader.h util\*.l util\*.y util\dump.cc util\exception.cc ^
     util\load_gson.cc util\load_tsv.cc util\text.cc tools\*.cc
 
-rem Build soltest and propertytest
+rem Build some representative tests
 
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\soltest.obj /c test\soltest.cc
@@ -228,5 +228,102 @@ link /nologo test\propertytest.obj ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
     /OUT:test\propertytest.exe /MACHINE:X64 ^
+    /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
+    /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
+
+cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
+    /Fotest\propertypredicatetest.obj /c test\propertypredicatetest.cc
+link /nologo test\propertypredicatetest.obj ^
+    lib\Release\jarvis-util.lib ^
+    lib\Release\jarvis.lib ^
+    3rdparty\lib\Release\strptime.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
+    /OUT:test\propertypredicatetest.exe /MACHINE:X64 ^
+    /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
+    /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
+
+cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
+    /Fotest\indextest.obj /c test\indextest.cc
+link /nologo test\indextest.obj ^
+    lib\Release\jarvis-util.lib ^
+    lib\Release\jarvis.lib ^
+    3rdparty\lib\Release\strptime.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
+    /OUT:test\indextest.exe /MACHINE:X64 ^
+    /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
+    /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
+
+cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
+    /Fotest\indexrangetest.obj /c test\indexrangetest.cc
+link /nologo test\indexrangetest.obj ^
+    lib\Release\jarvis-util.lib ^
+    lib\Release\jarvis.lib ^
+    3rdparty\lib\Release\strptime.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
+    /OUT:test\indexrangetest.exe /MACHINE:X64 ^
+    /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
+    /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
+
+cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
+    /Fotest\reverseindexrangetest.obj /c test\reverseindexrangetest.cc
+link /nologo test\reverseindexrangetest.obj ^
+    lib\Release\jarvis-util.lib ^
+    lib\Release\jarvis.lib ^
+    3rdparty\lib\Release\strptime.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
+    /OUT:test\reverseindexrangetest.exe /MACHINE:X64 ^
+    /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
+    /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
+
+cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
+    /Fotest\emailindextest.obj /c test\emailindextest.cc
+link /nologo test\emailindextest.obj ^
+    lib\Release\jarvis-util.lib ^
+    lib\Release\jarvis.lib ^
+    3rdparty\lib\Release\strptime.lib ^
+    3rdparty\lib\Release\jsoncpp.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
+    /OUT:test\emailindextest.exe /MACHINE:X64 ^
+    /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
+    /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
+
+cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
+    /Fotest\load_tsv_test.obj /c test\load_tsv_test.cc
+link /nologo test\load_tsv_test.obj ^
+    lib\Release\jarvis-util.lib ^
+    lib\Release\jarvis.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
+    /OUT:test\load_tsv_test.exe /MACHINE:X64 ^
+    /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
+    /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
+
+cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
+    /Fotest\neighbortest.obj /c test\neighbortest.cc
+link /nologo test\neighbortest.obj ^
+    lib\Release\jarvis-util.lib ^
+    lib\Release\jarvis.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
+    /OUT:test\neighbortest.exe /MACHINE:X64 ^
     /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
     /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"

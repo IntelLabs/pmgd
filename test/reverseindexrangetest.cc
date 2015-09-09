@@ -5,7 +5,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include "jarvis.h"
-#include "../src/IndexManager.h"
 #include "util.h"
 
 using namespace Jarvis;
