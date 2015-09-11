@@ -69,6 +69,11 @@ static Edge *get_edge(Graph &db, long long id,
         std::function<void(Node &)> node_func,
         std::function<void(Edge &)> edge_func)
 {
+    EdgeIterator edges = db.get_edges(0,
+            PropertyPredicate(ID, PropertyPredicate::Eq, id));
+
+    if (edges) return &static_cast<Edge &>(*edges);
+
     Node *src = get_node(db, src_id, 0, node_func);
     Node *dst = get_node(db, dst_id, 0, node_func);
 
@@ -225,6 +230,7 @@ static void load_gson(Graph &db,
     Transaction tx(db, Transaction::ReadWrite);
     ID = StringID(ID_STR);
     db.create_index(Graph::NodeIndex, 0, ID_STR, PropertyType::Integer);
+    db.create_index(Graph::EdgeIndex, 0, ID_STR, PropertyType::Integer);
     tx.commit();
     load_nodes(db, jnodes, node_func, edge_func);
 
