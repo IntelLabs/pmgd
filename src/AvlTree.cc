@@ -66,6 +66,7 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::leftright_rotate(
                                        AvlTree<K,V>::TreeNode *hinge,
                                        TransactionImpl *tx)
 {
+    tx->log(&hinge->right, sizeof(hinge->right));
     hinge->right = right_rotate(hinge->right, tx);
     return left_rotate(hinge, tx);
 }
@@ -82,6 +83,7 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::rightleft_rotate(
                                        AvlTree<K,V>::TreeNode *hinge,
                                        TransactionImpl *tx)
 {
+    tx->log(&hinge->left, sizeof(hinge->left));
     hinge->left = left_rotate(hinge->left, tx);
     return right_rotate(hinge, tx);
 }
@@ -149,6 +151,7 @@ V *AvlTree<K,V>::add(const K &key, Allocator &allocator)
 {
     V *r = NULL;
     TransactionImpl *tx = TransactionImpl::get_tx();
+    tx->log(&_tree, sizeof(_tree));
     _tree = add_recursive(_tree, key, r, allocator, tx);
     return r;
 }
@@ -186,6 +189,7 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::remove_recursive(AvlTree<K,V>::Tr
         tx->log(curr, sizeof *curr);
         curr->key = to_replace->key;
         curr->value = to_replace->value;
+        tx->log(&curr->left, sizeof(curr->left));
         curr->left = remove_recursive(curr->left, to_replace->key, allocator, tx);
         return curr;
     }
@@ -233,6 +237,7 @@ template <typename K, typename V>
 void AvlTree<K,V>::remove(const K &key, Allocator &allocator)
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
+    tx->log(&_tree, sizeof(_tree));
     _tree = remove_recursive(_tree, key, allocator, tx);
 }
 
