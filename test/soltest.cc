@@ -32,48 +32,61 @@ std::string tag_text(const T &n)
     return tag;
 }
 
-void dump(Graph &db, const Node &n)
+void dump(const Node &n)
 {
-    printf("Node %" PRIx64 " %s:\n", db.get_id(n), tag_text(n).c_str());
+    printf("Node %" PRIx64 " %s:\n", n.get_id(), tag_text(n).c_str());
     n.get_properties()
-        .process([&db](PropertyRef &p) {
+        .process([](PropertyRef &p) {
         printf("  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
         });
     n.get_edges(Outgoing)
-        .process([&db](EdgeRef &e) {
+        .process([](EdgeRef &e) {
         printf(" %s -> n%" PRIx64 " (e%" PRIx64 ")\n", tag_text(e).c_str(),
-            db.get_id(e.get_destination()), db.get_id(e));
+            e.get_destination().get_id(), e.get_id());
         });
     n.get_edges(Incoming)
-        .process([&db](EdgeRef &e) {
+        .process([](EdgeRef &e) {
         printf(" %s <- n%" PRIx64 " (e%" PRIx64 ")\n", tag_text(e).c_str(),
-            db.get_id(e.get_source()), db.get_id(e));
+            e.get_source().get_id(), e.get_id());
         });
 }
 
-void dump(Graph &db, const Edge &e)
+void dump(const Edge &e)
 {
     printf("Edge %" PRIx64 "%s: n%" PRIx64 " -> n%" PRIx64 "\n",
-        db.get_id(e), tag_text(e).c_str(),
-        db.get_id(e.get_source()), db.get_id(e.get_destination()));
+        e.get_id(), tag_text(e).c_str(),
+        e.get_source().get_id(), e.get_destination().get_id());
     e.get_properties()
-        .process([&db](PropertyRef &p) {
+        .process([](PropertyRef &p) {
         printf("  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
         });
 }
 
-void dump(Graph &db, NodeIterator &i)
+void dump(const PropertyRef &p)
+{
+    printf("  %s: %s\n", p.id().name().c_str(), property_text(p).c_str());
+}
+
+void dump(NodeIterator i)
 {
     while (i) {
-        dump(db, *i);
+        dump(*i);
         i.next();
     }
 }
 
-void dump(Graph &db, EdgeIterator &i)
+void dump(EdgeIterator i)
 {
     while (i) {
-        dump(db, *i);
+        dump(*i);
+        i.next();
+    }
+}
+
+void dump(PropertyIterator i)
+{
+    while (i) {
+        dump(*i);
         i.next();
     }
 }
@@ -81,14 +94,14 @@ void dump(Graph &db, EdgeIterator &i)
 void dump_nodes(Graph &db)
 {
     for (NodeIterator i = db.get_nodes(); i; i.next()) {
-        dump(db, *i);
+        dump(*i);
     }
 }
 
 void dump_edges(Graph &db)
 {
     for (EdgeIterator i = db.get_edges(); i; i.next()) {
-        dump(db, *i);
+        dump(*i);
     }
 }
 
@@ -123,6 +136,10 @@ int main(int argc, char **argv)
 
         dump_nodes(db);
         dump_edges(db);
+
+        dump(db.get_nodes());
+        dump(db.get_edges());
+        dump(db.get_nodes()->get_properties());
 
         tx.commit();
     }
