@@ -158,6 +158,11 @@ void Graph::create_index(IndexType index_type, StringID tag,
                                         property_id, ptype, _impl->allocator());
 }
 
+void Graph::remove_index(IndexType index_type, StringID tag, StringID property_id)
+{
+    _impl->index_manager().remove_index(index_type, tag, property_id, _impl->allocator());
+}
+
 GraphImpl::GraphInit::GraphInit(const char *name, int options,
                                 const Graph::Config *user_config)
     : params{(options & Graph::Create), (options & Graph::ReadOnly),

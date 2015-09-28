@@ -51,6 +51,7 @@ namespace PMGD {
         };
 
         Index(PropertyType ptype) : _ptype(ptype) {}
+        void remove_index(Allocator &);
 
         void add(const Property &p, void *n, GraphImpl *db);
         void remove(const Property &p, void *n, GraphImpl *db);

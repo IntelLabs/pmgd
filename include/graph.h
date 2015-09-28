@@ -120,6 +120,7 @@ namespace PMGD {
         enum IndexType { NodeIndex, EdgeIndex };
         void create_index(IndexType index_type, StringID tag,
                           StringID property_id, const PropertyType ptype);
+        void remove_index(IndexType index_type, StringID tag, StringID property_id);
 
         //Stats
         struct IndexStats {

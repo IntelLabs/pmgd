@@ -93,6 +93,9 @@ namespace PMGD {
                             PropertyType ptype,
                             Allocator &allocator);
 
+        void remove_index(Graph::IndexType index_type, StringID tag,
+                            StringID property_id, Allocator &allocator);
+
         // Nodes and edges have to be added to an index in two
         // stages. One at the add_node or add_edge stage. Another at
         // the set_property state. We cannot wait until first set_property

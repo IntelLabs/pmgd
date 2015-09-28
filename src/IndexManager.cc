@@ -106,6 +106,22 @@ void IndexManager::create_index(Graph::IndexType index_type, StringID tag,
     }
 }
 
+void IndexManager::remove_index(Graph::IndexType index_type, StringID tag,
+                                StringID property_id, Allocator &allocator)
+{
+    IndexList *tag_entry = add_tag_index(index_type, tag, allocator);
+    Index **index = tag_entry->find(property_id);
+    if (index) {
+        // Index resides in PM, so it cannot have any virtual functions,
+        // which is why we don't use ~Index() for this.
+        (*index)->remove_index(allocator);
+
+        // This has to re-search for the entry; could be optimized.
+        tag_entry->remove(property_id, allocator);
+    }
+}
+
+
 bool IndexManager::add(Graph::IndexType index_type, StringID tag, void *obj,
                        Allocator &allocator)
 {
