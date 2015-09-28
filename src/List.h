@@ -61,6 +61,7 @@ namespace PMGD {
     public:
         // Constructor for temporary objects. No need to log.
         List() { _list = NULL; _num_elems = 0; }
+        void remove_list(Allocator &);
 
         // The variables above should just get mapped to the right area
         // and init will be called only the first time.
@@ -145,6 +146,19 @@ namespace PMGD {
             prev = temp;
             temp = temp->next;
         }
+    }
+
+    template <typename T> void List<T>::remove_list(Allocator &allocator)
+    {
+        for (ListType *curr = _list, *temp = curr->next; curr != NULL; curr = temp) {
+            curr->value.~T();
+            allocator.free(curr, sizeof *curr);
+        }
+
+        TransactionImpl *tx = TransactionImpl::get_tx();
+        tx->log(this, sizeof *this);
+        _list = NULL;
+        _num_elems = 0;
     }
 
     template <typename T> T* List<T>::find(const T &value)
