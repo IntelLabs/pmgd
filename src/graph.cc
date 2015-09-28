@@ -152,10 +152,28 @@ void Graph::remove(Edge &edge)
 }
 
 void Graph::create_index(IndexType index_type, StringID tag,
-                         StringID property_id, const PropertyType ptype)
+                         StringID property_id, const PropertyType ptype,
+                         bool populate_index)
 {
-    _impl->index_manager().create_index(index_type, tag,
-                                        property_id, ptype, _impl->allocator());
+    Index *index = _impl->index_manager().create_index(index_type, tag,
+                                property_id, ptype, _impl->allocator());
+
+    if (populate_index) {
+        GraphImpl *impl = _impl;
+
+        if (index_type == NodeIndex)
+            get_nodes(tag).process([property_id, index, impl](Node &n) {
+                    Property p;
+                    if (n.check_property(property_id, p))
+                        index->add(p, &n, impl);
+                });
+        else
+            get_edges(tag).process([property_id, index, impl](EdgeRef &e) {
+                    Property p;
+                    if (e.check_property(property_id, p))
+                        index->add(p, &e, impl);
+                });
+    }
 }
 
 void Graph::remove_index(IndexType index_type, StringID tag, StringID property_id)

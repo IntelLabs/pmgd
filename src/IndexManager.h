@@ -88,7 +88,7 @@ namespace PMGD {
             }
         }
 
-        void create_index(Graph::IndexType index_type, StringID tag,
+        Index *create_index(Graph::IndexType index_type, StringID tag,
                             StringID property_id,
                             PropertyType ptype,
                             Allocator &allocator);
