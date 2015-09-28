@@ -138,6 +138,7 @@ namespace PMGD {
                     tx->write(&(prev->next), temp->next);
                     tx->write(&_num_elems, _num_elems - 1);
                 }
+                temp->value.~T();
                 allocator.free(temp, sizeof *temp);
                 return;
             }
