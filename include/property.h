@@ -39,7 +39,10 @@ namespace Jarvis {
 
     public:
         Time() { memset(this, 0, sizeof(Time)); }
-        Time(const struct tm *, int hr_offset, int min_offset);
+        Time(const struct tm *, unsigned long usec, int hr_offset, int min_offset);
+        Time(const struct tm *time, int hr_offset, int min_offset)
+            : Time(time, 0, hr_offset, min_offset)
+            { }
 
         // Get time in the user's timezone
         void get_tm(struct tm *) const;

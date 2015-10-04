@@ -56,7 +56,8 @@ bool Jarvis::Property::operator<(const Property &a) const
     }
 }
 
-Jarvis::Time::Time(const struct tm *tm, int hr_offset, int min_offset)
+Jarvis::Time::Time(const struct tm *tm, unsigned long usec_arg,
+                   int hr_offset, int min_offset)
     : time_val(0)
 {
     struct tm utc_tm = *tm;
@@ -66,6 +67,7 @@ Jarvis::Time::Time(const struct tm *tm, int hr_offset, int min_offset)
     mktime(&utc_tm);
 
     // Fill in our time fields with the UTC version.
+    usec = usec_arg;
     sec = utc_tm.tm_sec;
     min = utc_tm.tm_min;
     hour = utc_tm.tm_hour;
