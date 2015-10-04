@@ -31,7 +31,7 @@ false                   { return FALSE; }
 {NUMBER}                { return cvt_int(); }
 \"([^"\n\\]|\\["\\])*\" { return cvt_string(true); }
 [{}=,:;#]               { return yytext[0]; }
-[-a-zA-Z0-9.~!@$%_?:]+  { return cvt_string(false); }
+[-a-zA-Z0-9.~!@$%_?:+]+ { return cvt_string(false); }
 .                       { return ERROR; }
 
 %%
