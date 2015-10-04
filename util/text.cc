@@ -109,11 +109,12 @@ static void get_timezone(const char *str, int tz_len, int *hr_offset, int *min_o
 // Conversion function from date time string to Jarvis time format.
 // TODO: Distinguish between the various time format options
 bool string_to_tm(const std::string &tstr, struct tm *user_tz_tm,
-                     int *hr_offset, int *min_offset)
+                  unsigned long *usec, int *hr_offset, int *min_offset)
 {
     // Parse the user time
     // strptime does not fill in all fields.
     memset(user_tz_tm, 0, sizeof(struct tm));
+    *usec = 0;
     *hr_offset = *min_offset = 0;
 
     const char *left_over;
@@ -128,6 +129,24 @@ bool string_to_tm(const std::string &tstr, struct tm *user_tz_tm,
         if (left_over != NULL) {
             if (*left_over == '\0')
                 return true;
+
+            if (*left_over == '.') {
+                // This supports tenths, hundredths, and thousands of a second,
+                // as well as microseconds. Anything else is an error.
+                char *e;
+                unsigned long tmp = strtoul(left_over + 1, &e, 10);
+                switch (e - (left_over + 1)) {
+                    case 1: tmp *= 100000; break;
+                    case 2: tmp *= 10000; break;
+                    case 3: tmp *= 1000; break;
+                    case 6: break;
+                    default: return false;
+                }
+                *usec = tmp;
+                if (*e == '\0')
+                    return true;
+                left_over = e;
+            }
 
             // Use %R instead of %z and get the timezone value from tm_hour
             // and tm_min, because struct tm doesn't have fields for timezone.

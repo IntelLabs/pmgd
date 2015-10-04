@@ -18,7 +18,15 @@ extern std::string property_text(const Jarvis::PropertyRef &i);
 template <typename T> std::string tag_text(const T &n);
 
 extern bool string_to_tm(const std::string &tstr, struct tm *user_tz_tm,
-                     int *hr_offset, int *min_offset);
+                         unsigned long *usec, int *hr_offset, int *min_offset);
+
+inline bool string_to_tm(const std::string &tstr, struct tm *user_tz_tm,
+                         int *hr_offset, int *min_offset)
+{
+    unsigned long usec;
+    return string_to_tm(tstr, user_tz_tm, &usec, hr_offset, min_offset);
+}
+
 extern std::string time_to_string(const Jarvis::Time& t, bool utc=false);
 
 extern void print_exception(const Jarvis::Exception &e, FILE *f = stdout);
