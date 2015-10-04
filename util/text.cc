@@ -150,6 +150,7 @@ bool string_to_tm(const std::string &tstr, struct tm *user_tz_tm,
 
             // Use %R instead of %z and get the timezone value from tm_hour
             // and tm_min, because struct tm doesn't have fields for timezone.
+            // This supports a timezone specification with a ':'.
             struct tm tz;
             if (strptime(left_over, "+%R", &tz) != NULL) {
                 *hr_offset = tz.tm_hour;
@@ -159,6 +160,17 @@ bool string_to_tm(const std::string &tstr, struct tm *user_tz_tm,
             if (strptime(left_over, "-%R", &tz) != NULL) {
                 *hr_offset = -tz.tm_hour;
                 *min_offset = tz.tm_min;
+                return true;
+            }
+
+            if (*left_over == '+' || *left_over == '-') {
+                // This supports a timezone without a ':'.
+                char *e;
+                long tmp = strtol(left_over, &e, 10);
+                if (e - left_over != 5)
+                    return false;
+                *hr_offset = tmp / 100;
+                *min_offset = std::abs(tmp % 100);
                 return true;
             }
         }
