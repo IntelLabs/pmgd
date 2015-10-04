@@ -120,7 +120,7 @@ bool string_to_tm(const std::string &tstr, struct tm *user_tz_tm,
     // First check for ISO 8601 representation.
     left_over = strptime(tstr.c_str(), "%FT%T", user_tz_tm);
     if (left_over != NULL) {
-        if (left_over == '\0') {
+        if (*left_over == '\0') {
             *hr_offset = *min_offset = 0;
             return true;
         }
