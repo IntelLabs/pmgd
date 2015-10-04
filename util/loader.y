@@ -88,9 +88,15 @@ extern int yyerror(Jarvis::Graph &, const char *);
 
 %%
 
-s:        node_or_edge
-        | s node_or_edge
+s:        tx
+        | s tx
         ;
+
+tx:
+          { params.tx = new Jarvis::Transaction(params.db,
+                                             Jarvis::Transaction::ReadWrite); }
+          node_or_edge
+          { params.tx->commit(); delete params.tx; }
 
 node_or_edge:
           node_def ';'
@@ -255,10 +261,8 @@ void load(Graph &db, FILE *f,
 
         ~buffer_t() { yy_delete_buffer(_buffer); }
     } buffer(f);
-    Transaction tx(db, Transaction::ReadWrite);
     yy_params params = { db, node_func, edge_func };
     yyparse(params);
-    tx.commit();
 }
 
 
