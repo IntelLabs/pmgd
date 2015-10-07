@@ -70,37 +70,18 @@ namespace Jarvis {
 
     template <typename T> T* List<T>::add(const T &value, Allocator &allocator)
     {
-        ListType *prev = NULL, *next = _list;
-
-        // Since we only implement the < operator on some of the T types,
-        // using the reverse condition.
-        while (next != NULL && !(value < next->value)) {
-            if (value == next->value)
-                return &(next->value);
-            else {
-                prev = next;
-                next = next->next;
-            }
-        }
         TransactionImpl *tx = TransactionImpl::get_tx();
         // Create a node and add
         ListType *new_node = (ListType *)allocator.alloc(sizeof *new_node);
         new_node->value = value;
-        new_node->next = next;
+        new_node->next = _list;
         // Since new_node is new allocation, just flush it without logging.
         TransactionImpl::flush_range(new_node, sizeof *new_node);
 
-        if (prev == NULL) { // Insert at the start of list
-            // Since _list and _num_elems are contiguous, log() makes sense
-            tx->log(this, sizeof *this);
-            _list = new_node;
-            _num_elems++;
-        }
-        else {
-            // About to modify existing list elements, so log and update them
-            tx->write(&(prev->next), new_node);
-            tx->write(&_num_elems, _num_elems + 1);
-        }
+        // Since _list and _num_elems are contiguous, log() makes sense
+        tx->log(this, sizeof *this);
+        _list = new_node;
+        _num_elems++;
 
         return &(new_node->value);
     }
@@ -112,7 +93,7 @@ namespace Jarvis {
         // Since we only implement the < operator on some of the T types,
         // using the reverse condition. The list is sorted, so stop after
         // reaching a larger element
-        while (temp != NULL && !(value < temp->value)) {
+        while (temp != NULL) {
             if (value == temp->value) {
                 TransactionImpl *tx = TransactionImpl::get_tx();
                 if (prev == NULL) { // Changing _list
@@ -139,7 +120,7 @@ namespace Jarvis {
         // Since we only implement the < operator on some of the T types,
         // using the reverse condition. The list is sorted, so stop after
         // reaching a larger element
-        while (temp != NULL && !(value < temp->value)) {
+        while (temp != NULL) {
             if (value == temp->value)
                 return &(temp->value);
             temp = temp->next;
