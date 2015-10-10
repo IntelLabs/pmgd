@@ -27,6 +27,8 @@ namespace Jarvis {
         Node(const Node &) = delete;
         ~Node() = delete;
         void operator=(const Node &) = delete;
+        bool operator==(const Node &n) const { return &n == this; }
+        bool operator!=(const Node &n) const { return &n != this; }
         StringID get_tag() const { return _tag; }
         bool check_property(StringID property, Property &result) const;
         Property get_property(StringID property) const;
