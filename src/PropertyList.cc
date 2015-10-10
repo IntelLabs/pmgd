@@ -145,7 +145,7 @@ Property PropertyList::get_property(StringID id) const
     PropertyRef p;
 
     if (!find_property(id, p))
-        throw Exception(PropertyNotFound);
+        throw Exception(PropertyNotFound, id.name());
 
     return p.get_value();
 }
