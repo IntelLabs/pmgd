@@ -257,6 +257,8 @@ namespace Jarvis {
     class Edge;
     class EdgeRef;
 
+    typedef uint64_t EdgeID;
+
     class EdgeIteratorImplIntf : public IteratorImplIntf<EdgeRef> {
         friend class EdgeRef;
         virtual Edge *get_edge() const = 0;
@@ -275,6 +277,7 @@ namespace Jarvis {
         void operator=(const EdgeRef &) = delete;
         EdgeRef(EdgeIteratorImplIntf *impl) : _impl(impl) {}
         operator Edge &() { return *edge(); }
+        EdgeID get_id() const;
         StringID get_tag() const { return _impl->get_tag(); }
         Node &get_source() const { return _impl->get_source(); }
         Node &get_destination() const { return _impl->get_destination(); }

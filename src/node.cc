@@ -8,6 +8,7 @@
 #include "EdgeIndex.h"
 #include "GraphImpl.h"
 #include "IndexManager.h"
+#include "TransactionImpl.h"
 
 using namespace Jarvis;
 
@@ -23,6 +24,11 @@ void Node::cleanup(Allocator &index_allocator)
 {
     EdgeIndex::free(_out_edges, index_allocator);
     EdgeIndex::free(_in_edges, index_allocator);
+}
+
+NodeID Node::get_id() const
+{
+    return TransactionImpl::get_tx()->get_db()->node_table().get_id(this);
 }
 
 void Node::add_edge(Edge *edge, Direction dir, StringID tag, Allocator &index_allocator)

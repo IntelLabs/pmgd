@@ -9,6 +9,7 @@ namespace Jarvis {
     class EdgeIndex;
     class Allocator;
 
+    typedef uint64_t NodeID;
     enum Direction { Any, Outgoing, Incoming };
 
     class Node {
@@ -32,6 +33,7 @@ namespace Jarvis {
         void operator=(const Node &) = delete;
         bool operator==(const Node &n) const { return &n == this; }
         bool operator!=(const Node &n) const { return &n != this; }
+        NodeID get_id() const;
         StringID get_tag() const { return _tag; }
         bool check_property(StringID property, Property &result) const;
         Property get_property(StringID property) const;

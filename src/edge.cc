@@ -1,6 +1,8 @@
 #include <stddef.h>
 #include "edge.h"
 #include "graph.h"
+#include "GraphImpl.h"
+#include "TransactionImpl.h"
 
 using namespace Jarvis;
 
@@ -10,6 +12,16 @@ void Edge::init(Node &src, Node &dest, StringID tag, unsigned obj_size)
     _dest = &dest;
     _tag = tag;
     _property_list.init(obj_size - offsetof(Edge, _property_list));
+}
+
+EdgeID Edge::get_id() const
+{
+    return TransactionImpl::get_tx()->get_db()->edge_table().get_id(this);
+}
+
+EdgeID EdgeRef::get_id() const
+{
+    return edge()->get_id();
 }
 
 bool Edge::check_property(StringID id, Property &result) const
