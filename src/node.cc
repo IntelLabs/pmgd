@@ -47,6 +47,21 @@ void Node::remove_edge(Edge *edge, Direction dir, Allocator &index_allocator)
         _in_edges->remove(edge->get_tag(), edge, index_allocator);
 }
 
+Node &Node::get_neighbor(Direction dir, StringID edge_tag) const
+{
+    if (dir == Outgoing || dir == Any) {
+        const EdgeIndex::EdgePosition *pos = _out_edges->get_first(edge_tag);
+        if (pos)
+            return *pos->value.value();
+    }
+    if (dir == Incoming || dir == Any) {
+        const EdgeIndex::EdgePosition *pos = _in_edges->get_first(edge_tag);
+        if (pos)
+            return *pos->value.value();
+    }
+    throw Exception(NullIterator);
+}
+
 namespace Jarvis {
     // TODO Make the lists more opaque to this class
     class Node_EdgeIteratorImpl : public EdgeIteratorImplIntf {

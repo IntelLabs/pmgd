@@ -38,6 +38,7 @@ namespace Jarvis {
         bool check_property(StringID property, Property &result) const;
         Property get_property(StringID property) const;
         PropertyIterator get_properties() const;
+        Node &get_neighbor(Direction dir, StringID edge_tag) const;
         EdgeIterator get_edges() const;
         EdgeIterator get_edges(Direction dir) const;
         EdgeIterator get_edges(StringID tag) const;
