@@ -1,6 +1,6 @@
 # List of sources for this directory.
 TOOLS_SRCS := $(addprefix tools/, \
-                          mkgraph.cc loadgraph.cc dumpgraph.cc)
+                          mkgraph.cc loadgraph.cc dumpgraph.cc graphinfo.cc)
 
 # Derive a list of objects.
 TOOLS_OBJS := $(patsubst %.cc,%.o, $(TOOLS_SRCS))
@@ -30,6 +30,10 @@ tools/loadgraph: tools/loadgraph.o $(TOOLS_LIBS)
 	$(CC) $(OPT) -o $@ $< $(TOOLS_LIBS) -ljsoncpp
 
 tools/dumpgraph: tools/dumpgraph.o $(TOOLS_LIBS)
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(TOOLS_LIBS)
+
+tools/graphinfo: tools/graphinfo.o $(TOOLS_LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(TOOLS_LIBS)
 
