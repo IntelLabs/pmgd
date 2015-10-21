@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string>
+#include <unistd.h>
 
 struct RegionInfo {
     static const int REGION_NAME_LEN = 32;
@@ -12,7 +13,7 @@ struct RegionInfo {
     uint64_t addr;
     size_t len;
 
-    void print() { printf("%.*s: base=%#lx size=%#zx\n", REGION_NAME_LEN, name, addr, len); }
+    void print() { printf("%.*s\t%#lx\t%#zx\n", REGION_NAME_LEN, name, addr, len); }
 };
 
 struct GraphInfo {
@@ -40,6 +41,11 @@ struct GraphInfo {
         printf("max stringid length: %u\n", max_stringid_length);
         printf("\n");
 
+        printf(".fi\n");
+        printf(".TS\n");
+        printf("l c c\n");
+        printf("l r r .\n");
+        printf("\t  base\t    size\n");
         transaction_info.print();
         journal_info.print();
         indexmanager_info.print();
@@ -47,13 +53,8 @@ struct GraphInfo {
         node_info.print();
         edge_info.print();
         allocator_info.print();
-        printf("\n");
+        printf(".TE\n");
 
-        int sz = 16;
-        for (uint i = 0; i < num_fixed_allocators; i++) {
-            printf("%d byte allocator offset %#lx\n", sz, allocator_offsets[i]);
-            sz *= 2;
-        }
         printf("\n");
     }
 };
@@ -67,16 +68,11 @@ struct FixedAllocator {
 
     void print(const char *s, uint64_t base)
     {
-        if (s)
-            printf("%s (%u): ", s, size);
-        else
-            printf("%u: ", size);
-
-        printf("count=%ld, base=%#lx, max=%#lx, tail=%#lx, free=%#lx\n",
-               num_allocated, base, max_addr, tail_ptr, free_ptr);
+        printf("%s\t%u\t%ld\t%#lx\t%#lx\t%#lx\t%#lx\n",
+               s, size, num_allocated, base, tail_ptr, max_addr, free_ptr);
     }
 
-    void print(uint64_t base) { print(NULL, base); }
+    void print(uint64_t base) { print("", base); }
 };
 
 
@@ -114,6 +110,11 @@ int main(int argc, char **argv)
         return 1;
     }
 
+
+    FILE *pipe = popen("tbl | nroff | uniq", "w");
+    dup2(fileno(pipe), 1);
+    printf(".nf\n");
+
     const char *db_name = argv[argi];
 
     if (verbose)
@@ -125,6 +126,13 @@ int main(int argc, char **argv)
     };
     read_file(db_name, "graph.jdb", graph_info_raw);
     graph_info.print();
+
+    printf(".fi\n");
+    printf(".TS\n");
+    printf("nowarn;\n");
+    printf("l c c c c c r\n");
+    printf("l r r r r r r.\n");
+    printf("\tsize\tcount\tbase\ttail\tmax\tfree\n");
 
     FixedAllocator nodes;
     read_file(db_name, graph_info.node_info.name, nodes);
@@ -140,7 +148,10 @@ int main(int argc, char **argv)
                   graph_info.allocator_offsets[i]);
         allocator.print(graph_info.allocator_info.addr + graph_info.allocator_offsets[i]);
     }
+    printf(".TE\n");
 
+    fclose(stdout);
+    pclose(pipe);
     return 0;
 }
 
