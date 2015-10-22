@@ -24,8 +24,20 @@ inline void setJarvisHandle(JNIEnv *env, jobject obj, T *t)
     env->SetLongField(obj, getHandleField(env, obj), handle);
 }
 
+template <> Jarvis::Graph *getJarvisHandle<Jarvis::Graph>
+    (JNIEnv *env, jobject obj);
+
+template <> Jarvis::Node *getJarvisHandle<Jarvis::Node>
+    (JNIEnv *env, jobject obj);
+
+template <> Jarvis::NodeIterator *getJarvisHandle<Jarvis::NodeIterator>
+    (JNIEnv *env, jobject obj);
+
+template <> Jarvis::EdgeIterator *getJarvisHandle<Jarvis::EdgeIterator>
+    (JNIEnv *env, jobject obj);
 
 extern jobject new_java_object(JNIEnv *env, const char *name, void *obj);
+extern jobject new_node_object(JNIEnv *env, void *obj);
 extern jobject java_node_iterator(JNIEnv *env, Jarvis::NodeIterator &&);
 extern void JavaThrow(JNIEnv *env, Jarvis::Exception e);
 

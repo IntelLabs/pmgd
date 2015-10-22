@@ -203,15 +203,76 @@ jobject java_node_iterator(JNIEnv *env, NodeIterator &&ni)
     jobject cur;
     if (*j_ni) {
         Node &j_n = **j_ni;
-        cur = new_java_object(env, "Node", &j_n);
+        cur = new_node_object(env, &j_n);
     }
     else
         cur = NULL;
 
     // create a java nodeiterator
-    jclass cls = env->FindClass("jarvis/NodeIterator");
-    jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
-    return env->NewObject(cls, cnstrctr,
-                                reinterpret_cast<jlong>(j_ni),
-                                cur);
+    static jclass cls = 0;
+    static jmethodID ctor = 0;
+    if (ctor == 0) {
+        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/NodeIterator"));
+        ctor = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
+    }
+    return env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_ni), cur);
+}
+
+jobject new_node_object(JNIEnv *env, void *obj)
+{
+    static jclass cls = 0;
+    static jmethodID ctor = 0;
+    if (ctor == 0) {
+        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Node"));
+        ctor = env->GetMethodID(cls, "<init>", "(J)V");
+    }
+    return env->NewObject(cls, ctor, reinterpret_cast<jlong>(obj));
+}
+
+template <>
+Jarvis::Graph *getJarvisHandle<Jarvis::Graph>(JNIEnv *env, jobject obj)
+{
+    static jfieldID id = 0;
+    if (id == 0) {
+        jclass c = env->GetObjectClass(obj);
+        id = env->GetFieldID(c, "jarvisHandle", "J");
+    }
+    jlong handle = env->GetLongField(obj, id);
+    return reinterpret_cast<Jarvis::Graph *>(handle);
+}
+
+template <>
+Jarvis::Node *getJarvisHandle<Jarvis::Node>(JNIEnv *env, jobject obj)
+{
+    static jfieldID id = 0;
+    if (id == 0) {
+        jclass c = env->GetObjectClass(obj);
+        id = env->GetFieldID(c, "jarvisHandle", "J");
+    }
+    jlong handle = env->GetLongField(obj, id);
+    return reinterpret_cast<Jarvis::Node *>(handle);
+}
+
+template <>
+Jarvis::NodeIterator *getJarvisHandle<Jarvis::NodeIterator>(JNIEnv *env, jobject obj)
+{
+    static jfieldID id = 0;
+    if (id == 0) {
+        jclass c = env->GetObjectClass(obj);
+        id = env->GetFieldID(c, "jarvisHandle", "J");
+    }
+    jlong handle = env->GetLongField(obj, id);
+    return reinterpret_cast<Jarvis::NodeIterator *>(handle);
+}
+
+template <>
+Jarvis::EdgeIterator *getJarvisHandle<Jarvis::EdgeIterator>(JNIEnv *env, jobject obj)
+{
+    static jfieldID id = 0;
+    if (id == 0) {
+        jclass c = env->GetObjectClass(obj);
+        id = env->GetFieldID(c, "jarvisHandle", "J");
+    }
+    jlong handle = env->GetLongField(obj, id);
+    return reinterpret_cast<Jarvis::EdgeIterator *>(handle);
 }

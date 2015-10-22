@@ -17,15 +17,17 @@ void Java_jarvis_NodeIterator_next(JNIEnv *env, jobject ni)
 
         jobject cur;
         if (j_ni) {
-            // get the current node
             Node *j_n = &(*j_ni);
-            cur = new_java_object(env, "Node", j_n);
+            cur = new_node_object(env, j_n);
         }
         else
             cur = NULL;
 
-        jclass cls = env->GetObjectClass(ni);
-        jfieldID fid = env->GetFieldID(cls, "current", "Ljarvis/Node;");
+        static jfieldID fid = 0;
+        if (fid == 0) {
+            jclass cls = env->GetObjectClass(ni);
+            fid = env->GetFieldID(cls, "current", "Ljarvis/Node;");
+        }
         env->SetObjectField(ni, fid, cur);
     }
     catch (Exception e) {
