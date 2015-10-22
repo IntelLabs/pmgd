@@ -7,13 +7,21 @@
 #include <string>
 #include <unistd.h>
 
+static bool raw = false;
+
 struct RegionInfo {
     static const int REGION_NAME_LEN = 32;
     char name[REGION_NAME_LEN];
     uint64_t addr;
     size_t len;
 
-    void print() { printf("%.*s\t%#lx\t%#zx\n", REGION_NAME_LEN, name, addr, len); }
+    void print()
+    {
+        if (raw)
+            printf("%-18.*s%#lx\t%#zx\n", REGION_NAME_LEN, name, addr, len);
+        else
+            printf("%.*s\t%#lx\t%#zx\n", REGION_NAME_LEN, name, addr, len);
+    }
 };
 
 struct GraphInfo {
@@ -41,11 +49,17 @@ struct GraphInfo {
         printf("max stringid length: %u\n", max_stringid_length);
         printf("\n");
 
-        printf(".fi\n");
-        printf(".TS\n");
-        printf("l c c\n");
-        printf("l r r .\n");
-        printf("\t  base\t    size\n");
+        if (!raw) {
+            printf(".fi\n");
+            printf(".TS\n");
+            printf("l c c\n");
+            printf("l r r .\n");
+            printf("\t  base\t    size\n");
+        }
+        else {
+            printf("\t\t    base\t  size\n");
+        }
+
         transaction_info.print();
         journal_info.print();
         indexmanager_info.print();
@@ -53,7 +67,9 @@ struct GraphInfo {
         node_info.print();
         edge_info.print();
         allocator_info.print();
-        printf(".TE\n");
+
+        if (! raw)
+            printf(".TE\n");
 
         printf("\n");
     }
@@ -68,11 +84,12 @@ struct FixedAllocator {
 
     void print(const char *s, uint64_t base)
     {
-        printf("%s\t%u\t%ld\t%#lx\t%#lx\t%#lx\t%#lx\n",
-               s, size, num_allocated, base, tail_ptr, max_addr, free_ptr);
+        printf("%s\t%u\t%ld\t%#lx\t%#lx\t%#lx",
+               s, size, num_allocated, base, tail_ptr, max_addr);
+        if (free_ptr)
+            printf("\t%#lx", free_ptr);
+        printf("\n");
     }
-
-    void print(uint64_t base) { print("", base); }
 };
 
 
@@ -83,7 +100,6 @@ void read_file(const char *db_name, const char *file, T &buf, size_t offset = 0)
 
 int main(int argc, char **argv)
 {
-    bool verbose = false;
     int argi = 1;
 
     while (argi < argc && argv[argi][0] == '-') {
@@ -92,8 +108,8 @@ int main(int argc, char **argv)
                 print_usage(stdout);
                 return 0;
 
-            case 'v':
-                verbose = true;
+            case 'r':
+                raw = true;
                 break;
 
             default:
@@ -111,14 +127,14 @@ int main(int argc, char **argv)
     }
 
 
-    FILE *pipe = popen("tbl | nroff | uniq", "w");
-    dup2(fileno(pipe), 1);
-    printf(".nf\n");
+    FILE *pipe = NULL;
+    if (!raw) {
+        pipe = popen("tbl | nroff | uniq", "w");
+        dup2(fileno(pipe), 1);
+        printf(".nf\n");
+    }
 
     const char *db_name = argv[argi];
-
-    if (verbose)
-        printf("%s:\n", db_name);
 
     union {
         GraphInfo graph_info;
@@ -127,12 +143,16 @@ int main(int argc, char **argv)
     read_file(db_name, "graph.jdb", graph_info_raw);
     graph_info.print();
 
-    printf(".fi\n");
-    printf(".TS\n");
-    printf("nowarn;\n");
-    printf("l c c c c c r\n");
-    printf("l r r r r r r.\n");
-    printf("\tsize\tcount\tbase\ttail\tmax\tfree\n");
+    if (!raw) {
+        printf(".fi\n");
+        printf(".TS\n");
+        printf("nowarn;\n");
+        printf("l c c c c c r\n");
+        printf("l r r r r r r.\n");
+        printf("\tsize\tcount\tbase\ttail\tmax\tfree\n");
+    }
+    else
+        printf("\tsize\tcount\tbase\t\ttail\t\tmax\t\tfree\n");
 
     FixedAllocator nodes;
     read_file(db_name, graph_info.node_info.name, nodes);
@@ -146,12 +166,17 @@ int main(int argc, char **argv)
         FixedAllocator allocator;
         read_file(db_name, graph_info.allocator_info.name, allocator,
                   graph_info.allocator_offsets[i]);
-        allocator.print(graph_info.allocator_info.addr + graph_info.allocator_offsets[i]);
+        allocator.print("", graph_info.allocator_info.addr + graph_info.allocator_offsets[i]);
     }
-    printf(".TE\n");
 
-    fclose(stdout);
-    pclose(pipe);
+    if (!raw)
+        printf(".TE\n");
+
+    if (!raw) {
+        fclose(stdout);
+        pclose(pipe);
+    }
+
     return 0;
 }
 
