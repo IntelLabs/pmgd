@@ -82,7 +82,9 @@ struct FixedAllocator {
     uint64_t max_addr;
     uint32_t size;
 
-    void print(const char *s, uint64_t base)
+    static bool footnote;
+
+    void print1(const char *s, uint64_t base)
     {
         printf("%s\t%u\t%ld\t%#lx\t%#lx\t%#lx",
                s, size, num_allocated, base, tail_ptr, max_addr);
@@ -90,8 +92,35 @@ struct FixedAllocator {
             printf("\t%#lx", free_ptr);
         printf("\n");
     }
+
+    void print2(const char *s, uint64_t base)
+    {
+        switch (size) {
+            case 16: base += 0x30; break;
+            case 32: base += 0x40; break;
+            case 64: base += 0x40; break;
+            case 128: base += 0x80; break;
+            case 256: base += 0x100; break;
+        }
+        uint64_t total = (max_addr - base) / size;
+        uint64_t free = (max_addr - tail_ptr) / size;
+        char c = ' ';
+        if (free_ptr) {
+            c = '*';
+            footnote = true;
+        }
+        printf("%s\t%u\t%lu\t%lu%c\t%lu\n",
+               s, size, num_allocated, free, c, total);
+    }
+
+    static void print_footnote()
+    {
+        if (footnote)
+            printf("* Not counting elements on free list.\n");
+    }
 };
 
+bool FixedAllocator::footnote = false;
 
 void print_usage(FILE *stream);
 
@@ -155,22 +184,45 @@ int main(int argc, char **argv)
         printf("\tsize\tcount\tbase\t\ttail\t\tmax\t\tfree\n");
 
     FixedAllocator nodes;
-    read_file(db_name, graph_info.node_info.name, nodes);
-    nodes.print("Nodes", graph_info.node_info.addr);
-
     FixedAllocator edges;
+    FixedAllocator allocator[5];
+
+    read_file(db_name, graph_info.node_info.name, nodes);
+    nodes.print1("Nodes", graph_info.node_info.addr);
+
     read_file(db_name, graph_info.edge_info.name, edges);
-    edges.print("Edges", graph_info.edge_info.addr);
+    edges.print1("Edges", graph_info.edge_info.addr);
 
     for (uint i = 0; i < graph_info.num_fixed_allocators; i++) {
-        FixedAllocator allocator;
-        read_file(db_name, graph_info.allocator_info.name, allocator,
+        read_file(db_name, graph_info.allocator_info.name, allocator[i],
                   graph_info.allocator_offsets[i]);
-        allocator.print("", graph_info.allocator_info.addr + graph_info.allocator_offsets[i]);
+        allocator[i].print1("", graph_info.allocator_info.addr + graph_info.allocator_offsets[i]);
     }
 
     if (!raw)
         printf(".TE\n");
+
+    printf("\n");
+
+    if (!raw) {
+        printf(".TS\n");
+        printf("nowarn;\n");
+        printf("l c c c c\n");
+        printf("l r r r r.\n");
+        printf("\tsize\tused\tfree\ttotal\n");
+    }
+    else
+        printf("\tsize\tused\tfree\t\ttotal\n");
+
+    nodes.print2("Nodes", graph_info.node_info.addr);
+    edges.print2("Edges", graph_info.edge_info.addr);
+
+    for (uint i = 0; i < graph_info.num_fixed_allocators; i++)
+        allocator[i].print2("", graph_info.allocator_info.addr + graph_info.allocator_offsets[i]);
+
+    if (!raw)
+        printf(".TE\n");
+    FixedAllocator::print_footnote();
 
     if (!raw) {
         fclose(stdout);
