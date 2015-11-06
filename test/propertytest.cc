@@ -8,6 +8,8 @@
 
 using namespace Jarvis;
 
+void dump_properties(PropertyIterator);
+
 int main(int argc, char **argv)
 {
     bool create = (argc > 1);
@@ -70,6 +72,11 @@ int main(int argc, char **argv)
             prev = &n;
         }
 
+        if (prev) {
+            PropertyIterator pit = prev->get_properties();
+            dump_properties(pit);
+        }
+
         dump_debug(db);
         tx.commit();
     }
@@ -79,4 +86,12 @@ int main(int argc, char **argv)
     }
 
     return 0;
+}
+
+void dump_properties(PropertyIterator iter)
+{
+    while (iter) {
+        printf("  %s: %s\n", iter->id().name().c_str(), property_text(*iter).c_str());
+        iter.next();
+    }
 }
