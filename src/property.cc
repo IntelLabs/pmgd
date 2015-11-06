@@ -95,7 +95,7 @@ void Jarvis::Time::get_utc(struct tm *tm) const
     if (tm == NULL)
         return;
     fill_tm_utc(tm);
-    tm->tm_isdst = -1;
+    tm->tm_isdst = 0;
     mktime(tm);  // Fills wday
 }
 
