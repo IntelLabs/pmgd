@@ -197,14 +197,14 @@ Index::Index_IteratorImplIntf *Index::get_iterator(const PropertyPredicate &pp, 
             break;
         case PropertyType::String:
             {
-                TransientIndexString istr(p1.string_value(), *loc);
                 StringValueIndex *This = static_cast<StringValueIndex *>(this);
+                if (pp.op == PropertyPredicate::DontCare)
+                    return This->get_iterator(reverse);
+                TransientIndexString istr(p1.string_value(), *loc);
                 if (pp.op >= PropertyPredicate::GeLe) {
                     TransientIndexString istr2(p2.string_value(), *loc);
                     return This->get_iterator(istr, istr2, pp.op, reverse);
                 }
-                else if (pp.op == PropertyPredicate::DontCare)
-                    return This->get_iterator(reverse);
                 else
                     return This->get_iterator(istr, pp.op, reverse);
             }
