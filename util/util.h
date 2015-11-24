@@ -27,13 +27,10 @@ extern void dump_debug(Jarvis::Graph &db, FILE *f = stdout);
 extern void dump_gexf(Jarvis::Graph &db, FILE *f = stdout);
 extern void dump_jarvis(Jarvis::Graph &db, FILE *f = stdout);
 
-extern void dump(Jarvis::Graph &db, const Jarvis::Node &n, FILE *f = stdout);
-extern void dump(Jarvis::Graph &db, const Jarvis::Edge &n, FILE *f = stdout);
-
-extern void dump(Jarvis::Graph &db, Jarvis::NodeIterator &i, FILE *f = stdout);
-extern void dump(Jarvis::Graph &db, Jarvis::EdgeIterator &i, FILE *f = stdout);
-extern void dump(Jarvis::Graph &db, Jarvis::NodeIterator &&i, FILE *f = stdout);
-extern void dump(Jarvis::Graph &db, Jarvis::EdgeIterator &&i, FILE *f = stdout);
+extern void dump(const Jarvis::Node &n, FILE *f = stdout);
+extern void dump(const Jarvis::Edge &e, FILE *f = stdout);
+extern void dump(Jarvis::NodeIterator ni, FILE *f = stdout);
+extern void dump(Jarvis::EdgeIterator ei, FILE *f = stdout);
 
 extern void do_nothing_node(Jarvis::Node &);
 extern void do_nothing_edge(Jarvis::Edge &);

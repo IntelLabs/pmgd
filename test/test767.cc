@@ -15,11 +15,11 @@ static int count(EdgeIterator &&);
         int c = count(iter); \
         if (c == v) { \
             printf("count(%s) = %d\n", #iter, c); \
-            dump(db, iter); \
+            dump(iter); \
         } \
         if (c != v) { \
             printf("count(%s) = %d, expected %d\n", #iter, c, v); \
-            dump(db, iter); \
+            dump(iter); \
             r = EXIT_FAILURE; \
         } \
     }

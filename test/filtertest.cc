@@ -41,7 +41,7 @@ int main(int argc, char **argv)
                 return n.get_property("id1").string_value()[0] == 'a'
                            ? Pass : DontPass;
             })
-            .process([&db](Node &n) { dump(db, n); });
+            .process([](Node &n) { dump(n); });
 
         // Increment the value of any node starting with 'a'
         printf("Increment value of nodes starting with 'a'\n");
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
                 return n.get_property("id1").string_value()[0] == 'a'
                            ? Pass : DontPass;
             })
-            .process([&db](Node &n) { dump(db, n); });
+            .process([](Node &n) { dump(n); });
 
         // Look for value less than 20
         printf("Nodes with value less than 20\n");
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
                 return n.get_property("id2").int_value() < 20
                            ? Pass : DontPass;
             })
-            .process([&db](Node &n) { dump(db, n); });
+            .process([](Node &n) { dump(n); });
 
         // Look for edge to or from a node starting with 'b'
         printf("Edges to or from a node starting with 'b'\n");
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
                        || e.get_destination().get_property("id1").string_value()[0] == 'b'
                            ? Pass : DontPass;
             })
-            .process([&db](EdgeRef &e) { dump(db, e); });
+            .process([](EdgeRef &e) { dump(e); });
 
         printf("Nodes with any property less than 20\n");
         db.get_nodes()

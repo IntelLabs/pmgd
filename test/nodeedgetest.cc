@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 
         // Just for verification if all covered
         for (EdgeIterator i = db.get_edges(); i; i.next()) {
-            dump(db, *i);
+            dump(*i);
         }
 
         tx.commit();
