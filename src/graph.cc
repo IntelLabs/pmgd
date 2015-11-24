@@ -82,6 +82,26 @@ Edge &Graph::add_edge(Node &src, Node &dest, StringID tag)
     return *edge;
 }
 
+void Graph::remove(Node &node)
+{
+    Allocator &allocator = _impl->allocator();
+    node.remove_all_properties();
+    node.get_edges().process([this](Edge &edge) { remove(edge); });
+    node.cleanup(allocator);
+    _impl->index_manager().remove_node(&node, allocator);
+    _impl->node_table().free(&node);
+}
+
+void Graph::remove(Edge &edge)
+{
+    Allocator &allocator = _impl->allocator();
+    edge.remove_all_properties();
+    edge.get_source().remove_edge(&edge, Outgoing, allocator);
+    edge.get_destination().remove_edge(&edge, Incoming, allocator);
+    _impl->index_manager().remove_edge(&edge, allocator);
+    _impl->edge_table().free(&edge);
+}
+
 void Graph::create_index(IndexType index_type, StringID tag,
                          StringID property_id, const PropertyType ptype)
 {
@@ -192,6 +212,7 @@ namespace Jarvis {
 
     protected:
         T *_cur;
+        void check_vacant();
 
     public:
         Graph_Iterator(const FixedAllocator &);
@@ -204,10 +225,12 @@ namespace Jarvis {
         Graph_NodeIteratorImpl(const FixedAllocator &a)
             : Graph_Iterator<NodeIteratorImplIntf, Node>(a)
             { }
-        const Node &operator*() const { return *_cur; }
-        const Node *operator->() const { return _cur; }
-        Node &operator*() { return *_cur; }
-        Node *operator->() { return _cur; }
+
+        Node *ref()
+        {
+            check_vacant();
+            return _cur;
+        }
     };
 
     class Graph_EdgeIteratorImpl : public Graph_Iterator<EdgeIteratorImplIntf, Edge> {
@@ -222,10 +245,12 @@ namespace Jarvis {
         Graph_EdgeIteratorImpl(const FixedAllocator &a)
             : Graph_Iterator<EdgeIteratorImplIntf, Edge>(a), _ref(this)
             {}
-        const EdgeRef &operator*() const { return _ref; }
-        const EdgeRef *operator->() const { return &_ref; }
-        EdgeRef &operator*() { return _ref; }
-        EdgeRef *operator->() { return &_ref; }
+
+        EdgeRef *ref()
+        {
+            check_vacant();
+            return &_ref;
+        }
     };
 
     class Index_NodeIteratorImpl : public NodeIteratorImplIntf {
@@ -234,10 +259,7 @@ namespace Jarvis {
         Index_NodeIteratorImpl(Index::Index_IteratorImplIntf *iter)
             : _iter(iter) { }
         ~Index_NodeIteratorImpl() { delete _iter; }
-        const Node &operator*() const { return *(Node *)_iter->ref(); }
-        const Node *operator->() const { return (Node *)_iter->ref(); }
-        Node &operator*() { return *(Node *)_iter->ref(); }
-        Node *operator->() { return (Node *)_iter->ref(); }
+        Node *ref() { return (Node *)_iter->ref(); }
         operator bool() const { return _iter && *_iter; }
         bool next() { return _iter->next(); }
     };
@@ -255,10 +277,7 @@ namespace Jarvis {
         Index_EdgeIteratorImpl(Index::Index_IteratorImplIntf *iter)
             : _iter(iter), _ref(this) { }
         ~Index_EdgeIteratorImpl() { delete _iter; }
-        const EdgeRef &operator*() const { return _ref; }
-        const EdgeRef *operator->() const { return &_ref; }
-        EdgeRef &operator*() { return _ref; }
-        EdgeRef *operator->() { return &_ref; }
+        EdgeRef *ref() { return &_ref; }
         operator bool() const { return _iter && *_iter; }
         bool next() { return _iter->next(); }
     };
@@ -295,6 +314,14 @@ void Graph_Iterator<B, T>::_skip()
 {
     _cur = static_cast<T *>(table.next(_cur));
 }
+
+template <typename B, typename T>
+void Graph_Iterator<B, T>::check_vacant()
+{
+    if (table.is_free(_cur))
+        throw Exception(VacantIterator);
+}
+
 
 NodeIterator Graph::get_nodes()
 {

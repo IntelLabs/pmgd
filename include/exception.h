@@ -8,6 +8,7 @@ namespace Jarvis {
 
         BadAlloc,
         NullIterator,
+        VacantIterator,
 
         OpenFailed,
         VersionMismatch,

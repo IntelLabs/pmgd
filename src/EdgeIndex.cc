@@ -38,13 +38,12 @@ namespace Jarvis {
         return NULL;
     }
 
-    void EdgeIndex::remove(StringID key, Edge* edge, Node* node,
-            Allocator &allocator)
+    void EdgeIndex::remove(StringID key, Edge* edge, Allocator &allocator)
     {
         // Construct the entry that gets removed from the list
         EdgeIndexType newkey(key);
         // Create the pair that gets removed from the node-edge list
-        KeyValuePair<Edge *, Node *> addrs(edge, node);
+        KeyValuePair<Edge *, Node *> addrs(edge, 0);
 
         EdgeIndexType *ptr = _key_list.find(newkey);
         // If key found

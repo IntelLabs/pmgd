@@ -6,6 +6,7 @@
 #include "node.h"
 #include "edge.h"
 #include "iterator.h"
+#include "callback.h"
 
 namespace Jarvis {
     class Allocator;
@@ -35,11 +36,17 @@ namespace Jarvis {
         // This is a pointer so we can typecast it in PM at the constructor
         TagList *_tag_prop_map;
 
+        CallbackList<void *, void *> _iterator_remove_list;
+        CallbackList<void *, void *> _iterator_rebalance_list;
+        CallbackList<void *, const PropertyRef &> _property_iterator_list;
+
         IndexList *add_tag_index(Graph::IndexType index_type,
                                      StringID tag,
                                      Allocator &allocator);
 
         bool add(Graph::IndexType index_type, StringID tag, void *obj,
+                 Allocator &allocator);
+        void remove(Graph::IndexType index_type, StringID tag, void *obj,
                  Allocator &allocator);
 
     public:
@@ -68,6 +75,12 @@ namespace Jarvis {
         bool add_edge(Edge *edge, Allocator &allocator)
             { return add(Graph::EdgeIndex, edge->get_tag(), edge, allocator); }
 
+        void remove_node(Node *node, Allocator &allocator)
+            { remove(Graph::NodeIndex, node->get_tag(), node, allocator); }
+
+        void remove_edge(Edge *edge, Allocator &allocator)
+            { remove(Graph::EdgeIndex, edge->get_tag(), edge, allocator); }
+
         void update(GraphImpl *db,
                     Graph::IndexType index_type, StringID tag, void *obj,
                     StringID id,
@@ -79,5 +92,37 @@ namespace Jarvis {
 
         Index::Index_IteratorImplIntf *get_iterator(Graph::IndexType index_type,
                                                     StringID tag);
+
+        void register_iterator(void *key,
+                               std::function<void(void *)> remove_callback)
+        {
+            _iterator_remove_list.register_callback(key, remove_callback);
+        }
+
+        void register_iterator(void *key,
+                               std::function<void(void *)> remove_callback,
+                               std::function<void(void *)> rebalance_callback)
+        {
+            _iterator_remove_list.register_callback(key, remove_callback);
+            _iterator_rebalance_list.register_callback(key, rebalance_callback);
+        }
+
+        void unregister_iterator(void *key)
+        {
+            _iterator_remove_list.unregister_callback(key);
+            _iterator_rebalance_list.unregister_callback(key);
+        }
+
+        void iterator_remove_notify(void *list_node) const
+            { _iterator_remove_list.do_callbacks(list_node); }
+        void iterator_rebalance_notify(void *tree) const
+            { _iterator_rebalance_list.do_callbacks(tree); }
+
+        void register_property_iterator(void *key, std::function<void(const PropertyRef &)> f)
+            { _property_iterator_list.register_callback(key, f); }
+        void unregister_property_iterator(void *key)
+            { _property_iterator_list.unregister_callback(key); }
+        void property_iterator_notify(const PropertyRef &p) const
+            { _property_iterator_list.do_callbacks(p); }
     };
 }

@@ -232,6 +232,20 @@ link /nologo test\propertytest.obj ^
     /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
 
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
+    /Fotest\removetest.obj /c test\removetest.cc
+link /nologo test\removetest.obj ^
+    lib\Release\jarvis-util.lib ^
+    lib\Release\jarvis.lib ^
+    3rdparty\lib\Release\strptime.lib ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
+    "%ICPP_COMPILER15%\compiler\lib\intel64\libdecimal.lib" ^
+    /OUT:test\removetest.exe /MACHINE:X64 ^
+    /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
+    /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64"
+
+cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\propertypredicatetest.obj /c test\propertypredicatetest.cc
 link /nologo test\propertypredicatetest.obj ^
     lib\Release\jarvis-util.lib ^

@@ -80,9 +80,9 @@ int main()
         edge_table->add("tag20", entry3.key(), entry3.value(), allocator1);
         edge_table->add("tag10", entry2.key(), entry2.value(), allocator1);
 
-        edge_table->remove("tag10", entry2.key(), entry2.value(), allocator1);
-        edge_table->remove("tag20", entry3.key(), entry3.value(), allocator1);
-        edge_table->remove("tag20", entry1.key(), entry1.value(), allocator1);
+        edge_table->remove("tag10", entry2.key(), allocator1);
+        edge_table->remove("tag20", entry3.key(), allocator1);
+        edge_table->remove("tag20", entry1.key(), allocator1);
         edge_table->add("tag20", entry2.key(), entry2.value(), allocator1);
     }
     catch (Exception e) {

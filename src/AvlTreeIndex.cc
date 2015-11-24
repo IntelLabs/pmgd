@@ -1,7 +1,9 @@
+#include <stack>
 #include "AvlTreeIndex.h"
 #include "iterator.h"
 #include "List.h"
 #include "IndexString.h"
+#include "GraphImpl.h"
 
 using namespace Jarvis;
 
@@ -29,12 +31,19 @@ namespace Jarvis {
         bool greaterthanequal(const K &val1) const
             { return (_val > val1) || equals(val1); }
     };
+
+    template <typename K, typename V> class AvlTreeIndex<K,V>::Stack
+        : public std::stack<TreeNode *>
+    {
+    public:
+        void clear() { std::stack<TreeNode *>::c.clear(); }
+    };
 }
 
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start(TreeNode *root,
                                    const Compare &cmin, const Compare &cmax,
-                                   std::stack<TreeNode *> &path)
+                                   Stack &path)
 {
     if (root == NULL)
         return;
@@ -54,7 +63,7 @@ void AvlTreeIndex<K,V>::find_start(TreeNode *root,
 // make is that the value <(=) max.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_right_tree(TreeNode *root, const Compare &cmax,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -66,7 +75,7 @@ void AvlTreeIndex<K,V>::add_right_tree(TreeNode *root, const Compare &cmax,
 // Find first element when no min given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_min(TreeNode *root, const Compare &cmax,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -79,7 +88,7 @@ void AvlTreeIndex<K,V>::find_start_min(TreeNode *root, const Compare &cmax,
 // Find first element when no max given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_max(TreeNode *root, const Compare &cmin,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -97,7 +106,7 @@ void AvlTreeIndex<K,V>::find_start_max(TreeNode *root, const Compare &cmin,
 // Add all elements when no max limit given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_full_right_tree(TreeNode *root,
-                                            std::stack<TreeNode *> &path)
+                                            Stack &path)
 {
     if (root == NULL)
         return;
@@ -107,7 +116,7 @@ void AvlTreeIndex<K,V>::add_full_right_tree(TreeNode *root,
 
 // Find first element when no min/max given
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::find_start_all(TreeNode *root, std::stack<TreeNode *> &path)
+void AvlTreeIndex<K,V>::find_start_all(TreeNode *root, Stack &path)
 {
     if (root == NULL)
         return;
@@ -119,7 +128,7 @@ void AvlTreeIndex<K,V>::find_start_all(TreeNode *root, std::stack<TreeNode *> &p
 // Same function works for traversing the remaining tree too.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_nodes_neq(TreeNode *root, const K &neq,
-                                      std::stack<TreeNode *> &path)
+                                      Stack &path)
 {
     if (root == NULL)
         return;
@@ -135,11 +144,36 @@ void AvlTreeIndex<K,V>::add_nodes_neq(TreeNode *root, const K &neq,
     add_nodes_neq(root->left, neq, path);
 }
 
+template <typename K, typename V>
+void AvlTreeIndex<K,V>::find_node_neq(TreeNode *root, const Compare &cur,
+                                 const K &neq, Stack &path)
+{
+    if (root == NULL)
+        return;
+
+    if (neq == root->key) { // Found the unwanted node.
+        // Skip the root then
+        if (cur.lessthan(root->key))
+            find_start_max(root->left, cur, path);
+        else if (cur.equals(root->key))
+            find_start_all(root->right, path);
+        else
+            find_start_max(root->right, cur, path);
+    }
+    else {
+        path.push(root);
+        if (cur.lessthan(root->key))
+            find_node_neq(root->left, cur, neq, path);
+        else if (cur.greaterthan(root->key)) // equal to already taken care of
+            find_node_neq(root->right, cur, neq, path);
+    }
+}
+
 // Support functions for reverse iterators
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_reverse(TreeNode *root,
                                    const Compare &cmin, const Compare &cmax,
-                                   std::stack<TreeNode *> &path)
+                                   Stack &path)
 {
     if (root == NULL)
         return;
@@ -157,7 +191,7 @@ void AvlTreeIndex<K,V>::find_start_reverse(TreeNode *root,
 // Find first element when no max given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_max_reverse(TreeNode *root, const Compare &cmin,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -171,7 +205,7 @@ void AvlTreeIndex<K,V>::find_start_max_reverse(TreeNode *root, const Compare &cm
 // make is that the value >(=) min.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_left_tree(TreeNode *root, const Compare &cmin,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -183,7 +217,7 @@ void AvlTreeIndex<K,V>::add_left_tree(TreeNode *root, const Compare &cmin,
 // Find first element when no min given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_min_reverse(TreeNode *root, const Compare &cmax,
-                                       std::stack<TreeNode *> &path)
+                                       Stack &path)
 {
     if (root == NULL)
         return;
@@ -200,7 +234,7 @@ void AvlTreeIndex<K,V>::find_start_min_reverse(TreeNode *root, const Compare &cm
 
 // Find first element when no min/max given
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::find_start_all_reverse(TreeNode *root, std::stack<TreeNode *> &path)
+void AvlTreeIndex<K,V>::find_start_all_reverse(TreeNode *root, Stack &path)
 {
     if (root == NULL)
         return;
@@ -211,7 +245,7 @@ void AvlTreeIndex<K,V>::find_start_all_reverse(TreeNode *root, std::stack<TreeNo
 // Add all elements when no max limit given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_full_left_tree(TreeNode *root,
-                                           std::stack<TreeNode *> &path)
+                                           Stack &path)
 {
     if (root == NULL)
         return;
@@ -223,7 +257,7 @@ void AvlTreeIndex<K,V>::add_full_left_tree(TreeNode *root,
 // Same function works for traversing the remaining tree too.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_nodes_neq_reverse(TreeNode *root, const K &neq,
-                                      std::stack<TreeNode *> &path)
+                                      Stack &path)
 {
     if (root == NULL)
         return;
@@ -239,363 +273,341 @@ void AvlTreeIndex<K,V>::add_nodes_neq_reverse(TreeNode *root, const K &neq,
     add_nodes_neq_reverse(root->right, neq, path);
 }
 
+template <typename K, typename V>
+void AvlTreeIndex<K,V>::find_node_neq_reverse(TreeNode *root, const Compare &cur,
+                                     const K &neq, Stack &path)
+{
+    if (root == NULL)
+        return;
+
+    if (neq == root->key) { // Found the unwanted node.
+        // Skip the root then
+        if (cur.greaterthan(root->key))
+            find_start_min_reverse(root->right, cur, path);
+        else if (cur.equals(root->key))
+            find_start_all_reverse(root->left, path);
+        else 
+            find_start_min_reverse(root->left, cur, path);
+    }
+    else {
+        path.push(root);
+        if (cur.greaterthan(root->key))
+            find_node_neq_reverse(root->right, cur, neq, path);
+        else if (cur.lessthan(root->key))
+            find_node_neq_reverse(root->left, cur, neq, path);
+    }
+}
+
 namespace Jarvis {
+
+// The BASE_DECLS macro is used to avoid repeating the list of typedefs
+// and using declarations in all seven derived classes.
+#define BASE_DECLS \
+        typedef typename Index_IteratorImplBase<K>::IndexValue IndexValue; \
+        typedef typename Index_IteratorImplBase<K>::IndexNode IndexNode; \
+        typedef typename Index_IteratorImplBase<K>::Stack Stack; \
+        using Index_IteratorImplBase<K>::_tree; \
+        using Index_IteratorImplBase<K>::_curr; \
+        using Index_IteratorImplBase<K>::_path; \
+        using Index_IteratorImplBase<K>::_list_it; \
+        using Index_IteratorImplBase<K>::_vacant_flag; \
+        using Index_IteratorImplBase<K>::finish_init;
+
     // These iterator implementations are specific to instantiations
     // of AvlTreeIndex<K, V> with V = List<void *>.
+    template <typename K>
     class Index_IteratorImplBase : public Index::Index_IteratorImplIntf {
     protected:
-        ListTraverser<void *> _list_it;
-    public:
-        Index_IteratorImplBase(List<void *> *l) : _list_it(l) { }
+        typedef List<void *> IndexValue;
+        typedef AvlTreeIndex<K, IndexValue> IndexNode;
+        typedef typename IndexNode::Stack Stack;
 
-        void *ref() const { return *_list_it; }
-        operator bool() const { return _list_it; }
-        virtual bool next() = 0;
+        IndexNode *const _tree;
+        typename IndexNode::TreeNode *_curr;
+        Stack _path;
+        ListTraverser<void *> _list_it;
+        bool _vacant_flag = false;
+        IndexManager &_index_manager;
+
+        void finish_init() {
+            if (!_path.empty()) {
+                _curr = _path.top();
+                _path.pop();
+                _list_it.set(&_curr->value);
+            }
+        }
+
+        virtual void _next() = 0;
+        virtual void find_node(const typename IndexNode::Compare &) = 0;
+
+    public:
+        Index_IteratorImplBase(IndexNode *tree)
+            : _tree(tree), _curr(NULL), _list_it(NULL),
+              _index_manager(TransactionImpl::get_tx()->get_db()->index_manager())
+        {
+            _index_manager.register_iterator(this,
+                [this](void *list_node) { remove_notify(list_node); },
+                [this](void *tree)
+                    { rebalance_notify(static_cast<IndexNode *>(tree)); });
+        }
+
+        ~Index_IteratorImplBase()
+        {
+            _index_manager.unregister_iterator(this);
+        }
+
+        operator bool() const { return _vacant_flag || bool(_list_it); }
+
+        bool next()
+        {
+            // If _vacant_flag is set, the iterator has already advanced
+            // to the next object, so just clear _vacant_flag.
+            if (EXPECT_FALSE(_vacant_flag)) {
+                _vacant_flag = false;
+                return operator bool();
+            }
+
+            if (_list_it.next())
+                return true;
+
+            // current list iterator empty; move to the next TreeNode
+            _next();
+            if (_path.empty())
+                return false;
+
+            _curr = _path.top();
+            _path.pop();
+            _list_it.set(&_curr->value);
+            return true;
+        }
+
+        void *ref() const
+        {
+            // _vacant_flag indicates that the object referred to by the
+            // iterator has been removed from the index.
+            if (EXPECT_FALSE(_vacant_flag))
+                throw Exception(VacantIterator);
+            return _list_it.ref();
+        }
+
+        void remove_notify(void *list_node)
+        {
+            // If the object referred to by the iterator is being removed
+            // from the index, move to the next object.
+            if (_list_it.check(list_node)) {
+                // Clear _vacant_flag to ensure that next actually advances
+                // the iterator, and then set _vacant_flag to indicate that
+                // the current object has been removed from the index.
+                _vacant_flag = false;
+                next();
+                _vacant_flag = true;
+            }
+        }
+
+        void rebalance_notify(IndexNode *tree)
+        {
+            if (tree == _tree && _curr != NULL && bool(_list_it)) {
+                _path.clear();
+                typename IndexNode::Compare cur(_curr->key, true);
+                find_node(cur);
+                assert(!_path.empty());
+                _curr = _path.top();
+                _path.pop();
+            }
+        }
     };
 
     template <typename K>
-    class IndexEq_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
+    class IndexEq_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
+
     public:
         IndexEq_IteratorImpl(IndexNode *tree, const K &key)
-            : Index_IteratorImplBase(tree->find(key))
-        { }
-        bool next() { return _list_it.next(); }
+            : Index_IteratorImplBase<K>(tree)
+            { _list_it.set(tree->find(key)); }
+
+        void _next()
+            { /* Once we finish the original list, we're done. */  }
+
+        void find_node(const typename IndexNode::Compare &)
+            { /* not called because _curr is NULL */ }
     };
 
     // Handle gele, gelt, gtle, gtlt, le, lt.
     template <typename K>
-    class IndexRange_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
-        typename IndexNode::TreeNode *_curr;
+    class IndexRange_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
         typename IndexNode::Compare _cmax;
-        std::stack<typename IndexNode::TreeNode *> _path;
 
     public:
         IndexRange_IteratorImpl(IndexNode *tree,
                                     const K &min, const K &max,
                                     bool incl_min, bool incl_max)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL),
+            : Index_IteratorImplBase<K>(tree),
               _cmax(max, incl_max)
         {
             typename IndexNode::Compare cmin(min, incl_min);
             _tree->find_start(tree->_tree, cmin, _cmax, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
         // When a max is given but no min is specified, next is same as
         // that for gele kind of cases. So just add a constructor.
         IndexRange_IteratorImpl(IndexNode *tree, const K &max, bool incl_max)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL),
+            : Index_IteratorImplBase<K>(tree),
               _cmax(max, incl_max)
         {
             _tree->find_start_min(tree->_tree, _cmax, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->right;
-                _curr = NULL;
-                _tree->add_right_tree(temp, _cmax, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_right_tree(_curr->right, _cmax, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_start(_tree->_tree, cur, _cmax, _path); }
     };
 
     // Handle ge, gt, dont_care.
     template <typename K>
-    class IndexRangeNomax_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
-        typename IndexNode::TreeNode *_curr;
-        std::stack<typename IndexNode::TreeNode *> _path;
+    class IndexRangeNomax_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
 
     public:
         IndexRangeNomax_IteratorImpl(IndexNode *tree,
                                     const K &min,
                                     bool incl_min)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL)
+            : Index_IteratorImplBase<K>(tree)
         {
             typename IndexNode::Compare cmin(min, incl_min);
             _tree->find_start_max(tree->_tree, cmin, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
         // The dont_care case where no min and max are given.
         IndexRangeNomax_IteratorImpl(IndexNode *tree)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL)
+            : Index_IteratorImplBase<K>(tree)
         {
             _tree->find_start_all(tree->_tree, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->right;
-                _curr = NULL;
-                _tree->add_full_right_tree(temp, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_full_right_tree(_curr->right, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_start_max(_tree->_tree, cur, _path); }
     };
 
     template <typename K>
-    class IndexRangeNeq_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
+    class IndexRangeNeq_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
         K _neq;
-        typename IndexNode::TreeNode *_curr;
-        std::stack<typename IndexNode::TreeNode *> _path;
 
     public:
         IndexRangeNeq_IteratorImpl(IndexNode *tree, const K &neq)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _neq(neq),
-              _curr(NULL)
+            : Index_IteratorImplBase<K>(tree),
+              _neq(neq)
         {
             // Get to the minimum of the tree but make sure that is
             // not the key itself
             _tree->add_nodes_neq(tree->_tree, _neq, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->right;
-                _curr = NULL;
-                _tree->add_nodes_neq(temp, _neq, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_nodes_neq(_curr->right, _neq, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_node_neq(_tree->_tree, cur, _neq, _path); }
     };
 
     // Reverse iterators.
     // Handle gele, gelt, gtle, gtlt, gt, ge.
     template <typename K>
-    class IndexRangeReverse_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
-        typename IndexNode::TreeNode *_curr;
+    class IndexRangeReverse_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
         typename IndexNode::Compare _cmin;
-        std::stack<typename IndexNode::TreeNode *> _path;
 
     public:
         IndexRangeReverse_IteratorImpl(IndexNode *tree,
                                     const K &min, const K &max,
                                     bool incl_min, bool incl_max)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL), _cmin(min, incl_min)
+            : Index_IteratorImplBase<K>(tree),
+              _cmin(min, incl_min)
         {
             typename IndexNode::Compare cmax(max, incl_max);
             _tree->find_start_reverse(tree->_tree, _cmin, cmax, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
         // When a min is given but no max is specified, next is same as
         // that for gele kind of cases. So just add a constructor.
         IndexRangeReverse_IteratorImpl(IndexNode *tree, const K &min, bool incl_min)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _curr(NULL), _cmin(min, incl_min)
+            : Index_IteratorImplBase<K>(tree),
+              _cmin(min, incl_min)
         {
             _tree->find_start_max_reverse(tree->_tree, _cmin, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->left;
-                _curr = NULL;
-                _tree->add_left_tree(temp, _cmin, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_left_tree(_curr->left, _cmin, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_start_reverse(_tree->_tree, _cmin, cur, _path); }
     };
 
     // Handle lt, le, dont_care
     template <typename K>
-    class IndexRangeNomin_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
-        typename IndexNode::TreeNode *_curr;
-        std::stack<typename IndexNode::TreeNode *> _path;
+    class IndexRangeNomin_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
 
     public:
         IndexRangeNomin_IteratorImpl(IndexNode *tree, const K &max, bool incl_max)
-            : Index_IteratorImplBase(NULL), _tree(tree), _curr(NULL)
+            : Index_IteratorImplBase<K>(tree)
         {
             typename IndexNode::Compare cmax(max, incl_max);
             _tree->find_start_min_reverse(tree->_tree, cmax, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
         // The dont_care case where no min and max are given.
         IndexRangeNomin_IteratorImpl(IndexNode *tree)
-            : Index_IteratorImplBase(NULL), _tree(tree), _curr(NULL)
+            : Index_IteratorImplBase<K>(tree)
         {
             _tree->find_start_all_reverse(tree->_tree, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->left;
-                _curr = NULL;
-                _tree->add_full_left_tree(temp, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_full_left_tree(_curr->left, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_start_min_reverse(_tree->_tree, cur, _path); }
     };
 
     template <typename K>
-    class IndexRangeNeqReverse_IteratorImpl : public Index_IteratorImplBase {
-        typedef List<void *> IndexValue;
-        typedef AvlTreeIndex<K, IndexValue> IndexNode;
-        IndexNode *_tree;
+    class IndexRangeNeqReverse_IteratorImpl : public Index_IteratorImplBase<K> {
+        BASE_DECLS
         K _neq;
-        typename IndexNode::TreeNode *_curr;
-        std::stack<typename IndexNode::TreeNode *> _path;
 
     public:
         IndexRangeNeqReverse_IteratorImpl(IndexNode *tree, const K &neq)
-            : Index_IteratorImplBase(NULL),
-              _tree(tree), _neq(neq), _curr(NULL)
+            : Index_IteratorImplBase<K>(tree),
+              _neq(neq)
         {
             // Get to the minimum of the tree but make sure that is
             // not the key itself
             _tree->add_nodes_neq_reverse(tree->_tree, _neq, _path);
-            if (!_path.empty()) {
-                _curr = _path.top();
-                _path.pop();
-            }
-            if (_curr)
-                _list_it.set(&_curr->value);
+            finish_init();
         }
 
-        bool next() {
-            if(!_list_it.next()) { // current list iterator empty
-                typename IndexNode::TreeNode *temp = _curr->left;
-                _curr = NULL;
-                _tree->add_nodes_neq_reverse(temp, _neq, _path);
-                if (!_path.empty()) {
-                    _curr = _path.top();
-                    _path.pop();
-                }
-                if (!_curr) { // Check if something returned from stack
-                    _list_it.set(NULL);
-                    return false;
-                }
-                _list_it.set(&_curr->value);
-            }
-            // Else the list iterator has already done a next
-            return true;
-        }
+        void _next()
+            { _tree->add_nodes_neq_reverse(_curr->left, _neq, _path); }
+
+        void find_node(const typename IndexNode::Compare &cur)
+            { _tree->find_node_neq_reverse(_tree->_tree, cur, _neq, _path); }
     };
 }
 
@@ -611,7 +623,7 @@ Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(bool reverse)
 template <typename K, typename V>
 Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(const K &key, PropertyPredicate::Op op, bool reverse)
 {
-    Index_IteratorImplBase *impl = NULL;
+    Index_IteratorImplBase<K> *impl = NULL;
     switch (op) {
         case PropertyPredicate::Eq:
             impl = new IndexEq_IteratorImpl<K>(this, key);

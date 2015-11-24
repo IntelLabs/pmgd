@@ -19,12 +19,26 @@ void Node::init(StringID tag, unsigned object_size, Allocator &index_allocator)
     _property_list.init(object_size - offsetof(Node, _property_list));
 }
 
+void Node::cleanup(Allocator &index_allocator)
+{
+    EdgeIndex::free(_out_edges, index_allocator);
+    EdgeIndex::free(_in_edges, index_allocator);
+}
+
 void Node::add_edge(Edge *edge, Direction dir, StringID tag, Allocator &index_allocator)
 {
     if (dir == Outgoing)
         _out_edges->add(tag, edge, &edge->get_destination(), index_allocator);
     else
         _in_edges->add(tag, edge, &edge->get_source(), index_allocator);
+}
+
+void Node::remove_edge(Edge *edge, Direction dir, Allocator &index_allocator)
+{
+    if (dir == Outgoing)
+        _out_edges->remove(edge->get_tag(), edge, index_allocator);
+    else
+        _in_edges->remove(edge->get_tag(), edge, index_allocator);
 }
 
 namespace Jarvis {
@@ -44,6 +58,8 @@ namespace Jarvis {
         EdgeIndex::KeyPosition *_key_pos;
         StringID _tag;
         const EdgeIndex::EdgePosition *_pos;
+        bool _vacant_flag = false;
+        IndexManager &_index_manager;
 
         friend class EdgeRef;
         Edge *get_edge() const { return _pos->value.key(); }
@@ -89,65 +105,102 @@ namespace Jarvis {
             }
         }
 
+        Node_EdgeIteratorImpl(const Node *n,
+                              Direction dir,
+                              EdgeIndex *out_idx,
+                              const EdgeIndex::KeyPosition *key_pos,
+                              StringID tag,
+                              const EdgeIndex::EdgePosition *pos)
+            : _ref(this),
+              _n1(const_cast<Node *>(n)),
+              _dir(dir),
+              _out_idx(out_idx),
+              _key_pos(const_cast<EdgeIndex::KeyPosition *>(key_pos)),
+              _tag(tag),
+              _pos(pos),
+              _index_manager(TransactionImpl::get_tx()->get_db()->index_manager())
+        {
+            _index_manager.register_iterator(this,
+                    [this](void *list_node) { remove_notify(list_node); });
+        }
+
+        Node_EdgeIteratorImpl(const Node *n, Direction dir, EdgeIndex *out_idx,
+                              const EdgeIndex::KeyPosition *key_pos)
+            : Node_EdgeIteratorImpl(n, dir, out_idx, key_pos,
+                                    key_pos->value.get_key(),
+                                    key_pos->value.get_first())
+        {
+        }
+
     public:
         Node_EdgeIteratorImpl(EdgeIndex *idx, const Node *n, Direction dir, StringID tag)
-            : _ref(this),
-              _n1(const_cast<Node *>(n)),
-              _dir(dir),
-              _out_idx(NULL),
-              _key_pos(NULL),
-              _tag(tag),
-              _pos(idx->get_first(_tag))
+            : Node_EdgeIteratorImpl(n, dir, NULL, NULL, tag, idx->get_first(tag))
         { }
+
         Node_EdgeIteratorImpl(EdgeIndex *idx, const Node *n, Direction dir)
-            : _ref(this),
-              _n1(const_cast<Node *>(n)),
-              _dir(dir),
-              _out_idx(NULL),
-              _key_pos(const_cast<EdgeIndex::KeyPosition *>(idx->get_first())),
-              _tag(_key_pos->value.get_key()),
-              _pos(_key_pos->value.get_first())
+            : Node_EdgeIteratorImpl(n, dir, NULL, idx->get_first())
         { }
 
         // Always starts with incoming first
         Node_EdgeIteratorImpl(EdgeIndex *idx, EdgeIndex *out_idx, const Node *n, StringID tag)
-            : _ref(this),
-              _n1(const_cast<Node *>(n)),
-              _dir(Incoming),
-              _out_idx((out_idx->num_elems() > 0) ? out_idx : NULL),
-              _key_pos(NULL),
-              _tag(tag),
-              _pos(idx->get_first(_tag))
+            : Node_EdgeIteratorImpl(n, Incoming,
+                                    out_idx->num_elems() > 0 ? out_idx : NULL,
+                                    NULL, tag, idx->get_first(tag))
         {
             if (_pos == NULL)
                 _next();
         }
 
         Node_EdgeIteratorImpl(EdgeIndex *idx, EdgeIndex *out_idx, const Node *n)
-            : _ref(this),
-              _n1(const_cast<Node *>(n)),
-              _dir(Incoming),
-              _out_idx((out_idx->num_elems() > 0) ? out_idx : NULL),
-              _key_pos(const_cast<EdgeIndex::KeyPosition *>(idx->get_first())),
-              _tag(_key_pos->value.get_key()),
-              _pos(_key_pos->value.get_first())
+            : Node_EdgeIteratorImpl(n, Incoming,
+                                    out_idx->num_elems() > 0 ? out_idx : NULL,
+                                    idx->get_first())
         {
             if (_pos == NULL)
                 _next();
         }
 
-        operator bool() const { return _pos != NULL; }
-        const EdgeRef &operator*() const { return _ref; }
-        const EdgeRef *operator->() const { return &_ref; }
-        EdgeRef &operator*() { return _ref; }
-        EdgeRef *operator->() { return &_ref; }
+        ~Node_EdgeIteratorImpl()
+        {
+            _index_manager.unregister_iterator(this);
+        }
+
+        operator bool() const { return _vacant_flag || _pos != NULL; }
+
+        EdgeRef *ref()
+        {
+            // _vacant_flag indicates that the edge referred to by the iterator
+            // has been deleted.
+            if (_vacant_flag)
+                throw Exception(VacantIterator);
+            return &_ref;
+        }
 
         bool next()
         {
-            _pos = _pos->next;
+            // If _vacant_flag is set, the iterator has already been advanced to
+            // the next edge, so we just clear _vacant_flag.
+            if (_vacant_flag) {
+                _vacant_flag = false;
+                return operator bool();
+            }
+            if (_pos != NULL)
+                _pos = _pos->next;
             if (_pos == NULL)
                 _next();
             return _pos != NULL;
+        }
+
+        void remove_notify(void *list_node)
+        {
+            if (list_node == _pos) {
+                // Clear _vacant_flag to ensure that next actually advances
+                // the iterator, and then set _vacant_flag to indicate that
+                // the current edge has been deleted.
+                _vacant_flag = false;
+                next();
+                _vacant_flag = true;
+            }
         }
     };
 };
@@ -217,4 +270,7 @@ void Jarvis::Node::set_property(StringID id, const Property &new_value)
     { _property_list.set_property(id, new_value, Graph::NodeIndex, _tag, this); }
 
 void Jarvis::Node::remove_property(StringID id)
-    { _property_list.remove_property(id); }
+    { _property_list.remove_property(id, Graph::NodeIndex, _tag, this); }
+
+void Jarvis::Node::remove_all_properties()
+    { _property_list.remove_all_properties(Graph::NodeIndex, _tag, this); }

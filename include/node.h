@@ -20,8 +20,11 @@ namespace Jarvis {
         friend class Graph;
         void init(StringID tag, unsigned object_size,
                   Allocator &index_allocator);
+        void cleanup(Allocator &index_allocator);
         void add_edge(Edge *edge, Direction dir, StringID tag,
                       Allocator &index_allocator);
+        void remove_all_properties();
+        void remove_edge(Edge *edge, Direction dir, Allocator &index_allocator);
 
     public:
         Node(const Node &) = delete;

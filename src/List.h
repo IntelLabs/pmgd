@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include "allocator.h"
 #include "TransactionImpl.h"
+#include "GraphImpl.h"
+#include "IndexManager.h"
 
 namespace Jarvis {
     template<typename T> class List;
@@ -55,17 +57,15 @@ namespace Jarvis {
                 _pos = NULL;
         }
         ListTraverser(List<T> *l) { set(l); }
-
-        T &operator*() { return _pos->value; }
-        T *operator->() { return &_pos->value; }
-        const T &operator*() const { return _pos->value; }
-        const T *operator->() const { return &_pos->value; }
+        const T &ref() const { return _pos->value; }
         operator bool() const { return _pos != NULL; }
         bool next()
         {
             _pos = _pos->next;
             return _pos != NULL;
         }
+
+        bool check(void *p) { return p == _pos; }
     };
 
     template <typename T> T* List<T>::add(const T &value, Allocator &allocator)
@@ -96,6 +96,7 @@ namespace Jarvis {
         while (temp != NULL) {
             if (value == temp->value) {
                 TransactionImpl *tx = TransactionImpl::get_tx();
+                tx->get_db()->index_manager().iterator_remove_notify(temp);
                 if (prev == NULL) { // Changing _list
                     // Both members need to change
                     tx->log(this, sizeof *this);

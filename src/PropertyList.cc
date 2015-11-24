@@ -23,17 +23,71 @@ namespace Jarvis {
 
     class PropertyListIteratorImpl : public PropertyIteratorImplIntf {
         PropertyRef _cur;
+        bool _vacant_flag = false;
+        IndexManager &_index_manager;
+
     public:
         PropertyListIteratorImpl(const PropertyList *list)
-            : _cur(list)
-            { _cur.skip_to_next(); }
+            : _cur(list),
+              _index_manager(TransactionImpl::get_tx()->get_db()->index_manager())
+        {
+            if (_cur.skip_to_next()) {
+                _index_manager.register_property_iterator(this,
+                        [this](const PropertyRef &p) { notify(p); });
+            }
+            else {
+                _cur._chunk = NULL;
+            }
+        }
 
-        operator bool() const { return _cur.not_done(); }
-        const PropertyRef &operator*() const { return _cur; }
-        const PropertyRef *operator->() const { return &_cur; }
-        PropertyRef &operator*() { return _cur; }
-        PropertyRef *operator->() { return &_cur; }
-        bool next() { return _cur.next(); }
+        ~PropertyListIteratorImpl()
+        {
+            _index_manager.unregister_property_iterator(this);
+        }
+
+        operator bool() const { return _vacant_flag || _cur._chunk != NULL; }
+
+        PropertyRef *ref()
+        {
+            if (_vacant_flag)
+                throw Exception(VacantIterator);
+            return &_cur;
+        }
+
+        bool next()
+        {
+            // If _vacant_flag is set, the iterator has already advanced
+            // to the next property, so just clear _vacant_flag.
+            if (_vacant_flag) {
+                _vacant_flag = false;
+                return operator bool();
+            }
+
+            if (!_cur.next()) {
+                _cur._chunk = NULL;
+                return false;
+            }
+
+            return true;
+        }
+
+        void notify(const PropertyRef &p)
+        {
+            // If the property referred to by the iterator is being
+            // removed, move to the next property, and set _vacant_flag
+            // to indicate that the current property no longer exists.
+            // If p._offset is 0, it means that the entire property list
+            // is being removed.
+            if (p._chunk == _cur._chunk) {
+                if (p._offset == 0)
+                    _cur._chunk = NULL;
+                else if (p._offset == _cur._offset) {
+                    if (!_cur.next())
+                        _cur._chunk = NULL;
+                }
+                _vacant_flag = true;
+            }
+        }
     };
 
 
@@ -159,11 +213,65 @@ void PropertyList::set_property(StringID id, const Property &new_value,
     space.set_property(id, new_value, tx, allocator);
 }
 
-void PropertyList::remove_property(StringID id)
+
+void PropertyList::remove_property(StringID id,
+            /*Graph::IndexType*/ int index_type, StringID tag, void *obj)
 {
     PropertyRef p;
-    if (find_property(id, p))
-        p.free(TransactionImpl::get_tx());
+    if (find_property(id, p)) {
+        TransactionImpl *tx = TransactionImpl::get_tx();
+        GraphImpl *db = tx->get_db();
+        db->index_manager().update(db, Graph::IndexType(index_type), tag, obj,
+                                   id, &p, NULL);
+        p.free(tx);
+    }
+}
+
+void PropertyList::remove_all_properties(
+            /*Graph::IndexType*/ int index_type, StringID tag, void *obj)
+{
+    // Free all blobs and strings, free all chunks beyond chunk0,
+    // and set the first byte of chunk0 to p_end, indicating that
+    // there are no properties in the list.
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl *db = tx->get_db();
+    IndexManager &index_manager = db->index_manager();
+    Allocator &allocator = db->allocator();
+    PropertyRef p(this);
+    bool first = true;
+    while (p.not_done()) {
+        switch (p.ptype()) {
+            case PropertyRef::p_link: {
+                uint8_t *chunk = p._chunk;
+                p.follow_link();
+                index_manager.property_iterator_notify(PropertyRef(chunk, 0));
+                if (!first)
+                    allocator.free(chunk, PropertyList::chunk_size);
+                first = false;
+                continue;
+            }
+            case PropertyRef::p_unused:
+                break;
+            case PropertyRef::p_string_ptr:
+                db->index_manager().update(db, Graph::IndexType(index_type),
+                                           tag, obj, p.get_id(), &p, NULL);
+                /* fall through */
+            case PropertyRef::p_blob: { // Note: indexes not supported for blobs
+                PropertyRef::BlobRef *v = (PropertyRef::BlobRef *)p.val();
+                allocator.free(v->value, v->size);
+                break;
+            }
+            default:
+                db->index_manager().update(db, Graph::IndexType(index_type),
+                                           tag, obj, p.get_id(), &p, NULL);
+                break;
+        }
+        p.skip();
+    }
+    index_manager.property_iterator_notify(PropertyRef(p._chunk, 0));
+    if (!first)
+        allocator.free(p._chunk, PropertyList::chunk_size);
+    tx->write<uint8_t>(&_chunk0[1], PropertyRef::p_end);
 }
 
 
@@ -389,6 +497,8 @@ void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
 
 void PropertyRef::free(TransactionImpl *tx)
 {
+    tx->get_db()->index_manager().property_iterator_notify(*this);
+
     if (ptype() == p_string_ptr || ptype() == p_blob) {
         Allocator &allocator = tx->get_db()->allocator();
         BlobRef *v = (BlobRef *)val();

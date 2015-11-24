@@ -103,6 +103,29 @@ bool IndexManager::add(Graph::IndexType index_type, StringID tag, void *obj,
     return true;
 }
 
+void IndexManager::remove(Graph::IndexType index_type, StringID tag, void *obj,
+                          Allocator &allocator)
+{
+    assert(obj != NULL);
+
+    if (tag == 0)
+        return;
+
+    // Get the tag index. Since we are indexing all nodes based
+    // on their tags, it should always exist.
+    IndexList *tag_entry = _tag_prop_map[index_type].add(tag, allocator);
+
+    // Get the no property list ==> index via tag
+    // This entry should always exist.
+    BoolValueIndex *idx = (BoolValueIndex *)*(tag_entry->find(0));
+
+    // Now retrieve the list where node pointers are added
+    // This particular property only has one value = true and should
+    // be the first and only node in the tree.
+    bool value = true;
+    List<void *> *list = idx->find(value);
+    list->remove(obj, allocator);
+}
 
 Index *IndexManager::get_index(Graph::IndexType index_type, StringID tag,
                                StringID property_id, PropertyType ptype)

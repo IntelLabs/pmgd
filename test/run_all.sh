@@ -47,7 +47,7 @@ tests=( alloctest avltest chunklisttest edgeindextest
         neighbortest nodeedgetest propertychunktest propertypredicatetest
         propertytest propertylisttest
         reverseindexrangetest rotest
-        soltest stringtabletest txtest
+        soltest stringtabletest txtest removetest
         test720 test750 test767
         load_jarvis_tests
         DateTest )
@@ -58,7 +58,7 @@ graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
              neighborgraph nodeedgegraph propertychunkgraph ppgraph
              propertygraph propertylistgraph
              reverseindexrangegraph rograph
-             solgraph stringtablegraph txgraph
+             solgraph stringtablegraph txgraph removegraph
              test720graph test750graph test767graph )
 
 if [ "${DEL_GRAPH}" = "y" ]; then

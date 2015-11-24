@@ -84,6 +84,11 @@ namespace Jarvis {
             return edge_table;
         }
 
+        static void free(EdgeIndex *edge_table, Allocator &allocator)
+        {
+            allocator.free(edge_table, sizeof *edge_table);
+        }
+
         void add(const StringID key, Edge* edge, Node* node, Allocator &allocator);
         // For the iterator, give it head of PairList for the key
         const EdgePosition *get_first(StringID key);
@@ -91,6 +96,6 @@ namespace Jarvis {
         const KeyPosition *get_first() { return _key_list.begin(); }
         size_t num_elems() { return _key_list.num_elems(); }
         // This will remove the element based on edge pointer value
-        void remove(const StringID key, Edge* edge, Node* node, Allocator& allocator);
+        void remove(const StringID key, Edge* edge, Allocator& allocator);
     };
 }
