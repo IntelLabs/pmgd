@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 #include "jarvis.h"
-#include "util.h"
 
 #include "Graph.h"
 #include "jarvisHandles.h"

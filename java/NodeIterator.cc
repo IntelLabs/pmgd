@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "jarvis.h"
-#include "util.h"
 
 #include "NodeIterator.h"
 #include "jarvisHandles.h"

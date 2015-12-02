@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "jarvis.h"
-#include "util.h"
 #include "neighbor.h"
 
 #include "Node.h"
