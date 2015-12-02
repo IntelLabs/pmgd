@@ -140,53 +140,14 @@ void Java_jarvis_Node_remove_1property(JNIEnv *env, jobject node,
     }
 }
 
-jobject JNICALL Java_jarvis_Node_get_1neighbors__Z
-  (JNIEnv *env, jobject node, jboolean unique)
-{
-    Node &j_node = *(getJarvisHandle<Node>(env, node));
-    try {
-        return java_node_iterator(env, get_neighbors(j_node, unique));
-    }
-    catch (Exception e) {
-        JavaThrow(env, e);
-        return NULL;
-    }
-}
-
-jobject JNICALL Java_jarvis_Node_get_1neighbors__IZ
-  (JNIEnv *env, jobject node, jint dir, jboolean unique)
-{
-    Node &j_node = *(getJarvisHandle<Node>(env, node));
-    try {
-        return java_node_iterator(env, get_neighbors(j_node, Direction(dir), unique));
-    }
-    catch (Exception e) {
-        JavaThrow(env, e);
-        return NULL;
-    }
-}
-
-jobject JNICALL Java_jarvis_Node_get_1neighbors__Ljava_lang_String_2Z
-  (JNIEnv *env, jobject node, jstring tag, jboolean unique)
-{
-    Node &j_node = *(getJarvisHandle<Node>(env, node));
-    const char *j_tag = env->GetStringUTFChars(tag, 0);
-    try {
-        return java_node_iterator(env, get_neighbors(j_node, j_tag, unique));
-    }
-    catch (Exception e) {
-        JavaThrow(env, e);
-        return NULL;
-    }
-}
-
-jobject JNICALL Java_jarvis_Node_get_1neighbors__ILjava_lang_String_2Z
+jobject JNICALL Java_jarvis_Node_get_1neighbors
   (JNIEnv *env, jobject node, jint dir, jstring tag, jboolean unique)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
-    const char *j_tag = env->GetStringUTFChars(tag, 0);
+    const char *j_tag = tag ? env->GetStringUTFChars(tag, 0) : NULL;
     try {
-        return java_node_iterator(env, get_neighbors(j_node, Direction(dir), j_tag, unique));
+        return java_node_iterator(env,
+                   get_neighbors(j_node, Direction(dir), j_tag, unique));
     }
     catch (Exception e) {
         JavaThrow(env, e);
