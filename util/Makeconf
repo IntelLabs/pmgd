@@ -57,9 +57,9 @@ lib/jarvis-util.lib: util/jarvis-util.lib
 	$(INSTALL) -D $< $@
 
 # A rule to build a shared library.
-util/libjarvis-util.so: $(SRC_OBJS)
+util/libjarvis-util.so: $(UTIL_OBJS)
 	$(call print,LD,$@)
-	$(CC) -shared -o $@ $(SRC_OBJS)
+	$(CC) -shared -o $@ $(UTIL_OBJS)
 
 # How to install said library.
 lib/libjarvis-util.so: util/libjarvis-util.so
