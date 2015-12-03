@@ -1,4 +1,5 @@
 #include <utility>
+#include <vector>
 #include <set>
 #include "jarvis.h"
 #include "neighbor.h"
@@ -84,8 +85,78 @@ public:
 };
 
 
+class JointNeighborIteratorImpl : public NodeIteratorImplIntf
+{
+    typedef std::vector<JointNeighborConstraint> V;
+
+    NodeIterator _ni;
+    const V _constraints;
+
+    bool _next()
+    {
+        while (_ni) {
+            for (const JointNeighborConstraint &p : _constraints) {
+                EdgeIterator ei = _ni->get_edges(p.edge_constraint.dir,
+                                                 p.edge_constraint.tag)
+                    .filter([p](const EdgeRef &e) {
+                        return &e.get_source() == &p.node
+                                   || &e.get_destination() == &p.node
+                            ? Pass : DontPass;
+                    });
+                if (!ei)
+                    goto continue2;
+            }
+            return true;
+        continue2:
+            _ni.next();
+        }
+        return false;
+    }
+
+    static Direction fix_direction(Direction dir)
+    {
+        switch (dir) {
+            case Any: return Any;
+            case Incoming: return Outgoing;
+            case Outgoing: return Incoming;
+        }
+        assert(0);
+        return Any;
+    }
+
+public:
+    JointNeighborIteratorImpl
+        (const std::vector<JointNeighborConstraint> &constraints, bool unique)
+        : _ni(get_neighbors(constraints.at(0).node,
+                            fix_direction(constraints.at(0).edge_constraint.dir),
+                            constraints.at(0).edge_constraint.tag,
+                            unique)),
+          _constraints(constraints.begin() + 1, constraints.end())
+    {
+        _next();
+    }
+
+    operator bool() const { return bool(_ni); }
+
+    bool next()
+    {
+        _ni.next();
+        return _next();
+    }
+
+    Node *ref() { return &*_ni; }
+};
+
+
 NodeIterator get_neighbors
     (const Node &n, Direction dir, StringID tag, bool unique)
 {
     return NodeIterator(new NeighborIteratorImpl(n, dir, tag, unique));
+}
+
+
+NodeIterator get_joint_neighbors
+    (const std::vector<JointNeighborConstraint> &constraints, bool unique)
+{
+    return NodeIterator(new JointNeighborIteratorImpl(constraints, unique));
 }

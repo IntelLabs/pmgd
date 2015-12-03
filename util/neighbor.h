@@ -1,15 +1,40 @@
 #pragma once
 
+#include <vector>
 #include "jarvis.h"
 
 /**
- * Iterator for the neighbors of a node
+ * These functions return an iterator over neighbors of the
+ * specified node that are connected through edges satisfying
+ * the specified constraints.
+ *
+ * get_neighbors returns the set of immediate neighbors of the
+ *     starting node where each neighbor is connected by an edge
+ *     satisfying the edge constraint.
+ *
+ * get_joint_neighbors returns the set of nodes where each node
+ *     is the immediate neighbor of /all/ the nodes in the constraint
+ *     list, and is connected by an edge satisfying the edge constraint
+ *     for that node.
+ *
+ * The 'unique' parameter indicates whether the function should track
+ * all nodes returned and avoid returning duplicates. If the graph is
+ * known to be organized in such a way that no duplicates could occur,
+ * or if the caller can tolerate duplicates, then setting 'unique' to
+ * false will avoid the work of tracking returned nodes and checking
+ * for duplicates.
  */
 
 struct EdgeConstraint
 {
     Jarvis::Direction dir;
     Jarvis::StringID tag;
+};
+
+struct JointNeighborConstraint
+{
+    EdgeConstraint edge_constraint;
+    const Jarvis::Node &node;
 };
 
 
@@ -19,6 +44,9 @@ extern Jarvis::NodeIterator get_neighbors
      Jarvis::StringID tag = 0,
      bool unique = true);
 
+extern Jarvis::NodeIterator get_joint_neighbors
+    (const std::vector<JointNeighborConstraint> &constraints,
+     bool unique = true);
 
 inline Jarvis::NodeIterator get_neighbors
     (const Jarvis::Node &node,
