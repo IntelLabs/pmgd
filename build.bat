@@ -57,14 +57,16 @@ icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\scanner.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\exception.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\text.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\neighbor.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\dump_debug.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\dump_jarvis.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\dump_gexf.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\load_tsv.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\load_gson.cc /I3rdparty
 
-lib /nologo /OUT:util\jarvis-util.lib /MACHINE:X64 util\exception.obj ^
-    util\text.obj util\dump_debug.obj util\dump_jarvis.obj util\dump_gexf.obj ^
+lib /nologo /OUT:util\jarvis-util.lib /MACHINE:X64 ^
+    util\exception.obj util\text.obj util\neighbor.obj ^
+    util\dump_debug.obj util\dump_jarvis.obj util\dump_gexf.obj ^
     util\load_tsv.obj util\load_gson.obj ^
     util\loader.obj util\scanner.obj
 
@@ -119,14 +121,16 @@ icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\scanner.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\exception.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\text.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\neighbor.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\dump_debug.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\dump_jarvis.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\dump_gexf.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\load_tsv.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\load_gson.cc /I3rdparty
 
-lib /nologo /OUT:util\jarvis-util.lib /MACHINE:X64 util\exception.obj ^
-    util\text.obj util\dump_debug.obj util\dump_jarvis.obj util\dump_gexf.obj ^
+lib /nologo /OUT:util\jarvis-util.lib /MACHINE:X64 ^
+    util\exception.obj util\text.obj util\neighbor.obj ^
+    util\dump_debug.obj util\dump_jarvis.obj util\dump_gexf.obj ^
     util\load_tsv.obj util\load_gson.obj ^
     util\loader.obj util\scanner.obj
 
@@ -334,6 +338,7 @@ cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
 link /nologo test\neighbortest.obj ^
     lib\Release\jarvis-util.lib ^
     lib\Release\jarvis.lib ^
+    3rdparty\lib\Release\strptime.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^

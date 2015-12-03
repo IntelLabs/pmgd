@@ -1,6 +1,6 @@
 # List of sources for this directory.
 UTIL_SRCS := $(addprefix util/, \
-                         exception.cc text.cc \
+                         exception.cc text.cc neighbor.cc \
                          dump_debug.cc dump_gexf.cc dump_jarvis.cc \
                          load_tsv.cc load_gson.cc loader.y scanner.l)
 
