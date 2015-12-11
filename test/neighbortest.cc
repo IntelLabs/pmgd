@@ -3,6 +3,8 @@
  */
 
 #include <stdio.h>
+#include <vector>
+#include <algorithm>
 #include "jarvis.h"
 #include "util.h"
 #include "neighbor.h"
@@ -23,10 +25,38 @@ int main(int argc, char **argv)
             p.set_property("Name", "John");
             Node &m = db.add_node("Message");
             m.set_property("UUID", "XYZZY");
-            //Node &a = db.add_node("Attachment");
-            //a.set_property("Path", "/x/y/z");
+            Node &a = db.add_node("Attachment");
+            a.set_property("Path", "/x/y/z");
             db.add_edge(m, p, "To");
-            //db.add_edge(m, a, "Attachment");
+            db.add_edge(m, a, "Attachment");
+
+            Node &ann = db.add_node("Person");
+            ann.set_property("Name", "Ann");
+            Node &bob = db.add_node("Person");
+            bob.set_property("Name", "Bob");
+            Node &carl = db.add_node("Person");
+            carl.set_property("Name", "Carl");
+            Node &don = db.add_node("Person");
+            don.set_property("Name", "Don");
+
+            auto add_message =
+                [&db](Node &from, const std::initializer_list<Node *> &to)
+                {
+                    static int next_id = 1;
+                    Node &m = db.add_node("Message");
+                    m.set_property("id", next_id++);
+                    db.add_edge(from, m, "From");
+                    for (auto t : to)
+                        db.add_edge(m, *t, "To");
+                };
+
+            add_message(ann, { &bob });
+            add_message(bob, { &ann });
+            add_message(ann, { &bob, &carl });
+            add_message(bob, { &carl });
+            add_message(bob, { &don });
+            add_message(carl, { &bob, &don });
+            add_message(bob, { &carl, &don });
 
             tx.commit();
         }
@@ -37,37 +67,190 @@ int main(int argc, char **argv)
     }
 
     try {
+        int r = 0;
         Graph db("neighborgraph");
 
         Transaction tx(db, Transaction::ReadWrite);
 
-        /* In a graph with two connected nodes, my neighbor's neighbor
-         * should be myself */
-        NodeIterator pi = db.get_nodes("Person");
-        NodeIterator mi = get_neighbors(*pi);
-        if (&*get_neighbors(*mi) != &*pi) {
-            fprintf(stderr, "neighbortest: failure\n");
-            return 2;
+        NodeIterator pi = db.get_nodes("Person", PropertyPredicate{ "Name", PropertyPredicate::Eq, "John" });
+        NodeIterator mi = db.get_nodes("Message", PropertyPredicate{ "UUID", PropertyPredicate::Eq, "XYZZY" });
+        NodeIterator ai = db.get_nodes("Attachment");
+
+        /* The neighbor of each of my neighbors should be myself */
+        printf("neighbor test 1\n");
+        NodeIterator ni1 = get_neighbors(*mi);
+        int n = 0;
+        while (ni1) {
+            n++;
+            if (&*get_neighbors(*ni1) != &*mi) {
+                fprintf(stderr, "neighbortest: failure 1a (%d)\n", n);
+                r = 2;
+            }
+            ni1.next();
         }
-        if (mi->get_property("UUID") != "XYZZY") {
+        if (n != 2) {
+            fprintf(stderr, "neighbortest: failure 1b (%d)\n", n);
+            r = 2;
+        }
+
+
+        printf("neighbor test 2\n");
+        std::vector<JointNeighborConstraint> v;
+        v.push_back(JointNeighborConstraint{ Any, 0, *pi });
+        v.push_back(JointNeighborConstraint{ Any, 0, *ai });
+        NodeIterator ni2 = get_joint_neighbors(v);
+        n = 0;
+        while (ni2) {
+            n++;
+            if (&*ni2 != &*mi) {
+                fprintf(stderr, "neighbortest: failure 2a (%d)\n", n);
+                r = 2;
+            }
+            ni2.next();
+        }
+        if (n != 1) {
+            fprintf(stderr, "neighbortest: failure 2b (%d)\n", n);
+            r = 2;
+        }
+
+
+        printf("neighbor test 3\n");
+        NodeIterator ni3 = get_neighbors(*pi);
+
+        if (ni3->get_property("UUID") != "XYZZY") {
             fprintf(stderr, "neighbortest: failure\n");
-            return 2;
+            r = 2;
         }
 
         db.remove(*pi->get_edges("To"));
 
         try {
             // This should throw.
-            mi->get_property("UUID");
+            Property p = ni3->get_property("UUID");
             fprintf(stderr, "neighbortest: vacant iterator failure\n");
-            return 2;
+            dump(*ni3, stderr);
+            r = 2;
         }
         catch (Exception e) {
             if (e.num != VacantIterator)
                 throw;
         }
 
+
+        printf("neighbor test 4\n");
+
+        Node &ann = *db.get_nodes("Person",
+                PropertyPredicate("Name", PropertyPredicate::Eq, "Ann"));
+        Node &bob = *db.get_nodes("Person",
+                PropertyPredicate("Name", PropertyPredicate::Eq, "Bob"));
+        Node &carl = *db.get_nodes("Person",
+                PropertyPredicate("Name", PropertyPredicate::Eq, "Carl"));
+        Node &don = *db.get_nodes("Person",
+                PropertyPredicate("Name", PropertyPredicate::Eq, "Don"));
+
+        auto check_messages =
+            [&db, &r](const std::vector<JointNeighborConstraint> &v,
+                      std::vector<int> msgs)
+            {
+                static int test_id = 0;
+                test_id++;
+                NodeIterator ni = get_joint_neighbors(v);
+                for (; ni; ni.next()) {
+                    int id = ni->get_property("id").int_value();
+                    auto pos = std::find(msgs.begin(), msgs.end(), id);
+                    if (pos != msgs.end())
+                        msgs.erase(pos);
+                    else {
+                        fprintf(stderr, "neighbortest: failure 4-%d(a) (%d)\n",
+                                test_id, id);
+                        r = 2;
+                    }
+                }
+                if (!msgs.empty()) {
+                    fprintf(stderr, "neighbortest: failure 4-%d(b):", test_id);
+                    for (auto m : msgs)
+                        fprintf(stderr, " %d", m);
+                    fprintf(stderr, "\n");
+                    r = 2;
+                }
+            };
+
+        auto check_messages1 =
+            [&db, &r, check_messages](Node &n1, Node &n2,
+                                      const std::vector<int> &msgs)
+            {
+                check_messages(
+                    { JointNeighborConstraint{ Any, 0, n1 },
+                      JointNeighborConstraint{ Any, 0, n2 }  },
+                    msgs);
+            };
+
+        auto check_messages2 =
+            [&db, &r, check_messages](Node &from, Node &to,
+                                      const std::vector<int> &msgs)
+            {
+                check_messages(
+                    { JointNeighborConstraint{ Incoming, "From", from },
+                      JointNeighborConstraint{ Outgoing, "To",   to   }  },
+                    msgs);
+            };
+
+        try {
+            check_messages({ }, { });
+            fprintf(stderr, "neighbortest: expected range error exception from check_messages\n");
+            r = 2;
+        }
+        catch (std::out_of_range) {
+        }
+
+        check_messages1(ann, bob, { 1, 2, 3 });
+        check_messages2(ann, bob, { 1, 3 });
+        check_messages2(ann, carl, { 3 });
+        check_messages({ JointNeighborConstraint { Any, "To", ann } },
+                       { 2 });
+        check_messages({ JointNeighborConstraint { Incoming, "From", ann } },
+                       { 1, 3 });
+        check_messages({ JointNeighborConstraint { Outgoing, "To",   bob },
+                         JointNeighborConstraint { Incoming, "From", ann } },
+                       { 1, 3 });
+        check_messages({ JointNeighborConstraint { Incoming, "From", bob } },
+                       { 2, 4, 5, 7 });
+
+        check_messages1(bob, carl, { 3, 4, 6, 7 });
+        check_messages2(bob, carl, { 4, 7 });
+        check_messages2(carl, bob, { 6 });
+        check_messages({ JointNeighborConstraint { Any, "To", bob },
+                         JointNeighborConstraint { Outgoing, "To", carl }  },
+                       { 3 });
+
+        check_messages1(bob, don, { 5, 6, 7 });
+        check_messages2(bob, don, { 5, 7 });
+        check_messages({ JointNeighborConstraint { Outgoing, "To", bob },
+                         JointNeighborConstraint { Any, "To", don }  },
+                       { 6 });
+
+        check_messages({ JointNeighborConstraint { Incoming, "From", ann  },
+                         JointNeighborConstraint { Any,      "To",   bob  },
+                         JointNeighborConstraint { Outgoing, "To",   carl }  },
+                       { 3 });
+
+        check_messages({ JointNeighborConstraint { Any, "From", ann  },
+                         JointNeighborConstraint { Any, "To",   bob  },
+                         JointNeighborConstraint { Any, "To",   carl }  },
+                       { 3 });
+
+        check_messages({ JointNeighborConstraint { Outgoing, "To",   bob  },
+                         JointNeighborConstraint { Incoming, "From", carl },
+                         JointNeighborConstraint { Any,      "To",   don  }  },
+                       { 6 });
+
+        check_messages({ JointNeighborConstraint { Any, 0, carl },
+                         JointNeighborConstraint { Any, 0, bob  },
+                         JointNeighborConstraint { Any, 0, don  }  },
+                       { 6, 7 });
+
         // Don't commit the transaction, so the graph can be used again.
+        return r;
     }
     catch (Exception e) {
         print_exception(e);

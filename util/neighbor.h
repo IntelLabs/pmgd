@@ -1,145 +1,74 @@
 #pragma once
 
-#include <set>
+#include <vector>
 #include "jarvis.h"
 
-using namespace std;
-using namespace Jarvis;
-
-#ifdef __GNUC__
-#define UNREACHABLE __builtin_unreachable()
-#elif defined(_MSC_VER)
-#define UNREACHABLE __assume(0)
-#else
-#define UNREACHABLE
-#endif
-
 /**
- * Iterator for the neighbors of a node
+ * These functions return an iterator over neighbors of the
+ * specified node that are connected through edges satisfying
+ * the specified constraints.
+ *
+ * get_neighbors returns the set of immediate neighbors of the
+ *     starting node where each neighbor is connected by an edge
+ *     satisfying the edge constraint.
+ *
+ * get_joint_neighbors returns the set of nodes where each node
+ *     is the immediate neighbor of /all/ the nodes in the constraint
+ *     list, and is connected by an edge satisfying the edge constraint
+ *     for that node.
+ *
+ * The 'unique' parameter indicates whether the function should track
+ * all nodes returned and avoid returning duplicates. If the graph is
+ * known to be organized in such a way that no duplicates could occur,
+ * or if the caller can tolerate duplicates, then setting 'unique' to
+ * false will avoid the work of tracking returned nodes and checking
+ * for duplicates.
  */
-class NeighborIterator : public NodeIteratorImplIntf
+
+struct EdgeConstraint
 {
-    const Node &_node;
-    const Direction _dir;
-    const bool _unique;
-    EdgeIterator _ei;
-
-    std::set<Node *>_seen;
-
-    Node *_neighbor;
-
-    Node *get_neighbor(const Node &n, const EdgeRef &e)
-    {
-        switch (_dir) {
-        case Any: {
-            Node &neighbor = e.get_source();
-            if (&neighbor == &_node)
-                return &(e.get_destination());
-            else
-                return &neighbor;
-        }
-        case Outgoing:
-            return &(e.get_destination());
-        case Incoming:
-            return &(e.get_source());
-        default:
-            UNREACHABLE;
-        }
-    }
-
-    bool _next()
-    {
-        while (_ei) {
-            _neighbor = get_neighbor(_node, *_ei);
-            if (!_unique)
-                return true;
-            if (_seen.find(_neighbor) == _seen.end()) {
-                _seen.insert(_neighbor);
-                return true;
-            }
-            _ei.next();
-        }
-        return false;
-    }
-
-public:
-    NeighborIterator(const Node &n, const bool unique)
-        : _node(n), _dir(Any), _unique(unique), _ei(n.get_edges())
-    {
-        _next();
-    }
-
-    NeighborIterator(const Node &n, const Direction dir, const bool unique)
-        : _node(n), _dir(dir), _unique(unique), _ei(n.get_edges(dir))
-    {
-        _next();
-    }
-
-    NeighborIterator(const Node &n, const StringID tag, const bool unique)
-        : _node(n), _dir(Any), _unique(unique), _ei(n.get_edges(tag))
-    {
-        _next();
-    }
-
-    NeighborIterator(const Node &n, const Direction dir, const StringID tag,
-                     const bool unique)
-        : _node(n), _dir(dir), _unique(unique), _ei(n.get_edges(dir, tag))
-    {
-        _next();
-    }
-
-    operator bool() const { return bool(_ei); }
-
-    bool next()
-    {
-        _ei.next();
-        return _next();
-    }
-
-    Node *ref()
-    {
-        // Check that *_ei still exists. If it does, then
-        // _neighbor still exists and is still a neighbor.
-        // If not, the edge iterator will throw VacantIterator.
-        (void)*_ei;
-        return _neighbor;
-    }
+    Jarvis::Direction dir;
+    Jarvis::StringID tag;
 };
 
-/**
- * Return the neighbors of node.
- *
- * @param n         starting node
- * @param dir       connecting edge direction
- * @param tag       connecting edge tag
- * @param unique    only unique nodes
- *
- * @return a node iterator representing the neighbors of the starting node
- *
- * The returned iterator cycles only neighbors of the starting node
- * connected through edges satisfying the following conditions (a) the
- * edge must have a particular direction, (b) the edge must have the
- * given tag (unless the given value is 0 in which case the iterator
- * will ignore tag values), and (c) only return a given node once if
- * so requested.
- */
-inline NodeIterator get_neighbors(Node &n, bool unique = true)
+struct JointNeighborConstraint
 {
-    return NodeIterator(new NeighborIterator(n, unique));
+    EdgeConstraint edge_constraint;
+    const Jarvis::Node &node;
+};
+
+
+extern Jarvis::NodeIterator get_neighbors
+    (const Jarvis::Node &node,
+     Jarvis::Direction dir = Jarvis::Any,
+     Jarvis::StringID tag = 0,
+     bool unique = true);
+
+extern Jarvis::NodeIterator get_joint_neighbors
+    (const std::vector<JointNeighborConstraint> &constraints,
+     bool unique = true);
+
+inline Jarvis::NodeIterator get_neighbors
+    (const Jarvis::Node &node,
+     EdgeConstraint constraint,
+     bool unique = true)
+{
+    return get_neighbors(node, constraint.dir, constraint.tag, unique);
 }
 
-inline NodeIterator get_neighbors(Node &n, Direction dir, bool unique = true)
+inline Jarvis::NodeIterator get_neighbors(const Jarvis::Node &node, bool unique)
 {
-    return NodeIterator(new NeighborIterator(n, dir, unique));
+    return get_neighbors(node, Jarvis::Any, 0, unique);
 }
 
-inline NodeIterator get_neighbors(Node &n, StringID tag, bool unique = true)
+inline Jarvis::NodeIterator get_neighbors
+    (const Jarvis::Node &node, Jarvis::Direction dir, bool unique)
 {
-    return NodeIterator(new NeighborIterator(n, tag, unique));
+    return get_neighbors(node, dir, 0, unique);
 }
 
-inline NodeIterator get_neighbors(Node &n, Direction dir, StringID tag,
-                                  bool unique = true)
+inline Jarvis::NodeIterator get_neighbors
+    (const Jarvis::Node &node, Jarvis::StringID tag, bool unique = true)
 {
-    return NodeIterator(new NeighborIterator(n, dir, tag, unique));
+    return get_neighbors(node, Jarvis::Any, tag, unique);
 }
