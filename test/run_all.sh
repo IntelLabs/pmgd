@@ -105,7 +105,7 @@ do
             mkgraph bindingsgraph
             javatest $test || true;;
         DateTest)
-            cmd="$test ${GRAPH_DIR}/emailindexgraph DeliveryTime 13"
+            cmd="$test ${GRAPH_DIR}/emailindexgraph DeliveryTime 11"
             echo $cmd
             if ! javatest $cmd
             then

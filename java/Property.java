@@ -40,7 +40,7 @@ public class Property {
             c.set(Calendar.YEAR, year);
             c.set(Calendar.MONTH, mon - 1);
             c.set(Calendar.DATE, day);
-            c.set(Calendar.HOUR, hour);
+            c.set(Calendar.HOUR_OF_DAY, hour);
             c.set(Calendar.MINUTE, min);
             c.set(Calendar.SECOND, sec);
             c.set(Calendar.MILLISECOND, usec/1000);
