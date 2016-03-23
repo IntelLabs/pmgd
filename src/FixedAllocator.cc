@@ -83,6 +83,34 @@ void *FixedAllocator::alloc()
     return p;
 }
 
+void *FixedAllocator::alloc(unsigned num)
+{
+    // Makes sense to optimize here to ensure the
+    // free list can get used.
+    if (num == 1)
+        return alloc();
+
+    TransactionImpl *tx = TransactionImpl::get_tx();
+
+    uint64_t *p;
+
+    // Skip checking the free list since those pages may or may
+    // not be contiguous. However, this could lead to the pathological
+    // case where say some application allocated multiple such spots
+    // but freed them later and those were then put in the free list
+    // as usual. It could cause allocator to refuse contiguous requests
+    // even if there was enough space. But keeping it simple for now.
+    if (((uint64_t)_pm->tail_ptr + num * _pm->size) > _pm->max_addr)
+        throw Exception(BadAlloc);
+
+    p = _pm->tail_ptr;
+    tx->write(&_pm->tail_ptr, (uint64_t *)((uint64_t)_pm->tail_ptr + num * _pm->size));
+
+    tx->write(&_pm->num_allocated, _pm->num_allocated + num);
+
+    return p;
+}
+
 /**
  * Free an object
  *
@@ -120,4 +148,18 @@ void FixedAllocator::clean_free_list
 
     _pm->free_ptr = (uint64_t *)free_ptr;
     _pm->num_allocated = num_allocated;
+}
+
+void FixedAllocator::free(void *p, unsigned num)
+{
+    /* *** Consider the following here after figuring out delayed
+     * free for this function:
+     * if (((uint64_t)p + _pm->size * num) == (uint64_t)_pm->tail_ptr)
+     *     _pm->tail_ptr = (uint64_t *)p;
+     * else
+     */
+    for (unsigned i = 0; i < num; ++i) {
+        free(p);
+        p = (void *)((uint64_t)p + _pm->size);
+    }
 }

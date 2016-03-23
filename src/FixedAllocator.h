@@ -76,6 +76,10 @@ namespace Jarvis {
         void *alloc();
         void free(void *p);
 
+        // Support for contiguous multi-object allocations
+        void *alloc(unsigned num_contiguous);
+        void free(void *p, unsigned num_contiguous);
+
         // Support functions for the node and edge iterators; not serialized
         // (depends on the caller to serialize access)
         void *begin() const
