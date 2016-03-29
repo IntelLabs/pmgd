@@ -8,3 +8,5 @@
 
 #define EXPECT_FALSE(X) __builtin_expect((X), false)
 #define EXPECT_TRUE(X)  __builtin_expect((X), true)
+
+#define ARRAY_SIZEOF(a) (sizeof(a) / sizeof((a)[0]))

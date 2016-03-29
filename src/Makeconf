@@ -8,7 +8,8 @@ SRC_SRCS := $(addprefix src/, \
                         Index.cc IndexManager.cc \
                         EdgeIndex.cc IndexString.cc \
                         AvlTree.cc AvlTreeIndex.cc \
-                        FixedAllocator.cc \
+                        FixedAllocator.cc VariableAllocator.cc FlexFixedAllocator.cc \
+                        FixSizeAllocator.cc ChunkAllocator.cc Allocator.cc \
                         linux.cc)
 
 # Derive a list of objects.

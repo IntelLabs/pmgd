@@ -150,16 +150,24 @@ void FixedAllocator::clean_free_list
     _pm->num_allocated = num_allocated;
 }
 
+// This should only be called at commit time by Allocator::clean_free_list()
 void FixedAllocator::free(void *p, unsigned num)
 {
-    /* *** Consider the following here after figuring out delayed
-     * free for this function:
-     * if (((uint64_t)p + _pm->size * num) == (uint64_t)_pm->tail_ptr)
-     *     _pm->tail_ptr = (uint64_t *)p;
-     * else
-     */
-    for (unsigned i = 0; i < num; ++i) {
-        free(p);
-        p = (void *)((uint64_t)p + _pm->size);
+    TransactionImpl *tx = TransactionImpl::get_tx();
+
+    if (((uint64_t)p + _pm->size * num) == (uint64_t)_pm->tail_ptr)
+        tx->write(&_pm->tail_ptr, (uint64_t *)p);
+    else {
+        tx->log_range(&_pm->free_ptr, &_pm->num_allocated);
+        void *free_ptr = _pm->free_ptr;
+
+        for (unsigned i = 0; i < num; ++i) {
+            *(uint64_t *)p = (uint64_t)free_ptr | FREE_BIT;
+            free_ptr = p;
+            p = (void *)((uint64_t)p + _pm->size);
+        }
+
+        _pm->free_ptr = (uint64_t *)free_ptr;
+        _pm->num_allocated -= num;
     }
 }

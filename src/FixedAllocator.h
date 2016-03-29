@@ -76,7 +76,9 @@ namespace Jarvis {
         void *alloc();
         void free(void *p);
 
-        // Support for contiguous multi-object allocations
+        // Support for contiguous multi-object allocations and commit time
+        // free. These are only used by the Allocator. This free must only
+        // be called at commit time.
         void *alloc(unsigned num_contiguous);
         void free(void *p, unsigned num_contiguous);
 
