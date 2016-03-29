@@ -1,8 +1,10 @@
 #pragma once
 
 #include <vector>
+#include <list>
 #include <stddef.h>
 #include <stdint.h>
+#include "AllocatorCallback.h"
 #include "TransactionImpl.h"
 
 namespace Jarvis {
@@ -35,7 +37,8 @@ namespace Jarvis {
         size_t _num_alloc_calls;
         size_t _num_free_calls;
 
-        static void clean_free_list(TransactionImpl *tx, void *obj, void *list);
+        friend class AllocatorCallback<FixedAllocator, void *>;
+        void clean_free_list(TransactionImpl *, const std::list<void *> &);
 
     public:
         FixedAllocator(const FixedAllocator &) = delete;

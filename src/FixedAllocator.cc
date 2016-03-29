@@ -120,29 +120,26 @@ void FixedAllocator::free(void *p)
     TransactionImpl *tx = TransactionImpl::get_tx();
 
     tx->log(p, sizeof(uint64_t));
+    *(uint64_t *)p = FREE_BIT;
 
-    void *&free_list = tx->register_commit_callback(this, clean_free_list);
-    *(uint64_t *)p = (uint64_t)free_list | FREE_BIT;
-    free_list = p;
+    AllocatorCallback<FixedAllocator, void *>::delayed_free(tx, this, p);
 }
 
-void FixedAllocator::clean_free_list(TransactionImpl *tx, void *obj, void *free_list)
+void FixedAllocator::clean_free_list
+    (TransactionImpl *tx, const std::list<void *> &list)
 {
-    FixedAllocator *This = (FixedAllocator *)obj;
-    tx->log_range(&This->_pm->free_ptr, &This->_pm->num_allocated);
-    uint64_t *free_ptr = This->_pm->free_ptr;
-    int64_t num_allocated = This->_pm->num_allocated;
+    tx->log_range(&_pm->free_ptr, &_pm->num_allocated);
+    int64_t num_allocated = _pm->num_allocated;
+    void *free_ptr = _pm->free_ptr;
 
-    uint64_t *q;
-    for (uint64_t *p = (uint64_t *)free_list; p != NULL; p = q) {
-        q = (uint64_t *)(*p & ~FREE_BIT);
-        *p = (uint64_t)free_ptr | FREE_BIT;
+    for (auto p : list) {
+        *(uint64_t *)p = (uint64_t)free_ptr | FREE_BIT;
         free_ptr = p;
         num_allocated--;
     }
 
-    This->_pm->free_ptr = free_ptr;
-    This->_pm->num_allocated = num_allocated;
+    _pm->free_ptr = (uint64_t *)free_ptr;
+    _pm->num_allocated = num_allocated;
 }
 
 void *FixedAllocator::begin() const

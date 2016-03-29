@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
 #include <functional>
+#include <algorithm>
 
 namespace Jarvis {
     template <typename O, typename P> class CallbackList {
@@ -15,6 +16,13 @@ namespace Jarvis {
 
         void unregister_callback(O key)
             { _list.remove_if([key](Callback &p) { return p.key == key; }); }
+
+        F *lookup_callback(O key)
+        {
+            auto r = std::find_if(_list.begin(), _list.end(),
+                                  [key](Callback &a) { return a.key == key; });
+            return r == _list.end() ? NULL : &r->f;
+        }
 
         void do_callbacks(P p) const
         {
@@ -35,6 +43,13 @@ namespace Jarvis {
 
         void unregister_callback(O key)
             { _list.remove_if([key](Callback &p) { return p.key == key; }); }
+
+        F *lookup_callback(O key)
+        {
+            auto r = std::find_if(_list.begin(), _list.end(),
+                                  [key](Callback &a) { return a.key == key; });
+            return r == _list.end() ? NULL : &r->f;
+        }
 
         void do_callbacks() const
         {

@@ -65,7 +65,7 @@ endif
 
 # Optimization and language options.
 FFLAGS := $(OMIT_FRAME_POINTER) -funit-at-a-time -finline-limit=2000000 \
-          -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics \
+          -fno-strict-aliasing -fno-threadsafe-statics \
           -fnon-call-exceptions
 
 # Warning options.
