@@ -21,7 +21,7 @@ static constexpr char info_name[] = "graph.jdb";
 extern constexpr char commit_id[] = "Commit id: " COMMIT_ID;
 
 struct GraphImpl::GraphInfo {
-    static const uint64_t VERSION = 5;
+    static const uint64_t VERSION = 6;
 
     uint64_t version;
 
@@ -37,8 +37,10 @@ struct GraphImpl::GraphInfo {
 
     char locale_name[32];
 
-    uint32_t num_fixed_allocators;
-    uint64_t allocator_offsets[];
+    // We store allocator region information in the graph header
+    // to avoid using pages within the allocator pools and avoid
+    // wasting space due to alignment constraints.
+    Allocator::RegionHeader allocator_hdr;
 
     void init(const GraphConfig &);
 
@@ -46,13 +48,6 @@ struct GraphImpl::GraphInfo {
     ~GraphInfo() = delete;
     void operator=(const GraphInfo &) = delete;
 };
-
-namespace Jarvis {
-    const unsigned GraphImpl::MAX_FIXED_ALLOCATORS
-        = ((GraphConfig::INFO_SIZE - offsetof(GraphInfo, allocator_offsets))
-               / sizeof GraphInfo::allocator_offsets[0]) - 1;
-}
-
 
 Graph::Graph(const char *name, int options, const Config *config)
     : _impl(new GraphImpl(name, options, config))
@@ -126,7 +121,6 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
         info->init(config);
         node_size = config.node_size;
         edge_size = config.edge_size;
-        fixed_allocator_info = std::move(config.fixed_allocator_info);
     }
     else {
         if (info->version != GraphInfo::VERSION)
@@ -152,12 +146,7 @@ void GraphImpl::GraphInfo::init(const GraphConfig &config)
         throw Exception(InvalidConfig);
     memcpy(locale_name, config.locale_name.c_str(), size);
 
-    num_fixed_allocators = config.fixed_allocator_info.size();
-    for (unsigned i = 0; i < num_fixed_allocators; i++)
-        allocator_offsets[i] = config.fixed_allocator_info[i].offset;
-
-    TransactionImpl::flush_range(this,
-        sizeof *this + num_fixed_allocators * sizeof allocator_offsets[0]);
+    TransactionImpl::flush_range(this, sizeof *this);
 }
 
 GraphImpl::MapRegion::MapRegion(
@@ -192,9 +181,8 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
                   _init.edge_size, _init.info->edge_info.len,
                   _init.create),
       _allocator(_init.info->allocator_info.addr,
-                 _init.info->num_fixed_allocators,
-                 _init.info->allocator_offsets,
-                 _init.create ? &_init.fixed_allocator_info[0] : NULL,
+                 _init.info->allocator_info.len,
+                 &_init.info->allocator_hdr,
                  _init.create),
       _locale(_init.info->locale_name[0] != '\0'
                   ? std::locale(_init.info->locale_name)

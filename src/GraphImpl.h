@@ -23,7 +23,6 @@ namespace Jarvis {
             bool read_only;
             unsigned node_size;
             unsigned edge_size;
-            std::vector<AllocatorInfo> fixed_allocator_info;
 
             os::MapRegion info_map;
             GraphInfo *info;
@@ -61,8 +60,6 @@ namespace Jarvis {
         std::locale _locale;
 
     public:
-        static const unsigned MAX_FIXED_ALLOCATORS;
-
         GraphImpl(const char *name, int options, const Graph::Config *config);
         TransactionManager &transaction_manager() { return _transaction_manager; }
         IndexManager &index_manager() { return _index_manager; }

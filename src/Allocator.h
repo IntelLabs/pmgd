@@ -1,15 +1,12 @@
 #pragma once
 
-#include <list>
 #include <stddef.h>
 #include <stdint.h>
-#include "AllocatorCallback.h"
-#include "FixedAllocator.h"
 #include "TransactionImpl.h"
+#include "compiler.h"
+#include "FixedAllocator.h"
 
 namespace Jarvis {
-    struct AllocatorInfo;
-
     /**
      *  Generic allocator
      *
@@ -19,23 +16,51 @@ namespace Jarvis {
      *  This encapsulates a few commonly used fixed size allocators and the
      *  rest of alloc/free requests go to the variable allocator.
      *
-     *  This object lives in DRAM. Since it doesn't know the number of
-     *  fixed allocators that will be created in graph.cc, we use a
-     *  vector here
+     *  This object lives in DRAM with pointers to data in the graph structure
      */
-    class Allocator {
-        std::vector<FixedAllocator *> _fixed_allocators;
+    class Allocator
+    {
+    public:
+        struct RegionHeader {
+            uint64_t free;
+        };
 
-        unsigned find_alloc_index(size_t size);
+    private:
+        RegionHeader *_hdr;
+        uint64_t _pool_end;
 
     public:
-        // This constructor uses allocator_offsets[] if create is false
-        // or fixed_allocator_info[] if create is true.
-        Allocator(const uint64_t region_addr, int count,
-                  const uint64_t allocator_offsets[],
-                  const AllocatorInfo fixed_allocator_info[],
-                  bool create);
-        void *alloc(size_t size);
-        void free(void *addr, size_t size);
+        static const uint64_t CHUNK_SIZE = 0x200000;
+
+        Allocator(uint64_t pool_addr, uint64_t pool_size,
+                  RegionHeader *hdr, bool create)
+            : _hdr(hdr), _pool_end(pool_addr + pool_size)
+        {
+            if (create)
+                _hdr->free = pool_addr;
+            else
+                assert(_hdr->free <= _pool_end);
+        }
+
+        void *alloc(size_t size)
+        {
+            TransactionImpl *tx = TransactionImpl::get_tx();
+            uint64_t r = _hdr->free;
+
+            if ((size & (size - 1)) == 0)
+                r = (r + size - 1) & ~uint64_t(size - 1);
+            else if ((size & (8 - 1)) == 0)
+                r = (r + 8 - 1) & ~uint64_t(8 - 1);
+
+            assert(r + size <= _pool_end);
+
+            tx->write(&_hdr->free, r + size);
+
+            return (void *)r;
+        }
+
+
+        void free(void *addr, size_t size) { }
     };
+
 }

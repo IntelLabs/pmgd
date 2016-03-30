@@ -15,22 +15,11 @@ using namespace std;
 
 #define NUM_TEST_ELEMS 50
 
-#define REGION_SIZE 8192
-#define NUM_FIXED_ALLOCATORS 5
-
-static constexpr AllocatorInfo default_allocators[] = {
-    { 16, 0, REGION_SIZE },
-    { 32, 1*REGION_SIZE, REGION_SIZE },
-    { 64, 2*REGION_SIZE, REGION_SIZE },
-    { 128, 3*REGION_SIZE, REGION_SIZE },
-    { 256, 4*REGION_SIZE, REGION_SIZE },
-};
-
 int main()
 {
     cout << "EdgeIndex unit test\n\n";
     uint64_t start_addr;
-    uint64_t region_size;
+    uint64_t region_size, hdr_size;
 
     try {
         Graph db("edgeindexgraph", Graph::Create);
@@ -38,11 +27,18 @@ int main()
         Transaction tx(db, Transaction::ReadWrite);
         bool create1 = true;
 
-        start_addr = 0x200000000;
-        region_size = NUM_FIXED_ALLOCATORS * REGION_SIZE;
-
+        start_addr = 0x100000000;
+        region_size = 10485760;       // 10MB
+        // We need a PM space for allocator header which normally
+        // will reside in the GraphInfo structure which is quite
+        // hidden. So creating a temporary space here to allow for
+        // the header.
+        uint64_t hdr_addr = start_addr + region_size;
+        hdr_size = 1024;
         os::MapRegion region1(".", "region1", start_addr, region_size, create1, create1, false);
-        Allocator allocator1(start_addr, NUM_FIXED_ALLOCATORS, NULL, default_allocators, create1);
+        os::MapRegion region2(".", "region2", hdr_addr, hdr_size, create1, create1, false);
+        Allocator::RegionHeader *hdr = reinterpret_cast<Allocator::RegionHeader *>(hdr_addr);
+        Allocator allocator1(start_addr, region_size, hdr, create1);
 
         cout << "Step 1: Test pair\n";
         // Since we do not have an allocator for anything < 16B, create large ptrs
