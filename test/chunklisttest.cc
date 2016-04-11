@@ -5,7 +5,7 @@
 #include "jarvis.h"
 #include "../src/ChunkList.h"
 #include "../src/os.h"
-#include "../src/allocator.h"
+#include "../src/Allocator.h"
 #include "util.h"
 #include "../src/KeyValuePair.h"
 #include "../src/GraphConfig.h"

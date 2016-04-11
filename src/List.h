@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "allocator.h"
+#include "Allocator.h"
 #include "TransactionImpl.h"
 #include "GraphImpl.h"
 #include "IndexManager.h"

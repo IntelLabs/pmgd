@@ -5,7 +5,7 @@
 #include "GraphImpl.h"
 #include "node.h"
 #include "edge.h"
-#include "allocator.h"
+#include "Allocator.h"
 #include "iterator.h"
 #include "TransactionImpl.h"
 #include "TransactionManager.h"

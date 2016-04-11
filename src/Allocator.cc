@@ -3,7 +3,7 @@
 #include "exception.h"
 #include "os.h"
 #include "GraphConfig.h"
-#include "allocator.h"
+#include "Allocator.h"
 #include "arch.h"
 
 using namespace Jarvis;

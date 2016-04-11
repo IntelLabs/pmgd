@@ -3,7 +3,7 @@
 #include <locale>
 #include <stddef.h>
 #include "graph.h"
-#include "allocator.h"
+#include "Allocator.h"
 #include "IndexManager.h"
 #include "TransactionManager.h"
 #include "os.h"

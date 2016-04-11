@@ -4,7 +4,7 @@
 #include "graph.h"
 #include "GraphConfig.h"
 #include "GraphImpl.h"
-#include "allocator.h"
+#include "Allocator.h"
 
 using namespace Jarvis;
 

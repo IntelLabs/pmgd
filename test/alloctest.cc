@@ -6,7 +6,7 @@
 #include <string.h>
 #include "jarvis.h"
 #include "util.h"
-#include "../src/allocator.h"
+#include "../src/Allocator.h"
 #include "../src/os.h"
 #include "exception.h"
 

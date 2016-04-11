@@ -5,7 +5,7 @@
 #include "jarvis.h"
 #include "../src/List.h"
 #include "../src/os.h"
-#include "../src/allocator.h"
+#include "../src/Allocator.h"
 #include "../src/GraphConfig.h"
 #include "util.h"
 
