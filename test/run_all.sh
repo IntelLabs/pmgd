@@ -60,7 +60,8 @@ graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
              propertygraph propertylistgraph
              reverseindexrangegraph rograph
              solgraph stringtablegraph txgraph removegraph
-             test720graph test750graph test767graph )
+             test720graph test750graph test767graph
+             bindingsgraph )
 
 if [ "${DEL_GRAPH}" = "y" ]; then
     rm_graph_dirs $GRAPH_DIR
