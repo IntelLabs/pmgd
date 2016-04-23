@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stddef.h>
-#include "allocator.h"
+#include "Allocator.h"
 #include "stringid.h"
 #include "List.h"
 #include "exception.h"

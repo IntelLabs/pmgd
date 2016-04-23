@@ -7,6 +7,7 @@
 #include "TransactionManager.h"
 #include "exception.h"
 #include "transaction.h"
+#include "callback.h"
 #include "compiler.h"
 
 namespace Jarvis {
@@ -26,12 +27,10 @@ namespace Jarvis {
 
             TransactionImpl *_outer_tx;
 
-            struct CommitCallbackItem;
-            CommitCallbackItem *_commit_callback_list;
+            CallbackList<void *, TransactionImpl *> _commit_callback_list;
 
             void log_je(void *src, size_t len);
             void finalize_commit();
-            void call_commit_callbacks();
             static void rollback(const TransactionHandle &h,
                                  const JournalEntry *jend);
 
@@ -55,8 +54,11 @@ namespace Jarvis {
                     throw Exception(ReadOnly);
             }
 
-            typedef void (*CommitCallback)(TransactionImpl *tx, void *, void *);
-            void *&register_commit_callback(void *obj, CommitCallback f);
+            void register_commit_callback(void *key, std::function<void(TransactionImpl *)> f)
+                { _commit_callback_list.register_callback(key, f); }
+
+            std::function<void(TransactionImpl *)> *lookup_callback(void *key)
+                { return _commit_callback_list.lookup_callback(key); }
 
             // log data; user performs the writes
             void log(void *ptr, size_t len);

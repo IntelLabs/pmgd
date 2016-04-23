@@ -53,7 +53,7 @@ tests=( alloctest avltest chunklisttest edgeindextest
         load_jarvis_tests
         BindingsTest DateTest )
 
-graph_dirs=( alloctestdummy avlgraph chunklistgraph edgeindexgraph
+graph_dirs=( fixedallocgraph varallocgraph avlgraph chunklistgraph edgeindexgraph
              emailindexgraph filtergraph indexgraph indexstringgraph
              indexrangegraph listgraph load_gson_graph load_tsv_graph
              neighborgraph nodeedgegraph propertychunkgraph ppgraph

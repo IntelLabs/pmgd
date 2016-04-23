@@ -72,26 +72,8 @@ int main(int argc, char **argv)
             config.max_stringid_length = strtoul(argv[argi+1], 0, 0);
         else if (check_arg(argv[argi], 'l', "locale"))
             config.locale_name = argv[argi+1];
-        else if (check_arg(argv[argi], 'A', "allocator-size")) {
-            uint64_t pool_size = strtoul(argv[argi+1], 0, 16);
-            unsigned object_size = 16;
-            for (int i = 0; i < 5; i++) {
-                config.fixed_allocators.push_back(
-                    Graph::Config::AllocatorInfo{ object_size, pool_size });
-                object_size *= 2;
-            }
-        }
-        else if (check_arg(argv[argi], 'a', "allocator")) {
-            if (!(argi + 2 < argc)) {
-                fprintf(stderr, "mkgraph: allocator option needs two values\n");
-                return 1;
-            }
-            unsigned object_size = strtoul(argv[argi+1], 0, 0);
-            uint64_t pool_size = strtoull(argv[argi+2], 0, 16);
-            config.fixed_allocators.push_back(
-                    Graph::Config::AllocatorInfo{ object_size, pool_size });
-            argi++;
-        }
+        else if (check_arg(argv[argi], 'A', "allocator-size"))
+            config.allocator_region_size = strtoull(argv[argi+1], 0, 16);
         else
             break;
         argi += 2;

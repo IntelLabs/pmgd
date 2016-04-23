@@ -35,5 +35,5 @@ cd ${GRAPH_DIR}
 
 # Intermediate graphs
 graph_dirs=`find -iname "*graph" -type d`  
-graph_dirs="$graph_dirs alloctestdummy region1"
+graph_dirs="$graph_dirs region1 region2"
 rm_graph_dirs $GRAPH_DIR

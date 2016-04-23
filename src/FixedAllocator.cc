@@ -9,67 +9,47 @@
 #include <assert.h>
 
 #include "exception.h"
-#include "allocator.h"
+#include "FixedAllocator.h"
 #include "TransactionImpl.h"
 
 using namespace Jarvis;
 
-/**
- * Allocator's header
- *
- * Header of the allocator located at the beginning of the region
- * it manages.  Uses types of known sizes instead of types such as
- * 'void *' to control layout.
- */
-struct FixedAllocator::RegionHeader {
-    // Keep following fields together for easy logging
-    uint64_t *tail_ptr;
-    uint64_t *free_ptr;              ///< Beginning of free list
-    // Stats
-    int64_t num_allocated;
-    uint64_t max_addr;               ///< tail_ptr < max_addr (always)
-    uint32_t size;                   ///< Object size
-};
-
-
-FixedAllocator::FixedAllocator(uint64_t pool_addr,
-                               unsigned object_size, uint64_t pool_size,
-                               bool create)
-    : _pm(reinterpret_cast<RegionHeader *>(pool_addr))
-{
 #define ALLOC_OFFSET(sz) ((sizeof(RegionHeader) + (sz) - 1) & ~((sz) - 1))
+FixedAllocator::FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
+                               uint32_t object_size, uint64_t pool_size,
+                               bool create)
+    : _pm(hdr_addr),
+      _pool_addr(pool_addr)
+{
+    if ((uint64_t)hdr_addr == pool_addr)
+        _alloc_offset = ALLOC_OFFSET(create ? object_size : _pm->size);
+    else
+        _alloc_offset = 0;
 
     if (create) {
         // Object size must be a power of 2 and at least 8 bytes.
         assert(object_size >= sizeof(uint64_t));
         assert(!(object_size & (object_size - 1)));
         // Make sure we have a well-aligned pool_addr.
-        assert((pool_addr & (object_size - 1)) == 0);
+        assert((_pool_addr & (object_size - 1)) == 0);
 
-        // Start allocation at a natural boundary.
-        _alloc_offset = ALLOC_OFFSET(object_size);
-
+        _pm->tail_ptr = (uint64_t *)(_pool_addr + _alloc_offset);
         _pm->free_ptr = NULL;
-        _pm->tail_ptr = (uint64_t *)(pool_addr + _alloc_offset);
-        _pm->size = object_size;
-        _pm->max_addr = pool_addr + pool_size;
         _pm->num_allocated = 0;
+        _pm->max_addr = pool_addr + pool_size;
+        _pm->size = object_size;
 
         TransactionImpl::flush_range(_pm, sizeof(*_pm));
     }
-    else
-        _alloc_offset = ALLOC_OFFSET(_pm->size);
 }
 
-uint64_t FixedAllocator::get_id(const void *obj) const
-{
-    return (((uint64_t)obj - (uint64_t)begin()) / _pm->size) + 1;
-}
-
-unsigned FixedAllocator::object_size() const
-{
-    return _pm->size;
-}
+FixedAllocator::FixedAllocator(uint64_t pool_addr,
+                               uint32_t object_size, uint64_t pool_size,
+                               bool create)
+    : FixedAllocator(pool_addr, reinterpret_cast<RegionHeader *>(pool_addr),
+                     object_size, pool_size,
+                     create)
+{ }
 
 void *FixedAllocator::alloc()
 {
@@ -103,6 +83,34 @@ void *FixedAllocator::alloc()
     return p;
 }
 
+void *FixedAllocator::alloc(unsigned num)
+{
+    // Makes sense to optimize here to ensure the
+    // free list can get used.
+    if (num == 1)
+        return alloc();
+
+    TransactionImpl *tx = TransactionImpl::get_tx();
+
+    uint64_t *p;
+
+    // Skip checking the free list since those pages may or may
+    // not be contiguous. However, this could lead to the pathological
+    // case where say some application allocated multiple such spots
+    // but freed them later and those were then put in the free list
+    // as usual. It could cause allocator to refuse contiguous requests
+    // even if there was enough space. But keeping it simple for now.
+    if (((uint64_t)_pm->tail_ptr + num * _pm->size) > _pm->max_addr)
+        throw Exception(BadAlloc);
+
+    p = _pm->tail_ptr;
+    tx->write(&_pm->tail_ptr, (uint64_t *)((uint64_t)_pm->tail_ptr + num * _pm->size));
+
+    tx->write(&_pm->num_allocated, _pm->num_allocated + num);
+
+    return p;
+}
+
 /**
  * Free an object
  *
@@ -112,7 +120,7 @@ void *FixedAllocator::alloc()
 void FixedAllocator::free(void *p)
 {
     // Check to make sure given address was allocated from this allocator.
-    assert(p >= (void *)((uint64_t)_pm + _alloc_offset) && p < _pm->tail_ptr);
+    assert(p >= (void *)((uint64_t)_pool_addr + _alloc_offset) && p < _pm->tail_ptr);
     // Check to make sure it is a multiple of the size.
     assert((uint64_t)p % _pm->size == 0);
     // Check to make sure this object was indeed allocated.
@@ -120,47 +128,46 @@ void FixedAllocator::free(void *p)
     TransactionImpl *tx = TransactionImpl::get_tx();
 
     tx->log(p, sizeof(uint64_t));
+    *(uint64_t *)p = FREE_BIT;
 
-    void *&free_list = tx->register_commit_callback(this, clean_free_list);
-    *(uint64_t *)p = (uint64_t)free_list | FREE_BIT;
-    free_list = p;
+    AllocatorCallback<FixedAllocator, void *>::delayed_free(tx, this, p);
 }
 
-void FixedAllocator::clean_free_list(TransactionImpl *tx, void *obj, void *free_list)
+void FixedAllocator::clean_free_list
+    (TransactionImpl *tx, const std::list<void *> &list)
 {
-    FixedAllocator *This = (FixedAllocator *)obj;
-    tx->log_range(&This->_pm->free_ptr, &This->_pm->num_allocated);
-    uint64_t *free_ptr = This->_pm->free_ptr;
-    int64_t num_allocated = This->_pm->num_allocated;
+    tx->log_range(&_pm->free_ptr, &_pm->num_allocated);
+    int64_t num_allocated = _pm->num_allocated;
+    void *free_ptr = _pm->free_ptr;
 
-    uint64_t *q;
-    for (uint64_t *p = (uint64_t *)free_list; p != NULL; p = q) {
-        q = (uint64_t *)(*p & ~FREE_BIT);
-        *p = (uint64_t)free_ptr | FREE_BIT;
+    for (auto p : list) {
+        *(uint64_t *)p = (uint64_t)free_ptr | FREE_BIT;
         free_ptr = p;
         num_allocated--;
     }
 
-    This->_pm->free_ptr = free_ptr;
-    This->_pm->num_allocated = num_allocated;
+    _pm->free_ptr = (uint64_t *)free_ptr;
+    _pm->num_allocated = num_allocated;
 }
 
-void *FixedAllocator::begin() const
+// This should only be called at commit time by Allocator::clean_free_list()
+void FixedAllocator::free(void *p, unsigned num)
 {
-    return (void *)((uint64_t)_pm + _alloc_offset);
-}
+    TransactionImpl *tx = TransactionImpl::get_tx();
 
-const void *FixedAllocator::end() const
-{
-    return _pm->tail_ptr;
-}
+    if (((uint64_t)p + _pm->size * num) == (uint64_t)_pm->tail_ptr)
+        tx->write(&_pm->tail_ptr, (uint64_t *)p);
+    else {
+        tx->log_range(&_pm->free_ptr, &_pm->num_allocated);
+        void *free_ptr = _pm->free_ptr;
 
-void *FixedAllocator::next(const void *curr) const
-{
-    return (void *)((uint64_t)curr + _pm->size);
-}
+        for (unsigned i = 0; i < num; ++i) {
+            *(uint64_t *)p = (uint64_t)free_ptr | FREE_BIT;
+            free_ptr = p;
+            p = (void *)((uint64_t)p + _pm->size);
+        }
 
-bool FixedAllocator::is_free(const void *curr) const
-{
-    return *(uint64_t *)curr & FREE_BIT;
+        _pm->free_ptr = (uint64_t *)free_ptr;
+        _pm->num_allocated -= num;
+    }
 }

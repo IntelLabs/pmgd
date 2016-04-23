@@ -35,11 +35,8 @@ namespace Jarvis {
         RegionInfo edge_info;
         RegionInfo allocator_info;
 
-        std::vector<AllocatorInfo> fixed_allocator_info;
-
         GraphConfig(const Graph::Config *user_config);
         void init_region_info(RegionInfo &info, const char *name,
                               uint64_t &addr, size_t size);
-        void add_allocator(unsigned object_size, uint64_t &offset, size_t size);
     };
 };

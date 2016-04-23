@@ -2,7 +2,7 @@
 #include "IndexString.h"
 #include "GraphImpl.h"
 #include "TransactionImpl.h"
-#include "allocator.h"
+#include "Allocator.h"
 
 using namespace Jarvis;
 

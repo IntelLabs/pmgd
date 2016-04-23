@@ -1,5 +1,5 @@
 #pragma once
-#include "allocator.h"
+#include "Allocator.h"
 
 // AVL Trees are very good for search which will hopefully be the
 // primary function when used for indexing. The balancing condition
