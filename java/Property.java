@@ -62,11 +62,6 @@ public class Property {
         newPropertyNative();
     }
 
-    public Property(Property p) throws Exception
-    {
-        newPropertyNative(p);
-    }
-
     public Property(boolean v) throws Exception
     {
         newPropertyNative(v);
@@ -117,7 +112,6 @@ public class Property {
     //    public native Blob blob_value() throws Exception;
 
     private native void newPropertyNative() throws Exception;
-    private native void newPropertyNative(Property p) throws Exception;
     private native void newPropertyNative(boolean v) throws Exception;
     private native void newPropertyNative(int v) throws Exception;
     private native void newPropertyNative(String s) throws Exception;

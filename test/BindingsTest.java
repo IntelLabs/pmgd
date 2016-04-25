@@ -41,7 +41,6 @@ public class BindingsTest {
 
             Property p = new Property();
 
-            Property p1 = new Property(p);
             Property p2 = new Property(true);
             Property p3 = new Property(v1);
             Property p4 = new Property("I am a long string property");
@@ -49,7 +48,6 @@ public class BindingsTest {
 
             // Check types and get values of properties we just created
             System.out.printf("Checking type: %d\n", p.type());
-            System.out.printf("Checking type: %d\n", p1.type());
             System.out.printf("Checking type: %d\n", p2.type());
             System.out.printf("Checking type: %d\n", p3.type());
             System.out.printf("Checking type: %d\n", p4.type());

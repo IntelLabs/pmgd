@@ -113,19 +113,6 @@ void Java_jarvis_Property_newPropertyNative__(JNIEnv *env, jobject prop)
     }
 }
 
-void Java_jarvis_Property_newPropertyNative__Ljarvis_Property_2
-    (JNIEnv *env, jobject prop, jobject prop_ref)
-{
-    Property &j_prop_ref = *(getJarvisHandle<Property>(env, prop_ref));
-    try {
-        Property *j_prop = new Property(j_prop_ref);
-        setJarvisHandle(env, prop, j_prop);
-    }
-    catch (Exception e) {
-        JavaThrow(env, e);
-    }
-}
-
 void Java_jarvis_Property_newPropertyNative__Z(JNIEnv *env, jobject prop,
                                         jboolean v)
 {
