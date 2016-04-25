@@ -126,10 +126,10 @@ void Java_jarvis_Property_newPropertyNative__Z(JNIEnv *env, jobject prop,
     }
 }
 
-void Java_jarvis_Property_newPropertyNative__I(JNIEnv *env, jobject prop,
-                                        jint v)
+void Java_jarvis_Property_newPropertyNative__J(JNIEnv *env, jobject prop,
+                                        jlong v)
 {
-    int j_v = (int) v;
+    long long j_v = (long long) v;
     try {
         Property *j_prop = new Property(j_v);
         setJarvisHandle(env, prop, j_prop);

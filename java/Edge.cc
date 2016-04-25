@@ -58,7 +58,7 @@ jobject Java_jarvis_Edge_get_1property(JNIEnv *env, jobject edge, jstring str)
     try {
         Property result;
         if (j_edge.check_property(j_str, result))
-            return new_java_object(env, "Property", new Property(result));
+            return new_java_property(env, new Property(result));
         else
             return NULL;
     }

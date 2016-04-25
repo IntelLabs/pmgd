@@ -55,7 +55,7 @@ public class Property {
     }
 
     private long jarvisHandle;
-    private Property(long handle) { jarvisHandle = handle; }
+    private Property(long handle, boolean dummy) { jarvisHandle = handle; }
 
     public Property() throws Exception
     {
@@ -67,7 +67,7 @@ public class Property {
         newPropertyNative(v);
     }
 
-    public Property(int v) throws Exception
+    public Property(long v) throws Exception
     {
         newPropertyNative(v);
     }
@@ -113,7 +113,7 @@ public class Property {
 
     private native void newPropertyNative() throws Exception;
     private native void newPropertyNative(boolean v) throws Exception;
-    private native void newPropertyNative(int v) throws Exception;
+    private native void newPropertyNative(long v) throws Exception;
     private native void newPropertyNative(String s) throws Exception;
     private native void newPropertyNative(double v) throws Exception;
 

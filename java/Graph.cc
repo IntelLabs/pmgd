@@ -196,6 +196,18 @@ jobject new_java_object(JNIEnv *env, const char *name, void *obj)
     return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(obj));
 }
 
+jobject new_java_property(JNIEnv *env, void *obj)
+{
+    static jclass cls = 0;
+    static jmethodID ctor = 0;
+    if (ctor == 0) {
+        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Property"));
+        ctor = env->GetMethodID(cls, "<init>", "(JZ)V");
+        assert(ctor != 0);
+    }
+    return env->NewObject(cls, ctor, reinterpret_cast<jlong>(obj), false);
+}
+
 jobject java_node_iterator(JNIEnv *env, NodeIterator &&ni)
 {
     NodeIterator *j_ni = new NodeIterator(std::move(ni));
@@ -214,6 +226,7 @@ jobject java_node_iterator(JNIEnv *env, NodeIterator &&ni)
     if (ctor == 0) {
         cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/NodeIterator"));
         ctor = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
+        assert(ctor != 0);
     }
     return env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_ni), cur);
 }
@@ -225,6 +238,7 @@ jobject new_node_object(JNIEnv *env, void *obj)
     if (ctor == 0) {
         cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Node"));
         ctor = env->GetMethodID(cls, "<init>", "(J)V");
+        assert(ctor != 0);
     }
     return env->NewObject(cls, ctor, reinterpret_cast<jlong>(obj));
 }

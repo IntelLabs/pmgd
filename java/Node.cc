@@ -33,7 +33,7 @@ jobject Java_jarvis_Node_get_1property(JNIEnv *env, jobject node, jstring str)
     try {
         Property result;
         if (j_node.check_property(j_str, result))
-            return new_java_object(env, "Property", new Property(result));
+            return new_java_property(env, new Property(result));
         else
             return NULL;
     }

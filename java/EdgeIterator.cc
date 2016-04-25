@@ -84,7 +84,7 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1property(JNIEnv *env, jobject ei,
     try {
         Property result;
         if (j_ei->check_property(j_name, result))
-            return new_java_object(env, "Property", new Property(result));
+            return new_java_property(env, new Property(result));
         else
             return NULL;
     }
