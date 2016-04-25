@@ -2,7 +2,7 @@
  * Corresponds to the Property.h file in Jarvis.
  *
  * Notes:
- *  - Omitting time, blob as an option for property types
+ *  - Omitting blob as an option for property types
  */
 
 package jarvis;
@@ -12,9 +12,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class Property {
-    public class Time {
-        public long time_val;
-
+    public static class Time {
         public int year;   // -8192-8191
         public int mon;    // 1-12
         public int day;    // 1-31
@@ -27,14 +25,38 @@ public class Property {
 
         public Time()
         {
-            time_val = 0;
             year = mon = day = 0;
             hour = min = sec = usec = 0;
             tz_hour = tz_min = 0;
         }
 
+        public Time(Date date, int tz_hour_arg, int tz_min_arg)
+        {
+            Calendar c = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+            c.setTime(date);
+            year = c.get(Calendar.YEAR);
+            mon = c.get(Calendar.MONTH) + 1;
+            day = c.get(Calendar.DATE);
+            hour = c.get(Calendar.HOUR_OF_DAY);
+            min = c.get(Calendar.MINUTE);
+            sec = c.get(Calendar.SECOND);
+            usec = c.get(Calendar.MILLISECOND) * 1000;
+            tz_hour = tz_hour_arg;
+            tz_min = tz_min_arg;
+        }
+
+        public Time(Date date, int tz_hour)
+        {
+            this(date, tz_hour, 0);
+        }
+
+        public Time(Date date)
+        {
+            this(date, 0, 0);
+        }
+
         // Returns UTC/GMT date value.
-        public Date getDate() throws Exception
+        public Date getDate()
         {
             Calendar c = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
             c.set(Calendar.YEAR, year);
@@ -82,10 +104,15 @@ public class Property {
         newPropertyNative(v);
     }
 
-    //    public Property(Time t) throws Exception
-    //    {
-    //        newPropertyNative(t);
-    //    }
+    public Property(Time t) throws Exception
+    {
+        newPropertyNative(t);
+    }
+
+    public Property(Date d) throws Exception
+    {
+        this(new Time(d));
+    }
 
     //    public Property(blob_t b) throws Exception
     //    {
@@ -116,6 +143,7 @@ public class Property {
     private native void newPropertyNative(long v) throws Exception;
     private native void newPropertyNative(String s) throws Exception;
     private native void newPropertyNative(double v) throws Exception;
+    private native void newPropertyNative(Time v) throws Exception;
 
     public void finalize() { dispose(); }
     public native void dispose();

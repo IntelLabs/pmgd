@@ -8,6 +8,21 @@
 
 using namespace Jarvis;
 
+static jclass time_cls = 0;
+static jmethodID time_ctor = 0;
+static jfieldID time_year_id = 0;
+static jfieldID time_mon_id = 0;
+static jfieldID time_day_id = 0;
+static jfieldID time_hour_id = 0;
+static jfieldID time_min_id = 0;
+static jfieldID time_sec_id = 0;
+static jfieldID time_usec_id = 0;
+static jfieldID time_tz_hour_id = 0;
+static jfieldID time_tz_min_id = 0;
+
+static void get_time_class(JNIEnv *env);
+
+
 jint Java_jarvis_Property_type(JNIEnv *env, jobject prop)
 {
     Property &j_prop = *(getJarvisHandle<Property>(env, prop));
@@ -74,26 +89,20 @@ jdouble Java_jarvis_Property_float_1value(JNIEnv *env, jobject prop)
 
 jobject Java_jarvis_Property_time_1value(JNIEnv *env, jobject prop)
 {
+    get_time_class(env);
     Property &j_prop = *(getJarvisHandle<Property>(env, prop));
     try {
         Time j_t = j_prop.time_value();
-        jclass cls = env->FindClass("jarvis/Property$Time");
-        if (!cls)
-            return 0;
-        jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(Ljarvis/Property;)V");
-        if (!cnstrctr)
-            return 0;
-        jobject t = env->NewObject(cls, cnstrctr);
-        env->SetLongField(t, env->GetFieldID(cls, "time_val", "J"), j_t.time_val);
-        env->SetIntField(t, env->GetFieldID(cls, "year", "I"), j_t.year);
-        env->SetIntField(t, env->GetFieldID(cls, "mon", "I"), j_t.mon);
-        env->SetIntField(t, env->GetFieldID(cls, "day", "I"), j_t.day);
-        env->SetIntField(t, env->GetFieldID(cls, "hour", "I"), j_t.hour);
-        env->SetIntField(t, env->GetFieldID(cls, "min", "I"), j_t.min);
-        env->SetIntField(t, env->GetFieldID(cls, "sec", "I"), j_t.sec);
-        env->SetIntField(t, env->GetFieldID(cls, "usec", "I"), j_t.usec);
-        env->SetIntField(t, env->GetFieldID(cls, "tz_hour", "I"), j_t.tz_hour);
-        env->SetIntField(t, env->GetFieldID(cls, "tz_min", "I"), j_t.tz_min*15);
+        jobject t = env->NewObject(time_cls, time_ctor);
+        env->SetIntField(t, time_year_id, j_t.year);
+        env->SetIntField(t, time_mon_id, j_t.mon);
+        env->SetIntField(t, time_day_id, j_t.day);
+        env->SetIntField(t, time_hour_id, j_t.hour);
+        env->SetIntField(t, time_min_id, j_t.min);
+        env->SetIntField(t, time_sec_id, j_t.sec);
+        env->SetIntField(t, time_usec_id, j_t.usec);
+        env->SetIntField(t, time_tz_hour_id, j_t.tz_hour);
+        env->SetIntField(t, time_tz_min_id, j_t.tz_min*15);
         return t;
     }
     catch (Exception e) {
@@ -161,6 +170,49 @@ void Java_jarvis_Property_newPropertyNative__D(JNIEnv *env, jobject prop,
     }
     catch (Exception e) {
         JavaThrow(env, e);
+    }
+}
+
+void Java_jarvis_Property_newPropertyNative__Ljarvis_Property_00024Time_2
+    (JNIEnv *env, jobject prop, jobject time)
+{
+    get_time_class(env);
+
+    try {
+        Time t;
+        t.year = env->GetIntField(time, time_year_id);
+        t.mon = env->GetIntField(time, time_mon_id);
+        t.day = env->GetIntField(time, time_day_id);
+        t.hour = env->GetIntField(time, time_hour_id);
+        t.min = env->GetIntField(time, time_min_id);
+        t.sec = env->GetIntField(time, time_sec_id);
+        t.usec = env->GetIntField(time, time_usec_id);
+        t.tz_hour = env->GetIntField(time, time_tz_hour_id);
+        t.tz_min = env->GetIntField(time, time_tz_min_id) / 15;
+        Property *j_prop = new Property(t);
+        setJarvisHandle(env, prop, j_prop);
+    }
+    catch (Exception e) {
+        JavaThrow(env, e);
+    }
+}
+
+static void get_time_class(JNIEnv *env)
+{
+    if (time_ctor == 0) {
+        time_cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Property$Time"));
+        time_ctor = env->GetMethodID(time_cls, "<init>", "()V");
+        assert(time_ctor != 0);
+
+        time_year_id = env->GetFieldID(time_cls, "year", "I");
+        time_mon_id = env->GetFieldID(time_cls, "mon", "I");
+        time_day_id = env->GetFieldID(time_cls, "day", "I");
+        time_hour_id = env->GetFieldID(time_cls, "hour", "I");
+        time_min_id = env->GetFieldID(time_cls, "min", "I");
+        time_sec_id = env->GetFieldID(time_cls, "sec", "I");
+        time_usec_id = env->GetFieldID(time_cls, "usec", "I");
+        time_tz_hour_id = env->GetFieldID(time_cls, "tz_hour", "I");
+        time_tz_min_id = env->GetFieldID(time_cls, "tz_min", "I");
     }
 }
 
