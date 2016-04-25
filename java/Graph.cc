@@ -9,14 +9,14 @@
 
 using namespace Jarvis;
 
-jint Java_jarvis_Graph_get_1id__Ljarvis_Node_2(JNIEnv *env, jobject graph, jobject node)
+jlong Java_jarvis_Graph_get_1id__Ljarvis_Node_2(JNIEnv *env, jobject graph, jobject node)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     Node &j_node = *(getJarvisHandle<Node>(env, node));
     return j_db.get_id(j_node);
 }
 
-jint Java_jarvis_Graph_get_1id__Ljarvis_Edge_2(JNIEnv *env, jobject graph, jobject edge)
+jlong Java_jarvis_Graph_get_1id__Ljarvis_Edge_2(JNIEnv *env, jobject graph, jobject edge)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));

@@ -19,8 +19,8 @@ public class Graph {
         loadGraphNative(db_name, options.ordinal());
     }
 
-    public native int get_id(Node n);
-    public native int get_id(Edge n);
+    public native long get_id(Node n);
+    public native long get_id(Edge n);
 
     public native NodeIterator get_nodes() throws Exception;
     public native NodeIterator get_nodes(String tag) throws Exception;
