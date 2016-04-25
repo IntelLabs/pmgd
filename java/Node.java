@@ -51,10 +51,17 @@ public class Node {
         { return get_neighbors(dir.ordinal(), null, unique); }
     public NodeIterator get_neighbors(String tag)
         { return get_neighbors(Direction.Any.ordinal(), tag, true); }
+    public NodeIterator get_neighbors(String tag, boolean unique)
+        { return get_neighbors(Direction.Any.ordinal(), tag, unique); }
     public NodeIterator get_neighbors(Direction dir, String tag)
         { return get_neighbors(dir.ordinal(), tag, true); }
     public NodeIterator get_neighbors(Direction dir, String tag, boolean unique)
         { return get_neighbors(dir.ordinal(), tag, unique); }
+
+    public Node get_neighbor(String tag) throws Exception
+        { return get_neighbors(tag, false).get_current(); }
+    public Node get_neighbor(Direction dir, String tag) throws Exception
+        { return get_neighbors(dir, tag, false).get_current(); }
 
     private native NodeIterator get_neighbors(int dir, String tag, boolean unique);
 }

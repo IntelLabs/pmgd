@@ -22,6 +22,14 @@ public class PropertyPredicate {
     public PropertyPredicate(String name, Op op, Property v1, Property v2)
         { newPropertyPredicateNative(name, op.ordinal(), v1, v2); }
 
+    public PropertyPredicate(String name, String s)
+                throws Exception
+        { newPropertyPredicateNative(name, Op.Eq.ordinal(), new Property(s)); }
+
+    public PropertyPredicate(String name, long v)
+                throws Exception
+        { newPropertyPredicateNative(name, Op.Eq.ordinal(), new Property(v)); }
+
     private native void newPropertyPredicateNative();
     private native void newPropertyPredicateNative(String name);
     private native void newPropertyPredicateNative(String name, int op,
