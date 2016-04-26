@@ -116,7 +116,7 @@ void *Allocator::FixSizeAllocator::alloc()
 
         if (chunk->free_spots == 0) {
             // Make sure this chunk no longer appears in the available list.
-            _free_chunks.erase(chunk);
+            _free_chunks.erase(it);
         }
         return addr;
     }
