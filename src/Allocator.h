@@ -93,6 +93,8 @@ namespace Jarvis {
             void *alloc_large(size_t size);
 
         public:
+            VariableAllocator(const VariableAllocator &) = delete;
+            void operator=(const VariableAllocator &) = delete;
             VariableAllocator(Allocator &allocator, RegionHeader *hdr, bool create);
             void *alloc(size_t size);
             void free(void *addr, size_t size);
@@ -156,6 +158,7 @@ namespace Jarvis {
 
             FixedAllocatorInfo *add_new_pool();
         public:
+            FlexFixedAllocator(const FlexFixedAllocator &) = delete;
             void operator=(const FlexFixedAllocator &) = delete;
 
             FlexFixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
@@ -205,7 +208,7 @@ namespace Jarvis {
             // There will always be just one active one each time since that
             // will be used until all the 4K chunks have been exhausted. Then
             // it will just be a used space like the other 2MB pages.
-            FlexFixedAllocator _allocator;
+            FlexFixedAllocator &_allocator;
 
             // We need an available list, in DRAM for for quick access.
             // PM can have just one list. We add to these lists as we traverse
@@ -216,6 +219,8 @@ namespace Jarvis {
             FixedChunk *_last_chunk_scanned;  // Needed to extend the linked list
 
         public:
+            FixSizeAllocator(const FixSizeAllocator &) = delete;
+            void operator=(const FixSizeAllocator &) = delete;
             FixSizeAllocator(FlexFixedAllocator &allocator, RegionHeader *hdr,
                               unsigned obj_size, bool create);
             void *alloc();
@@ -232,6 +237,8 @@ namespace Jarvis {
             Allocator &_allocator;
 
         public:
+            ChunkAllocator(const ChunkAllocator &) = delete;
+            void operator=(const ChunkAllocator &) = delete;
             ChunkAllocator(Allocator &allocator) : _allocator(allocator) {}
             bool is_borderline(size_t sz);
             void *alloc(size_t size);
@@ -306,6 +313,8 @@ namespace Jarvis {
         void clean_free_list(TransactionImpl *tx, const std::list<free_info_t> &list);
 
     public:
+        Allocator(const Allocator &) = delete;
+        void operator=(const Allocator &) = delete;
         Allocator(uint64_t pool_addr, uint64_t pool_size,
                     RegionHeader *hdr, bool create);
         void *alloc(size_t size);
