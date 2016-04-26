@@ -84,6 +84,7 @@ void *Allocator::FixSizeAllocator::FixedChunk::alloc(unsigned obj_size,
         }
     }
     assert(0);
+    return NULL;
 
 found:
     TransactionImpl *tx = TransactionImpl::get_tx();

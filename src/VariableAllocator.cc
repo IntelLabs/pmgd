@@ -52,7 +52,8 @@ void *Allocator::VariableAllocator::FreeFormChunk::alloc(size_t sz)
 
     TransactionImpl *tx = TransactionImpl::get_tx();
 
-    while (offset != 0) {
+    while (true) {
+        assert(offset != 0);
         free_spot_t *free_spot = compute_addr(offset);
         uint32_t sz_free = free_spot->size;
         if (sz_free >= sz) {
@@ -91,7 +92,6 @@ void *Allocator::VariableAllocator::FreeFormChunk::alloc(size_t sz)
             offset = free_spot->next;
         }
     }
-    assert(0);
 }
 
 Allocator::VariableAllocator::FreeFormChunk::FreeFormChunk(unsigned used)
