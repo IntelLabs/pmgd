@@ -5,7 +5,7 @@
 OPT ?= -O3
 
 # Are we building on a platform with support for persistent memory?
-PM ?= $(shell if ! grep pcommit /proc/cpuinfo; then echo "-DNOPM"; fi)
+PM ?= $(shell if ! grep -q pcommit /proc/cpuinfo; then echo "-DNOPM"; fi)
 
 # By default let us treat warnings as an error.
 WERROR ?= -Werror
@@ -26,7 +26,7 @@ VPATH = $(ROOTDIR)
 .SECONDARY:
 
 # Tools.
-CC := g++-4.8
+CC := g++
 LEX := flex
 YACC := bison
 AR := ar
