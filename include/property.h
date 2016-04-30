@@ -48,6 +48,12 @@ namespace Jarvis {
         void get_tm(struct tm *) const;
         void get_utc(struct tm *) const;
 
+        // Return time since 1970
+        time_t get_time() const;
+        uint64_t get_time_in_usec() const;
+        uint64_t get_time_in_msec() const
+            { return get_time_in_usec() / 1000; }
+
         bool operator<(const Time &t) const
             { return time_val < t.time_val; }
         bool operator==(const Time &t) const

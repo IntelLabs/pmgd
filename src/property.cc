@@ -109,3 +109,15 @@ void Jarvis::Time::get_tm(struct tm *tm) const
     tm->tm_isdst = -1;
     timegm(tm);  // Fills wday
 }
+
+time_t Jarvis::Time::get_time() const
+{
+    struct tm tm;
+    get_utc(&tm);
+    return timegm(&tm);
+}
+
+uint64_t Jarvis::Time::get_time_in_usec() const
+{
+    return get_time() * 1000000ULL + usec;
+}
