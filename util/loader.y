@@ -193,10 +193,11 @@ property:
         | property_id '=' STRING
               {
                   struct tm tm;
+                  unsigned long usec;
                   int hr_offset, min_offset;
-                  if (!string_to_tm(*$3, &tm, &hr_offset, &min_offset))
+                  if (!string_to_tm(*$3, &tm, &usec, &hr_offset, &min_offset))
                       throw Jarvis::Exception(LoaderFormatError);
-                  Jarvis::Time time(&tm, hr_offset, min_offset);
+                  Jarvis::Time time(&tm, usec, hr_offset, min_offset);
                   current.set_property($1, time);
                   delete $1;
                   delete $3;
