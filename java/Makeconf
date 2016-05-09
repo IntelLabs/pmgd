@@ -64,7 +64,14 @@ java/%.o: java/%.cc $(MAKEFILE_LIST)
 # Rule for building a JNI header file for a class.
 java/%.h: java/jarvis/%.class $(MAKEFILE_LIST)
 	$(call print,JH,$@)
-	$(JH) -jni -cp java -o $@ jarvis.$*
+	$(JH) -jni -force -cp java -o $@ jarvis.$*
+
+# Special rule for building JNI header file Property.h to work around
+# bug in javah.
+java/Property.h: java/jarvis/Property.class $(MAKEFILE_LIST)
+	$(call print,JH,$@)
+	$(JH) -jni -force -cp java -o $@ jarvis.Property
+	echo -e '/Ljarvis_Property_Time/s/_Time/_00024Time/\nw' | ed java/Property.h
 
 # A rule to build a jar file.
 # There is a bug in make version 3.81 that does not handle the

@@ -11,7 +11,7 @@ public class BindingsTest {
             // Adding Node, getting ID, tag
             Transaction tx1 = new Transaction(db, true, false);
             Node n1 = db.add_node("myTag1");
-            int rc = db.get_id(n1);
+            long rc = db.get_id(n1);
             String ret = n1.get_tag();
             tx1.commit();
             System.out.printf("Adding node returned id %d, tag %s.\n", rc, ret);
@@ -30,8 +30,8 @@ public class BindingsTest {
             Transaction tx3 = new Transaction(db, false, true);
             Node src = e1.get_source();
             Node dest = e1.get_destination();
-            int src_id = db.get_id(src);
-            int dest_id = db.get_id(dest);
+            long src_id = db.get_id(src);
+            long dest_id = db.get_id(dest);
             tx3.commit();
             System.out.printf("Verified: edge goes from %d to %d.\n", src_id, dest_id);
 
@@ -41,7 +41,6 @@ public class BindingsTest {
 
             Property p = new Property();
 
-            Property p1 = new Property(p);
             Property p2 = new Property(true);
             Property p3 = new Property(v1);
             Property p4 = new Property("I am a long string property");
@@ -49,7 +48,6 @@ public class BindingsTest {
 
             // Check types and get values of properties we just created
             System.out.printf("Checking type: %d\n", p.type());
-            System.out.printf("Checking type: %d\n", p1.type());
             System.out.printf("Checking type: %d\n", p2.type());
             System.out.printf("Checking type: %d\n", p3.type());
             System.out.printf("Checking type: %d\n", p4.type());

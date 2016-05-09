@@ -24,7 +24,7 @@ jobject JNICALL Java_jarvis_PropertyIterator_get_1current(JNIEnv *env, jobject p
 
     try {
         Property result = *j_pi;
-        return new_java_object(env, "Property", new Property(result));
+        return new_java_property(env, new Property(result));
     }
     catch (Exception e) {
         JavaThrow(env, e);
