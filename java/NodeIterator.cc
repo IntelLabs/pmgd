@@ -15,13 +15,7 @@ void Java_jarvis_NodeIterator_next(JNIEnv *env, jobject ni)
 
         j_ni.next();
 
-        jobject cur;
-        if (j_ni) {
-            Node *j_n = &(*j_ni);
-            cur = new_node_object(env, j_n);
-        }
-        else
-            cur = NULL;
+        jobject cur = j_ni ? new_java_node(env, *j_ni) : NULL;
 
         static jfieldID fid = 0;
         if (fid == 0) {

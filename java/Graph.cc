@@ -127,8 +127,7 @@ jobject JNICALL Java_jarvis_Graph_add_1node(JNIEnv *env, jobject graph, jstring 
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
     try {
-        Node &j_node = j_db.add_node(j_tag);
-        return new_java_object(env, "Node", &j_node);
+        return new_java_node(env, j_db.add_node(j_tag));
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -144,8 +143,7 @@ jobject JNICALL Java_jarvis_Graph_add_1edge(JNIEnv *env, jobject graph,
     Node &j_dest = *(getJarvisHandle<Node>(env, dest));
     const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
     try {
-        Edge &j_edge = j_db.add_edge(j_src, j_dest, j_tag);
-        return new_java_object(env, "Edge", &j_edge);
+        return new_java_edge(env, j_db.add_edge(j_src, j_dest, j_tag));
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -184,16 +182,31 @@ void Java_jarvis_Graph_dispose(JNIEnv *env, jobject graph)
     setJarvisHandle(env, graph, static_cast<Graph *>(NULL));
 }
 
-jobject new_java_object(JNIEnv *env, const char *name, void *obj)
+jobject new_java_node(JNIEnv *env, Node &obj)
 {
-    char full_name[40] = "jarvis/";
-    strcat(full_name, name);
-    jclass cls = env->FindClass(full_name);
-    jmethodID cnstrctr = env->GetMethodID(cls, "<init>", "(J)V");
-    return env->NewObject(cls, cnstrctr, reinterpret_cast<jlong>(obj));
+    static jclass cls = 0;
+    static jmethodID ctor = 0;
+    if (ctor == 0) {
+        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Node"));
+        ctor = env->GetMethodID(cls, "<init>", "(J)V");
+        assert(ctor != 0);
+    }
+    return env->NewObject(cls, ctor, reinterpret_cast<jlong>(&obj));
 }
 
-jobject new_java_property(JNIEnv *env, void *obj)
+jobject new_java_edge(JNIEnv *env, Edge &obj)
+{
+    static jclass cls = 0;
+    static jmethodID ctor = 0;
+    if (ctor == 0) {
+        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Edge"));
+        ctor = env->GetMethodID(cls, "<init>", "(J)V");
+        assert(ctor != 0);
+    }
+    return env->NewObject(cls, ctor, reinterpret_cast<jlong>(&obj));
+}
+
+jobject new_java_property(JNIEnv *env, Property *obj)
 {
     static jclass cls = 0;
     static jmethodID ctor = 0;
@@ -211,8 +224,7 @@ jobject java_node_iterator(JNIEnv *env, NodeIterator &&ni)
 
     jobject cur;
     if (*j_ni) {
-        Node &j_n = **j_ni;
-        cur = new_node_object(env, &j_n);
+        cur = new_java_node(env, **j_ni);
     }
     else
         cur = NULL;
@@ -254,18 +266,6 @@ jobject java_property_iterator(JNIEnv *env, PropertyIterator &&pi)
         assert(ctor != 0);
     }
     return env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_pi));
-}
-
-jobject new_node_object(JNIEnv *env, void *obj)
-{
-    static jclass cls = 0;
-    static jmethodID ctor = 0;
-    if (ctor == 0) {
-        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Node"));
-        ctor = env->GetMethodID(cls, "<init>", "(J)V");
-        assert(ctor != 0);
-    }
-    return env->NewObject(cls, ctor, reinterpret_cast<jlong>(obj));
 }
 
 template <>

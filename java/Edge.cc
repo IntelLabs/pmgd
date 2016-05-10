@@ -29,8 +29,7 @@ jobject Java_jarvis_Edge_get_1source(JNIEnv *env, jobject edge)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     try {
-        Node &j_src = j_edge.get_source();
-        return new_java_object(env, "Node", &j_src);
+        return new_java_node(env, j_edge.get_source());
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -42,8 +41,7 @@ jobject Java_jarvis_Edge_get_1destination(JNIEnv *env, jobject edge)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
     try {
-        Node &j_dest = j_edge.get_destination();
-        return new_java_object(env, "Node", &j_dest);
+        return new_java_node(env, j_edge.get_destination());
     }
     catch (Exception e) {
         JavaThrow(env, e);

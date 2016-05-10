@@ -36,9 +36,9 @@ template <> Jarvis::NodeIterator *getJarvisHandle<Jarvis::NodeIterator>
 template <> Jarvis::EdgeIterator *getJarvisHandle<Jarvis::EdgeIterator>
     (JNIEnv *env, jobject obj);
 
-extern jobject new_java_object(JNIEnv *env, const char *name, void *obj);
-extern jobject new_java_property(JNIEnv *env, void *obj);
-extern jobject new_node_object(JNIEnv *env, void *obj);
+extern jobject new_java_node(JNIEnv *env, Jarvis::Node &);
+extern jobject new_java_edge(JNIEnv *env, Jarvis::Edge &);
+extern jobject new_java_property(JNIEnv *env, Jarvis::Property *);
 extern jobject java_node_iterator(JNIEnv *env, Jarvis::NodeIterator &&);
 extern jobject java_edge_iterator(JNIEnv *env, Jarvis::EdgeIterator &&);
 extern jobject java_property_iterator(JNIEnv *env, Jarvis::PropertyIterator &&);

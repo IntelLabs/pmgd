@@ -21,8 +21,7 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1current(JNIEnv *env, jobject ei)
     EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
 
     try {
-        Edge *result = &static_cast<Edge &>(*j_ei);
-        return new_java_object(env, "Edge", result);
+        return new_java_edge(env, *j_ei);
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -52,8 +51,7 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1source(JNIEnv *env, jobject ei)
 {
     EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
     try {
-        Node &j_n = j_ei->get_source();
-        return new_java_object(env, "Node", &j_n);
+        return new_java_node(env, j_ei->get_source());
     }
     catch (Exception e){
         JavaThrow(env, e);
@@ -65,8 +63,7 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1destination(JNIEnv *env, jobject e
 {
     EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
     try {
-        Node &j_n = j_ei->get_destination();
-        return new_java_object(env, "Node", &j_n);
+        return new_java_node(env, j_ei->get_destination());
     }
     catch (Exception e){
         JavaThrow(env, e);
