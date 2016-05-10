@@ -9,6 +9,12 @@
 
 using namespace Jarvis;
 
+THREAD jobject java_transaction;
+
+static void add_node_iterator(JNIEnv *env, jobject i);
+static void add_edge_iterator(JNIEnv *env, jobject i);
+static void add_property_iterator(JNIEnv *env, jobject i);
+
 jlong Java_jarvis_Graph_get_1id__Ljarvis_Node_2(JNIEnv *env, jobject graph, jobject node)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
@@ -237,7 +243,10 @@ jobject java_node_iterator(JNIEnv *env, NodeIterator &&ni)
         ctor = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
         assert(ctor != 0);
     }
-    return env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_ni), cur);
+
+    jobject i = env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_ni), cur);
+    add_node_iterator(env, i);
+    return i;
 }
 
 jobject java_edge_iterator(JNIEnv *env, EdgeIterator &&ei)
@@ -251,7 +260,10 @@ jobject java_edge_iterator(JNIEnv *env, EdgeIterator &&ei)
         ctor = env->GetMethodID(cls, "<init>", "(J)V");
         assert(ctor != 0);
     }
-    return env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_ei));
+
+    jobject i = env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_ei));
+    add_edge_iterator(env, i);
+    return i;
 }
 
 jobject java_property_iterator(JNIEnv *env, PropertyIterator &&pi)
@@ -265,8 +277,51 @@ jobject java_property_iterator(JNIEnv *env, PropertyIterator &&pi)
         ctor = env->GetMethodID(cls, "<init>", "(J)V");
         assert(ctor != 0);
     }
-    return env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_pi));
+
+    jobject i = env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_pi));
+    add_property_iterator(env, i);
+    return i;
 }
+
+static void add_node_iterator(JNIEnv *env, jobject i)
+{
+    static jclass cls = 0;
+    static jmethodID method = 0;
+    if (method == 0) {
+        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Transaction"));
+        method = env->GetMethodID(cls, "add_iterator", "(Ljarvis/NodeIterator;)V");
+        assert(method != 0);
+    }
+    assert(java_transaction != 0);
+    env->CallVoidMethod(java_transaction, method, i);
+}
+
+static void add_edge_iterator(JNIEnv *env, jobject i)
+{
+    static jclass cls = 0;
+    static jmethodID method = 0;
+    if (method == 0) {
+        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Transaction"));
+        method = env->GetMethodID(cls, "add_iterator", "(Ljarvis/EdgeIterator;)V");
+        assert(method != 0);
+    }
+    assert(java_transaction != 0);
+    env->CallVoidMethod(java_transaction, method, i);
+}
+
+static void add_property_iterator(JNIEnv *env, jobject i)
+{
+    static jclass cls = 0;
+    static jmethodID method = 0;
+    if (method == 0) {
+        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Transaction"));
+        method = env->GetMethodID(cls, "add_iterator", "(Ljarvis/PropertyIterator;)V");
+        assert(method != 0);
+    }
+    assert(java_transaction != 0);
+    env->CallVoidMethod(java_transaction, method, i);
+}
+
 
 template <>
 Jarvis::Graph *getJarvisHandle<Jarvis::Graph>(JNIEnv *env, jobject obj)

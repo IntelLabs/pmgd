@@ -3,6 +3,9 @@
 
 #include <jni.h>
 #include "jarvis.h"
+#include "../src/compiler.h"
+
+extern THREAD jobject java_transaction;
 
 inline jfieldID getHandleField(JNIEnv *env, jobject obj)
 {
