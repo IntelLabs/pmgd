@@ -71,8 +71,7 @@ jobject JNICALL Java_jarvis_Graph_get_1edges__(JNIEnv *env, jobject graph)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     try {
-        EdgeIterator *j_ei = new EdgeIterator(j_db.get_edges());
-        return new_java_object(env, "EdgeIterator", j_ei);
+        return java_edge_iterator(env, j_db.get_edges());
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -86,8 +85,7 @@ jobject JNICALL Java_jarvis_Graph_get_1edges__Ljava_lang_String_2(JNIEnv *env,
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
     try {
-        EdgeIterator *j_ei = new EdgeIterator(j_db.get_edges(j_tag));
-        return new_java_object(env, "EdgeIterator", j_ei);
+        return java_edge_iterator(env, j_db.get_edges(j_tag));
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -102,8 +100,7 @@ jobject JNICALL Java_jarvis_Graph_get_1edges__Ljava_lang_String_2Ljarvis_Propert
     const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
     PropertyPredicate &j_pp = *(getJarvisHandle<PropertyPredicate>(env, pp));
     try {
-        EdgeIterator *j_ei = new EdgeIterator(j_db.get_edges(j_tag, j_pp, reverse));
-        return new_java_object(env, "EdgeIterator", j_ei);
+        return java_edge_iterator(env, j_db.get_edges(j_tag, j_pp, reverse));
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -229,6 +226,20 @@ jobject java_node_iterator(JNIEnv *env, NodeIterator &&ni)
         assert(ctor != 0);
     }
     return env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_ni), cur);
+}
+
+jobject java_edge_iterator(JNIEnv *env, EdgeIterator &&ei)
+{
+    EdgeIterator *j_ei = new EdgeIterator(std::move(ei));
+
+    static jclass cls = 0;
+    static jmethodID ctor = 0;
+    if (ctor == 0) {
+        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/EdgeIterator"));
+        ctor = env->GetMethodID(cls, "<init>", "(J)V");
+        assert(ctor != 0);
+    }
+    return env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_ei));
 }
 
 jobject new_node_object(JNIEnv *env, void *obj)
