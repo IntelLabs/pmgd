@@ -98,8 +98,7 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1properties(JNIEnv *env, jobject ei
 {
     EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
     try {
-        PropertyIterator *j_pi = new PropertyIterator(j_ei->get_properties());
-        return new_java_object(env, "PropertyIterator", j_pi);
+        return java_property_iterator(env, j_ei->get_properties());
     }
     catch (Exception e){
         JavaThrow(env, e);

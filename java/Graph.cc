@@ -242,6 +242,20 @@ jobject java_edge_iterator(JNIEnv *env, EdgeIterator &&ei)
     return env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_ei));
 }
 
+jobject java_property_iterator(JNIEnv *env, PropertyIterator &&pi)
+{
+    PropertyIterator *j_pi = new PropertyIterator(std::move(pi));
+
+    static jclass cls = 0;
+    static jmethodID ctor = 0;
+    if (ctor == 0) {
+        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/PropertyIterator"));
+        ctor = env->GetMethodID(cls, "<init>", "(J)V");
+        assert(ctor != 0);
+    }
+    return env->NewObject(cls, ctor, reinterpret_cast<jlong>(j_pi));
+}
+
 jobject new_node_object(JNIEnv *env, void *obj)
 {
     static jclass cls = 0;

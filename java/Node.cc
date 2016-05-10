@@ -47,8 +47,7 @@ jobject Java_jarvis_Node_get_1properties(JNIEnv *env, jobject node)
 {
     Node &j_node = *(getJarvisHandle<Node>(env, node));
     try {
-        PropertyIterator *j_pi = new PropertyIterator(j_node.get_properties());
-        return new_java_object(env, "PropertyIterator", j_pi);
+        return java_property_iterator(env, j_node.get_properties());
     }
     catch (Exception e) {
         JavaThrow(env, e);

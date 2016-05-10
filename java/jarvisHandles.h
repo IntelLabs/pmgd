@@ -41,6 +41,7 @@ extern jobject new_java_property(JNIEnv *env, void *obj);
 extern jobject new_node_object(JNIEnv *env, void *obj);
 extern jobject java_node_iterator(JNIEnv *env, Jarvis::NodeIterator &&);
 extern jobject java_edge_iterator(JNIEnv *env, Jarvis::EdgeIterator &&);
+extern jobject java_property_iterator(JNIEnv *env, Jarvis::PropertyIterator &&);
 extern void JavaThrow(JNIEnv *env, Jarvis::Exception e);
 
 #endif

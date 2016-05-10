@@ -72,8 +72,7 @@ jobject Java_jarvis_Edge_get_1properties(JNIEnv *env, jobject edge)
 {
     Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
     try {
-        PropertyIterator *j_pi = new PropertyIterator(j_edge.get_properties());
-        return new_java_object(env, "PropertyIterator", j_pi);
+        return java_property_iterator(env, j_edge.get_properties());
     }
     catch (Exception e) {
         JavaThrow(env, e);
