@@ -327,6 +327,7 @@ namespace Jarvis {
         Stack _path;
         ListTraverser<void *> _list_it;
         bool _vacant_flag = false;
+        TransactionImpl *_tx;
         IndexManager &_index_manager;
 
         void finish_init() {
@@ -343,17 +344,21 @@ namespace Jarvis {
     public:
         Index_IteratorImplBase(IndexNode *tree)
             : _tree(tree), _curr(NULL), _list_it(NULL),
-              _index_manager(TransactionImpl::get_tx()->get_db()->index_manager())
+              _tx(TransactionImpl::get_tx()),
+              _index_manager(_tx->get_db()->index_manager())
         {
-            _index_manager.register_iterator(this,
-                [this](void *list_node) { remove_notify(list_node); },
-                [this](void *tree)
+            if (_tx->is_read_write()) {
+                _index_manager.register_iterator(this,
+                    [this](void *list_node) { remove_notify(list_node); },
+                    [this](void *tree)
                     { rebalance_notify(static_cast<IndexNode *>(tree)); });
+            }
         }
 
         ~Index_IteratorImplBase()
         {
-            _index_manager.unregister_iterator(this);
+            if (_tx->is_read_write())
+                _index_manager.unregister_iterator(this);
         }
 
         operator bool() const { return _vacant_flag || bool(_list_it); }

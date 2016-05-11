@@ -48,6 +48,9 @@ namespace Jarvis {
 
             GraphImpl *get_db() const { return _db; }
 
+            bool is_read_write() const
+                { return _tx_type & Transaction::ReadWrite; }
+
             void check_read_write()
             {
                 if (!(_tx_type & Transaction::ReadWrite))

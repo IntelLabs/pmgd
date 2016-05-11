@@ -80,6 +80,7 @@ namespace Jarvis {
         StringID _tag;
         const EdgeIndex::EdgePosition *_pos;
         bool _vacant_flag = false;
+        TransactionImpl *_tx;
         IndexManager &_index_manager;
 
         friend class EdgeRef;
@@ -139,10 +140,13 @@ namespace Jarvis {
               _key_pos(const_cast<EdgeIndex::KeyPosition *>(key_pos)),
               _tag(tag),
               _pos(pos),
-              _index_manager(TransactionImpl::get_tx()->get_db()->index_manager())
+              _tx(TransactionImpl::get_tx()),
+              _index_manager(_tx->get_db()->index_manager())
         {
-            _index_manager.register_iterator(this,
-                    [this](void *list_node) { remove_notify(list_node); });
+            if (_tx->is_read_write()) {
+                _index_manager.register_iterator(this,
+                        [this](void *list_node) { remove_notify(list_node); });
+            }
         }
 
         Node_EdgeIteratorImpl(const Node *n, Direction dir, EdgeIndex *out_idx,
@@ -183,7 +187,8 @@ namespace Jarvis {
 
         ~Node_EdgeIteratorImpl()
         {
-            _index_manager.unregister_iterator(this);
+            if (_tx->is_read_write())
+                _index_manager.unregister_iterator(this);
         }
 
         operator bool() const { return _vacant_flag || _pos != NULL; }
