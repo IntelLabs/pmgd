@@ -1,6 +1,6 @@
 #include "jarvis.h"
 #include "EdgeIterator.h"
-#include "jarvisHandles.h"
+#include "common.h"
 
 using namespace Jarvis;
 

@@ -1,6 +1,6 @@
 #include <jni.h>
 #include <string.h>
-#include "jarvisHandles.h"
+#include "common.h"
 
 void JavaThrow(JNIEnv *env, Jarvis::Exception e)
 {

@@ -1,5 +1,5 @@
-#ifndef JARVISHANDLES_H
-#define JARVISHANDLES_H
+#ifndef JAVA_COMMON_H
+#define JAVA_COMMON_H
 
 #include <jni.h>
 #include "jarvis.h"

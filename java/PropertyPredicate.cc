@@ -1,5 +1,5 @@
 #include "jarvis.h"
-#include "jarvisHandles.h"
+#include "common.h"
 #include "PropertyPredicate.h"
 
 using namespace Jarvis;

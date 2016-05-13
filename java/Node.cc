@@ -1,11 +1,8 @@
 #include <string.h>
-#include <stdio.h>
-
 #include "jarvis.h"
 #include "neighbor.h"
-
 #include "Node.h"
-#include "jarvisHandles.h"
+#include "common.h"
 
 using namespace Jarvis;
 
