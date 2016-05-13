@@ -8,8 +8,11 @@ NodeIterator.h
 Property.h
 PropertyIterator.h
 PropertyPredicate.h
+StringID.h
 Transaction.h
 *.o
 *.d
+jarvis/*.class
 jarvis-jni.jar
 libjarvis-jni.so
+.built

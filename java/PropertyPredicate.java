@@ -15,27 +15,28 @@ public class PropertyPredicate {
 
     public PropertyPredicate()
         { newPropertyPredicateNative(); }
-    public PropertyPredicate(String name)
-        { newPropertyPredicateNative(name); }
-    public PropertyPredicate(String name, Op op, Property v)
-        { newPropertyPredicateNative(name, op.ordinal(), v); }
-    public PropertyPredicate(String name, Op op, Property v1, Property v2)
-        { newPropertyPredicateNative(name, op.ordinal(), v1, v2); }
 
-    public PropertyPredicate(String name, String s)
-                throws Exception
-        { newPropertyPredicateNative(name, Op.Eq.ordinal(), new Property(s)); }
+    public PropertyPredicate(StringID prop_id)
+        { newPropertyPredicateNative(prop_id.id()); }
 
-    public PropertyPredicate(String name, long v)
-                throws Exception
-        { newPropertyPredicateNative(name, Op.Eq.ordinal(), new Property(v)); }
+    public PropertyPredicate(StringID prop_id, Op op, Property v)
+        { newPropertyPredicateNative(prop_id.id(), op.ordinal(), v); }
+
+    public PropertyPredicate(StringID prop_id, Op op, Property v1, Property v2)
+        { newPropertyPredicateNative(prop_id.id(), op.ordinal(), v1, v2); }
+
+    public PropertyPredicate(StringID prop_id, String s) throws Exception
+        { this(prop_id, Op.Eq, new Property(s)); }
+
+    public PropertyPredicate(StringID prop_id, long v) throws Exception
+        { this(prop_id, Op.Eq, new Property(v)); }
 
     private native void newPropertyPredicateNative();
-    private native void newPropertyPredicateNative(String name);
-    private native void newPropertyPredicateNative(String name, int op,
-                                                   Property v);
-    private native void newPropertyPredicateNative(String name, int op,
-                                                   Property v1, Property v2);
+    private native void newPropertyPredicateNative(int prop_id);
+    private native void newPropertyPredicateNative
+            (int prop_id, int op, Property v);
+    private native void newPropertyPredicateNative
+            (int prop_id, int op, Property v1, Property v2);
 
     public void finalize() { dispose(); }
     public native void dispose();

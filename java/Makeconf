@@ -4,7 +4,7 @@ JAVA_SRCS := $(addprefix java/, \
                          Node.java NodeIterator.java \
                          Edge.java EdgeIterator.java \
                          Transaction.java Graph.java Exception.java \
-                         PropertyPredicate.java)
+                         PropertyPredicate.java StringID.java)
 
 # Derived lists.
 JAVA_JOBJS := $(patsubst java/%.java,java/jarvis/%.class, $(JAVA_SRCS))

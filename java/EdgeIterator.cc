@@ -30,15 +30,11 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1current(JNIEnv *env, jobject ei)
 }
 
 
-jstring JNICALL Java_jarvis_EdgeIterator_get_1tag(JNIEnv *env, jobject ei)
+jobject JNICALL Java_jarvis_EdgeIterator_get_1tag(JNIEnv *env, jobject ei)
 {
     EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
     try {
-        StringID tag = j_ei->get_tag();
-        if (tag == 0)
-            return NULL;
-        else
-            return env->NewStringUTF(tag.name().c_str());
+        return new_java_stringid(env, j_ei->get_tag());
     }
     catch (Exception e){
         JavaThrow(env, e);
@@ -72,15 +68,13 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1destination(JNIEnv *env, jobject e
 }
 
 
-jobject JNICALL Java_jarvis_EdgeIterator_get_1property(JNIEnv *env, jobject ei,
-                                                jstring name)
+jobject JNICALL Java_jarvis_EdgeIterator_get_1property
+    (JNIEnv *env, jobject ei, jint id)
 {
     EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
-    const char *j_name = env->GetStringUTFChars(name, 0);
-
     try {
         Property result;
-        if (j_ei->check_property(j_name, result))
+        if (j_ei->check_property(id, result))
             return new_java_property(env, new Property(result));
         else
             return NULL;
@@ -103,27 +97,26 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1properties(JNIEnv *env, jobject ei
     }
 }
 
-void JNICALL Java_jarvis_EdgeIterator_set_1property(JNIEnv *env, jobject ei,
-                                             jstring name, jobject value)
+void JNICALL Java_jarvis_EdgeIterator_set_1property
+    (JNIEnv *env, jobject ei, jint id, jobject value)
 {
     EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
-    const char *j_name = env->GetStringUTFChars(name, 0);
     Property &j_value = *(getJarvisHandle<Property>(env, value));
 
     try {
-        j_ei->set_property(j_name, j_value);
+        j_ei->set_property(id, j_value);
     }
     catch (Exception e) {
         JavaThrow(env, e);
     }
 }
 
-void JNICALL Java_jarvis_EdgeIterator_remove_1property(JNIEnv *env, jobject ei, jstring name)
+void JNICALL Java_jarvis_EdgeIterator_remove_1property
+    (JNIEnv *env, jobject ei, jint id)
 {
     EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
-    const char *j_name = env->GetStringUTFChars(name, 0);
     try {
-        j_ei->remove_property(j_name);
+        j_ei->remove_property(id);
     }
     catch (Exception e) {
         JavaThrow(env, e);

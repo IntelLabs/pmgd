@@ -11,32 +11,29 @@ void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__
     setJarvisHandle(env, pp, j_pp);
 }
 
-void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_String_2
-    (JNIEnv *env, jobject pp, jstring name)
+void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__I
+    (JNIEnv *env, jobject pp, jint id)
 {
-    const char *j_name = env->GetStringUTFChars(name, 0);
-    PropertyPredicate *j_pp = new PropertyPredicate(j_name);
+    PropertyPredicate *j_pp = new PropertyPredicate(id);
     setJarvisHandle(env, pp, j_pp);
 }
 
-void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_String_2ILjarvis_Property_2
-    (JNIEnv *env, jobject pp, jstring name, jint op, jobject v)
+void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__IILjarvis_Property_2
+    (JNIEnv *env, jobject pp, jint id, jint op, jobject v)
 {
-    const char *j_name = env->GetStringUTFChars(name, 0);
     PropertyPredicate::Op j_op = PropertyPredicate::Op(op);
     Property &j_v = *(getJarvisHandle<Property>(env, v));
-    PropertyPredicate *j_pp = new PropertyPredicate(j_name, j_op, j_v);
+    PropertyPredicate *j_pp = new PropertyPredicate(id, j_op, j_v);
     setJarvisHandle(env, pp, j_pp);
 }
 
-void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__Ljava_lang_String_2ILjarvis_Property_2Ljarvis_Property_2
-    (JNIEnv *env, jobject pp, jstring name, jint op, jobject v1, jobject v2)
+void JNICALL Java_jarvis_PropertyPredicate_newPropertyPredicateNative__IILjarvis_Property_2Ljarvis_Property_2
+    (JNIEnv *env, jobject pp, jint id, jint op, jobject v1, jobject v2)
 {
-    const char *j_name = env->GetStringUTFChars(name, 0);
     PropertyPredicate::Op j_op = PropertyPredicate::Op(op);
     Property &j_v1 = *(getJarvisHandle<Property>(env, v1));
     Property &j_v2 = *(getJarvisHandle<Property>(env, v2));
-    PropertyPredicate *j_pp = new PropertyPredicate(j_name, j_op, j_v1, j_v2);
+    PropertyPredicate *j_pp = new PropertyPredicate(id, j_op, j_v1, j_v2);
     setJarvisHandle(env, pp, j_pp);
 }
 

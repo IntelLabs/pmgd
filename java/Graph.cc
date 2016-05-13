@@ -42,13 +42,12 @@ jobject JNICALL Java_jarvis_Graph_get_1nodes__(JNIEnv *env, jobject graph)
 }
 
 
-jobject JNICALL Java_jarvis_Graph_get_1nodes__Ljava_lang_String_2(JNIEnv *env,
-                    jobject graph, jstring tag)
+jobject JNICALL Java_jarvis_Graph_get_1nodes__I(JNIEnv *env,
+                    jobject graph, jint tag)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
-    const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
     try {
-        return java_node_iterator(env, j_db.get_nodes(j_tag));
+        return java_node_iterator(env, j_db.get_nodes(tag));
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -57,14 +56,13 @@ jobject JNICALL Java_jarvis_Graph_get_1nodes__Ljava_lang_String_2(JNIEnv *env,
 }
 
 
-jobject JNICALL Java_jarvis_Graph_get_1nodes__Ljava_lang_String_2Ljarvis_PropertyPredicate_2Z
-    (JNIEnv *env, jobject graph, jstring tag, jobject pp, jboolean reverse)
+jobject JNICALL Java_jarvis_Graph_get_1nodes__ILjarvis_PropertyPredicate_2Z
+    (JNIEnv *env, jobject graph, jint tag, jobject pp, jboolean reverse)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
-    const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
     PropertyPredicate &j_pp = *(getJarvisHandle<PropertyPredicate>(env, pp));
     try {
-        return java_node_iterator(env, j_db.get_nodes(j_tag, j_pp, reverse));
+        return java_node_iterator(env, j_db.get_nodes(tag, j_pp, reverse));
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -85,13 +83,12 @@ jobject JNICALL Java_jarvis_Graph_get_1edges__(JNIEnv *env, jobject graph)
     }
 }
 
-jobject JNICALL Java_jarvis_Graph_get_1edges__Ljava_lang_String_2(JNIEnv *env,
-                    jobject graph, jstring tag)
+jobject JNICALL Java_jarvis_Graph_get_1edges__I(JNIEnv *env,
+                    jobject graph, jint tag)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
-    const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
     try {
-        return java_edge_iterator(env, j_db.get_edges(j_tag));
+        return java_edge_iterator(env, j_db.get_edges(tag));
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -99,14 +96,13 @@ jobject JNICALL Java_jarvis_Graph_get_1edges__Ljava_lang_String_2(JNIEnv *env,
     }
 }
 
-jobject JNICALL Java_jarvis_Graph_get_1edges__Ljava_lang_String_2Ljarvis_PropertyPredicate_2Z
-    (JNIEnv *env, jobject graph, jstring tag, jobject pp, jboolean reverse)
+jobject JNICALL Java_jarvis_Graph_get_1edges__ILjarvis_PropertyPredicate_2Z
+    (JNIEnv *env, jobject graph, jint tag, jobject pp, jboolean reverse)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
-    const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
     PropertyPredicate &j_pp = *(getJarvisHandle<PropertyPredicate>(env, pp));
     try {
-        return java_edge_iterator(env, j_db.get_edges(j_tag, j_pp, reverse));
+        return java_edge_iterator(env, j_db.get_edges(tag, j_pp, reverse));
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -128,12 +124,11 @@ void Java_jarvis_Graph_loadGraphNative(JNIEnv *env, jobject obj,
     env->ReleaseStringUTFChars(filename, db_name);
 }
 
-jobject JNICALL Java_jarvis_Graph_add_1node(JNIEnv *env, jobject graph, jstring tag)
+jobject JNICALL Java_jarvis_Graph_add_1node(JNIEnv *env, jobject graph, jint tag)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
-    const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
     try {
-        return new_java_node(env, j_db.add_node(j_tag));
+        return new_java_node(env, j_db.add_node(tag));
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -142,14 +137,13 @@ jobject JNICALL Java_jarvis_Graph_add_1node(JNIEnv *env, jobject graph, jstring 
 }
 
 jobject JNICALL Java_jarvis_Graph_add_1edge(JNIEnv *env, jobject graph,
-                                     jobject src, jobject dest, jstring tag)
+                                     jobject src, jobject dest, jint tag)
 {
     Graph &j_db = *(getJarvisHandle<Graph>(env, graph));
     Node &j_src = *(getJarvisHandle<Node>(env, src));
     Node &j_dest = *(getJarvisHandle<Node>(env, dest));
-    const char *j_tag = tag != NULL ? env->GetStringUTFChars(tag, 0) : NULL;
     try {
-        return new_java_edge(env, j_db.add_edge(j_src, j_dest, j_tag));
+        return new_java_edge(env, j_db.add_edge(j_src, j_dest, tag));
     }
     catch (Exception e) {
         JavaThrow(env, e);
