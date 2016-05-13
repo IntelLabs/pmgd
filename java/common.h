@@ -7,37 +7,29 @@
 
 extern THREAD jobject java_transaction;
 
-inline jfieldID getHandleField(JNIEnv *env, jobject obj)
-{
-    jclass c = env->GetObjectClass(obj);
-    return env->GetFieldID(c, "jarvisHandle", "J"); // where J is type for long
-}
-
 template <typename T>
 inline T *getJarvisHandle(JNIEnv *env, jobject obj)
 {
-    jlong handle = env->GetLongField(obj, getHandleField(env, obj));
+    static jfieldID id = 0;
+    if (id == 0) {
+        jclass cls = env->GetObjectClass(obj);
+        id = env->GetFieldID(cls, "jarvisHandle", "J");
+    }
+    jlong handle = env->GetLongField(obj, id);
     return reinterpret_cast<T *>(handle);
 }
 
 template <typename T>
 inline void setJarvisHandle(JNIEnv *env, jobject obj, T *t)
 {
+    static jfieldID id = 0;
+    if (id == 0) {
+        jclass cls = env->GetObjectClass(obj);
+        id = env->GetFieldID(cls, "jarvisHandle", "J");
+    }
     jlong handle = reinterpret_cast<jlong>(t);
-    env->SetLongField(obj, getHandleField(env, obj), handle);
+    env->SetLongField(obj, id, handle);
 }
-
-template <> Jarvis::Graph *getJarvisHandle<Jarvis::Graph>
-    (JNIEnv *env, jobject obj);
-
-template <> Jarvis::Node *getJarvisHandle<Jarvis::Node>
-    (JNIEnv *env, jobject obj);
-
-template <> Jarvis::NodeIterator *getJarvisHandle<Jarvis::NodeIterator>
-    (JNIEnv *env, jobject obj);
-
-template <> Jarvis::EdgeIterator *getJarvisHandle<Jarvis::EdgeIterator>
-    (JNIEnv *env, jobject obj);
 
 extern jobject new_java_node(JNIEnv *env, Jarvis::Node &);
 extern jobject new_java_edge(JNIEnv *env, Jarvis::Edge &);
