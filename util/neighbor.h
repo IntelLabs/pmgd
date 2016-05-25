@@ -37,6 +37,18 @@ struct JointNeighborConstraint
     const Jarvis::Node &node;
 };
 
+class NeighborhoodIteratorImpl;
+
+class NeighborhoodIterator : public Jarvis::NodeIterator
+{
+public:
+    explicit NeighborhoodIterator(NeighborhoodIteratorImpl *i);
+    NeighborhoodIterator(NeighborhoodIterator &i);
+    NeighborhoodIterator(NeighborhoodIterator &&i);
+
+    int distance() const;
+};
+
 
 extern Jarvis::NodeIterator get_neighbors
     (const Jarvis::Node &node,
@@ -47,6 +59,12 @@ extern Jarvis::NodeIterator get_neighbors
 extern Jarvis::NodeIterator get_joint_neighbors
     (const std::vector<JointNeighborConstraint> &constraints,
      bool unique = true);
+
+extern NeighborhoodIterator get_neighborhood
+    (const Jarvis::Node &node,
+     const std::vector<EdgeConstraint> &constraints,
+     bool bfs);
+
 
 inline Jarvis::NodeIterator get_neighbors
     (const Jarvis::Node &node,
@@ -71,4 +89,52 @@ inline Jarvis::NodeIterator get_neighbors
     (const Jarvis::Node &node, Jarvis::StringID tag, bool unique = true)
 {
     return get_neighbors(node, Jarvis::Any, tag, unique);
+}
+
+inline NeighborhoodIterator get_neighborhood
+    (const Jarvis::Node &node, int max_hops,
+     bool bfs)
+{
+    typedef std::vector<EdgeConstraint> V;
+    EdgeConstraint constraint{Jarvis::Any, 0};
+    return get_neighborhood(node, V(max_hops, constraint), bfs);
+}
+
+inline NeighborhoodIterator get_neighborhood
+    (const Jarvis::Node &node, int max_hops,
+     Jarvis::Direction dir,
+     bool bfs)
+{
+    typedef std::vector<EdgeConstraint> V;
+    EdgeConstraint constraint{dir, 0};
+    return get_neighborhood(node, V(max_hops, constraint), bfs);
+}
+
+inline NeighborhoodIterator get_neighborhood
+    (const Jarvis::Node &node, int max_hops,
+     Jarvis::StringID tag,
+     bool bfs)
+{
+    typedef std::vector<EdgeConstraint> V;
+    EdgeConstraint constraint{Jarvis::Any, tag};
+    return get_neighborhood(node, V(max_hops, constraint), bfs);
+}
+
+inline NeighborhoodIterator get_neighborhood
+    (const Jarvis::Node &node, int max_hops,
+     Jarvis::Direction dir, Jarvis::StringID tag,
+     bool bfs)
+{
+    typedef std::vector<EdgeConstraint> V;
+    EdgeConstraint constraint{dir, tag};
+    return get_neighborhood(node, V(max_hops, constraint), bfs);
+}
+
+inline NeighborhoodIterator get_neighborhood
+    (const Jarvis::Node &node, int max_hops,
+     EdgeConstraint constraint,
+     bool bfs)
+{
+    typedef std::vector<EdgeConstraint> V;
+    return get_neighborhood(node, V(max_hops, constraint), bfs);
 }
