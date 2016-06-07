@@ -235,6 +235,8 @@ EdgeIterator Node::get_edges(Direction dir, StringID tag) const
 {
     if (dir == Any)
         return get_edges(tag);
+    if (tag == 0)
+        return get_edges(dir);
     EdgeIndex *idx = (dir == Outgoing) ? _out_edges : _in_edges;
     return EdgeIterator(new Node_EdgeIteratorImpl(idx, this, dir, tag));
 }
