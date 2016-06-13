@@ -242,24 +242,39 @@ int main(int argc, char **argv)
             r = 2;
         }
 
-        // Need 3-hops from Node 4 to cover the graph. Test distance() computation.
         NodeIterator ani = db.get_nodes("Person",
                 PropertyPredicate("Name", PropertyPredicate::Eq, "Ann"));
-        printf("neighbor test 5\n");
-        NeighborhoodIterator ni5 = get_neighborhood(*ani, 3, true);
+
+        // There should be two neighbors at 2-hops of this node.
+        printf("neighbor test 5a\n");
+        NodeIterator ni5a = get_nhop_neighbors(*ani, 2);
+        n = 0;
+        while (ni5a) {
+            n++;
+            ni5a.next();
+        }
+        if (n != 2) {
+            fprintf(stderr, "neighbortest: failure 5a (%d)\n", n);
+            r = 2;
+        }
+
+        // Need 3-hops from Node 4 to cover most of the connected graph.
+        // Test distance() computation.
+        printf("neighbor test 5b\n");
+        NeighborhoodIterator ni5b = get_neighborhood(*ani, 3, true);
         n = 0;
         int distance;
-        while (ni5) {
+        while (ni5b) {
             n++;
-            distance = ni5.distance();
-            ni5.next();
+            distance = ni5b.distance();
+            ni5b.next();
         }
         if (distance != 3) {
-            fprintf(stderr, "neighbortest: failure 5(1) (%d)\n", distance);
+            fprintf(stderr, "neighbortest: failure 5b(1) (%d)\n", distance);
             r = 2;
         }
         if (n != 9) {
-            fprintf(stderr, "neighbortest: failure 5(2) (%d)\n", n);
+            fprintf(stderr, "neighbortest: failure 5b(2) (%d)\n", n);
             r = 2;
         }
 
