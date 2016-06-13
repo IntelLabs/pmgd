@@ -65,6 +65,10 @@ extern NeighborhoodIterator get_neighborhood
      const std::vector<EdgeConstraint> &constraints,
      bool bfs);
 
+extern Jarvis::NodeIterator get_nhop_neighbors
+    (const Jarvis::Node &node,
+     const std::vector<EdgeConstraint> &constraints);
+
 
 inline Jarvis::NodeIterator get_neighbors
     (const Jarvis::Node &node,
@@ -90,6 +94,7 @@ inline Jarvis::NodeIterator get_neighbors
 {
     return get_neighbors(node, Jarvis::Any, tag, unique);
 }
+
 
 inline NeighborhoodIterator get_neighborhood
     (const Jarvis::Node &node, int max_hops,
@@ -137,4 +142,48 @@ inline NeighborhoodIterator get_neighborhood
 {
     typedef std::vector<EdgeConstraint> V;
     return get_neighborhood(node, V(max_hops, constraint), bfs);
+}
+
+
+inline Jarvis::NodeIterator get_nhop_neighbors
+    (const Jarvis::Node &node, int hops)
+{
+    typedef std::vector<EdgeConstraint> V;
+    EdgeConstraint constraint{Jarvis::Any, 0};
+    return get_nhop_neighbors(node, V(hops, constraint));
+}
+
+inline Jarvis::NodeIterator get_nhop_neighbors
+    (const Jarvis::Node &node, int hops,
+     Jarvis::Direction dir)
+{
+    typedef std::vector<EdgeConstraint> V;
+    EdgeConstraint constraint{dir, 0};
+    return get_nhop_neighbors(node, V(hops, constraint));
+}
+
+inline Jarvis::NodeIterator get_nhop_neighbors
+    (const Jarvis::Node &node, int hops,
+     Jarvis::StringID tag)
+{
+    typedef std::vector<EdgeConstraint> V;
+    EdgeConstraint constraint{Jarvis::Any, tag};
+    return get_nhop_neighbors(node, V(hops, constraint));
+}
+
+inline Jarvis::NodeIterator get_nhop_neighbors
+    (const Jarvis::Node &node, int hops,
+     Jarvis::Direction dir, Jarvis::StringID tag)
+{
+    typedef std::vector<EdgeConstraint> V;
+    EdgeConstraint constraint{dir, tag};
+    return get_nhop_neighbors(node, V(hops, constraint));
+}
+
+inline Jarvis::NodeIterator get_nhop_neighbors
+    (const Jarvis::Node &node, int hops,
+     EdgeConstraint constraint)
+{
+    typedef std::vector<EdgeConstraint> V;
+    return get_nhop_neighbors(node, V(hops, constraint));
 }

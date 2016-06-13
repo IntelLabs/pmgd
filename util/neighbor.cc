@@ -3,6 +3,7 @@
 #include <set>
 #include <unordered_set>
 #include <queue>
+#include <deque>
 #include "jarvis.h"
 #include "neighbor.h"
 
@@ -261,6 +262,103 @@ int NeighborhoodIterator::distance() const {
 }
 
 
+/**
+ * Iterator for all neighbors of a node a a given hop count.
+ * This iterator does a breadth first traversal.
+ */
+class NhopNeighborIteratorImpl : public NodeIteratorImplIntf
+{
+    typedef std::vector<EdgeConstraint> V;
+    const Node *_node;
+    EdgeIterator *_ei;
+    Direction _dir;
+    StringID _tag;
+
+    std::unordered_set<const Node *>_seen;
+    std::deque<const Node *> _explore;   // Neighbors that need to be traversed.
+    Node *_neighbor;
+
+    void find_first(const Node &node, const V &v)
+    {
+        int max_depth = v.size();
+        std::deque<const Node *> explore;
+
+        explore.push_back(&node);
+
+        for (int depth = 0; depth < max_depth - 1; depth++) {
+            Direction dir = v[depth].dir;
+            StringID tag = v[depth].tag;
+            std::deque<const Node *> explore_next;
+            for (const Node *n : explore) {
+                EdgeIterator ei = n->get_edges(dir, tag);
+                while (ei) {
+                    const Node *neighbor = get_neighbor(*n, *ei, dir);
+                    if (_seen.insert(neighbor).second)
+                        explore_next.push_back(neighbor);
+                    ei.next();
+                }
+            }
+            explore = std::move(explore_next);
+        }
+
+        _explore = std::move(explore);
+        _ei = new EdgeIterator(NULL);
+        _next();
+    }
+
+    bool _next()
+    {
+        while (true) {
+            while (*_ei) {
+                _neighbor = get_neighbor(*_node, **_ei, _dir);
+                if (_seen.insert(_neighbor).second)
+                    return true;
+                _ei->next();
+            }
+            // Means none of the neighbors were good. Look at explore queue.
+            if (_explore.empty())
+                    break;
+            _node = _explore.front();
+            _explore.pop_front();
+            delete _ei;
+            _ei = new EdgeIterator(_node->get_edges(_dir, _tag));
+        }
+
+        return false;
+    }
+
+public:
+    NhopNeighborIteratorImpl(const Node &n, const V &v)
+        : _dir(v.back().dir),
+          _tag(v.back().tag)
+    {
+        _seen.insert(&n);
+        find_first(n, v);
+    }
+
+    ~NhopNeighborIteratorImpl()
+    {
+        delete _ei;
+    }
+
+    operator bool() const { return bool(*_ei); }
+
+    bool next()
+    {
+        _ei->next();
+        return _next();
+    }
+
+    Node *ref()
+    {
+        // Check that **_ei still exists. If it does, then
+        // _neighbor still exists and is still a neighbor.
+        // If not, the edge iterator will throw VacantIterator.
+        (void)**_ei;
+        return _neighbor;
+    }
+};
+
 NodeIterator get_neighbors
     (const Node &n, Direction dir, StringID tag, bool unique)
 {
@@ -285,4 +383,12 @@ NeighborhoodIterator get_neighborhood
     return NeighborhoodIterator(NULL);
 //    else
 //        return NodeIterator(new NhopDFSNeighborhoodIteratorImpl(node, constraints));
+}
+
+
+NodeIterator get_nhop_neighbors
+    (const Node &node,
+     const std::vector<EdgeConstraint> &constraints)
+{
+    return NodeIterator(new NhopNeighborIteratorImpl(node, constraints));
 }
