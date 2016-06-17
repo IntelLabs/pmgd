@@ -1,10 +1,7 @@
 #include <string.h>
-#include <stdio.h>
-
 #include "jarvis.h"
-
 #include "Property.h"
-#include "jarvisHandles.h"
+#include "common.h"
 
 using namespace Jarvis;
 

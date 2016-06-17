@@ -21,7 +21,7 @@ public class DateTest {
             System.exit(1);
         }
         String graph_name = args[0];
-        String prop_id = args[1];
+        String prop_name = args[1];
         int expected = Integer.parseInt(args[2]);
 
         // Zone abbreviations are not recommended. Use either full name
@@ -39,6 +39,7 @@ public class DateTest {
         try {
             Graph db = new Graph(graph_name, Graph.OpenOptions.ReadOnly);
             Transaction tx = new Transaction(db, false, true);
+            StringID prop_id = new StringID(prop_name);
             for (NodeIterator ni = db.get_nodes(); !ni.done(); ni.next()) {
                 Node n = ni.get_current();
                 Property np;

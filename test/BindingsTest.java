@@ -8,20 +8,30 @@ public class BindingsTest {
         try {
             Graph db = new Graph(sample_loc, Graph.OpenOptions.ReadWrite);
 
-            // Adding Node, getting ID, tag
             Transaction tx1 = new Transaction(db, true, false);
-            Node n1 = db.add_node("myTag1");
+
+            StringID s_name = new StringID("Name");
+            StringID s_age = new StringID("Age");
+            StringID s_relation = new StringID("Relation");
+            StringID s_count = new StringID("Count");
+            StringID s_tag1 = new StringID("myTag1");
+            StringID s_tag2 = new StringID("myTag2");
+            StringID s_tag3 = new StringID("myTag3");
+            StringID s_null = new StringID();
+
+            // Adding Node, getting ID, tag
+            Node n1 = db.add_node(s_tag1);
             long rc = db.get_id(n1);
-            String ret = n1.get_tag();
+            String ret = n1.get_tag().name();
             tx1.commit();
             System.out.printf("Adding node returned id %d, tag %s.\n", rc, ret);
 
             // Adding Edge, getting ID, tag
             Transaction tx2 = new Transaction(db, false, false);
-            Node n2 = db.add_node("myTag2");
-            Edge e1 = db.add_edge(n1, n2, "myTag3");
+            Node n2 = db.add_node(s_tag2);
+            Edge e1 = db.add_edge(n1, n2, s_tag3);
             rc  = db.get_id(e1);
-            ret = e1.get_tag();
+            ret = e1.get_tag().name();
             tx2.commit();
             System.out.printf("Adding edge returned id %d, tag %s.\n", rc, ret);
 
@@ -61,28 +71,28 @@ public class BindingsTest {
             Transaction tx4 = new Transaction(db, false, false);
             Property p_name = new Property("katelin");
             Property p_age = new Property(26);
-            n1.set_property("Name", p_name);
-            n1.set_property("Age", p_age);
+            n1.set_property(s_name, p_name);
+            n1.set_property(s_age, p_age);
 
-            n2.set_property("Name", new Property("philip"));
-            n2.set_property("Age", new Property(52));
+            n2.set_property(s_name, new Property("philip"));
+            n2.set_property(s_age, new Property(52));
 
-            Node n3 = db.add_node("myTag2");
-            n3.set_property("Name", new Property("alain"));
+            Node n3 = db.add_node(s_tag2);
+            n3.set_property(s_name, new Property("alain"));
 
-            Node n4 = db.add_node(null);
-            n4.set_property("Name", new Property("vishakha"));
+            Node n4 = db.add_node(s_null);
+            n4.set_property(s_name, new Property("vishakha"));
 
-            Edge e2 = db.add_edge(n1, n3, "myTag3");
-            Edge e3 = db.add_edge(n4, n1, null);
-            Edge e4 = db.add_edge(n3, n2, null);
-            Edge e5 = db.add_edge(n4, n2, "myTag3");
+            Edge e2 = db.add_edge(n1, n3, s_tag3);
+            Edge e3 = db.add_edge(n4, n1, s_null);
+            Edge e4 = db.add_edge(n3, n2, s_null);
+            Edge e5 = db.add_edge(n4, n2, s_tag3);
 
-            Property p6 = n1.get_property("Name");
+            Property p6 = n1.get_property(s_name);
             if (p6 != null)
                 System.out.printf(" get returns:%s\n", p6.string_value());
-            n1.remove_property("Age");
-            Property p7 = n1.get_property("Age");
+            n1.remove_property(s_age);
+            Property p7 = n1.get_property(s_age);
             if (p7 != null)
                 System.out.printf("get returns:%s\n", p7.int_value());
             tx4.commit();
@@ -91,15 +101,15 @@ public class BindingsTest {
             Transaction tx5 = new Transaction(db, false, false);
             Property p_relation = new Property("creates");
             Property p_count = new Property(-1);
-            e1.set_property("Relation", p_relation);
-            e1.set_property("Count", p_count);
+            e1.set_property(s_relation, p_relation);
+            e1.set_property(s_count, p_count);
 
 
-            Property p8 = e1.get_property("Relation");
+            Property p8 = e1.get_property(s_relation);
             if (p8 != null)
                 System.out.printf(" get returns:%s\n", p8.string_value());
-            e1.remove_property("Count");
-            Property p9 = n1.get_property("Count");
+            e1.remove_property(s_count);
+            Property p9 = n1.get_property(s_count);
             if (p9 != null)
                 System.out.printf("get returns:%s\n", p9.int_value());
             tx5.commit();
@@ -168,34 +178,34 @@ public class BindingsTest {
                 i++;
             }
 
-            ni = db.get_nodes(null, new PropertyPredicate("Name"), false);
+            ni = db.get_nodes(s_null, new PropertyPredicate(s_name), false);
             for ( ; !ni.done(); ni.next())
                 System.out.printf("Node %d has Name\n", db.get_id(ni.get_current()));
 
-            ni = db.get_nodes(null, new PropertyPredicate("Age"), false);
+            ni = db.get_nodes(s_null, new PropertyPredicate(s_age), false);
             for ( ; !ni.done(); ni.next())
                 System.out.printf("Node %d has Age\n", db.get_id(ni.get_current()));
 
             System.out.printf("Nodes with name > m\n");
-            ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.Op.Ge, new Property("m")), false);
+            ni = db.get_nodes(s_null, new PropertyPredicate(s_name, PropertyPredicate.Op.Ge, new Property("m")), false);
             for ( ; !ni.done(); ni.next())
                 System.out.printf("Node %d: %s\n",
                     db.get_id(ni.get_current()),
-                    ni.get_property("Name").string_value());
+                    ni.get_property(s_name).string_value());
 
             System.out.printf("Nodes with name > f and name < s\n");
-            ni = db.get_nodes(null, new PropertyPredicate("Name", PropertyPredicate.Op.GtLt, new Property("f"), new Property("s")), false);
+            ni = db.get_nodes(s_null, new PropertyPredicate(s_name, PropertyPredicate.Op.GtLt, new Property("f"), new Property("s")), false);
             for ( ; !ni.done(); ni.next())
                 System.out.printf("Node %d: %s\n",
                     db.get_id(ni.get_current()),
-                    ni.get_property("Name").string_value());
+                    ni.get_property(s_name).string_value());
 
             System.out.printf("Nodes with tag myTag2 and name > a and name < s\n");
-            ni = db.get_nodes("myTag2", new PropertyPredicate("Name", PropertyPredicate.Op.GtLt, new Property("a"), new Property("s")), false);
+            ni = db.get_nodes(s_tag2, new PropertyPredicate(s_name, PropertyPredicate.Op.GtLt, new Property("a"), new Property("s")), false);
             for ( ; !ni.done(); ni.next())
                 System.out.printf("Node %d: %s\n",
                     db.get_id(ni.get_current()),
-                    ni.get_property("Name").string_value());
+                    ni.get_property(s_name).string_value());
 
             System.out.printf("All edges to/from node 1:");
             for (ei = n1.get_edges(); !ei.done(); ei.next())
@@ -209,25 +219,25 @@ public class BindingsTest {
             System.out.printf("\n");
 
             System.out.printf("Edges to/from node 1 with tag:");
-            ei = n1.get_edges("myTag3");
+            ei = n1.get_edges(s_tag3);
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
 
             System.out.printf("Edges to/from node 1 with tag:");
-            ei = n1.get_edges(Node.Direction.Any, "myTag3");
+            ei = n1.get_edges(Node.Direction.Any, s_tag3);
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
 
             System.out.printf("Edges from node 1 with tag:");
-            ei = n1.get_edges(Node.Direction.Outgoing, "myTag3");
+            ei = n1.get_edges(Node.Direction.Outgoing, s_tag3);
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
 
             System.out.printf("Edges to node 2 with tag:");
-            ei = n2.get_edges(Node.Direction.Incoming, "myTag3");
+            ei = n2.get_edges(Node.Direction.Incoming, s_tag3);
             for ( ; !ei.done(); ei.next())
                 System.out.printf(" %d", db.get_id(ei.get_current()));
             System.out.printf("\n");
@@ -239,7 +249,7 @@ public class BindingsTest {
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
-                        ni2.get_property("Name").string_value());
+                        ni2.get_property(s_name).string_value());
             }
             System.out.printf("\n");
 
@@ -250,18 +260,18 @@ public class BindingsTest {
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
-                        ni2.get_property("Name").string_value());
+                        ni2.get_property(s_name).string_value());
             }
             System.out.printf("\n");
 
             for (ni = db.get_nodes(); !ni.done(); ni.next()) {
                 System.out.printf("Neighbors of node %d (OUT, \"myTag3\")\n",
                                   db.get_id(ni.get_current()));
-                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Outgoing, "myTag3");
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Outgoing, s_tag3);
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
-                        ni2.get_property("Name").string_value());
+                        ni2.get_property(s_name).string_value());
             }
             System.out.printf("\n");
 
@@ -272,18 +282,18 @@ public class BindingsTest {
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
-                        ni2.get_property("Name").string_value());
+                        ni2.get_property(s_name).string_value());
             }
             System.out.printf("\n");
 
             for (ni = db.get_nodes(); !ni.done(); ni.next()) {
                 System.out.printf("Neighbors of node %d (IN, \"myTag3\")\n",
                                   db.get_id(ni.get_current()));
-                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Incoming, "myTag3");
+                NodeIterator ni2 = ni.get_current().get_neighbors(Node.Direction.Incoming, s_tag3);
                 for ( ; !ni2.done(); ni2.next())
                     System.out.printf("Node %d: %s\n",
                         db.get_id(ni2.get_current()),
-                        ni2.get_property("Name").string_value());
+                        ni2.get_property(s_name).string_value());
             }
             System.out.printf("\n");
 
@@ -335,12 +345,14 @@ public class BindingsTest {
             System.out.printf("  %s: %s\n", i.id(), property_text(i.get_current()));
     }
 
-    static String tag_text(String tag)
+    static String tag_text(StringID tag)
     {
-        if (tag != null)
-            return " #" + tag;
-        else
-            return "";
+        if (tag != null) {
+            String tagname = tag.name();
+            if (!tagname.isEmpty())
+                return " #" + tagname;
+        }
+        return "";
     }
 
     static String property_text(Property p) throws jarvis.Exception

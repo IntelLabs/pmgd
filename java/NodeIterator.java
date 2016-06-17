@@ -40,16 +40,16 @@ public class NodeIterator {
         return current;
     }
 
-    public String get_tag() throws Exception
+    public StringID get_tag() throws Exception
     {
         null_check("get_tag");
         return current.get_tag();
     }
 
-    public Property get_property(String property) throws Exception
+    public Property get_property(StringID prop_id) throws Exception
     {
         null_check("get_property");
-        return current.get_property(property);
+        return current.get_property(prop_id);
     }
 
     public PropertyIterator get_properties() throws Exception
@@ -58,16 +58,16 @@ public class NodeIterator {
         return current.get_properties();
     }
 
-    public void set_property(String id, Property prop) throws Exception
+    public void set_property(StringID prop_id, Property prop) throws Exception
     {
         null_check("set_property");
-        current.set_property(id, prop);
+        current.set_property(prop_id, prop);
     }
 
-    public void remove_property(String name) throws Exception
+    public void remove_property(StringID prop_id) throws Exception
     {
         null_check("remove_property");
-        current.remove_property(name);
+        current.remove_property(prop_id);
     }
 
     public void finalize() { dispose(); }

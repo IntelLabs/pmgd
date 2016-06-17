@@ -4,13 +4,14 @@ JAVA_SRCS := $(addprefix java/, \
                          Node.java NodeIterator.java \
                          Edge.java EdgeIterator.java \
                          Transaction.java Graph.java Exception.java \
-                         PropertyPredicate.java)
+                         PropertyPredicate.java StringID.java)
 
 # Derived lists.
 JAVA_JOBJS := $(patsubst java/%.java,java/jarvis/%.class, $(JAVA_SRCS))
 JAVA_CSRCS := $(patsubst java/%.java,java/%.cc, $(JAVA_SRCS))
 JAVA_CHDRS := $(patsubst java/%.java,java/%.h, $(JAVA_SRCS))
 JAVA_COBJS := $(patsubst java/%.java,java/%.o, $(JAVA_SRCS))
+JAVA_COBJS += java/common.o
 
 # We must list inner classes explicitly.
 JAVA_JOBJS += java/jarvis/Graph\$$OpenOptions.class
