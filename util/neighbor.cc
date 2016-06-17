@@ -50,10 +50,8 @@ class NeighborIteratorImpl : public NodeIteratorImplIntf
             _neighbor = get_neighbor(_node, *_ei, _dir);
             if (!_unique)
                 return true;
-            if (_seen.find(_neighbor) == _seen.end()) {
-                _seen.insert(_neighbor);
+            if (_seen.insert(_neighbor).second)
                 return true;
-            }
             _ei.next();
         }
         return false;
@@ -182,8 +180,7 @@ class BFSNeighborhoodIteratorImpl : public NeighborhoodIteratorImpl
         while (true) {
             while (*_ei) {
                 _neighbor = get_neighbor(*_node, **_ei, _dir);
-                if (_seen.find(_neighbor) == _seen.end()) {
-                    _seen.insert(_neighbor);
+                if (_seen.insert(_neighbor).second) {
                     if (_curr_depth < _max_depth - 1)
                         _explore[_curr_depth + 1].push(_neighbor);
                     return true;
