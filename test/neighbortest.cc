@@ -115,29 +115,6 @@ int main(int argc, char **argv)
 
 
         printf("neighbor test 3\n");
-        NodeIterator ni3 = get_neighbors(*pi);
-
-        if (ni3->get_property("UUID") != "XYZZY") {
-            fprintf(stderr, "neighbortest: failure\n");
-            r = 2;
-        }
-
-        db.remove(*pi->get_edges("To"));
-
-        try {
-            // This should throw.
-            Property p = ni3->get_property("UUID");
-            fprintf(stderr, "neighbortest: vacant iterator failure\n");
-            dump(*ni3, stderr);
-            r = 2;
-        }
-        catch (Exception e) {
-            if (e.num != VacantIterator)
-                throw;
-        }
-
-
-        printf("neighbor test 4\n");
 
         Node &ann = *db.get_nodes("Person",
                 PropertyPredicate("Name", PropertyPredicate::Eq, "Ann"));
@@ -161,13 +138,13 @@ int main(int argc, char **argv)
                     if (pos != msgs.end())
                         msgs.erase(pos);
                     else {
-                        fprintf(stderr, "neighbortest: failure 4-%d(a) (%d)\n",
+                        fprintf(stderr, "neighbortest: failure 3-%d(a) (%d)\n",
                                 test_id, id);
                         r = 2;
                     }
                 }
                 if (!msgs.empty()) {
-                    fprintf(stderr, "neighbortest: failure 4-%d(b):", test_id);
+                    fprintf(stderr, "neighbortest: failure 3-%d(b):", test_id);
                     for (auto m : msgs)
                         fprintf(stderr, " %d", m);
                     fprintf(stderr, "\n");
@@ -248,6 +225,143 @@ int main(int argc, char **argv)
                          JointNeighborConstraint { Any, 0, bob  },
                          JointNeighborConstraint { Any, 0, don  }  },
                        { 6, 7 });
+
+        /* Nodes 1, 2, 3 are disconnected from the rest of the graph.
+         * So a depth of 2 from Node 2 just returns its 1-hop neighbors
+         * 1 and 3
+         */
+        printf("neighbor test 4\n");
+        NodeIterator ni4 = get_neighborhood(*mi, 2, true);
+        n = 0;
+        while (ni4) {
+            n++;
+            ni4.next();
+        }
+        if (n != 2) {
+            fprintf(stderr, "neighbortest: failure 4 (%d)\n", n);
+            r = 2;
+        }
+
+        // Need 3-hops from Node 4 to cover the graph. Test distance() computation.
+        NodeIterator ani = db.get_nodes("Person",
+                PropertyPredicate("Name", PropertyPredicate::Eq, "Ann"));
+        printf("neighbor test 5\n");
+        NeighborhoodIterator ni5 = get_neighborhood(*ani, 3, true);
+        n = 0;
+        int distance;
+        while (ni5) {
+            n++;
+            distance = ni5.distance();
+            ni5.next();
+        }
+        if (distance != 3) {
+            fprintf(stderr, "neighbortest: failure 5(1) (%d)\n", distance);
+            r = 2;
+        }
+        if (n != 9) {
+            fprintf(stderr, "neighbortest: failure 5(2) (%d)\n", n);
+            r = 2;
+        }
+
+        // This node is connected to pretty much the rest of the graph
+        // except Nodes 1, 2, 3. So a depth of 2 gets to all the nodes
+        // that can be reached from Node 5.
+        NodeIterator bi = db.get_nodes("Person",
+                PropertyPredicate("Name", PropertyPredicate::Eq, "Bob"));
+        printf("neighbor test 6a\n");
+        NodeIterator ni6a = get_neighborhood(*bi, 2, true);
+        n = 0;
+        while (ni6a) {
+            n++;
+            // Shouldn't return the starting node.
+            if (&*ni6a == &*bi) {
+                fprintf(stderr, "neighbortest: failure 6a(1) (%d)\n", n);
+                r = 2;
+            }
+            ni6a.next();
+        }
+        if (n != 10) {
+            fprintf(stderr, "neighbortest: failure 6a(2) (%d)\n", n);
+            r = 2;
+        }
+
+        printf("neighbor test 6b\n");
+        NeighborhoodIterator ni6b = get_neighborhood(*bi, 3, true);
+        n = 0;
+        while (ni6b) {
+            n++;
+            ni6b.next();
+        }
+        // Should return the same number of nodes as depth 2
+        if (n != 10) {
+            fprintf(stderr, "neighbortest: failure 6b (%d)\n", n);
+            r = 2;
+        }
+
+        // Now follow only outgoing edges.
+        printf("neighbor test 6c\n");
+        NodeIterator ni6c = get_neighborhood(*bi, 2, Direction::Outgoing, true);
+        n = 0;
+        while (ni6c) {
+            n++;
+            ni6c.next();
+        }
+        if (n != 7) {
+            fprintf(stderr, "neighbortest: failure 6c (%d)\n", n);
+            r = 2;
+        }
+
+        // Now follow only outgoing edges with a tag.
+        printf("neighbor test 6d\n");
+        NeighborhoodIterator ni6d = get_neighborhood(*bi, 2, Direction::Outgoing, "From", true);
+        n = 0;
+        while (ni6d) {
+            n++;
+            ni6d.next();
+        }
+        if (n != 4) {
+            fprintf(stderr, "neighbortest: failure 6d (%d)\n", n);
+            r = 2;
+        }
+
+        // Now follow only outgoing edges with different tags.
+        std::vector<EdgeConstraint> vn;
+        vn.push_back(EdgeConstraint{ Outgoing, "From" });
+        vn.push_back(EdgeConstraint{ Outgoing, "To" });
+        printf("neighbor test 6e\n");
+        NodeIterator ni6e = get_neighborhood(*bi, vn, true);
+        n = 0;
+        while (ni6e) {
+            n++;
+            ni6e.next();
+        }
+        if (n != 7) {
+            fprintf(stderr, "neighbortest: failure 6e (%d)\n", n);
+            r = 2;
+        }
+
+
+        printf("neighbor test 7\n");
+        NodeIterator ni7 = get_neighbors(*pi);
+
+        if (ni7->get_property("UUID") != "XYZZY") {
+            fprintf(stderr, "neighbortest: failure\n");
+            r = 2;
+        }
+
+        db.remove(*pi->get_edges("To"));
+
+        try {
+            // This should throw.
+            Property p = ni7->get_property("UUID");
+            fprintf(stderr, "neighbortest: vacant iterator failure\n");
+            dump(*ni7, stderr);
+            r = 2;
+        }
+        catch (Exception e) {
+            if (e.num != VacantIterator)
+                throw;
+        }
 
         // Don't commit the transaction, so the graph can be used again.
         return r;
