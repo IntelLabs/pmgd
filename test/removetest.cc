@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
         db.create_index(Graph::EdgeIndex, 0, "name", PropertyType::String);
         tx.commit();
 
-        load(db, "allgoodcases.jarvis", node_added, edge_added);
+        load(db, "allgoodcases.jarvis", true, node_added, edge_added);
         printf("count of nodes: %lld, count of edges: %lld\n", num_nodes, num_edges);
 
         // Remove properties (long strings) to empty chunk lists

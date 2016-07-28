@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <string.h>
+#include <map>
 #include "jarvis.h"
 #include "../util/util.h"
 #include "loader.h"
@@ -33,12 +34,8 @@ public:
     }
 } current;
 
-static Jarvis::Node *get_node(Jarvis::Graph &db, long long id,
-                              Jarvis::StringID *tag,
-                              std::function<void(Jarvis::Node &)> node_func);
-static Jarvis::Node *get_node(Jarvis::Graph &db, std::string *id,
-                              Jarvis::StringID *tag,
-                              std::function<void(Jarvis::Node &)> node_func);
+template <typename T>
+static Jarvis::Node *get_node(yy_params &params, const T &id, Jarvis::StringID *tag);
 %}
 
 /* Causes parser to generate more detailed error messages for syntax errors. */
@@ -132,13 +129,13 @@ edge_properties:
 
 node:     INTEGER tag
               {
-                  $$ = current = get_node(params.db, $1, $2, params.node_func);
+                  $$ = current = get_node(params, $1, $2);
                   delete $2;
               }
 
         | STRING tag
               {
-                  $$ = current = get_node(params.db, $1, $2, params.node_func);
+                  $$ = current = get_node(params, *$1, $2);
                   delete $1;
                   delete $2;
               }
@@ -234,9 +231,34 @@ property_id: STRING
 using namespace Jarvis;
 
 static const char ID_STR[] = "jarvis.loader.id";
-static bool index_created = false;
 
-void load(Graph &db, const char *filename,
+class Index {
+    struct IndexBase {
+        virtual ~IndexBase() { }
+        virtual Node *find(const long long &id) { return NULL; }
+        virtual Node *find(const std::string &id) { return NULL; }
+        virtual void add(Node *, const long long &id) { }
+        virtual void add(Node *, const std::string &id) { }
+    };
+    template <typename T> class GraphIndex;
+    template <typename T> class MapIndex;
+
+    Graph &_db;
+    bool _use_index;
+    IndexBase *_index;
+
+public:
+    Index(Graph &db, bool use_index)
+        : _db(db), _use_index(use_index), _index(NULL)
+        { }
+    ~Index() { delete _index; }
+
+    template <typename T> Node *find(const T &id);
+    template <typename T> void add(Node *node, const T &id)
+        { _index->add(node, id); }
+};
+
+void load(Graph &db, const char *filename, bool use_index,
           std::function<void(Node &)> node_func,
           std::function<void(Edge &)> edge_func)
 {
@@ -244,10 +266,10 @@ void load(Graph &db, const char *filename,
     if (f == NULL)
         throw Exception(LoaderOpenFailed, errno, filename);
 
-    load(db, f, node_func, edge_func);
+    load(db, f, use_index, node_func, edge_func);
 }
 
-void load(Graph &db, FILE *f,
+void load(Graph &db, FILE *f, bool use_index,
           std::function<void(Node &)> node_func,
           std::function<void(Edge &)> edge_func)
 {
@@ -262,50 +284,90 @@ void load(Graph &db, FILE *f,
 
         ~buffer_t() { yy_delete_buffer(_buffer); }
     } buffer(f);
-    yy_params params = { db, node_func, edge_func };
+    Index index(db, use_index);
+    yy_params params = { db, index, node_func, edge_func };
     yyparse(params);
 }
 
 
-static Node *get_node(Graph &db, long long id, Jarvis::StringID *tag,
-                      std::function<void(Node &)> node_func)
+template <typename T>
+static Node *get_node(yy_params &params, const T &id, StringID *tag)
 {
-    if (!index_created) {
-        db.create_index(Graph::NodeIndex, 0, ID_STR, PropertyType::Integer);
-        index_created = true;
-    }
-
-    NodeIterator nodes
-        = db.get_nodes(0, PropertyPredicate(ID_STR, PropertyPredicate::Eq, id));
-    if (nodes) return &*nodes;
+    Node *n = params.index.find(id);
+    if (n) return n;
 
     // Node not found; add it
-    Node &node = db.add_node(*tag);
-    node.set_property(ID_STR, id);
-    if (node_func)
-        node_func(node);
+    Node &node = params.db.add_node(*tag);
+    params.index.add(&node, id);
+    if (params.node_func)
+        params.node_func(node);
     return &node;
 }
 
-static Node *get_node(Graph &db, std::string *id, Jarvis::StringID *tag,
-                      std::function<void(Node &)> node_func)
+template <typename T>
+class Index::GraphIndex : public IndexBase
 {
-    if (!index_created) {
-        db.create_index(Graph::NodeIndex, 0, ID_STR, PropertyType::String);
-        index_created = true;
+    Graph &_db;
+
+public:
+    GraphIndex(Graph &db);
+
+    Node *find(const T &id)
+    {
+        NodeIterator nodes = _db.get_nodes(0,
+            PropertyPredicate(ID_STR, PropertyPredicate::Eq, id));
+        if (nodes) return &*nodes;
+        return NULL;
     }
 
-    NodeIterator nodes
-        = db.get_nodes(0, PropertyPredicate(ID_STR, PropertyPredicate::Eq, *id));
-    if (nodes) return &*nodes;
+    void add(Node *node, const T &id)
+    {
+        node->set_property(ID_STR, id);
+    }
+};
 
-    // Node not found; add it
-    Node &node = db.add_node(*tag);
-    node.set_property(ID_STR, id->c_str());
-    if (node_func)
-        node_func(node);
-    return &node;
+template <> Index::GraphIndex<long long>::GraphIndex(Graph &db)
+    : _db(db)
+{
+    _db.create_index(Graph::NodeIndex, 0, ID_STR, PropertyType::Integer);
 }
+
+template <> Index::GraphIndex<std::string>::GraphIndex(Graph &db)
+    : _db(db)
+{
+    _db.create_index(Graph::NodeIndex, 0, ID_STR, PropertyType::String);
+}
+
+template <typename T>
+class Index::MapIndex : public IndexBase
+{
+    typedef std::map<T, Node *> map;
+    map node_index;
+
+public:
+    Node *find(const T &id)
+    {
+        typename map::iterator n = node_index.find(id);
+        if (n != node_index.end())
+            return n->second;
+        return NULL;
+    }
+
+    void add(Node *node, const T &id)
+    {
+        node_index.insert(typename map::value_type(id, node));
+    }
+};
+
+template <typename T> Node *Index::find(const T &id)
+{
+    if (_index == NULL)
+        _index = _use_index
+                     ? static_cast<IndexBase *>(new GraphIndex<T>(_db))
+                     : static_cast<IndexBase *>(new MapIndex<T>());
+    return _index->find(id);
+}
+
 
 int yyerror(yy_params, const char *err)
 {

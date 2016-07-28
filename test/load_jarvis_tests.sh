@@ -35,7 +35,7 @@ rm -rf ${GRAPH_DIR}/$GRAPH  ${SCRIPT_DIR}/tmp.jarvis
 ## Couple more acceptable case(s)
 echo "Test node/edge properties together."
 mkgraph ${GRAPH_DIR}/$GRAPH
-echo "21 #tag2 { id1 = 25, prop%22 = \"Hello world!\", _common = 2014-07-03T22:49:52-07:00 } 22 #tag1 { id1 = 38 } : #edge2;" | loadgraph -j ${GRAPH_DIR}/$GRAPH
+echo "21 #tag2 { id1 = 25, prop%22 = \"Hello world!\", _common = 2014-07-03T22:49:52-07:00 } 22 #tag1 { id1 = 38 } : #edge2;" | loadgraph -j -i ${GRAPH_DIR}/$GRAPH
 # Create the expected output to match against
 (
     cat <<EOF
@@ -77,7 +77,7 @@ rm -rf ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/tmp.jarvis ${SCRIPT_DIR}/onegoodcase.ja
 
 echo "Test string 'id' values."
 mkgraph ${GRAPH_DIR}/$GRAPH
-echo "u21str #tag2 { id1 = 25 } u22str1! #tag1 { id1 = 38 } : #edge2 { id = 3344 };" | loadgraph -j ${GRAPH_DIR}/$GRAPH
+echo "u21str #tag2 { id1 = 25 } u22str1! #tag1 { id1 = 38 } : #edge2 { id = 3344 };" | loadgraph -j -i ${GRAPH_DIR}/$GRAPH
 dumpgraph -j  ${GRAPH_DIR}/$GRAPH > ${SCRIPT_DIR}/tmp.jarvis
 # Create the expected output to match against
 (

@@ -17,6 +17,7 @@ int main(int argc, char **argv)
     bool gson_format = false;
     bool jtxt_format = false;
     bool append = false;
+    bool use_index = false;
     int argi = 1;
 
     while (argi < argc && argv[argi][0] == '-') {
@@ -38,6 +39,9 @@ int main(int argc, char **argv)
         }
         else if (strcmp(argv[argi], "-a") == 0) {
             append = true;
+        }
+        else if (strcmp(argv[argi], "-i") == 0) {
+            use_index = true;
         }
         else {
             fprintf(stderr, "loadgraph: %s: Unrecognized option\n", argv[argi]);
@@ -79,7 +83,7 @@ int main(int argc, char **argv)
         if (gson_format)
             load_gson(db, file_name);
         else if (jtxt_format)
-            load(db, file_name);
+            load(db, file_name, use_index);
         else
             load_tsv(db, file_name);
     }
@@ -101,6 +105,7 @@ void print_usage(FILE *stream)
     fprintf(stream, "  -g  input is GraphSON\n");
     fprintf(stream, "  -j  input is the Jarvis Lake graph text format\n");
     fprintf(stream, "  -a  load graph into a non-empty graphstore\n");
+    fprintf(stream, "  -i  add jarvis.loader.id property to every node\n");
     fprintf(stream, "\n");
     fprintf(stream, "GRAPHSTORE must already exist (e.g., using mkgraph) and is expected to\n");
     fprintf(stream, "be empty.  The loader will fail with a warning if GRAPHSTORE is not\n");
@@ -117,6 +122,10 @@ void print_usage(FILE *stream)
     fprintf(stream, "specifying the format with the appropriate option.  Options override\n");
     fprintf(stream, "inferences based on the file extension.\n");
     fprintf(stream, "\n");
-    fprintf(stream, "To speed up processing, loadgraph will create a node index on property\n");
-    fprintf(stream, "identifer 'jarvis.loader.id' associated with tag '0'.\n");
+    fprintf(stream, "If the input file is tab-separated integers or GraphSON or if the -i option\n");
+    fprintf(stream, "is specified, loadgraph adds a property to each node with the identifier\n");
+    fprintf(stream, "'jarvis.loader.id' and it creates an index on that property. If the input\n");
+    fprintf(stream, "file is Jarvis Lake format and the -i option is not specifed, loadgraph\n");
+    fprintf(stream, "keeps the loader id and index in memory instead of storing it in the graph.\n");
+    fprintf(stream, "This can save space in the graph when the loader id is not needed later.\n");
 }

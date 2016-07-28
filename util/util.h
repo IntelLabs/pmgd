@@ -50,10 +50,10 @@ extern void load_tsv(Jarvis::Graph &db, FILE *f,
                      std::function<void(Jarvis::Node &)> = do_nothing_node,
                      std::function<void(Jarvis::Edge &)> = do_nothing_edge);
 
-extern void load(Jarvis::Graph &db, const char *filename,
+extern void load(Jarvis::Graph &db, const char *filename, bool use_index = false,
                  std::function<void(Jarvis::Node &)> = do_nothing_node,
                  std::function<void(Jarvis::Edge &)> = do_nothing_edge);
-extern void load(Jarvis::Graph &db, FILE *f,
+extern void load(Jarvis::Graph &db, FILE *f, bool use_index = false,
                  std::function<void(Jarvis::Node &)> = do_nothing_node,
                  std::function<void(Jarvis::Edge &)> = do_nothing_edge);
 
