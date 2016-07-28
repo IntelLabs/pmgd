@@ -13,7 +13,8 @@ TOOLS_DIR=${TEST_DIR}/../tools
 PATH=$PATH:${TOOLS_DIR}
 GRAPH=load_jarvis_graph
 
-#echo ${SCRIPT_DIR},${TEST_DIR},${GRAPH_DIR}
+echo "SCRIPT_DIR=${SCRIPT_DIR}, TEST_DIR=${TEST_DIR}, GRAPH_DIR=${GRAPH_DIR}"
+status=0
 
 # Eventually use dumpgraph -j <load_jarvis_graph> to generate the ideal output
 # to compare with test.out
@@ -25,6 +26,9 @@ diff ${SCRIPT_DIR}/allgoodcases.jarvis ${SCRIPT_DIR}/tmp.jarvis
 RET_VAL=$?
 if [ $RET_VAL == 0 ]; then
     echo "Test Passed"
+else
+    echo "Test Failed"
+    status=1
 fi
 rm -rf ${GRAPH_DIR}/$GRAPH  ${SCRIPT_DIR}/tmp.jarvis
 
@@ -45,6 +49,9 @@ diff ${SCRIPT_DIR}/onegoodcase.jarvis ${SCRIPT_DIR}/tmp.jarvis
 RET_VAL=$?
 if [ $RET_VAL == 0 ]; then
     echo "Test Passed"
+else
+    echo "Test Failed"
+    status=1
 fi
 rm -rf ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/tmp.jarvis ${SCRIPT_DIR}/onegoodcase.jarvis
 
@@ -62,6 +69,9 @@ diff ${SCRIPT_DIR}/onegoodcase.jarvis ${SCRIPT_DIR}/tmp.jarvis
 RET_VAL=$?
 if [ $RET_VAL == 0 ]; then
     echo "Test Passed"
+else
+    echo "Test Failed"
+    status=1
 fi
 rm -rf ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/tmp.jarvis ${SCRIPT_DIR}/onegoodcase.jarvis
 
@@ -81,6 +91,9 @@ diff ${SCRIPT_DIR}/onegoodcase.jarvis ${SCRIPT_DIR}/tmp.jarvis
 RET_VAL=$?
 if [ $RET_VAL == 0 ]; then
     echo "Test Passed"
+else
+    echo "Test Failed"
+    status=1
 fi
 rm -rf ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/tmp.jarvis ${SCRIPT_DIR}/onegoodcase.jarvis
 
@@ -94,5 +107,9 @@ grep -q "\[Exception\]" ${SCRIPT_DIR}/err.log
 RET_VAL=$?
 if [ $RET_VAL == 0 ]; then
     echo "Test Passed"
+else
+    echo "Test Failed"
+    status=1
 fi
 rm -rf ${GRAPH_DIR}/$GRAPH  ${SCRIPT_DIR}/err.log
+exit $status

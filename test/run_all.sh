@@ -122,12 +122,7 @@ do
                 status=1
             fi
             ;;
-        load_jarvis_tests)
-            COUNT=`sh load_jarvis_tests.sh | grep "Test Passed" | wc -l`
-            if [ $COUNT -ne 5 ]; then
-                status=1
-            fi
-            ;;
+        load_jarvis_tests) sh load_jarvis_tests.sh || status=1;;
         *) ${TEST_DIR}/$test n1 n2 n3 n4 || status=1;;
     esac > ${TEST_DIR}/log/${test}.log
 
