@@ -263,7 +263,7 @@ int main(int argc, char **argv)
         printf("neighbor test 5b\n");
         NeighborhoodIterator ni5b = get_neighborhood(*ani, 3, true);
         n = 0;
-        int distance;
+        int distance = 0;
         while (ni5b) {
             n++;
             distance = ni5b.distance();
