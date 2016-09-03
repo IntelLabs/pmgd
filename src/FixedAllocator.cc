@@ -105,7 +105,6 @@ void *FixedAllocator::alloc(unsigned num)
 
     p = _pm->tail_ptr;
     tx->write(&_pm->tail_ptr, (uint64_t *)((uint64_t)_pm->tail_ptr + num * _pm->size));
-
     tx->write(&_pm->num_allocated, _pm->num_allocated + num);
 
     return p;
@@ -170,4 +169,25 @@ void FixedAllocator::free(void *p, unsigned num)
         _pm->free_ptr = (uint64_t *)free_ptr;
         _pm->num_allocated -= num;
     }
+}
+
+unsigned FixedAllocator::occupancy() const
+{
+    uint64_t region_size_bytes = region_size();
+
+    if (region_size_bytes == 0)
+        return 100;
+    else
+        return 100 * used_bytes() / region_size_bytes;
+}
+
+unsigned FixedAllocator::health() const
+{
+    uint64_t total_space_tail = (uint64_t)_pm->tail_ptr - _pool_addr;
+    total_space_tail -= _alloc_offset;
+
+    if (total_space_tail == 0)
+        return 100;
+    else
+        return 100 * used_bytes() / total_space_tail;
 }

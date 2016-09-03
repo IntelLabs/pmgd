@@ -80,3 +80,51 @@ void Allocator::clean_free_list(TransactionImpl *tx, const std::list<free_info_t
             _freeform_allocator.free(s.addr, s.size);
     }
 }
+
+uint64_t Allocator::used_bytes() const
+{
+    uint64_t used_bytes = 0;
+
+    // For FixSize Allocator
+    for (unsigned i = 0; i < NUM_FIXED_SIZES; ++i) {
+        used_bytes += _fixsize_allocator[i]->used_bytes();
+    }
+
+    // For Variable Allocator
+    used_bytes += _freeform_allocator.used_bytes();
+
+    // For ChunkAllocator
+    // Consider every byte in the ChunkAllocator as used
+    used_bytes += _chunks.used_bytes() + CHUNK_SIZE -
+                  (_freeform_allocator.reserved_bytes() +
+                  _small_chunks.reserved_bytes());
+
+    return used_bytes;
+}
+
+unsigned Allocator::occupancy() const
+{
+    uint64_t reserved_bytes = _chunks.used_bytes() + CHUNK_SIZE;
+    return 100 * reserved_bytes / (_chunks.region_size() + CHUNK_SIZE);
+}
+
+unsigned Allocator::health() const
+{
+    uint64_t total_used_bytes = 0;
+
+    // For FixSize Allocator
+    for (unsigned i = 0; i < NUM_FIXED_SIZES; ++i) {
+        total_used_bytes += _fixsize_allocator[i]->used_bytes();
+    }
+
+    // For Variable Allocator
+    total_used_bytes += _freeform_allocator.used_bytes();
+
+    uint64_t total_bytes = _small_chunks.reserved_bytes() +
+                           _freeform_allocator.reserved_bytes();
+
+    if (total_bytes == 0)
+        return 100;
+    else
+        return 100 * total_used_bytes / total_bytes;
+}

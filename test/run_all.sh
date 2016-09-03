@@ -48,7 +48,7 @@ tests=( alloctest avltest chunklisttest edgeindextest
         neighbortest nodeedgetest propertychunktest propertypredicatetest
         propertytest propertylisttest
         reverseindexrangetest rotest
-        statsindextest
+        statsindextest statsallocatortest
         soltest stringtabletest txtest removetest
         test720 test750 test767
         load_jarvis_tests
@@ -59,7 +59,7 @@ graph_dirs=( fixedallocgraph varallocgraph avlgraph chunklistgraph edgeindexgrap
              indexrangegraph listgraph load_gson_graph load_tsv_graph
              neighborgraph nodeedgegraph propertychunkgraph ppgraph
              propertygraph propertylistgraph
-             statsindexgraph
+             statsindexgraph statsallocatorgraph
              reverseindexrangegraph rograph
              solgraph stringtablegraph txgraph removegraph
              test720graph test750graph test767graph

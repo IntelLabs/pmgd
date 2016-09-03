@@ -93,5 +93,17 @@ namespace Jarvis {
         ChunkStats get_all_chunk_lists_stats();
         ChunkStats get_chunk_list_stats(IndexType index_type);
         ChunkStats get_chunk_list_stats(IndexType index_type, StringID tag);
+
+        struct AllocatorStats {
+            std::string name;
+            unsigned long long object_size;
+            unsigned long long num_objects;
+            unsigned long long total_allocated_bytes;
+            unsigned long long region_size;
+            unsigned occupancy;     // [0 - 100]
+            unsigned health_factor; // [0 - 100]
+        };
+
+        std::vector<AllocatorStats> get_allocator_stats();
     };
 };
