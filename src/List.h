@@ -43,6 +43,8 @@ namespace Jarvis {
         void remove(const T &value, Allocator &allocator);
         T* find(const T &val);
         size_t num_elems() const { return _num_elems; }
+        size_t elem_size() const { return sizeof(T); }
+        size_t list_type_size() const { return sizeof(ListType); }
     };
 
     template <typename T> class ListTraverser {

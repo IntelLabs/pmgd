@@ -269,6 +269,21 @@ V *AvlTree<K,V>::find(const K &key)
     return NULL;
 }
 
+template <typename K, typename V>
+size_t AvlTree<K,V>::treenode_size(TreeNode *node)
+{
+    return sizeof(*node);
+}
+
+namespace Jarvis {
+    // Specialization for the IndexString case
+    template <>
+    size_t AvlTree<IndexString, List<void *> >::treenode_size(TreeNode *node)
+    {
+        return sizeof(*node) + node->key.get_remainder_size();
+    }
+}
+
 // Explicitly instantiate any types that might be required
 template class AvlTree<int, int>;
 template class AvlTree<long long, List<void *>>;

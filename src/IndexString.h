@@ -45,6 +45,9 @@ namespace Jarvis {
 
         bool operator>(const IndexString &istr) const
             { return (compare(istr) > 0); }
+
+        size_t get_remainder_size()
+            { return (_len > PREFIX_LEN)? _len - PREFIX_LEN : 0; }
     };
 
     // We need to create this class to know which version of _remainder

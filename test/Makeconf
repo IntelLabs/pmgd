@@ -9,6 +9,7 @@ TEST_SRCS := $(addprefix test/, \
                          load_tsv_test.cc load_gson_test.cc \
                          avltest.cc chunklisttest.cc indextest.cc \
                          indexrangetest.cc indexstringtest.cc \
+                         statsindextest.cc \
                          reverseindexrangetest.cc emailindextest.cc \
                          removetest.cc \
                          rotest.cc BindingsTest.java DateTest.java \

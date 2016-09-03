@@ -152,6 +152,206 @@ Index *IndexManager::get_index(Graph::IndexType index_type, StringID tag,
     return *idx;
 }
 
+Graph::IndexStats IndexManager::get_index_stats(Graph::IndexType index_type, StringID tag,
+                               StringID property_id)
+{
+    Index *index = get_index(index_type, tag, property_id);
+
+    if (!index) {
+        Graph::IndexStats stats = {0,0,0,0,0};
+        return stats;
+    }
+
+    return index->get_stats();
+}
+
+ Graph::IndexStats IndexManager::get_index_stats(Graph::IndexType index_type, StringID tag)
+{
+    IndexList *tag_entry = _tag_prop_map[index_type].find(tag);
+
+    return get_index_stats(tag_entry);
+}
+
+Graph::IndexStats IndexManager::get_index_stats(Graph::IndexType index_type)
+{
+    Graph::IndexStats stats = {0,0,0,0,0};
+
+    std::vector<KeyValuePair<StringID,IndexList> *> indexes_vector =
+                                _tag_prop_map[index_type].get_key_values();
+
+    // For health calculation
+    std::vector<Graph::IndexStats> tag_level_stats;
+
+    for (auto& idx_list: indexes_vector) {
+        Graph::IndexStats idx_stats = get_index_stats(&idx_list->value());
+        tag_level_stats.push_back(idx_stats);
+        stats.total_size_bytes     += idx_stats.total_size_bytes;
+        stats.total_elements       += idx_stats.total_elements;
+        stats.total_unique_entries += idx_stats.total_unique_entries;
+    }
+
+    if (stats.total_elements == 0)
+        stats.health_factor = 100;
+    else {
+        for (auto& tag_stats : tag_level_stats) {
+            stats.health_factor += tag_stats.health_factor *
+                                   tag_stats.total_elements /
+                                   stats.total_elements;
+        }
+    }
+
+    return stats;
+}
+
+Graph::IndexStats IndexManager::get_index_stats(IndexList *tag_entry)
+{
+    Graph::IndexStats stats = {0,0,0,0,0};
+
+    // Check first if that tag index exists.
+    if (!tag_entry)
+        return stats;
+
+    std::vector<KeyValuePair<StringID,Index *> *> indexes = tag_entry->get_key_values();
+
+    // For health calculation
+    std::vector<Graph::IndexStats> property_level_stats;
+
+    size_t total_elements_health = 0;
+
+    for (auto& idx: indexes) {
+        Graph::IndexStats idx_stats = idx->value()->get_stats();
+        stats.total_size_bytes     += idx_stats.total_size_bytes;
+        stats.total_elements       += idx_stats.total_elements;
+        stats.total_unique_entries += idx_stats.total_unique_entries;
+        if (idx->key() != StringID(0)) { // Not used in health calculation
+            property_level_stats.push_back(idx_stats);
+            total_elements_health  += idx_stats.total_elements;
+        }
+    }
+
+    if (total_elements_health == 0)
+        stats.health_factor = 100;
+    else {
+        for (auto& property_stats : property_level_stats) {
+            stats.health_factor += property_stats.health_factor *
+                                   property_stats.total_elements /
+                                   total_elements_health;
+        }
+    }
+
+    return stats;
+}
+
+Graph::IndexStats IndexManager::get_index_stats()
+{
+    Graph::IndexStats stats_nodes = get_index_stats(Graph::NodeIndex);
+    Graph::IndexStats stats_edges = get_index_stats(Graph::EdgeIndex);
+
+    Graph::IndexStats stats = {0,0,0,0,0};
+
+    stats.total_unique_entries = stats_nodes.total_unique_entries +
+                                 stats_edges.total_unique_entries;
+    stats.total_elements       = stats_nodes.total_elements +
+                                 stats_edges.total_elements;
+    stats.total_size_bytes     = stats_nodes.total_size_bytes +
+                                 stats_edges.total_size_bytes;
+
+    if (stats.total_elements == 0)
+        stats.health_factor = 100;
+    else {
+        stats.health_factor += stats_nodes.total_elements *
+                               stats_nodes.health_factor /
+                               stats.total_elements;
+        stats.health_factor += stats_edges.total_elements *
+                               stats_edges.health_factor /
+                               stats.total_elements;
+    }
+
+    return stats;
+}
+
+Graph::ChunkStats IndexManager::get_all_chunk_lists_stats()
+{
+    Graph::ChunkStats stats = {0,0,0,0,0};
+
+    std::vector<size_t> num_elements_vector;
+    std::vector<size_t> health_vector;
+
+    for (unsigned i = 0; i < 2; ++i) {
+        TagList tag_list = _tag_prop_map[i];
+
+        stats.total_chunks     += tag_list.total_chunks();
+        stats.num_elements     += tag_list.num_elems();
+        stats.total_size_bytes += tag_list.chunk_list_size();
+        num_elements_vector.push_back(tag_list.num_elems());
+        health_vector      .push_back(tag_list.health());
+
+        std::vector<KeyValuePair<StringID,IndexList> *> chunk_vector =
+                                _tag_prop_map[i].get_key_values();
+
+        for (auto& chunk: chunk_vector) {
+            stats.total_chunks     += chunk->value().total_chunks();
+            stats.num_elements     += chunk->value().num_elems();
+            stats.total_size_bytes += chunk->value().chunk_list_size();
+            num_elements_vector.push_back(chunk->value().num_elems());
+            health_vector      .push_back(chunk->value().health());
+        }
+    }
+
+    if (stats.num_elements == 0)
+        stats.health_factor = 100;
+    else {
+        for (size_t i = 0; i < health_vector.size(); ++i) {
+            stats.health_factor += health_vector.at(i) *
+                                   num_elements_vector.at(i) /
+                                   stats.num_elements;
+        }
+    }
+
+    return stats;
+}
+
+Graph::ChunkStats IndexManager::get_chunk_list_stats(Graph::IndexType index_type)
+{
+    Graph::ChunkStats stats = {0,0,0,0,0};
+
+    TagList tag_list = _tag_prop_map[index_type];
+
+    // Stats object is created and populated here to avoid
+    // making the ChunkList aware of structs defined in graph.h
+    // This will cause total_chunks() being executed multiple
+    // times, thus traversing the ChunkList multiple times.
+    // Since the ChunkList have small number of chunks,
+    // we prefered this approach to avoid moving this logic
+    // into the ChunkList.
+
+    stats.total_chunks     = tag_list.total_chunks();
+    stats.chunk_size       = tag_list.chunk_size_bytes();
+    stats.num_elements     = tag_list.num_elems();
+    stats.total_size_bytes = tag_list.chunk_list_size();
+    stats.health_factor    = tag_list.health();
+
+    return stats;
+}
+
+Graph::ChunkStats IndexManager::get_chunk_list_stats(Graph::IndexType index_type, StringID tag)
+{
+    Graph::ChunkStats stats = {0,0,0,0,0};
+
+    IndexList *tag_entry = _tag_prop_map[index_type].find(tag);
+
+    if (!tag_entry)
+        return stats;
+
+    stats.total_chunks     = tag_entry->total_chunks();
+    stats.chunk_size       = tag_entry->chunk_size_bytes();
+    stats.num_elements     = tag_entry->num_elems();
+    stats.total_size_bytes = tag_entry->chunk_list_size();
+    stats.health_factor    = tag_entry->health();
+
+    return stats;
+}
+
 Index::Index_IteratorImplIntf *IndexManager::get_iterator
     (Graph::IndexType index_type, StringID tag)
 {

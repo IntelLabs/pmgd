@@ -360,7 +360,6 @@ EdgeIterator Graph::get_edges(StringID tag, const PropertyPredicate &pp, bool re
         return get_edges(tag).filter(pp); // TODO Causes re-lookup of tag
 }
 
-
 NodeID Graph::get_id(const Node &node) const
 {
     return _impl->node_table().get_id(&node);
@@ -369,4 +368,42 @@ NodeID Graph::get_id(const Node &node) const
 EdgeID Graph::get_id(const Edge &edge) const
 {
     return _impl->edge_table().get_id(&edge);
+}
+
+
+// Stats Interface
+Graph::IndexStats Graph::get_index_stats()
+{
+    return _impl->index_manager().get_index_stats();
+}
+
+Graph::IndexStats Graph::get_index_stats(Graph::IndexType index_type)
+{
+    return _impl->index_manager().get_index_stats(index_type);
+}
+
+Graph::IndexStats Graph::get_index_stats(Graph::IndexType index_type, StringID tag)
+{
+    return _impl->index_manager().get_index_stats(index_type, tag);
+}
+
+Graph::IndexStats Graph::get_index_stats(Graph::IndexType index_type,
+                                   StringID tag, StringID property_id)
+{
+    return _impl->index_manager().get_index_stats(index_type, tag, property_id);
+}
+
+Graph::ChunkStats Graph::get_all_chunk_lists_stats()
+{
+    return _impl->index_manager().get_all_chunk_lists_stats();
+}
+
+Graph::ChunkStats Graph::get_chunk_list_stats(Graph::IndexType index_type)
+{
+    return _impl->index_manager().get_chunk_list_stats(index_type);
+}
+
+Graph::ChunkStats Graph::get_chunk_list_stats(Graph::IndexType index_type, StringID tag)
+{
+    return _impl->index_manager().get_chunk_list_stats(index_type, tag);
 }

@@ -286,7 +286,7 @@ void AvlTreeIndex<K,V>::find_node_neq_reverse(TreeNode *root, const Compare &cur
             find_start_min_reverse(root->right, cur, path);
         else if (cur.equals(root->key))
             find_start_all_reverse(root->left, path);
-        else 
+        else
             find_start_min_reverse(root->left, cur, path);
     }
     else {
@@ -694,6 +694,72 @@ Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(const K &min, con
         return new IndexRange_IteratorImpl<K>(this, min, max, incl_min, incl_max);
     else
         return new IndexRangeReverse_IteratorImpl<K>(this, min, max, incl_min, incl_max);
+}
+
+template <typename K, typename V>
+void AvlTreeIndex<K,V>::stats_recursive(TreeNode *root, Graph::IndexStats &stats)
+{
+    if (root == NULL)
+        return;
+    List<void *> node_list = root->value;
+    size_t num_elems = node_list.num_elems();
+    stats.total_elements   += num_elems;
+    stats.total_size_bytes += this->treenode_size(root);
+    stats.total_size_bytes += num_elems * node_list.list_type_size();
+    stats_recursive(root->left,  stats);
+    stats_recursive(root->right, stats);
+}
+
+template <typename K, typename V>
+void AvlTreeIndex<K,V>::stats_health_recursive(TreeNode *root,
+                                                Graph::IndexStats &stats,
+                                                size_t &avg_elem_per_node)
+{
+    // Perfect health (100) means that all the nodes in the tree has
+    // average or less number of elements.
+    // If a node has more than average number of indexed elements, then
+    // the node will decrease the health of the index proportionally with
+    // the percentage of the elements this node has.
+    // This is, if a node has 30% of all the indexed elements, and has
+    // more than the average number of elements, then it will take 30 from the
+    // health of the index, the new heatlh value being 70.
+    // Standard deviation may be another metric,
+    // but does not work well in the case of AvlTree
+    // The corner cases of this method are when the tree
+    // has 0 or 1 treenode, both cases marked as perfect health.
+
+    if (root == NULL)
+        return;
+    List<void *> node_list = root->value;
+    size_t node_elements = node_list.num_elems();
+
+    if (node_elements > avg_elem_per_node) {
+        stats.health_factor -= (100*node_elements) / stats.total_elements;
+    }
+    stats_health_recursive(root->left,  stats, avg_elem_per_node);
+    stats_health_recursive(root->right, stats, avg_elem_per_node);
+}
+
+template <typename K, typename V>
+void AvlTreeIndex<K,V>::index_stats_info(Graph::IndexStats &stats)
+{
+    // unique_entry_size can be variable in the case of IndexStrings.
+    // We will consider sizeof(TreeNode) as unique_entry_size,
+    // but the actual size will be added in total_size_bytes.
+
+    stats.unique_entry_size     = sizeof(TreeNode);
+    stats.total_unique_entries  = this->num_elems();
+    stats.total_elements        = 0;
+    stats.total_size_bytes      = sizeof(*this);
+    stats.health_factor         = 100;
+
+    if (stats.total_unique_entries == 0)
+        return;
+
+    stats_recursive(this->_tree, stats);
+
+    size_t avg_elem_per_node = stats.total_elements / stats.total_unique_entries;
+    stats_health_recursive(this->_tree, stats, avg_elem_per_node);
 }
 
 // Explicitly instantiate any types that might be required

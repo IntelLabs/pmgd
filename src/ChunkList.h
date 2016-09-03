@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <string.h>
+#include <vector>
 #include "Allocator.h"
 #include "KeyValuePair.h"
 #include "TransactionImpl.h"
@@ -20,8 +21,7 @@ namespace Jarvis {
         };
         static const unsigned MAX_PER_CHUNK =
             (CHUNK_SIZE - sizeof (ChunkListType)) / sizeof(KeyValuePair<K,V>);
-        static_assert(MAX_PER_CHUNK > 0 && MAX_PER_CHUNK <= 16,
-                      "Incorrect chunk size");
+        static_assert(MAX_PER_CHUNK > 0 && MAX_PER_CHUNK <= 16, "Incorrect chunk size");
 
         ChunkListType *_head;      // First chunk
         size_t _num_elems;         // This is total so far
@@ -50,9 +50,66 @@ namespace Jarvis {
         void remove(const K &key, Allocator &allocator);
         V* find(const K &val);
         size_t num_elems() const { return _num_elems; }
+        size_t chunk_size_bytes() const { return CHUNK_SIZE; }
+        size_t total_chunks() const;
+        size_t health() const;
+        size_t chunk_list_size() const {
+            return sizeof(*this) + total_chunks() * CHUNK_SIZE;
+        }
+
+        std::vector<KeyValuePair<K,V> *> get_key_values() const;
     };
 
-    template <typename K, typename V,unsigned CHUNK_SIZE>
+    template <typename K, typename V, unsigned CHUNK_SIZE>
+    size_t ChunkList<K,V,CHUNK_SIZE>::total_chunks() const
+    {
+        size_t total_chunks = 0;
+
+        ChunkListType *curr = _head;
+        while (curr != NULL) {  // across chunks
+            curr = curr->next;
+            ++total_chunks;
+        }
+
+        return total_chunks;
+    }
+
+    template <typename K, typename V, unsigned CHUNK_SIZE>
+    size_t ChunkList<K,V,CHUNK_SIZE>::health() const
+    {
+        if (total_chunks() == 0)
+            return 100;
+
+        // Measures the occupations of the chunks
+        return 100 * num_elems() / (total_chunks()*MAX_PER_CHUNK);
+    }
+
+    template <typename K, typename V, unsigned CHUNK_SIZE>
+    std::vector<KeyValuePair<K,V> *> ChunkList<K,V,CHUNK_SIZE>::get_key_values() const
+    {
+        std::vector<KeyValuePair<K,V> *> key_values;
+
+        ChunkListType *curr = _head;
+        while (curr != NULL) {  // across chunks
+            // Within a chunk
+            int elems = 0, curr_slot = 0;
+            uint16_t bit_pos = 1;
+            while (elems < curr->num_elems) {
+                if (curr->occupants & bit_pos) {
+                    key_values.push_back(&curr->data[curr_slot]);
+                    elems++;
+                }
+                bit_pos <<= 1;
+                // Keep current with index position
+                ++curr_slot;
+            }
+            curr = curr->next;
+        }
+
+        return key_values;
+    }
+
+    template <typename K, typename V, unsigned CHUNK_SIZE>
     V* ChunkList<K,V,CHUNK_SIZE>::add(const K &key, Allocator &allocator)
     {
         // Need to check if the key exists before we can add
@@ -140,7 +197,7 @@ namespace Jarvis {
         return value;
     }
 
-    template <typename K, typename V,unsigned CHUNK_SIZE>
+    template <typename K, typename V, unsigned CHUNK_SIZE>
     void ChunkList<K,V,CHUNK_SIZE>::remove(const K &key, Allocator &allocator)
     {
         ChunkListType *prev = NULL, *curr = _head;
@@ -184,7 +241,7 @@ namespace Jarvis {
         }
     }
 
-    template <typename K, typename V,unsigned CHUNK_SIZE>
+    template <typename K, typename V, unsigned CHUNK_SIZE>
     V* ChunkList<K,V,CHUNK_SIZE>::find(const K &key)
     {
         ChunkListType *curr = _head;
