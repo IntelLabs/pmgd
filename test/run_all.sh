@@ -4,7 +4,7 @@
 set -e
 
 # Compile and run the entire test suite. Useful before checking new
-# code. This will exit at the first error that happens 
+# code. This will exit at the first error that happens
 # *** Make sure to add new test files here by hand along with the
 #     graphs they create
 
@@ -48,6 +48,7 @@ tests=( alloctest avltest chunklisttest edgeindextest
         neighbortest nodeedgetest propertychunktest propertypredicatetest
         propertytest propertylisttest
         reverseindexrangetest rotest
+        statsindextest statsallocatortest
         soltest stringtabletest txtest removetest
         test720 test750 test767
         load_jarvis_tests
@@ -58,6 +59,7 @@ graph_dirs=( fixedallocgraph varallocgraph avlgraph chunklistgraph edgeindexgrap
              indexrangegraph listgraph load_gson_graph load_tsv_graph
              neighborgraph nodeedgegraph propertychunkgraph ppgraph
              propertygraph propertylistgraph
+             statsindexgraph statsallocatorgraph
              reverseindexrangegraph rograph
              solgraph stringtablegraph txgraph removegraph
              test720graph test750graph test767graph

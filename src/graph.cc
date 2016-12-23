@@ -360,7 +360,6 @@ EdgeIterator Graph::get_edges(StringID tag, const PropertyPredicate &pp, bool re
         return get_edges(tag).filter(pp); // TODO Causes re-lookup of tag
 }
 
-
 NodeID Graph::get_id(const Node &node) const
 {
     return _impl->node_table().get_id(&node);
@@ -369,4 +368,72 @@ NodeID Graph::get_id(const Node &node) const
 EdgeID Graph::get_id(const Edge &edge) const
 {
     return _impl->edge_table().get_id(&edge);
+}
+
+// Stats Interface
+Graph::IndexStats Graph::get_index_stats()
+{
+    return _impl->index_manager().get_index_stats();
+}
+
+Graph::IndexStats Graph::get_index_stats(Graph::IndexType index_type)
+{
+    return _impl->index_manager().get_index_stats(index_type);
+}
+
+Graph::IndexStats Graph::get_index_stats(Graph::IndexType index_type, StringID tag)
+{
+    return _impl->index_manager().get_index_stats(index_type, tag);
+}
+
+Graph::IndexStats Graph::get_index_stats(Graph::IndexType index_type,
+                                   StringID tag, StringID property_id)
+{
+    return _impl->index_manager().get_index_stats(index_type, tag, property_id);
+}
+
+Graph::ChunkStats Graph::get_all_chunk_lists_stats()
+{
+    return _impl->index_manager().get_all_chunk_lists_stats();
+}
+
+Graph::ChunkStats Graph::get_chunk_list_stats(Graph::IndexType index_type)
+{
+    return _impl->index_manager().get_chunk_list_stats(index_type);
+}
+
+Graph::ChunkStats Graph::get_chunk_list_stats(Graph::IndexType index_type, StringID tag)
+{
+    return _impl->index_manager().get_chunk_list_stats(index_type, tag);
+}
+
+std::vector<Graph::AllocatorStats> Graph::get_allocator_stats()
+{
+    std::vector<AllocatorStats> stats;
+
+    stats.push_back(AllocatorStats{ "NodeTable",
+                                    _impl->node_table().object_size(),
+                                    (unsigned long long) _impl->node_table().num_allocated(),
+                                    _impl->node_table().used_bytes(),
+                                    _impl->node_table().region_size(),
+                                    _impl->node_table().occupancy(),
+                                    _impl->node_table().health() });
+
+    stats.push_back(AllocatorStats{ "EdgeTable",
+                                    _impl->edge_table().object_size(),
+                                    (unsigned long long) _impl->edge_table().num_allocated(),
+                                    _impl->edge_table().used_bytes(),
+                                    _impl->edge_table().region_size(),
+                                    _impl->edge_table().occupancy(),
+                                    _impl->edge_table().health() });
+
+    stats.push_back(AllocatorStats{ "GenericAllocator",
+                                    0,
+                                    0,
+                                    _impl->allocator().used_bytes(),
+                                    _impl->allocator().region_size(),
+                                    _impl->allocator().occupancy(),
+                                    _impl->allocator().health() });
+
+    return stats;
 }

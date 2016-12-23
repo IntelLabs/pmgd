@@ -216,3 +216,48 @@ Index::Index_IteratorImplIntf *Index::get_iterator(const PropertyPredicate &pp, 
             throw Exception(PropertyTypeInvalid);
     }
 }
+
+Graph::IndexStats Index::get_stats()
+{
+    Graph::IndexStats stats;
+    switch(_ptype) {
+        case PropertyType::Integer:
+            {
+                LongValueIndex *This   = static_cast<LongValueIndex *>(this);
+                This->index_stats_info(stats);
+            }
+            break;
+        case PropertyType::Float:
+            {
+                FloatValueIndex *This = static_cast<FloatValueIndex *>(this);
+                This->index_stats_info(stats);
+            }
+            break;
+        case PropertyType::Boolean:
+            {
+                BoolValueIndex *This = static_cast<BoolValueIndex *>(this);
+                This->index_stats_info(stats);
+            }
+            break;
+        case PropertyType::Time:
+            {
+                TimeValueIndex *This = static_cast<TimeValueIndex *>(this);
+                This->index_stats_info(stats);
+            }
+            break;
+        case PropertyType::String:
+            {
+                StringValueIndex *This = static_cast<StringValueIndex *>(this);
+                This->index_stats_info(stats);
+            }
+            break;
+        case PropertyType::NoValue:
+            throw Exception(NotImplemented);
+        case PropertyType::Blob:
+            throw Exception(NotImplemented);
+        default:
+            throw Exception(PropertyTypeInvalid);
+    }
+
+    return stats;
+}

@@ -301,3 +301,43 @@ void Allocator::VariableAllocator::free(void *addr, size_t sz)
         _allocator.free_chunk(chunk_base);
     }
 }
+
+uint64_t Allocator::VariableAllocator::reserved_bytes() const
+{
+    if (_hdr == NULL)
+        return 0;
+
+    uint64_t chunk_counter = 0;
+
+    FreeFormChunk *curr = _hdr->start_chunk;
+
+    // Traverse List to count chunks
+    while (curr != NULL) {
+        ++chunk_counter;
+        curr = curr->next_chunk;
+    }
+
+    return chunk_counter * CHUNK_SIZE;
+}
+
+// This method is almost a duplicate of reserved_bytes(),
+// but it is implemented this way to avoid doing that iteration
+// over the chunks twice.
+uint64_t Allocator::VariableAllocator::used_bytes() const
+{
+    if (_hdr == NULL)
+        return 0;
+
+    uint64_t free_space     = 0;
+    size_t   chunk_counter = 0;
+
+    FreeFormChunk *curr = _hdr->start_chunk;
+
+    while (curr != NULL) {
+        free_space += curr->free_space;
+        ++chunk_counter;
+        curr = curr->next_chunk;
+    }
+
+    return chunk_counter * CHUNK_SIZE - free_space;
+}

@@ -31,7 +31,6 @@ namespace Jarvis {
             // Keep following fields together for easy logging
             uint64_t *tail_ptr;
             uint64_t *free_ptr;              ///< Beginning of free list
-            // Stats
             int64_t num_allocated;
             uint64_t max_addr;               ///< tail_ptr < max_addr (always)
             uint32_t size;                   ///< Object size
@@ -53,17 +52,13 @@ namespace Jarvis {
         // Maintain objects to be freed at commit time, in this list.
         std::list<void *> _free_list;
 
-        // Stats
-        size_t _num_alloc_calls;
-        size_t _num_free_calls;
-
         friend class AllocatorCallback<FixedAllocator, void *>;
         void clean_free_list(TransactionImpl *tx, const std::list<void *> &list);
 
     public:
         FixedAllocator(const FixedAllocator &) = delete;
         void operator=(const FixedAllocator &) = delete;
-        
+
         FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
                                uint32_t object_size, uint64_t pool_size,
                                bool create);
@@ -89,13 +84,14 @@ namespace Jarvis {
 
         const void *end() const { return _pm->tail_ptr; }
 
-        void *next(const void *curr) const 
+        void *next(const void *curr) const
           { return (void *)((uint64_t)curr + _pm->size); }
 
         bool is_free(const void *curr) const
           { return *(uint64_t *)curr & FREE_BIT; }
 
-        const int64_t num_allocated() const { return _pm->num_allocated; }
+        int64_t num_allocated() const
+          { return _pm->num_allocated; }
 
         static int64_t num_allocated(RegionHeader *hdr)
           { return hdr->num_allocated; }
@@ -103,6 +99,16 @@ namespace Jarvis {
         uint64_t get_id(const void *obj) const
           { return (((uint64_t)obj - (uint64_t)begin()) / _pm->size) + 1; }
 
-        unsigned object_size() const { return _pm->size; }
+        uint32_t object_size() const
+          { return _pm->size; }
+
+        uint64_t used_bytes() const
+          { return _pm->size * (uint64_t)_pm->num_allocated; }
+
+        uint64_t region_size() const
+          { return _pm->max_addr - _pool_addr; }
+
+        unsigned occupancy() const;
+        unsigned health() const;
     };
 }

@@ -21,7 +21,7 @@ Allocator::FixSizeAllocator::FixSizeAllocator(FlexFixedAllocator &allocator,
     // since that determines the number of bitints needed to store the
     // number of spots for objects in the chunk.
     unsigned bits = _obj_size * 32;
-    _bitmap_ints = (SMALL_CHUNK_SIZE + bits - 1) / bits; 
+    _bitmap_ints = (SMALL_CHUNK_SIZE + bits - 1) / bits;
 
     _chunk_to_scan = hdr->start_chunk;
     _last_chunk_scanned = NULL;
@@ -238,4 +238,25 @@ void Allocator::FixSizeAllocator::free(void *addr)
         }
         _allocator.free(dst_chunk);
     }
+}
+
+uint64_t Allocator::FixSizeAllocator::used_bytes() const
+{
+    if (_hdr == NULL)
+        return 0;
+
+    uint64_t free_spot_counter = 0;
+    uint64_t chunk_counter     = 0;
+
+    FixedChunk *curr = _hdr->start_chunk;
+
+    while (curr != NULL) {
+        free_spot_counter += curr->free_spots;
+        ++chunk_counter;
+        curr = curr->next_chunk;
+    }
+
+    uint64_t free_space = free_spot_counter * _obj_size;
+
+    return chunk_counter * SMALL_CHUNK_SIZE - free_space;
 }

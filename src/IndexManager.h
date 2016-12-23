@@ -49,6 +49,8 @@ namespace Jarvis {
         void remove(Graph::IndexType index_type, StringID tag, void *obj,
                  Allocator &allocator);
 
+        Graph::IndexStats get_index_stats(IndexList *tag_entry);
+
     public:
         IndexManager(const uint64_t region_addr, bool create)
             : _tag_prop_map(reinterpret_cast<TagList *>(region_addr))
@@ -89,6 +91,16 @@ namespace Jarvis {
         Index *get_index(Graph::IndexType index_type, StringID tag,
                          StringID property_id,
                          PropertyType ptype = PropertyType(0));
+
+        Graph::IndexStats get_index_stats();
+        Graph::IndexStats get_index_stats(Graph::IndexType index_type);
+        Graph::IndexStats get_index_stats(Graph::IndexType index_type, StringID tag);
+        Graph::IndexStats get_index_stats(Graph::IndexType index_type, StringID tag,
+                               StringID property_id);
+
+        Graph::ChunkStats get_all_chunk_lists_stats();
+        Graph::ChunkStats get_chunk_list_stats(Graph::IndexType index_type);
+        Graph::ChunkStats get_chunk_list_stats(Graph::IndexType index_type, StringID tag);
 
         Index::Index_IteratorImplIntf *get_iterator(Graph::IndexType index_type,
                                                     StringID tag);

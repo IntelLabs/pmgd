@@ -128,7 +128,7 @@ Allocator::FlexFixedAllocator::FixedAllocatorInfo *Allocator::FlexFixedAllocator
 
     return fa_info;
 }
-        
+
 void Allocator::FlexFixedAllocator::free(void *addr)
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
@@ -207,4 +207,18 @@ void Allocator::FlexFixedAllocator::free(void *addr)
                                               prev, num_allocated}));
         }
     }
+}
+
+int64_t Allocator::FlexFixedAllocator::num_allocated() const
+{
+    int64_t counter = 0;
+
+    RegionHeader *curr = _pm;
+
+    while(curr != NULL) {
+        ++counter;
+        curr = curr->next_pool_hdr;
+    }
+
+    return counter;
 }

@@ -14,6 +14,7 @@ namespace Jarvis {
         StringID(int id) : _id(id) { }
         bool operator<(const StringID &a) const { return _id < a._id; }
         bool operator==(const StringID &a) const { return _id == a._id; }
+        bool operator!=(const StringID &a) const { return _id != a._id; }
         std::string name() const;
         // TODO For debugging only
         uint16_t id() const { return _id; }

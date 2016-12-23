@@ -98,6 +98,10 @@ namespace Jarvis {
             VariableAllocator(Allocator &allocator, RegionHeader *hdr, bool create);
             void *alloc(size_t size);
             void free(void *addr, size_t size);
+
+            uint64_t used_bytes() const;
+            uint64_t reserved_bytes() const;
+
         };
 
         class FlexFixedAllocator
@@ -167,6 +171,11 @@ namespace Jarvis {
 
             void *alloc();
             void free(void *addr);
+
+            int64_t num_allocated() const;
+            uint64_t reserved_bytes() const
+                { return num_allocated() * _obj_size; }
+
         };
 
         class FixSizeAllocator
@@ -215,8 +224,8 @@ namespace Jarvis {
             // during allocations. The filled chunks are removed from DRAM tracking
             // until they have some free space made available.
             std::unordered_set<FixedChunk *> _free_chunks;
-            FixedChunk *_chunk_to_scan;  // Point into the FixedAllocator.
-            FixedChunk *_last_chunk_scanned;  // Needed to extend the linked list
+            FixedChunk *_chunk_to_scan;      // Point into the FixedAllocator.
+            FixedChunk *_last_chunk_scanned; // Needed to extend the linked list
 
         public:
             FixSizeAllocator(const FixSizeAllocator &) = delete;
@@ -225,6 +234,8 @@ namespace Jarvis {
                               unsigned obj_size, bool create);
             void *alloc();
             void free(void *addr);
+
+            uint64_t used_bytes() const;
         };
 
         class ChunkAllocator
@@ -319,6 +330,13 @@ namespace Jarvis {
                     RegionHeader *hdr, bool create);
         void *alloc(size_t size);
         void free(void *addr, size_t size);
+
+        uint64_t region_size() const
+            { return _chunks.region_size() + CHUNK_SIZE; }
+
+        uint64_t used_bytes() const;
+        unsigned occupancy() const;
+        unsigned health() const;
     };
 
 }

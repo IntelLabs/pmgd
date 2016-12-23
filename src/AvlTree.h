@@ -77,5 +77,7 @@ namespace Jarvis {
         void remove(const K &key, Allocator &allocator);
 
         V *find(const K &key);
+
+        size_t treenode_size(TreeNode *node);
     };
 }

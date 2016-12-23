@@ -67,5 +67,43 @@ namespace Jarvis {
         enum IndexType { NodeIndex, EdgeIndex };
         void create_index(IndexType index_type, StringID tag,
                           StringID property_id, const PropertyType ptype);
+
+        //Stats
+        struct IndexStats {
+            size_t total_unique_entries;
+            size_t unique_entry_size;
+            size_t total_elements;
+            size_t total_size_bytes;
+            size_t health_factor; // [0,100] - 100 is best health
+        };
+
+        struct ChunkStats {
+            size_t total_chunks;
+            size_t chunk_size;
+            size_t num_elements;
+            size_t total_size_bytes;
+            size_t health_factor; // [0,100] - 100 is best health
+        };
+
+        IndexStats get_index_stats();
+        IndexStats get_index_stats(IndexType index_type);
+        IndexStats get_index_stats(IndexType index_type, StringID tag);
+        IndexStats get_index_stats(IndexType index_type, StringID tag, StringID property_id);
+
+        ChunkStats get_all_chunk_lists_stats();
+        ChunkStats get_chunk_list_stats(IndexType index_type);
+        ChunkStats get_chunk_list_stats(IndexType index_type, StringID tag);
+
+        struct AllocatorStats {
+            std::string name;
+            unsigned long long object_size;
+            unsigned long long num_objects;
+            unsigned long long total_allocated_bytes;
+            unsigned long long region_size;
+            unsigned occupancy;     // [0 - 100]
+            unsigned health_factor; // [0 - 100]
+        };
+
+        std::vector<AllocatorStats> get_allocator_stats();
     };
 };

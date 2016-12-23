@@ -42,6 +42,10 @@ namespace Jarvis {
         void find_node_neq_reverse(TreeNode *root, const Compare &cur,
                                    const K &neq, Stack &path);
 
+        // For statistics
+        void stats_recursive(TreeNode *root, Graph::IndexStats &stats);
+        void stats_health_recursive(TreeNode *root, Graph::IndexStats &stats, size_t &avg_elem_per_node);
+
         template <class D> friend class Index_IteratorImplBase;
         template <class D> friend class IndexEq_IteratorImpl;
         template <class D> friend class IndexRange_IteratorImpl;
@@ -50,6 +54,7 @@ namespace Jarvis {
         template <class D> friend class IndexRangeReverse_IteratorImpl;
         template <class D> friend class IndexRangeNomin_IteratorImpl;
         template <class D> friend class IndexRangeNeqReverse_IteratorImpl;
+
     public:
         // Initialize both and they do their own transaction flush
         AvlTreeIndex(PropertyType ptype) : Index(ptype), AvlTree<K,V>()
@@ -65,6 +70,9 @@ namespace Jarvis {
         Index::Index_IteratorImplIntf *get_iterator(const K &key, PropertyPredicate::Op op, bool reverse);
         Index::Index_IteratorImplIntf *get_iterator(const K &min, const K &max, PropertyPredicate::Op op,
                                bool reverse);
+
+        // For statistics
+        void index_stats_info(Graph::IndexStats &stats);
     };
 
     // For the actual property value indices
