@@ -31,16 +31,16 @@
 #include <assert.h>
 
 #include "exception.h"
-#include "Allocator.h"
+#include "AllocatorUnit.h"
 #include "TransactionImpl.h"
 
 using namespace PMGD;
 using namespace std;
 
-Allocator::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
+AllocatorUnit::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
                       RegionHeader *hdr_addr,
                       unsigned object_size, uint64_t pool_size,
-                      Allocator &allocator, bool create, bool msync_needed)
+                      AllocatorUnit &allocator, bool create, bool msync_needed)
     : _pm(hdr_addr),
       _obj_size(object_size), _pool_size(pool_size),
       _max_objs_per_pool(pool_size / object_size),
@@ -76,7 +76,11 @@ Allocator::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
     }
 }
 
-void *Allocator::FlexFixedAllocator::alloc()
+// Since the only user of this allocator is the FixSizeAllocator which
+// wraps this alloc inside an inner transaction, all calls here are now
+// part of that inner tx which is independent of what happens to the
+// app's outer transaction.
+void *AllocatorUnit::FlexFixedAllocator::alloc()
 {
     void *addr = NULL;
     auto it = _fa_pools.begin();
@@ -132,25 +136,25 @@ void *Allocator::FlexFixedAllocator::alloc()
     return addr;
 }
 
-Allocator::FlexFixedAllocator::FixedAllocatorInfo *Allocator::FlexFixedAllocator::add_new_pool()
+AllocatorUnit::FlexFixedAllocator::FixedAllocatorInfo *AllocatorUnit::FlexFixedAllocator::add_new_pool()
 {
-    // If it comes out here, no luck allocating.
-    uint64_t pool_addr = reinterpret_cast<uint64_t>(_allocator.alloc_chunk());
-
     // We also need space for the header. Easiest is to get it
     // from the free form chunk, even if it is a fixed size header
     // otherwise we will have a chicken and egg problem.
     RegionHeader *hdr =
         new (_allocator.alloc_free_form(sizeof(RegionHeader))) RegionHeader;
+    uint64_t pool_addr;
+    FixedAllocator *fa;
 
-    hdr->pool_base = pool_addr;
-    FixedAllocator *fa = new FixedAllocator(pool_addr, &(hdr->fa_hdr),
-                            _obj_size, _pool_size, true, _msync_needed);
-    hdr->next_pool_hdr = NULL;
-
+    // This should get is the inner transaction from the FixSizeAllocator.
     TransactionImpl *tx = TransactionImpl::get_tx();
 
-    tx->flush_range(hdr, sizeof(*hdr) - sizeof(hdr->fa_hdr));
+    pool_addr = reinterpret_cast<uint64_t>(_allocator.alloc_chunk());
+
+    hdr->pool_base = pool_addr;
+    fa = new FixedAllocator(pool_addr, &(hdr->fa_hdr),
+                            _obj_size, _pool_size, true, _msync_needed);
+    hdr->next_pool_hdr = NULL;
 
     tx->write(&_last_hdr_scanned->next_pool_hdr, hdr);
 
@@ -162,7 +166,7 @@ Allocator::FlexFixedAllocator::FixedAllocatorInfo *Allocator::FlexFixedAllocator
     return fa_info;
 }
 
-void Allocator::FlexFixedAllocator::free(void *addr)
+void AllocatorUnit::FlexFixedAllocator::free(void *addr)
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
     static const uint64_t PAGE_MASK = ~(CHUNK_SIZE - 1);
@@ -247,7 +251,7 @@ void Allocator::FlexFixedAllocator::free(void *addr)
     }
 }
 
-int64_t Allocator::FlexFixedAllocator::num_allocated() const
+int64_t AllocatorUnit::FlexFixedAllocator::num_allocated() const
 {
     int64_t counter = 0;
 
