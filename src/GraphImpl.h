@@ -51,6 +51,7 @@ namespace PMGD {
         struct GraphInit {
             unsigned node_size;
             unsigned edge_size;
+            unsigned num_allocators;
 
             CommonParams params;
 

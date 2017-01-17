@@ -84,6 +84,7 @@ namespace PMGD {
         unsigned node_size;
         unsigned edge_size;
         unsigned max_stringid_length;
+        unsigned num_allocators;
         std::string locale_name;
 
         RegionInfo transaction_info;
