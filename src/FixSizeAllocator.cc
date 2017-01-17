@@ -31,17 +31,17 @@
 #include <assert.h>
 
 #include "exception.h"
-#include "Allocator.h"
+#include "AllocatorUnit.h"
 #include "TransactionImpl.h"
 
 using namespace PMGD;
 
 #define ALLOC_OFFSET(bitints,sz) ((sizeof(FixedChunk) + (bitints)*4 + (sz) - 1) & ~((sz) - 1))
 
-Allocator::FixSizeAllocator::FixSizeAllocator(FlexFixedAllocator &allocator,
-                                    RegionHeader *hdr,
-                                    unsigned obj_size, bool create)
-    : _allocator(allocator)
+AllocatorUnit::FixSizeAllocator::FixSizeAllocator(FlexFixedAllocator &allocator,
+                                    RegionHeader *hdr, unsigned obj_size,
+                                    uint32_t alloc_id, bool create)
+    : _allocator(allocator), _my_id(alloc_id)
 {
     _hdr = hdr;
     _obj_size = obj_size;
@@ -61,10 +61,11 @@ Allocator::FixSizeAllocator::FixSizeAllocator(FlexFixedAllocator &allocator,
                           _obj_size;
 }
 
-Allocator::FixSizeAllocator::FixedChunk::FixedChunk(unsigned obj_size,
+AllocatorUnit::FixSizeAllocator::FixedChunk::FixedChunk(unsigned alloc_id,
                                                     unsigned bitmap_ints,
                                                     unsigned max_spots)
 {
+    my_id = alloc_id;
     next_chunk = NULL;
     free_spots = max_spots;
     next_index = 0;
@@ -79,7 +80,7 @@ Allocator::FixSizeAllocator::FixedChunk::FixedChunk(unsigned obj_size,
     occupants[main_idx] |= mask;
 }
 
-void *Allocator::FixSizeAllocator::FixedChunk::alloc(unsigned obj_size,
+void *AllocatorUnit::FixSizeAllocator::FixedChunk::alloc(unsigned obj_size,
                                                         unsigned bitmap_ints)
 {
     // Next index may point to a free spot in a chunk where there
@@ -134,7 +135,7 @@ found:
                + (obj_size * index);
 }
 
-void *Allocator::FixSizeAllocator::alloc()
+void *AllocatorUnit::FixSizeAllocator::alloc()
 {
     void *addr = NULL;
     auto it = _free_chunks.begin();
@@ -174,24 +175,37 @@ void *Allocator::FixSizeAllocator::alloc()
         }
     }
 
+    FixedChunk *dst_chunk;
+
     // Reached null while looking for addrs. So all others scanned.
     // If it comes out here, no luck allocating.
-    FixedChunk *dst_chunk = new (_allocator.alloc()) FixedChunk(_obj_size,
-                                                                _bitmap_ints,
-                                                                _max_spots);
+    {
+        // Create an inner indepdendent transaction so that the chunk
+        // allocation is made permanent with assignment to some pointer
+        // in the FlexFixedAllocator data structure and in case it leads
+        // to an allocation from the main allocator, we don't have to
+        // hold the main chunk allocator lock till end of parent TX.
+        TransactionImpl inner_tx(tx->get_db(), Transaction::ReadWrite | Transaction::Independent);
 
-    tx->flush_range(dst_chunk, sizeof(FixedChunk));
+        dst_chunk = new (_allocator.alloc()) FixedChunk(_my_id, _bitmap_ints, _max_spots);
 
-    // First free form allocation.
-    if (_hdr->start_chunk == NULL)
-        tx->write(&_hdr->start_chunk, dst_chunk);
-    else
-        tx->write(&_last_chunk_scanned->next_chunk, dst_chunk);
+        // First free form allocation.
+        if (_hdr->start_chunk == NULL)
+            inner_tx.write(&_hdr->start_chunk, dst_chunk);
+        else
+            inner_tx.write(&_last_chunk_scanned->next_chunk, dst_chunk);
+
+        // This also ensures that the PM state of this list is not
+        // tied to the outer transaction conditions.
+        inner_tx.commit();
+    }
     _last_chunk_scanned = dst_chunk;
+
     addr = dst_chunk->alloc(_obj_size, _bitmap_ints);
 
     // Since we just allocated an entire chunk for one request,
-    // it obviously has space left. So add it to that list.
+    // it obviously has space left. So add it to that list. And that
+    // cannot be rolled back.
     _free_chunks.insert(dst_chunk);
 
     // At this point, since we come here only if the allocation fits
@@ -201,7 +215,7 @@ void *Allocator::FixSizeAllocator::alloc()
     return addr;
 }
 
-void Allocator::FixSizeAllocator::FixedChunk::free(void *addr, unsigned obj_size, unsigned bitmap_ints)
+void AllocatorUnit::FixSizeAllocator::FixedChunk::free(void *addr, unsigned obj_size, unsigned bitmap_ints)
 {
     uint64_t chunk_base = reinterpret_cast<uint64_t>(addr) & PAGE_MASK;
     uint64_t alloc_base = chunk_base + ALLOC_OFFSET(bitmap_ints, obj_size);
@@ -228,7 +242,7 @@ void Allocator::FixSizeAllocator::FixedChunk::free(void *addr, unsigned obj_size
     ++free_spots;
 }
 
-void Allocator::FixSizeAllocator::free(void *addr)
+void AllocatorUnit::FixSizeAllocator::free(void *addr)
 {
     uint64_t chunk_base = reinterpret_cast<uint64_t>(addr) & PAGE_MASK;
     FixedChunk *dst_chunk = reinterpret_cast<FixedChunk *>(chunk_base);
@@ -275,7 +289,7 @@ void Allocator::FixSizeAllocator::free(void *addr)
         _free_chunks.insert(dst_chunk);
 }
 
-uint64_t Allocator::FixSizeAllocator::used_bytes() const
+uint64_t AllocatorUnit::FixSizeAllocator::used_bytes() const
 {
     if (_hdr == NULL)
         return 0;

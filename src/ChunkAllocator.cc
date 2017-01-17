@@ -31,21 +31,32 @@
 #include <assert.h>
 
 #include "exception.h"
-#include "Allocator.h"
+#include "AllocatorUnit.h"
 #include "TransactionImpl.h"
 
 using namespace PMGD;
 
-void *Allocator::ChunkAllocator::alloc(size_t sz)
+void *AllocatorUnit::ChunkAllocator::alloc(size_t sz)
 {
     // In this case, we always have to make a new chunk allocation
     // Round up to 2MB boundary
     size_t tot_size = (sz + CHUNK_SIZE - 1) & ~(CHUNK_SIZE - 1);
     unsigned  num_chunks = tot_size / CHUNK_SIZE;
-    return _allocator.alloc_chunk(num_chunks);
+    void *addr;
+
+    // Have to insert an inner transaction here to make sure
+    // the main allocator can get unlocked.
+    {
+        TransactionImpl *tx = TransactionImpl::get_tx();
+        TransactionImpl inner_tx(tx->get_db(), Transaction::ReadWrite | Transaction::Independent);
+        addr = _allocator.alloc_chunk(num_chunks);
+        inner_tx.commit();
+    }
+
+    return addr; 
 }
 
-void Allocator::ChunkAllocator::free(void *addr, size_t sz)
+void AllocatorUnit::ChunkAllocator::free(void *addr, size_t sz)
 {
     uint64_t chunk_base = reinterpret_cast<uint64_t>(addr);
     assert(chunk_base % CHUNK_SIZE == 0);
@@ -54,7 +65,7 @@ void Allocator::ChunkAllocator::free(void *addr, size_t sz)
     _allocator.free_chunk(chunk_base, num_chunks);
 }
 
-bool Allocator::ChunkAllocator::is_borderline(size_t sz)
+bool AllocatorUnit::ChunkAllocator::is_borderline(size_t sz)
 {
     size_t mod = sz % CHUNK_SIZE;
     return (mod == 0 || mod > THRESHOLD);
