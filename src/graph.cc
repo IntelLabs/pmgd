@@ -50,7 +50,7 @@ static constexpr char info_name[] = "graph.jdb";
 extern constexpr char commit_id[] = "Commit id: " COMMIT_ID;
 
 struct GraphImpl::GraphInfo {
-    static const uint64_t VERSION = 7;
+    static const uint64_t VERSION = 8;
 
     uint64_t version;
 
@@ -209,10 +209,10 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
       _edge_table(_init.info->edge_info.addr,
                   _init.edge_size, _init.info->edge_info.len,
                   _init.create),
-      _allocator(_init.info->allocator_info.addr,
+      _allocator(this, _init.info->allocator_info.addr,
                  _init.info->allocator_info.len,
                  &_init.info->allocator_hdr,
-                 _init.create),
+                 1, _init.create),
       _locale(_init.info->locale_name[0] != '\0'
                   ? std::locale(_init.info->locale_name)
                   : std::locale())

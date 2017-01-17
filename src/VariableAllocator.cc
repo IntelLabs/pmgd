@@ -31,14 +31,14 @@
 #include <assert.h>
 
 #include "exception.h"
-#include "Allocator.h"
-#include "TransactionImpl.h"
+#include "AllocatorUnit.h"
+#include "transaction.h"
 
 using namespace PMGD;
 
-Allocator::VariableAllocator::VariableAllocator(Allocator &allocator,
-                     RegionHeader *hdr, bool create)
-    : _allocator(allocator)
+AllocatorUnit::VariableAllocator::VariableAllocator(AllocatorUnit &allocator,
+                     RegionHeader *hdr, uint32_t alloc_id, bool create)
+    : _allocator(allocator), _my_id(alloc_id)
 {
     if (create)
         hdr->start_chunk = NULL;
@@ -48,7 +48,7 @@ Allocator::VariableAllocator::VariableAllocator(Allocator &allocator,
     _hdr = hdr;
 }
 
-void Allocator::VariableAllocator::FreeFormChunk::find_max_cont_space()
+void AllocatorUnit::VariableAllocator::FreeFormChunk::find_max_cont_space()
 {
     // Have to compute it all over again because we have no idea how
     // the free list got changed before this and since we do not
@@ -71,7 +71,7 @@ void Allocator::VariableAllocator::FreeFormChunk::find_max_cont_space()
     }
 }
 
-void *Allocator::VariableAllocator::FreeFormChunk::alloc(size_t sz)
+void *AllocatorUnit::VariableAllocator::FreeFormChunk::alloc(size_t sz)
 {
     if (sz > max_cont_space)
         return NULL;
@@ -123,8 +123,9 @@ void *Allocator::VariableAllocator::FreeFormChunk::alloc(size_t sz)
     }
 }
 
-Allocator::VariableAllocator::FreeFormChunk::FreeFormChunk(unsigned used)
+AllocatorUnit::VariableAllocator::FreeFormChunk::FreeFormChunk(unsigned alloc_id, unsigned used)
 {
+    my_id = alloc_id;
     next_chunk = NULL;
     free_space = CHUNK_SIZE - HEADER_SIZE - used;
     free_list = sizeof(FreeFormChunk);
@@ -136,21 +137,45 @@ Allocator::VariableAllocator::FreeFormChunk::FreeFormChunk(unsigned used)
     TransactionImpl::flush_range(this, sizeof(FreeFormChunk) + sizeof(free_spot_t));
 }
 
-void *Allocator::VariableAllocator::alloc_large(size_t sz)
+AllocatorUnit::VariableAllocator::FreeFormChunk *AllocatorUnit::VariableAllocator::alloc_chunk()
 {
-    // In this case, we always have to make a new chunk allocation
-    // Round up to 2MB boundary
-    size_t tot_size = (sz + CHUNK_SIZE - 1) & ~(CHUNK_SIZE - 1);
-    unsigned num_chunks = tot_size / CHUNK_SIZE;
-    unsigned used = sz - (num_chunks - 1) * CHUNK_SIZE;
+    FreeFormChunk *dst_chunk = NULL;
+    {
+        // Ensure allocation through an inner transaction commit
+        TransactionImpl *tx = TransactionImpl::get_tx();
 
-    FreeFormChunk *dst_chunk = new (_allocator.alloc_chunk(num_chunks)) FreeFormChunk(used);
+        // Create an inner indepdendent transaction so that the chunk
+        // allocation is made permanent with assignment to some pointer
+        // in the VariableAllocator data structure and we don't have to
+        // hold the main chunk allocator lock till end of parent TX.
+        TransactionImpl inner_tx(tx->get_db(), Transaction::ReadWrite | Transaction::Independent);
+        dst_chunk = new (_allocator.alloc_chunk(1)) FreeFormChunk(_my_id, 0);
 
-    void *addr = dst_chunk->compute_addr(CHUNK_SIZE - used);
+        // First free form allocation.
+        if (_hdr->start_chunk == NULL)
+            inner_tx.write(&_hdr->start_chunk, dst_chunk);
+        else
+            inner_tx.write(&_last_chunk_scanned->next_chunk, dst_chunk);
+        _last_chunk_scanned = dst_chunk;
+
+        inner_tx.commit();
+    }
+
+    return dst_chunk;
+}
+
+AllocatorUnit::VariableAllocator::FreeFormChunk *AllocatorUnit::VariableAllocator::alloc_chunks(
+                                                                    unsigned num, unsigned used)
+{
+    // Ensure allocation through an inner transaction commit
+    TransactionImpl *tx = TransactionImpl::get_tx();
+
+    assert(num > 1 && used > 0);
+    FreeFormChunk *dst_chunk = new (_allocator.alloc_chunk(num)) FreeFormChunk(_my_id, used);
 
     // Since this doesn't follow the regular sequence of allocations,
     // make sure the blocks have been scanned to set the pointers
-    // correctly. ***
+    // correctly.
     while (_chunk_to_scan != NULL) {
         // This chunk must not be in the DRAM lists since we go
         // in a sequence.
@@ -161,8 +186,6 @@ void *Allocator::VariableAllocator::alloc_large(size_t sz)
         _chunk_to_scan = _chunk_to_scan->next_chunk;
     }
 
-    TransactionImpl *tx = TransactionImpl::get_tx();
-
     // First free form allocation.
     if (_hdr->start_chunk == NULL)
         tx->write(&_hdr->start_chunk, dst_chunk);
@@ -170,15 +193,36 @@ void *Allocator::VariableAllocator::alloc_large(size_t sz)
         tx->write(&_last_chunk_scanned->next_chunk, dst_chunk);
     _last_chunk_scanned = dst_chunk;
 
+    return dst_chunk;
+}
+
+void *AllocatorUnit::VariableAllocator::alloc_large(size_t sz)
+{
+    // In this case, we always have to make a new chunk allocation
+    // Round up to 2MB boundary
+    size_t tot_size = (sz + CHUNK_SIZE - 1) & ~(CHUNK_SIZE - 1);
+    unsigned num_chunks = tot_size / CHUNK_SIZE;
+    unsigned used = sz - (num_chunks - 1) * CHUNK_SIZE;
+
+    // Not wrapped in inner transaction. so changes won't be permanent.
+    // this does mean holding onto the main lock longer but given these
+    // allocations would be relatively rare, we choose this option. the
+    // other option would be to make an entry for each chunk in this block
+    // in PM list and DRAM list so that in case of a user TX rollback,
+    // we had all pages accounted for. but then there will be alot of
+    // pm operations to first put headers on every page, then have the
+    // alloc call remove those headers and so on.
+    FreeFormChunk *dst_chunk = alloc_chunks(num_chunks, used);
+
     // For later scans
     // Since we allocate here only in non-borderline cases,
     // there will always be at least 8B.
     _free_chunks.insert(dst_chunk);
 
-    return addr;
+    return dst_chunk->compute_addr(CHUNK_SIZE - used);
 }
 
-void *Allocator::VariableAllocator::alloc(size_t sz)
+void *AllocatorUnit::VariableAllocator::alloc(size_t sz)
 {
     void *addr = NULL;
 
@@ -198,8 +242,6 @@ void *Allocator::VariableAllocator::alloc(size_t sz)
         }
     }
 
-    TransactionImpl *tx = TransactionImpl::get_tx();
-
     while (_chunk_to_scan != NULL) {
         // This chunk must not be in the DRAM lists since we go
         // in a sequence.
@@ -216,14 +258,7 @@ void *Allocator::VariableAllocator::alloc(size_t sz)
 
     // Reached null while looking for addrs. So all others scanned.
     // If it comes out here, no luck allocating.
-    FreeFormChunk *dst_chunk = new (_allocator.alloc_chunk()) FreeFormChunk;
-
-    // First free form allocation.
-    if (_hdr->start_chunk == NULL)
-        tx->write(&_hdr->start_chunk, dst_chunk);
-    else
-        tx->write(&_last_chunk_scanned->next_chunk, dst_chunk);
-    _last_chunk_scanned = dst_chunk;
+    FreeFormChunk *dst_chunk = alloc_chunk();
     addr = dst_chunk->alloc(sz);
 
     // For later scans
@@ -237,7 +272,7 @@ void *Allocator::VariableAllocator::alloc(size_t sz)
     return addr;
 }
 
-void Allocator::VariableAllocator::FreeFormChunk::free(void *addr, size_t sz)
+void AllocatorUnit::VariableAllocator::FreeFormChunk::free(void *addr, size_t sz)
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
 
@@ -277,7 +312,7 @@ void Allocator::VariableAllocator::FreeFormChunk::free(void *addr, size_t sz)
     free_space += sz;
 }
 
-void Allocator::VariableAllocator::free(void *addr, size_t sz)
+void AllocatorUnit::VariableAllocator::free(void *addr, size_t sz)
 {
     static const uint64_t PAGE_MASK = ~(CHUNK_SIZE - 1);
     uint64_t chunk_base = reinterpret_cast<uint64_t>(addr) & PAGE_MASK;
@@ -331,7 +366,7 @@ void Allocator::VariableAllocator::free(void *addr, size_t sz)
 
 }
 
-uint64_t Allocator::VariableAllocator::reserved_bytes() const
+uint64_t AllocatorUnit::VariableAllocator::reserved_bytes() const
 {
     if (_hdr == NULL)
         return 0;
@@ -352,7 +387,7 @@ uint64_t Allocator::VariableAllocator::reserved_bytes() const
 // This method is almost a duplicate of reserved_bytes(),
 // but it is implemented this way to avoid doing that iteration
 // over the chunks twice.
-uint64_t Allocator::VariableAllocator::used_bytes() const
+uint64_t AllocatorUnit::VariableAllocator::used_bytes() const
 {
     if (_hdr == NULL)
         return 0;
