@@ -97,6 +97,8 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
     _jcur = jbegin();
     _outer_tx = _per_thread_tx;
     _per_thread_tx = this; // Install per-thread TX
+
+    _alloc_id = -1;
 }
 
 TransactionImpl::~TransactionImpl()
@@ -105,6 +107,8 @@ TransactionImpl::~TransactionImpl()
         if (!_committed) {
             rollback(_tx_handle, _jcur, _msync_needed, _pending_commits);
         }
+        _alloc_id = -1;
+        _finalize_callback_list.do_callbacks(this);
         TransactionManager *tx_manager = &_db->transaction_manager();
         tx_manager->free_transaction(_tx_handle, _msync_needed, _pending_commits);
     }

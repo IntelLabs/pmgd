@@ -290,42 +290,24 @@ int AvlTreeTest::run_abort_test(Graph &db, Allocator &allocator1)
 
 int AvlTreeTest::run_test()
 {
-    uint64_t start_addr;
-    uint64_t region_size, hdr_size;
     int retval = 0;
 
     try {
         Graph db("avlgraph", Graph::Create);
 
-        Transaction tx(db, Transaction::ReadWrite);
-        bool create1 = true;
-
-        start_addr = 0x800000000;
-        region_size = 10485760;       // 10MB
-        // We need a PM space for allocator header which normally
-        // will reside in the GraphInfo structure which is quite
-        // hidden. So creating a temporary space here to allow for
-        // the header.
-        uint64_t hdr_addr = start_addr + region_size;
-        hdr_size = 1024;
-        os::MapRegion region1(".", "region1", start_addr, region_size, create1, create1, false);
-        os::MapRegion region2(".", "region2", hdr_addr, hdr_size, create1, create1, false);
-        Allocator::RegionHeader *hdr = reinterpret_cast<Allocator::RegionHeader *>(hdr_addr);
-        CommonParams params(create1, false);
-        Allocator allocator1(start_addr, region_size, hdr, params);
-        tx.commit();
+        Allocator *allocator1 = Allocator::get_main_allocator(db);
 
         printf("Commit abort test\n");
-        retval += run_abort_test(db, allocator1);
+        retval += run_abort_test(db, *allocator1);
 
         printf("Insert test\n");
-        retval += run_tree_test(db, allocator1);
+        retval += run_tree_test(db, *allocator1);
 
         printf("\nSimple remove test\n");
-        retval += run_remove_test1(db, allocator1);
+        retval += run_remove_test1(db, *allocator1);
 
         printf("\nLess simple remove test\n");
-        retval += run_remove_test2(db, allocator1);
+        retval += run_remove_test2(db, *allocator1);
     }
     catch (Exception e) {
         print_exception(e);

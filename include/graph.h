@@ -44,6 +44,7 @@ namespace PMGD {
 
     class Graph {
         friend class Transaction;
+        friend class Allocator;
         GraphImpl *_impl;
 
     public:
