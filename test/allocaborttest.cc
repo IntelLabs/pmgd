@@ -79,7 +79,7 @@ int AllocAbortTest::fixed_allocator_test()
         pool_size = 1024;
         object_size = 32;
         os::MapRegion region1("fixedallocabortgraph", "region1", start_addr, pool_size, create1, create1, false);
-        FixedAllocator allocator1(start_addr, object_size, pool_size, create1);
+        FixedAllocator allocator1(start_addr, object_size, pool_size, CommonParams{create1, false});
         txa.commit();
 
         long base1 = start_addr + /* sizeof(struct RegionHeader) */64;
