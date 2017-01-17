@@ -55,6 +55,8 @@ namespace PMGD {
             unsigned node_size;
             unsigned edge_size;
 
+            unsigned num_allocators;
+
             os::MapRegion info_map;
             GraphInfo *info;
 
