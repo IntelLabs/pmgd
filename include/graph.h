@@ -70,6 +70,8 @@ namespace PMGD {
             size_t journal_size;
             size_t allocator_region_size;
 
+            unsigned num_allocators;
+
             std::string locale_name;
 
             Config();
