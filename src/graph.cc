@@ -164,6 +164,7 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
         info->init(config, params.msync_needed, *params.pending_commits);
         node_size = config.node_size;
         edge_size = config.edge_size;
+        num_allocators = config.num_allocators;
     }
     else {
         if (info->version != GraphInfo::VERSION)
@@ -233,7 +234,8 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
       _allocator(this, _init.info->allocator_info.addr,
                  _init.info->allocator_info.len,
                  &_init.info->allocator_hdr,
-                 1, _init.params),
+                 _init.num_allocators,
+                 _init.params),
       _locale(_init.info->locale_name[0] != '\0'
                   ? std::locale(_init.info->locale_name)
                   : std::locale())
