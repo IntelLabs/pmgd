@@ -58,6 +58,9 @@ namespace PMGD {
             TransactionImpl *_outer_tx;
 
             CallbackList<void *, TransactionImpl *> _commit_callback_list;
+            CallbackList<void *, TransactionImpl *> _finalize_callback_list;
+
+            int _alloc_id;
 
             // For Msync support
             bool _msync_needed;    // false only when NoMsync used for msync cases.
@@ -97,8 +100,18 @@ namespace PMGD {
             void register_commit_callback(void *key, std::function<void(TransactionImpl *)> f)
                 { _commit_callback_list.register_callback(key, f); }
 
-            std::function<void(TransactionImpl *)> *lookup_callback(void *key)
+            std::function<void(TransactionImpl *)> *lookup_commit_callback(void *key)
                 { return _commit_callback_list.lookup_callback(key); }
+
+            void register_finalize_callback(void *key, std::function<void(TransactionImpl *)> f)
+                { _finalize_callback_list.register_callback(key, f); }
+
+            std::function<void(TransactionImpl *)> *lookup_finalize_callback(void *key)
+                { return _finalize_callback_list.lookup_callback(key); }
+
+            void set_allocator(int alloc_id) { _alloc_id = alloc_id; }
+
+            int get_allocator() { return _alloc_id; }
 
             // log data; user performs the writes
             void log(void *ptr, size_t len);
