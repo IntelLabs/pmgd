@@ -103,6 +103,8 @@ int main(int argc, char **argv)
             config.locale_name = argv[argi+1];
         else if (check_arg(argv[argi], 'A', "allocator-size"))
             config.allocator_region_size = strtoull(argv[argi+1], 0, 16);
+        else if (check_arg(argv[argi], 'c', "num-allocators"))
+            config.num_allocators = strtoul(argv[argi+1], 0, 0);
         else
             break;
         argi += 2;
@@ -237,6 +239,11 @@ void print_usage(FILE *stream)
 "          The default object sizes are 16, 32, 64, and 128. The default\n"
 "          pool size is REGION-SIZE. This option cannot be used with -A\n"
 "          or --allocator-size. POOL-SIZE is assumed to be in hexadecimal.\n"
+"\n"
+"  -c, --num-allocators NUMBER-PARALLEL-ALLOCATORS\n"
+"          Set the number of allocators that will operate on given pool.\n"
+"          This determines how many transactions can potentially allocate in\n"
+"          parallel. Default is 1.\n"
 "\n"
 "  -l, --locale LOCALE-NAME\n"
 "          Set the name of the locale to be used for ordering strings in\n"
