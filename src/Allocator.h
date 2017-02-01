@@ -145,6 +145,7 @@ namespace PMGD {
         uint64_t get_start_addr() { return _pm_base; }
 
         friend class AllocAbortTest;
+        friend class MTAllocTest;
         friend class AvlTreeTest;
         friend class EdgeIndexTest;
         friend class ListTest;

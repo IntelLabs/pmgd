@@ -13,7 +13,7 @@ TEST_SRCS := $(addprefix test/, \
                          statsindextest.cc \
                          statsallocatortest.cc \
                          reverseindexrangetest.cc emailindextest.cc \
-                         removetest.cc \
+                         removetest.cc mtalloctest.cc \
                          rotest.cc BindingsTest.java DateTest.java \
                          neighbortest.cc aborttest.cc \
                          test720.cc test750.cc test767.cc)
@@ -57,6 +57,11 @@ test/emailindextest: test/emailindextest.o $(TEST_LIBS)
 test/%.class: test/%.java lib/libpmgd.so lib/libpmgd-util.so lib/pmgd-jni.jar
 	$(call print,JC,$@)
 	$(JC) -cp lib/pmgd-jni.jar -d test $<
+
+# Special case for mtalloctest.
+test/mtalloctest: test/mtalloctest.o $(TEST_LIBS)
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(TEST_LIBS) -lpthread
 
 # Override the global rule for building a preprocessed file from a C++ file.
 test/%.i: test/%.cc $(MAKEFILE_LIST)
