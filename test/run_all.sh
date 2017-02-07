@@ -77,7 +77,7 @@ tests=( alloctest allocaborttest avltest chunklisttest edgeindextest
         reverseindexrangetest rotest
         statsindextest statsallocatortest
         soltest stringtabletest txtest removetest
-        mtalloctest
+        mtalloctest stripelocktest
         test720 test750 test767
         load_pmgd_tests
         BindingsTest DateTest )
