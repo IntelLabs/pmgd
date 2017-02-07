@@ -30,6 +30,8 @@
 #pragma once
 #include <thread>
 #include <random>
+#include <vector>
+#include <algorithm>
 
 #include "arch.h"
 
@@ -61,8 +63,8 @@ namespace PMGD {
         void backoff(size_t &cur_max_delay)
         {
             std::random_device rd;
-
             thread_local std::uniform_int_distribution<size_t> dist;
+
             // The simplest pseudo-random number generator that gives an int.
             thread_local std::minstd_rand gen(rd());
 
@@ -183,6 +185,78 @@ namespace PMGD {
 
         bool is_write_locked() { return _rw_lock & WRITE_LOCK; }
 
-        uint16_t reader_count() { return _rw_lock & LOCK_READER_MASK; }
+        uint16_t reader_count() const { return _rw_lock & LOCK_READER_MASK; }
+    };
+
+    // This should be created one per large data structure.
+    class StripedLock
+    {
+        std::vector<RWLock> _locks;
+
+        // Mask to find index when given an address.
+        const uint64_t _maskbits;
+
+        // To spread the address across different locks, ignore
+        // the lower few bits, as indicated this variable.
+        // This is computed using the log2 of stripe_width provided
+        // in the constructor. stripe_width gives how many bytes
+        // of an object does the caller wish to cover with one lock.
+        const uint64_t _shift;
+
+        unsigned floor_log2(unsigned long long n)
+            { return n <= 1 ? 0 : floor_log2(n/2) + 1; }
+
+        unsigned ceiling_log2(unsigned long long n)
+            { return (n & (n - 1)) == 0 ? floor_log2(n) : floor_log2(n - 1) + 1; }
+
+    public:
+        StripedLock() = delete;
+
+        StripedLock(const size_t tot_bytes, const unsigned stripe_width)
+            : _locks(tot_bytes / sizeof(RWLock)),
+              _maskbits(_locks.size() - 1),
+              _shift(ceiling_log2(stripe_width))
+        {
+            // For mask bits.
+            assert(!(tot_bytes & (tot_bytes - 1)));
+        }
+
+        uint64_t read_lock(const void *addr)
+        {
+            uint64_t stripeid = get_stripe_id(addr);
+            _locks[stripeid].read_lock();
+            return stripeid;
+        }
+
+        void read_lock(const uint64_t stripeid)
+          { _locks[stripeid].read_lock(); }
+
+       void read_unlock(const uint64_t stripeid)
+          { _locks[stripeid].read_unlock(); }
+
+        uint64_t write_lock(const void *addr)
+        {
+            uint64_t stripeid = get_stripe_id(addr);
+            _locks[stripeid].write_lock();
+            return stripeid;
+        }
+
+        void write_lock(const uint64_t stripeid)
+          { _locks[stripeid].write_lock(); }
+
+        void upgrade_lock(const uint64_t stripeid)
+          { _locks[stripeid].upgrade_write_lock(); }
+
+        void write_unlock(const uint64_t stripeid)
+          { _locks[stripeid].write_unlock(); }
+
+        bool is_write_locked(const uint64_t stripeid)
+          { return _locks[stripeid].is_write_locked(); }
+
+        uint64_t get_stripe_id(const void *addr) const
+          { return reinterpret_cast<uint64_t>(addr) >> _shift & _maskbits; }
+
+        uint16_t reader_count(const uint64_t stripeid) const
+          { return _locks[stripeid].reader_count(); }
     };
 }
