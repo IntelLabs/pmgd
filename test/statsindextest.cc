@@ -99,10 +99,10 @@ void test_total_bytes(Graph& db, bool& flag_success)
 
     printf("Stats tot_bytes2 id2\n");
     st = db.get_index_stats(Graph::NodeIndex, "tot_bytes2", "id2");
-    if (st.total_size_bytes != 1752){
+    if (st.total_size_bytes != 1744){
         // Total size should be
-        // 24 + 64*2 + 100*16 = 1752
-        // sizeof(AvlTreeIndex) = 24
+        // 16 + 64*2 + 100*16 = 1744
+        // sizeof(AvlTreeIndex) = 16
         // sizeof(TreeNode) = 64
         // 2 Keys
         // 100 elements, each of 16
@@ -117,10 +117,10 @@ void test_total_bytes(Graph& db, bool& flag_success)
 
     printf("Stats tot_bytes3 id1\n");
     st = db.get_index_stats(Graph::NodeIndex, "tot_bytes3", "id1");
-    if (st.total_size_bytes != 52024){
+    if (st.total_size_bytes != 52016){
         // Total size should be
-        // 24 + 48*750 + 1000*16 = 52024
-        // sizeof(AvlTreeIndex) = 24
+        // 16 + 48*750 + 1000*16 = 52016
+        // sizeof(AvlTreeIndex) = 16
         // sizeof(TreeNode) = 48
         // 750 Keys
         // 1000 elements, each of 16
@@ -155,7 +155,7 @@ void test_string_remainder_case(Graph& db, bool& flag_success)
 
     printf("Stats string id1\n");
     Graph::IndexStats st = db.get_index_stats(Graph::NodeIndex, "string", "id1");
-    if (st.total_size_bytes != 196){
+    if (st.total_size_bytes != 188){
         printf("-----------> string: id1 index wrong size\n");
         flag_success = false;
     }
@@ -176,7 +176,7 @@ void test_empty_index(Graph& db, bool& flag_success)
     Transaction tx_index(db, Transaction::ReadWrite);
 
     Graph::IndexStats st = db.get_index_stats(Graph::NodeIndex, "empty", "id1");
-    if (st.total_size_bytes != 24){
+    if (st.total_size_bytes != 16){
         printf("-----------> empty: id1 index wrong size\n");
         flag_success = false;
     }

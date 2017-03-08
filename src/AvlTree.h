@@ -28,6 +28,8 @@
  */
 
 #pragma once
+#include <vector>
+
 #include "Allocator.h"
 
 // AVL Trees are very good for search which will hopefully be the
@@ -53,10 +55,19 @@ namespace PMGD {
         };
 
         TreeNode *_tree;
-        size_t _num_elems;
 
     private:
-        TreeNode *find_max(TreeNode *t) {
+        // Structure for maintaining information when identifying
+        // locks.
+        struct LockInfo {
+            TreeNode * const curr;  // At some level
+            int myht;
+            bool ht_change;
+            bool ptr_change;
+            bool ptr_change_for_parent;
+        };
+
+       TreeNode *find_max(TreeNode *t) {
             if (t == NULL || t->right == NULL)
                 return t;
             return find_max(t->right);
@@ -67,6 +78,26 @@ namespace PMGD {
         TreeNode *leftright_rotate(TreeNode *hinge, TransactionImpl *tx);
         TreeNode *rightleft_rotate(TreeNode *hinge, TransactionImpl *tx);
         int max(int val1, int val2) { return (val1 > val2) ? val1 : val2; }
+        size_t num_elems_recursive(AvlTree<K,V>::TreeNode *node, TransactionImpl *tx);
+
+        // Helpers for lock analysis
+        int get_locks_add_recursive(TreeNode * const curr, const K &key,
+                                    std::vector<LockInfo> &mylocks,
+                                    TransactionImpl *tx,
+                                    int &change_level, const unsigned level);
+        int get_locks_add(const K &key, TreeNode **relevant, TransactionImpl *tx);
+
+        TreeNode *get_locks_find_max(TreeNode *t, TransactionImpl *tx);
+        int get_locks_remove_recursive(TreeNode * const curr, const K &key,
+                                  std::vector<LockInfo> &mylocks,
+                                  TransactionImpl *tx,
+                                  TreeNode **replace, // Node that actually gets deleted
+                                  int &r, const unsigned level);
+        int get_locks_remove(const K &key, TreeNode **relevant, TreeNode **replace,
+                                TreeNode **where, TransactionImpl *tx);
+
+        void get_locks_find(const K &key, TreeNode **found);
+
         TreeNode *add_recursive(TreeNode *curr, const K &data, V*&r,
                                 Allocator &allocator, TransactionImpl *tx,
                                 bool &rebalanced);
@@ -74,7 +105,7 @@ namespace PMGD {
                                    Allocator &allocator, TransactionImpl *tx,
                                    bool &rebalanced);
 
-        int height(TreeNode *node)
+        int height(const TreeNode *node)
         {
             if (node == NULL)
                 return -1;
@@ -89,9 +120,9 @@ namespace PMGD {
         V *value(TreeNode *curr) { return (curr == NULL) ? NULL : &curr->value; }
 
     public:
-        AvlTree() : _tree(NULL), _num_elems(0) { }
+        AvlTree() : _tree(NULL) { }
 
-        size_t num_elems() const { return _num_elems; }
+        size_t num_elems();
 
         // We could use a key value pair in the tree struct and return a pointer to
         // that but technically, the user shouldn't be allowed to modify anything
