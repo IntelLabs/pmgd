@@ -61,7 +61,6 @@ namespace PMGD {
                 // that might not be worth doing.
                 // TODO need some statistics on how often we hit in map,
                 // how long it takes and so on.
-
                 Locks(StripedLock &locks) : mainlock(locks) {}
 
                 // Return value indicates the state of given lock before

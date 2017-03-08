@@ -203,11 +203,8 @@ namespace PMGD {
         // of an object does the caller wish to cover with one lock.
         const uint64_t _shift;
 
-        unsigned floor_log2(unsigned long long n)
+        static unsigned floor_log2(unsigned long long n)
             { return n <= 1 ? 0 : floor_log2(n/2) + 1; }
-
-        unsigned ceiling_log2(unsigned long long n)
-            { return (n & (n - 1)) == 0 ? floor_log2(n) : floor_log2(n - 1) + 1; }
 
     public:
         StripedLock() = delete;
@@ -220,6 +217,9 @@ namespace PMGD {
             // For mask bits.
             assert(!(tot_bytes & (tot_bytes - 1)));
         }
+
+        static unsigned ceiling_log2(unsigned long long n)
+            { return (n & (n - 1)) == 0 ? floor_log2(n) : floor_log2(n - 1) + 1; }
 
         uint64_t read_lock(const void *addr)
         {
