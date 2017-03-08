@@ -245,10 +245,13 @@ int AvlTreeTest::run_abort_test(Graph &db, Allocator &allocator1)
             *value = i + 1;
         }
     }
-    if (_tree.num_elems() != 0) {
-        printf("Tree not null despite abort: %ld!!!\n", _tree.num_elems());
-        print();
-        retval++;
+    {
+        Transaction tx(db);
+        if (_tree.num_elems() != 0) {
+            printf("Tree not null despite abort: %ld!!!\n", _tree.num_elems());
+            print();
+            retval++;
+        }
     }
     {
         Transaction tx(db, Transaction::ReadWrite);
@@ -258,20 +261,26 @@ int AvlTreeTest::run_abort_test(Graph &db, Allocator &allocator1)
         }
         tx.commit();
     }
-    if (_tree.num_elems() != num_inserted) {
-        printf("Tree has wrong number of elems despite commit: %ld!!!\n", _tree.num_elems());
-        print();
-        retval++;
+    {
+        Transaction tx(db);
+        if (_tree.num_elems() != num_inserted) {
+            printf("Tree has wrong number of elems despite commit: %ld!!!\n", _tree.num_elems());
+            print();
+            retval++;
+        }
     }
     {
         Transaction tx(db, Transaction::ReadWrite);
         for (int i = 0; i < num_inserted; ++i)
             _tree.remove(insert_vals[i], allocator1);
     }
-    if (_tree.num_elems() != num_inserted) {
-        printf("Tree has wrong number of elems despite abort of delete: %ld!!!\n", _tree.num_elems());
-        print();
-        retval++;
+    {
+        Transaction tx(db);
+        if (_tree.num_elems() != num_inserted) {
+            printf("Tree has wrong number of elems despite abort of delete: %ld!!!\n", _tree.num_elems());
+            print();
+            retval++;
+        }
     }
     {
         Transaction tx(db, Transaction::ReadWrite);
@@ -279,10 +288,13 @@ int AvlTreeTest::run_abort_test(Graph &db, Allocator &allocator1)
             _tree.remove(insert_vals[i], allocator1);
         tx.commit();
     }
-    if (_tree.num_elems() != 0) {
-        printf("Tree no empty despite commit of delete: %ld!!!\n", _tree.num_elems());
-        print();
-        retval++;
+    {
+        Transaction tx(db);
+        if (_tree.num_elems() != 0) {
+            printf("Tree no empty despite commit of delete: %ld!!!\n", _tree.num_elems());
+            print();
+            retval++;
+        }
     }
 
     return retval + check_tree();
