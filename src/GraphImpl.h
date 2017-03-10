@@ -37,6 +37,7 @@
 #include "TransactionManager.h"
 #include "os.h"
 #include "StringTable.h"
+#include "lock.h"
 
 namespace PMGD {
     struct RegionInfo;
@@ -54,6 +55,17 @@ namespace PMGD {
             unsigned edge_size;
 
             unsigned num_allocators;
+
+            // Lock stripes can be created with different sizes at
+            // each use of the graph. Hence, not stored in PM.
+            size_t node_striped_lock_size;    // bytes
+            size_t edge_striped_lock_size;    // bytes
+            size_t index_striped_lock_size;   // bytes
+
+            // Same reason to not store in PM.
+            unsigned node_stripe_width;
+            unsigned edge_stripe_width;
+            unsigned index_stripe_width;
 
             os::MapRegion info_map;
             GraphInfo *info;
@@ -90,6 +102,11 @@ namespace PMGD {
 
         std::locale _locale;
 
+        // Locks for various components.
+        StripedLock _node_locks;
+        StripedLock _edge_locks;
+        StripedLock _index_locks;
+
     public:
         GraphImpl(const char *name, int options, const Graph::Config *config);
         TransactionManager &transaction_manager() { return _transaction_manager; }
@@ -99,6 +116,9 @@ namespace PMGD {
         EdgeTable &edge_table() { return _edge_table; }
         Allocator &allocator() { return _allocator; }
         std::locale &locale() { return _locale; }
+        StripedLock &node_locks() { return _node_locks; }
+        StripedLock &edge_locks() { return _edge_locks; }
+        StripedLock &index_locks() { return _index_locks; }
 
         void check_read_write()
         {
