@@ -156,11 +156,15 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
         params.msync_needed = params.always_msync = false;
     }
 
+    // Since the lock variables are also calculated here and they
+    // have to be set regardless of create, initialize this struct
+    // outside of the if loop.
+    const GraphConfig config(user_config);
+
     // create was modified by _info_map constructor
     // depending on whether the file existed or not
     // For a new graph, initialize the info structure
     if (params.create) {
-        const GraphConfig config(user_config);
         info->init(config, params.msync_needed, *params.pending_commits);
         node_size = config.node_size;
         edge_size = config.edge_size;
@@ -170,6 +174,13 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
         if (info->version != GraphInfo::VERSION)
             throw PMGDException(VersionMismatch);
     }
+
+    node_striped_lock_size = config.node_striped_lock_size;
+    edge_striped_lock_size = config.edge_striped_lock_size;
+    index_striped_lock_size = config.index_striped_lock_size;
+    node_stripe_width = config.node_stripe_width;
+    edge_stripe_width = config.edge_stripe_width;
+    index_stripe_width = config.index_stripe_width;
 }
 
 void GraphImpl::GraphInfo::init(const GraphConfig &config,
@@ -238,7 +249,10 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
                  _init.params),
       _locale(_init.info->locale_name[0] != '\0'
                   ? std::locale(_init.info->locale_name)
-                  : std::locale())
+                  : std::locale()),
+      _node_locks(_init.node_striped_lock_size, _init.node_stripe_width),
+      _edge_locks(_init.edge_striped_lock_size, _init.edge_stripe_width),
+      _index_locks(_init.index_striped_lock_size, _init.index_stripe_width)
 {
     TransactionManager::commit(_init.params.msync_needed, *_init.params.pending_commits);
 }
