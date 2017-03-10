@@ -52,6 +52,9 @@ static const size_t DEFAULT_STRING_TABLE_SIZE = DEFAULT_MAX_STRINGIDS * DEFAULT_
 
 static const unsigned DEFAULT_NUM_ALLOCATORS = 1;
 
+static const size_t DEFAULT_STRIPED_LOCK_SIZE = SIZE_2MB;
+static const unsigned DEFAULT_STRIPE_WIDTH = 64;  // bytes
+
 static inline size_t align(size_t addr, size_t alignment)
 {
     return (addr + alignment - 1) & ~(alignment - 1);
@@ -123,6 +126,21 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
     if (num_allocators > std::thread::hardware_concurrency())
         throw PMGDException(InvalidConfig, "Max allocators allowed: " +
                                        std::to_string(std::thread::hardware_concurrency()));
+
+    size_t default_striped_lock_size;
+    default_striped_lock_size = VALUE(default_striped_lock_size, DEFAULT_STRIPED_LOCK_SIZE);
+    check_power_of_two(default_striped_lock_size);
+    node_striped_lock_size = VALUE(node_striped_lock_size, default_striped_lock_size);
+    check_power_of_two(node_striped_lock_size);
+    edge_striped_lock_size = VALUE(edge_striped_lock_size, default_striped_lock_size);
+    check_power_of_two(edge_striped_lock_size);
+    index_striped_lock_size = VALUE(index_striped_lock_size, default_striped_lock_size);
+    check_power_of_two(index_striped_lock_size);
+
+    unsigned default_width = VALUE(default_stripe_width, DEFAULT_STRIPE_WIDTH);
+    node_stripe_width = VALUE(node_stripe_width, default_width);
+    edge_stripe_width = VALUE(edge_stripe_width, default_width);
+    index_stripe_width = VALUE(index_stripe_width, default_width);
 
     // 'Addr' is updated by init_region_info to the end of the region,
     // so it can be used to determine the base address of the next region.
