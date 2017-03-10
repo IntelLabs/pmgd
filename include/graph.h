@@ -72,6 +72,25 @@ namespace PMGD {
 
             unsigned num_allocators;
 
+            // The parameters below are DRAM-based parameters that can be
+            // modified each time the graph is created/opened. The variables
+            // above are PM-based parameters which are fixed once the graph
+            // is created. locale_name is not included in
+            // the DRAM variable list.
+            size_t default_striped_lock_size; // bytes
+            size_t node_striped_lock_size;    // bytes
+            size_t edge_striped_lock_size;    // bytes
+            size_t index_striped_lock_size;   // bytes
+
+            // Indicate how many bytes get covered by one
+            // bucket in the stripe lock. Keep it modular per
+            // lock stripe since nodes, edges and index nodes
+            // can be of very different sizes.
+            unsigned default_stripe_width;
+            unsigned node_stripe_width;
+            unsigned edge_stripe_width;
+            unsigned index_stripe_width;
+
             std::string locale_name;
 
             Config();
