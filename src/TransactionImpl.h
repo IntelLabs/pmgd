@@ -32,18 +32,44 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include <stack>
+#include <unordered_map>
+#include <array>
 #include "TransactionManager.h"
 #include "exception.h"
 #include "transaction.h"
 #include "callback.h"
 #include "compiler.h"
 #include "RangeSet.h"
+#include "lock.h"
 
 namespace PMGD {
     class GraphImpl;
 
     class TransactionImpl {
+        public:
+            enum LockTarget { NodeLock = 0, EdgeLock = 1, IndexLock = 2, NUM_LOCK_REGIONS = 3};
+            enum LockState { LockNotFound = 0, ReadLock = 1, WriteLock = 2 };
+
+        private:
+            typedef std::unordered_map<uint64_t, uint8_t> LockStatusMap;
+            struct Locks {
+                // Map of stripe id vs. read/write status
+                LockStatusMap mylocks; // locks acquired on existing components.
+                StripedLock &mainlock;          // Reference to the main lock from GraphImpl.
+
+                // We could maintain status of new objects separately but
+                // that might not be worth doing.
+                // TODO need some statistics on how often we hit in map,
+                // how long it takes and so on.
+
+                Locks(StripedLock &locks) : mainlock(locks) {}
+
+                // Return value indicates the state of given lock before
+                // this operation.
+                LockState acquire_lock(const void *addr, bool write);
+                void unlock_all();
+            };
+
             struct JournalEntry;
 
             static THREAD TransactionImpl *_per_thread_tx;
@@ -57,6 +83,7 @@ namespace PMGD {
 
             TransactionImpl *_outer_tx;
 
+            // This has items such as address to free.
             CallbackList<void *, TransactionImpl *> _commit_callback_list;
 
             // Certain things like restoring DRAM states in some components
@@ -64,6 +91,10 @@ namespace PMGD {
             // Use these two only for DRAM related changes. Else we need to figure
             // out right flushing etc.
             CallbackList<void *, TransactionImpl *> _abort_callback_list;
+
+            // Some unlocks like the ones for allocator need to be called regardless
+            // of whether there was anything in the commit list. So have a finalize
+            // list that is called for all ReadWrite transactions.
             CallbackList<void *, TransactionImpl *> _finalize_callback_list;
 
             int _alloc_id;
@@ -72,6 +103,9 @@ namespace PMGD {
             bool _msync_needed;    // false only when NoMsync used for msync cases.
             bool _always_msync;  // true only when AlwaysMsync used for msync cases.
             RangeSet _pending_commits;
+
+            // Information for locks that a TX could acquire.
+            std::array<Locks, NUM_LOCK_REGIONS> _locks;
 
             void log_je(void *src, size_t len);
             void finalize_commit();
@@ -121,9 +155,14 @@ namespace PMGD {
             std::function<void(TransactionImpl *)> *lookup_finalize_callback(void *key)
                 { return _finalize_callback_list.lookup_callback(key); }
 
+            // For concurrency
             void set_allocator(int alloc_id) { _alloc_id = alloc_id; }
 
             int get_allocator() { return _alloc_id; }
+
+            // Add locks that this TX doesn't already own.
+            LockState acquire_lock(LockTarget which, const void *addr, bool write = false)
+                { return _locks[which].acquire_lock(addr, write); }
 
             // log data; user performs the writes
             void log(void *ptr, size_t len);
