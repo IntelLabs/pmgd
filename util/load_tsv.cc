@@ -45,7 +45,7 @@ void load_tsv(Graph &db, const char *filename,
 {
     FILE *f = strcmp(filename, "-") == 0 ? stdin : fopen(filename, "r");
     if (f == NULL)
-        throw Exception(LoaderOpenFailed, errno, filename);
+        throw JarvisException(LoaderOpenFailed, errno, filename);
 
     load_tsv(db, f, node_func, edge_func);
 }
@@ -63,7 +63,7 @@ void load_tsv(Graph &db, FILE *f,
     while (fgets(buf, sizeof buf, f) != NULL) {
         long long a, b;
         if (sscanf(buf, "%lld %lld", &a, &b) != 2)
-            throw Exception(LoaderParseError);
+            throw JarvisException(LoaderParseError);
         Transaction tx(db, Transaction::ReadWrite);
         Node &src = get_node(db, a, node_func);
         Node &dst = get_node(db, b, node_func);

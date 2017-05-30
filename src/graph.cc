@@ -153,7 +153,7 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
     }
     else {
         if (info->version != GraphInfo::VERSION)
-            throw Exception(VersionMismatch);
+            throw JarvisException(VersionMismatch);
     }
 }
 
@@ -172,7 +172,7 @@ void GraphImpl::GraphInfo::init(const GraphConfig &config)
 
     unsigned size = config.locale_name.length() + 1;
     if (size > sizeof locale_name)
-        throw Exception(InvalidConfig);
+        throw JarvisException(InvalidConfig);
     memcpy(locale_name, config.locale_name.c_str(), size);
 
     TransactionImpl::flush_range(this, sizeof *this);
@@ -336,7 +336,7 @@ template <typename B, typename T>
 void Graph_Iterator<B, T>::check_vacant()
 {
     if (table.is_free(_cur))
-        throw Exception(VacantIterator);
+        throw JarvisException(VacantIterator);
 }
 
 

@@ -61,7 +61,7 @@ public:
                 int err = errno;
                 delete _stream;
                 _stream = NULL;
-                throw Exception(LoaderOpenFailed, err, filename);
+                throw JarvisException(LoaderOpenFailed, err, filename);
             }
         }
     }
@@ -241,20 +241,20 @@ static void load_gson(Graph &db,
 {
     Json::Value jgraph = root["graph"];
     if (jgraph.type() != Json::objectValue) {
-        throw Exception(LoaderFormatError, "graph not found");
+        throw JarvisException(LoaderFormatError, "graph not found");
     }
 
     Json::Value jmode = jgraph["mode"];
     if (jmode.type() != Json::stringValue) {
-        throw Exception(LoaderFormatError, "mode not found");
+        throw JarvisException(LoaderFormatError, "mode not found");
     }
     if (jmode.asString().compare("NORMAL")) {
-        throw Exception(LoaderFormatError, "mode not supported");
+        throw JarvisException(LoaderFormatError, "mode not supported");
     }
 
     Json::Value jnodes = jgraph["vertices"];
     if (jnodes.type() != Json::arrayValue) {
-        throw Exception(LoaderFormatError, "nodes not found");
+        throw JarvisException(LoaderFormatError, "nodes not found");
     }
     Transaction tx(db, Transaction::ReadWrite);
     ID = StringID(ID_STR);
@@ -265,7 +265,7 @@ static void load_gson(Graph &db,
 
     Json::Value jedges = jgraph["edges"];
     if (jedges.type() != Json::arrayValue) {
-        throw Exception(LoaderFormatError, "edges not found");
+        throw JarvisException(LoaderFormatError, "edges not found");
     }
     load_edges(db, jedges, node_func, edge_func);
 }
@@ -281,7 +281,7 @@ void load_gson(Graph &db, const char *filename,
     Json::Reader reader(features);
 
     if (!reader.parse(input, root))
-        throw Exception(LoaderParseError);
+        throw JarvisException(LoaderParseError);
 
     input.close();
 

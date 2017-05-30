@@ -222,7 +222,7 @@ property:
                   unsigned long usec;
                   int hr_offset, min_offset;
                   if (!string_to_tm(*$3, &tm, &usec, &hr_offset, &min_offset))
-                      throw Jarvis::Exception(LoaderFormatError);
+                      throw JarvisException(LoaderFormatError);
                   Jarvis::Time time(&tm, usec, hr_offset, min_offset);
                   current.set_property($1, time);
                   delete $1;
@@ -293,7 +293,7 @@ void load(Graph &db, const char *filename, bool use_index,
 {
     FILE *f = strcmp(filename, "-") == 0 ? stdin : fopen(filename, "r");
     if (f == NULL)
-        throw Exception(LoaderOpenFailed, errno, filename);
+        throw JarvisException(LoaderOpenFailed, errno, filename);
 
     load(db, f, use_index, node_func, edge_func);
 }
@@ -400,5 +400,5 @@ template <typename T> Node *Index::find(const T &id)
 
 int yyerror(yy_params, const char *err)
 {
-    throw Exception(LoaderParseError, err);
+    throw JarvisException(LoaderParseError, err);
 }

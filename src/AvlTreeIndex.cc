@@ -420,7 +420,7 @@ namespace Jarvis {
             // _vacant_flag indicates that the object referred to by the
             // iterator has been removed from the index.
             if (EXPECT_FALSE(_vacant_flag))
-                throw Exception(VacantIterator);
+                throw JarvisException(VacantIterator);
             return _list_it.ref();
         }
 

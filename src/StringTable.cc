@@ -90,7 +90,7 @@ bool StringTable::get(const char *name, uint16_t &id, bool add)
     uint16_t hash = hash_fnv_1a(name, length);
 
     if (length > MAX_STRINGID_LEN)
-        throw Exception(InvalidID);
+        throw JarvisException(InvalidID);
 
     while (true) {
         uint64_t offset = hash * MAX_STRINGID_LEN;

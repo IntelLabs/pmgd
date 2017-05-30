@@ -50,7 +50,7 @@ std::string property_text(const Property &p)
         case PropertyType::Float: return std::to_string(p.float_value());
         case PropertyType::Time: return time_to_string(p.time_value());
         case PropertyType::Blob: return "<blob value>";
-        default: throw Exception(PropertyTypeInvalid);
+        default: throw JarvisException(PropertyTypeInvalid);
     }
 }
 
@@ -64,7 +64,7 @@ std::string property_text(const PropertyRef &p)
         case PropertyType::Float: return std::to_string(p.float_value());
         case PropertyType::Time: return time_to_string(p.time_value());
         case PropertyType::Blob: return "<blob value>";
-        default: throw Exception(PropertyTypeInvalid);
+        default: throw JarvisException(PropertyTypeInvalid);
     }
 }
 

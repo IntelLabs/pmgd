@@ -48,7 +48,7 @@ std::string property_text(const Property &p)
         case PropertyType::Float: return std::to_string(p.float_value());
         case PropertyType::Time: return "<time value>";
         case PropertyType::Blob: return "<blob value>";
-        default: throw Exception(PropertyTypeInvalid);
+        default: throw JarvisException(PropertyTypeInvalid);
     }
 }
 

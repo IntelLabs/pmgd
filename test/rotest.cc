@@ -64,9 +64,9 @@ void test1(Graph &db)
     StringID id3("x");
     StringID id;
     if (!StringID::lookup("x", id))
-        throw Exception(TestFailure);
+        throw JarvisException(TestFailure);
     if (StringID::lookup("y", id))
-        throw Exception(TestFailure);
+        throw JarvisException(TestFailure);
 }
 
 // Test that a read-only transaction cannot be used to modify the db.
@@ -80,7 +80,7 @@ void test2a(Graph &db)
             throw e;
         return;
     }
-    throw Exception(TestFailure);
+    throw JarvisException(TestFailure);
 }
 
 void test2b(Graph &db)
@@ -94,7 +94,7 @@ void test2b(Graph &db)
             throw e;
         return;
     }
-    throw Exception(TestFailure);
+    throw JarvisException(TestFailure);
 }
 
 void test2(Graph &db)
@@ -116,7 +116,7 @@ void test3(Graph &db)
             throw e;
         return;
     }
-    throw Exception(TestFailure);
+    throw JarvisException(TestFailure);
 }
 
 
@@ -143,7 +143,7 @@ void test4c(Graph &db)
             throw e;
         return;
     }
-    throw Exception(TestFailure);
+    throw JarvisException(TestFailure);
 }
 
 // Test that the outer transaction is still usable.

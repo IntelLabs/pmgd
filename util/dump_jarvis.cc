@@ -132,7 +132,7 @@ static void print_property(const PropertyIterator &p, FILE *f)
         case PropertyType::Float: value = std::to_string(p->float_value()); break;
         case PropertyType::Time: value = time_to_string(p->time_value()); break;
         case PropertyType::Blob: /* TBD */ return; // break;
-        default: throw Exception(PropertyTypeInvalid);
+        default: throw JarvisException(PropertyTypeInvalid);
     }
     fprintf(f, " = %s", value.c_str());
 }

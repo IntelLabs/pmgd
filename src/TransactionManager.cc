@@ -53,7 +53,7 @@ TransactionManager::TransactionManager(
     // However, the computation of _max_transactions and _max_extents
     // and the following requirement will not need to change.
     if (_max_extents < _max_transactions)
-        throw Exception(InvalidConfig);
+        throw JarvisException(InvalidConfig);
 
     if (create) {
         reset_table();
@@ -103,7 +103,7 @@ void TransactionManager::recover(bool read_only)
 
         if (tx_id & TransactionHdr::ACTIVE) {
             if (read_only)
-                throw Exception(ReadOnly);
+                throw JarvisException(ReadOnly);
 
             tx_id &= ~TransactionHdr::ACTIVE;
             TransactionHandle handle(tx_id, i, hdr->jbegin, hdr->jend);
@@ -145,7 +145,7 @@ TransactionHandle TransactionManager::alloc_transaction(bool read_only)
             return TransactionHandle(tx_id, i, tx_jbegin(i), tx_jend(i));
         }
     }
-    throw Exception(OutOfTransactions);
+    throw JarvisException(OutOfTransactions);
 }
 
 void TransactionManager::free_transaction(const TransactionHandle &handle)

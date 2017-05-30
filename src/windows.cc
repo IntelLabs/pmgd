@@ -81,14 +81,14 @@ Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
                                    | create * truncate * CREATE_ALWAYS,
                                    FILE_ATTRIBUTE_NORMAL,
                                    NULL)) == INVALID_HANDLE_VALUE)
-        throw Exception(OpenFailed, GetLastError(), filename + " (CreateFile)");
+        throw JarvisException(OpenFailed, GetLastError(), filename + " (CreateFile)");
 
     // check size before mapping
     LARGE_INTEGER size;
     if (!GetFileSizeEx(_file_handle, &size)) {
         int err = GetLastError();
         CloseHandle(_file_handle);
-        throw Exception(OpenFailed, err, filename + " (GetFileSize)");
+        throw JarvisException(OpenFailed, err, filename + " (GetFileSize)");
     }
 
     if ((uint64_t)size.QuadPart == map_len) {
@@ -100,12 +100,12 @@ Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
                             NULL, 0, &dummy, NULL) == 0) {
             int err = GetLastError();
             CloseHandle(_file_handle);
-            throw Exception(OpenFailed, err, filename + " (DeviceIOControl)");
+            throw JarvisException(OpenFailed, err, filename + " (DeviceIOControl)");
         }
     }
     else {
         CloseHandle(_file_handle);
-        throw Exception(OpenFailed, filename + " was not the expected size");
+        throw JarvisException(OpenFailed, filename + " was not the expected size");
     }
 
     if ((_map_handle = CreateFileMapping(_file_handle, NULL,
@@ -114,7 +114,7 @@ Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
     {
         int err = GetLastError();
         CloseHandle(_file_handle);
-        throw Exception(OpenFailed, err, filename + " (CreateFileMapping)");
+        throw JarvisException(OpenFailed, err, filename + " (CreateFileMapping)");
     }
 
     if (MapViewOfFileEx(_map_handle,
@@ -124,7 +124,7 @@ Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
         int err = GetLastError();
         CloseHandle(_map_handle);
         CloseHandle(_file_handle);
-        throw Exception(OpenFailed, err, filename + " (MapViewOfFileEx)");
+        throw JarvisException(OpenFailed, err, filename + " (MapViewOfFileEx)");
     }
 
     _map_addr = map_addr;
@@ -158,7 +158,7 @@ namespace Jarvis {
         static void seh_translation(unsigned e, _EXCEPTION_POINTERS *exp)
         {
             if (e == EXCEPTION_IN_PAGE_ERROR)
-                throw Exception(OutOfSpace);
+                throw JarvisException(OutOfSpace);
         }
     }
 };

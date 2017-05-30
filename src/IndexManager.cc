@@ -94,9 +94,9 @@ void IndexManager::create_index(Graph::IndexType index_type, StringID tag,
                 *prop_idx = new (allocator.alloc(sizeof(StringValueIndex))) StringValueIndex(ptype);
                 break;
             case PropertyType::NoValue:
-                throw Exception(NotImplemented);
+                throw JarvisException(NotImplemented);
             case PropertyType::Blob:
-                throw Exception(PropertyTypeInvalid);
+                throw JarvisException(PropertyTypeInvalid);
         }
     }
 }

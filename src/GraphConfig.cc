@@ -65,7 +65,7 @@ template <typename T>
 void check_power_of_two(T val)
 {
     if ((val & (val - 1)) != 0)
-        throw Exception(InvalidConfig);
+        throw JarvisException(InvalidConfig);
 }
 
 GraphConfig::GraphConfig(const Graph::Config *user_config)
@@ -78,12 +78,12 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
 
     node_size = VALUE(node_size, DEFAULT_NODE_SIZE);
     if (node_size < DEFAULT_NODE_SIZE)
-        throw Exception(InvalidConfig);
+        throw JarvisException(InvalidConfig);
     check_power_of_two(node_size);
 
     edge_size = VALUE(edge_size, DEFAULT_EDGE_SIZE);
     if (edge_size < DEFAULT_EDGE_SIZE)
-        throw Exception(InvalidConfig);
+        throw JarvisException(InvalidConfig);
     check_power_of_two(edge_size);
 
     max_stringid_length = VALUE(max_stringid_length, DEFAULT_MAX_STRINGID_LENGTH);
@@ -97,18 +97,18 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
 
     size_t node_table_size = VALUE(node_table_size, default_region_size);
     if (node_table_size % node_size != 0)
-        throw Exception(InvalidConfig);
+        throw JarvisException(InvalidConfig);
 
     size_t edge_table_size = VALUE(edge_table_size, default_region_size);
     if (edge_table_size % edge_size != 0)
-        throw Exception(InvalidConfig);
+        throw JarvisException(InvalidConfig);
 
     size_t string_table_size = VALUE(string_table_size, DEFAULT_STRING_TABLE_SIZE);
     check_power_of_two(string_table_size);
 
     size_t allocator_region_size = VALUE(allocator_region_size, default_region_size);
     if (allocator_region_size % Allocator::CHUNK_SIZE != 0)
-        throw Exception(InvalidConfig);
+        throw JarvisException(InvalidConfig);
 
     // 'Addr' is updated by init_region_info to the end of the region,
     // so it can be used to determine the base address of the next region.

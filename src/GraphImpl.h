@@ -101,7 +101,7 @@ namespace Jarvis {
         void check_read_write()
         {
             if (_init.read_only)
-                throw Exception(ReadOnly);
+                throw JarvisException(ReadOnly);
         }
     };
 };

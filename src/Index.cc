@@ -41,7 +41,7 @@ using namespace Jarvis;
 void Index::add(const Property &p, void *n, GraphImpl *db)
 {
     if (_ptype != p.type())
-        throw Exception(PropertyTypeMismatch);
+        throw JarvisException(PropertyTypeMismatch);
 
     Allocator &allocator = db->allocator();
 
@@ -73,10 +73,10 @@ void Index::add(const Property &p, void *n, GraphImpl *db)
             }
             break;
         case PropertyType::NoValue:
-            throw Exception(NotImplemented);
+            throw JarvisException(NotImplemented);
         case PropertyType::Blob:
         default:
-            throw Exception(PropertyTypeInvalid);
+            throw JarvisException(PropertyTypeInvalid);
     }
     // dest will never be null since it gets allocated at the add time.
     // Also, if it was a new element, the add code does a placement new.
@@ -90,7 +90,7 @@ void Index::add(const Property &p, void *n, GraphImpl *db)
 void Index::remove(const Property &p, void *n, GraphImpl *db)
 {
     if (_ptype != p.type())
-        throw Exception(PropertyTypeMismatch);
+        throw JarvisException(PropertyTypeMismatch);
 
     Allocator &allocator = db->allocator();
 
@@ -158,10 +158,10 @@ void Index::remove(const Property &p, void *n, GraphImpl *db)
             }
             break;
         case PropertyType::NoValue:
-            throw Exception(NotImplemented);
+            throw JarvisException(NotImplemented);
         case PropertyType::Blob:
         default:
-            throw Exception(PropertyTypeInvalid);
+            throw JarvisException(PropertyTypeInvalid);
     }
 }
 
@@ -172,10 +172,10 @@ Index::Index_IteratorImplIntf *Index::get_iterator(const PropertyPredicate &pp, 
 
     if (pp.op != PropertyPredicate::DontCare) {
         if (_ptype != p1.type())
-            throw Exception(PropertyTypeMismatch);
+            throw JarvisException(PropertyTypeMismatch);
         if (pp.op >= PropertyPredicate::GeLe) {
             if (_ptype != p2.type())
-                throw Exception(PropertyTypeMismatch);
+                throw JarvisException(PropertyTypeMismatch);
         }
     }
 
@@ -239,10 +239,10 @@ Index::Index_IteratorImplIntf *Index::get_iterator(const PropertyPredicate &pp, 
             }
             break;
         case PropertyType::NoValue:
-            throw Exception(NotImplemented);
+            throw JarvisException(NotImplemented);
         case PropertyType::Blob:
         default:
-            throw Exception(PropertyTypeInvalid);
+            throw JarvisException(PropertyTypeInvalid);
     }
 }
 
@@ -281,11 +281,11 @@ Graph::IndexStats Index::get_stats()
             }
             break;
         case PropertyType::NoValue:
-            throw Exception(NotImplemented);
+            throw JarvisException(NotImplemented);
         case PropertyType::Blob:
-            throw Exception(NotImplemented);
+            throw JarvisException(NotImplemented);
         default:
-            throw Exception(PropertyTypeInvalid);
+            throw JarvisException(PropertyTypeInvalid);
     }
 
     return stats;

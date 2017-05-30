@@ -98,6 +98,6 @@ namespace Jarvis {
         {}
     };
 
-#define Exception(name, ...) \
-    Exception(Jarvis::name, #name, ##__VA_ARGS__, __FILE__, __LINE__)
+#define JarvisException(name, ...) \
+    Jarvis::Exception(Jarvis::name, #name, ##__VA_ARGS__, __FILE__, __LINE__)
 };

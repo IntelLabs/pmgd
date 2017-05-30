@@ -88,7 +88,7 @@ Node &Node::get_neighbor(Direction dir, StringID edge_tag) const
         if (pos)
             return *pos->value.value();
     }
-    throw Exception(NullIterator);
+    throw JarvisException(NullIterator);
 }
 
 namespace Jarvis {
@@ -227,7 +227,7 @@ namespace Jarvis {
             // _vacant_flag indicates that the edge referred to by the iterator
             // has been deleted.
             if (_vacant_flag)
-                throw Exception(VacantIterator);
+                throw JarvisException(VacantIterator);
             return &_ref;
         }
 

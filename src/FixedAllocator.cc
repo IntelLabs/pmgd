@@ -100,7 +100,7 @@ void *FixedAllocator::alloc()
     else
     {
         if (((uint64_t)_pm->tail_ptr + _pm->size) > _pm->max_addr)
-            throw Exception(BadAlloc);
+            throw JarvisException(BadAlloc);
 
         /* Free list exhausted, we are growing our pool of objects by one */
         p = _pm->tail_ptr;
@@ -130,7 +130,7 @@ void *FixedAllocator::alloc(unsigned num)
     // as usual. It could cause allocator to refuse contiguous requests
     // even if there was enough space. But keeping it simple for now.
     if (((uint64_t)_pm->tail_ptr + num * _pm->size) > _pm->max_addr)
-        throw Exception(BadAlloc);
+        throw JarvisException(BadAlloc);
 
     p = _pm->tail_ptr;
     tx->write(&_pm->tail_ptr, (uint64_t *)((uint64_t)_pm->tail_ptr + num * _pm->size));

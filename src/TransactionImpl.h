@@ -83,7 +83,7 @@ namespace Jarvis {
             void check_read_write()
             {
                 if (!(_tx_type & Transaction::ReadWrite))
-                    throw Exception(ReadOnly);
+                    throw JarvisException(ReadOnly);
             }
 
             void register_commit_callback(void *key, std::function<void(TransactionImpl *)> f)
@@ -140,7 +140,7 @@ namespace Jarvis {
             static inline TransactionImpl *get_tx()
             {
                 if (_per_thread_tx == NULL)
-                    throw Exception(NoTransaction);
+                    throw JarvisException(NoTransaction);
                 return _per_thread_tx;
             }
 

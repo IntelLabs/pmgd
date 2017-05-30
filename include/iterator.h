@@ -91,14 +91,14 @@ namespace Jarvis {
         Ref_type &operator*() const
         {
             if (!_impl)
-                throw Exception(NullIterator);
+                throw JarvisException(NullIterator);
             return *_impl->ref();
         }
 
         Ref_type *operator->() const
         {
             if (!_impl)
-                throw Exception(NullIterator);
+                throw JarvisException(NullIterator);
             return _impl->ref();
         }
 
