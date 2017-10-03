@@ -256,7 +256,7 @@ namespace PMGD {
     class PropertyList {
         static const unsigned chunk_size = 64;
 
-        uint8_t _chunk0[];
+        uint8_t _chunk0[0];
 
         class PropertySpace;
         bool find_property(StringID property, PropertyRef &p,
