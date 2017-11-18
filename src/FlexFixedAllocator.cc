@@ -88,13 +88,15 @@ void *AllocatorUnit::FlexFixedAllocator::alloc()
     if (it != _fa_pools.end()) {
         FixedAllocatorInfo *fa_info = it->second;
         addr = fa_info->fa->alloc();
-        fa_info->num_allocated++;
+        fa_info->num_allocated = fa_info->fa->num_allocated();
 
         // If the fa is in the list, it should have space.
         assert(addr != NULL);
 
         if (fa_info->num_allocated == _max_objs_per_pool) {
             // Make sure this fa no longer appears in the available list.
+            // And no DRAM restore needed here since this is called within
+            // an inner TX that commits if the previous alloc was successful.
             _fa_pools.erase(it);
             delete fa_info;
         }
@@ -113,7 +115,7 @@ void *AllocatorUnit::FlexFixedAllocator::alloc()
             FixedAllocator *fa = new FixedAllocator(hdr->pool_base, &hdr->fa_hdr,
                                     _obj_size, _pool_size, false, _msync_needed);
             addr = fa->alloc();
-            num_allocated++;
+            num_allocated = fa->num_allocated();
 
             // For later scans
             if (num_allocated < _max_objs_per_pool) {
@@ -131,7 +133,7 @@ void *AllocatorUnit::FlexFixedAllocator::alloc()
     // If it comes out here, no luck allocating.
     FixedAllocatorInfo *fa_info = add_new_pool();
     addr = fa_info->fa->alloc();
-    fa_info->num_allocated++;
+    fa_info->num_allocated = fa_info->fa->num_allocated();
 
     return addr;
 }
@@ -186,8 +188,7 @@ void AllocatorUnit::FlexFixedAllocator::free(void *addr)
         hdr = fa_info->hdr;
         prev = fa_info->prev;
         fa = fa_info->fa;
-        fa_info->num_allocated--;
-        num_allocated = fa_info->num_allocated;
+        num_allocated = FixedAllocator::num_allocated(&(hdr->fa_hdr)) - 1;
     }
     else {
         hdr = _pm;
@@ -225,12 +226,19 @@ void AllocatorUnit::FlexFixedAllocator::free(void *addr)
         if (_last_hdr_scanned == hdr)
             _last_hdr_scanned = prev;
 
-        // The free_chunk function already rounds down to base.
         _allocator.free_chunk(pool_base);
         _allocator.free_free_form(hdr, sizeof(RegionHeader));
 
         // Remove the DRAM entry too
         if (fa_info != NULL) {
+            // *** This DRAM entry is tricky to restore unless
+            // we change the AllocatorCallback since it requires
+            // more information to construct the fa_info header.
+            // Either we don't delete it here and add it to the
+            // callback and most of the time risk memory leak, or
+            // assume that aborts at this stage happen rarely and
+            // not restore this pool in DRAM at this time. For now,
+            // choosing the latter.
             _fa_pools.erase(pool_base);
             delete fa_info;
         }
@@ -239,16 +247,29 @@ void AllocatorUnit::FlexFixedAllocator::free(void *addr)
         if (fa == NULL) {
             fa = new FixedAllocator(pool_base, &(hdr->fa_hdr),
                                     _obj_size, _pool_size, false, _msync_needed);
+            num_allocated = FixedAllocator::num_allocated(&(hdr->fa_hdr)) - 1;
         }
         fa->free(addr, 1);
+        assert(num_allocated == FixedAllocator::num_allocated(&(hdr->fa_hdr)));
         if (fa_info == NULL) {
+            fa_info = new FixedAllocatorInfo{fa, hdr, prev, num_allocated};
+
+            // In case there is abort due to anything else, this chunk should
+            // be removed from DRAM list.
+            AllocatorAbortCallback<FlexFixedAllocator>::restore_dram_state(tx,
+                                                   this, fa_info, true);
             // Cache this info in case the map didn't already contain it.
             // Will help optimize future frees.
-            _fa_pools.insert(pair<uint64_t, FixedAllocatorInfo*>(pool_base,
-                                              new FixedAllocatorInfo{fa, hdr,
-                                              prev, num_allocated}));
+            _fa_pools.insert(pair<uint64_t, FixedAllocatorInfo*>(pool_base, fa_info));
         }
     }
+}
+
+void AllocatorUnit::FlexFixedAllocator::remove_dram_chunk(void *info)
+{
+    FixedAllocatorInfo *fa_info = static_cast<FixedAllocatorInfo *>(info);
+    _fa_pools.erase(fa_info->hdr->pool_base);
+    delete fa_info;
 }
 
 int64_t AllocatorUnit::FlexFixedAllocator::num_allocated() const

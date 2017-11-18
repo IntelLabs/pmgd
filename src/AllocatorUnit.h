@@ -32,14 +32,71 @@
 #include <list>
 #include <stddef.h>
 #include <stdint.h>
-#include <unordered_set>
 #include <unordered_map>
+#include <unordered_set>
 #include "FixedAllocator.h"
 #include "TransactionImpl.h"
 #include "compiler.h"
 
 namespace PMGD {
     class Allocator;
+
+    // This callback is for restoring DRAM state when allocs push
+    // some regions out of the available lists. But then if these
+    // allocs do not persist due to transaction abort, those removed
+    // regions must be made available again. There is no such problem
+    // to deal when freeing because the actual free calls are not made
+    // till the transaction tries to commit.
+    template<typename A>
+    class AllocatorAbortCallback
+    {
+        A *_allocator;
+
+        std::unordered_map<void *, bool> _to_fix;
+
+        void add(void *chunk, bool remove)
+        {
+            // If the same chunk goes through multiple changes in a TX,
+            // and an abort happens, rollback will go reverse and leave
+            // the very first change in. So only add this once to the map
+            // with the very first action.
+            auto it = _to_fix.find(chunk);
+            if (it == _to_fix.end())
+                _to_fix[chunk] = remove;
+        }
+
+    public:
+        AllocatorAbortCallback(A *a)
+            : _allocator(a)
+          { }
+
+        void operator()(TransactionImpl *tx)
+        {
+            for (auto it = _to_fix.begin(); it != _to_fix.end(); ++it) {
+                if (it->second)
+                    _allocator->remove_dram_chunk(it->first);
+                else
+                    _allocator->restore_dram_chunk(it->first);
+            }
+        }
+
+        static void restore_dram_state(TransactionImpl *tx, A *allocator,
+                                        void *chunk, bool remove = false)
+        {
+            auto *f = tx->lookup_abort_callback(allocator);
+            if (f == NULL) {
+                tx->register_abort_callback(allocator, AllocatorAbortCallback(allocator));
+
+                // The callback object is copied when it is registered,
+                // so we have to call lookup again to get a pointer to
+                // the stored object.
+                f = tx->lookup_abort_callback(allocator);
+            }
+
+            auto *cb = f->template target<AllocatorAbortCallback>();
+            cb->add(chunk, remove);
+        }
+    };
 
     /**
      *  Generic allocator
@@ -134,6 +191,10 @@ namespace PMGD {
             // This version is used by alloc_large
             FreeFormChunk *alloc_chunks(unsigned num, unsigned used);
 
+            friend class AllocatorAbortCallback<VariableAllocator>;
+            void restore_dram_chunk(void *chunk);
+            void remove_dram_chunk(void *chunk);
+
         public:
             VariableAllocator(const VariableAllocator &) = delete;
             void operator=(const VariableAllocator &) = delete;
@@ -213,6 +274,13 @@ namespace PMGD {
             RegionHeader *_last_hdr_scanned;  // Needed to extend the linked list.
 
             FixedAllocatorInfo *add_new_pool();
+
+            friend class AllocatorAbortCallback<FlexFixedAllocator>;
+            void restore_dram_chunk(void *chunk)
+            { }
+
+            void remove_dram_chunk(void *info);
+
         public:
             FlexFixedAllocator(const FlexFixedAllocator &) = delete;
             void operator=(const FlexFixedAllocator &) = delete;
@@ -221,6 +289,8 @@ namespace PMGD {
                         unsigned object_size, uint64_t pool_size,
                         AllocatorUnit &allocator, bool create, bool msync_needed);
 
+            // Expects the caller to ensure transaction commit to make
+            // the changes here permanent and not dependent on the user TX.
             void *alloc();
             void free(void *addr);
 
@@ -284,6 +354,10 @@ namespace PMGD {
             std::unordered_set<FixedChunk *> _free_chunks;
             FixedChunk *_chunk_to_scan;      // Point into the FixedAllocator.
             FixedChunk *_last_chunk_scanned; // Needed to extend the linked list
+
+            friend class AllocatorAbortCallback<FixSizeAllocator>;
+            void restore_dram_chunk(void *chunk);
+            void remove_dram_chunk(void *chunk);
 
         public:
             FixSizeAllocator(const FixSizeAllocator &) = delete;

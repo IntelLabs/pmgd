@@ -44,14 +44,11 @@ void *AllocatorUnit::ChunkAllocator::alloc(size_t sz)
     unsigned  num_chunks = tot_size / CHUNK_SIZE;
     void *addr;
 
-    // Have to insert an inner transaction here to make sure
-    // the main allocator can get unlocked.
-    {
-        TransactionImpl *tx = TransactionImpl::get_tx();
-        TransactionImpl inner_tx(tx->get_db(), Transaction::ReadWrite | Transaction::Independent);
-        addr = _allocator.alloc_chunk(num_chunks);
-        inner_tx.commit();
-    }
+    // Even though this call would cause the main allocator to lock
+    // up for the duration of this TX, we cannot put an inner TX
+    // since this is a user allocation and if user TX aborts, we don't
+    // want this page to be permanently allocated with no trace of it.
+    addr = _allocator.alloc_chunk(num_chunks);
 
     return addr; 
 }
