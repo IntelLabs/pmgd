@@ -140,6 +140,8 @@ void *AllocatorUnit::FixSizeAllocator::alloc()
     void *addr = NULL;
     auto it = _free_chunks.begin();
 
+    TransactionImpl *tx = TransactionImpl::get_tx();
+
     // Check the vector first.
     if (it != _free_chunks.end()) {
         FixedChunk *dst_chunk = *it;
@@ -149,13 +151,16 @@ void *AllocatorUnit::FixSizeAllocator::alloc()
         assert(addr != NULL);
 
         if (dst_chunk->free_spots == 0) {
+            // In case this transaction aborts, avoid a leak by putting this
+            // back in the free list.
+            AllocatorAbortCallback<FixSizeAllocator>::restore_dram_state(tx,
+                                                          this, dst_chunk);
+
             // Make sure this chunk no longer appears in the available list.
             _free_chunks.erase(it);
         }
         return addr;
     }
-
-    TransactionImpl *tx = TransactionImpl::get_tx();
 
     while (_chunk_to_scan != NULL) {
         FixedChunk *dst_chunk = _chunk_to_scan;
@@ -165,11 +170,16 @@ void *AllocatorUnit::FixSizeAllocator::alloc()
         // This chunk must not be in the DRAM lists since we go
         // in a sequence.
         if (dst_chunk->free_spots > 0) {
+
             addr = dst_chunk->alloc(_obj_size, _bitmap_ints);
 
             // For later scans
             if (dst_chunk->free_spots > 0)
                 _free_chunks.insert(dst_chunk);
+            else {
+                AllocatorAbortCallback<FixSizeAllocator>::restore_dram_state(tx,
+                                                  this, dst_chunk);
+            }
 
             return addr;
         }
@@ -192,8 +202,10 @@ void *AllocatorUnit::FixSizeAllocator::alloc()
         // First free form allocation.
         if (_hdr->start_chunk == NULL)
             inner_tx.write(&_hdr->start_chunk, dst_chunk);
-        else
+        else {
+            assert(_last_chunk_scanned != NULL);
             inner_tx.write(&_last_chunk_scanned->next_chunk, dst_chunk);
+        }
 
         // This also ensures that the PM state of this list is not
         // tied to the outer transaction conditions.
@@ -251,14 +263,18 @@ void AllocatorUnit::FixSizeAllocator::free(void *addr)
     assert(space < _max_spots);
     dst_chunk->free(addr, _obj_size, _bitmap_ints);
 
+    // This chunk should not be in the DRAM list in case of an abort.
+    TransactionImpl *tx = TransactionImpl::get_tx();
 
     // If this frees up the entire fixed chunk, and this was the only chunk
     // in the 2MB page, return the 2MB page. But only if this isn't the current
     // allocation chunk that the DRAM object uses to search for free space.
     if (dst_chunk->free_spots == _max_spots) {
+        // In case of an abort due to any exception like OutOfJournalSpace, this
+        // should be put back in the DRAM list.
+        AllocatorAbortCallback<FixSizeAllocator>::restore_dram_state(tx,
+                                               this, dst_chunk);
         _free_chunks.erase(dst_chunk);
-
-        TransactionImpl *tx = TransactionImpl::get_tx();
 
         // Need to update the implicit list
         // *** Consider doubly linked list here?
@@ -282,11 +298,55 @@ void AllocatorUnit::FixSizeAllocator::free(void *addr)
         if (_chunk_to_scan == dst_chunk)
             _chunk_to_scan = dst_chunk->next_chunk;
 
+        // Since we are freeing the entire chunk and there could be a rollback,
+        // log the remaining fields of the header too.
+        tx->log_range(&dst_chunk->next_chunk, &dst_chunk->my_id);
         _allocator.free(dst_chunk);
     }
     // This was off the available list
-    else if (space == 0)
+    else if (space == 0) {
+        // In case there is abort due to anything else, this chunk should
+        // be removed from DRAM list.
+        AllocatorAbortCallback<FixSizeAllocator>::restore_dram_state(tx,
+                                               this, dst_chunk, true);
         _free_chunks.insert(dst_chunk);
+    }
+}
+
+void AllocatorUnit::FixSizeAllocator::restore_dram_chunk(void *chunk)
+{
+    FixedChunk *dst_chunk = static_cast<FixedChunk *>(chunk);
+
+    // There is a corner case where _last_chunk_scanned will be set
+    // to NULL if the chunk removed in free() was start_chunk. If then
+    // the TX was aborted, start_chunk would go back to non-NULL potentially
+    // and the alloc() case would try to use a NULL _last_chunk_scanned.
+    // So make sure that doesn't happen. But its not clear this is the
+    // best way to do it.
+    if (_hdr->start_chunk != NULL && _last_chunk_scanned == NULL) {
+        FixedChunk *temp = _hdr->start_chunk, *prev = _hdr->start_chunk;
+
+        // Will handle the worst case of only the start_chunk remaining.
+        temp = temp->next_chunk;
+        while(temp != NULL) {
+            if (temp == dst_chunk)
+                break;
+            prev = temp;
+            temp = temp->next_chunk;
+        }
+        _last_chunk_scanned = prev;
+        assert(_last_chunk_scanned != NULL);
+    }
+
+    if (dst_chunk->free_spots > 0)
+        _free_chunks.insert(dst_chunk);
+}
+
+void AllocatorUnit::FixSizeAllocator::remove_dram_chunk(void *chunk)
+{
+    FixedChunk *dst_chunk = static_cast<FixedChunk *>(chunk);
+    if (dst_chunk->free_spots == 0)
+        _free_chunks.erase(dst_chunk);
 }
 
 uint64_t AllocatorUnit::FixSizeAllocator::used_bytes() const
