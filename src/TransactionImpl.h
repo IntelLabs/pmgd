@@ -58,6 +58,12 @@ namespace PMGD {
             TransactionImpl *_outer_tx;
 
             CallbackList<void *, TransactionImpl *> _commit_callback_list;
+
+            // Certain things like restoring DRAM states in some components
+            // only needs to happen in case of abort. So create a callback for that.
+            // Use these two only for DRAM related changes. Else we need to figure
+            // out right flushing etc.
+            CallbackList<void *, TransactionImpl *> _abort_callback_list;
             CallbackList<void *, TransactionImpl *> _finalize_callback_list;
 
             int _alloc_id;
@@ -102,6 +108,12 @@ namespace PMGD {
 
             std::function<void(TransactionImpl *)> *lookup_commit_callback(void *key)
                 { return _commit_callback_list.lookup_callback(key); }
+
+            void register_abort_callback(void *key, std::function<void(TransactionImpl *)> f)
+                { _abort_callback_list.register_callback(key, f); }
+
+            std::function<void(TransactionImpl *)> *lookup_abort_callback(void *key)
+                { return _abort_callback_list.lookup_callback(key); }
 
             void register_finalize_callback(void *key, std::function<void(TransactionImpl *)> f)
                 { _finalize_callback_list.register_callback(key, f); }
