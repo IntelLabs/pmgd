@@ -1,6 +1,7 @@
 # List of sources for this directory.
 TEST_SRCS := $(addprefix test/, \
                          alloctest.cc soltest.cc nodeedgetest.cc \
+                         allocaborttest.cc \
                          listtest.cc edgeindextest.cc \
                          propertytest.cc propertypredicatetest.cc \
                          propertychunktest.cc filtertest.cc \
