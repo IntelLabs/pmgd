@@ -101,8 +101,10 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
 TransactionImpl::~TransactionImpl()
 {
     if (_tx_type & Transaction::ReadWrite) {
-        if (!_committed)
+        if (!_committed) {
             rollback(_tx_handle, _jcur);
+            _abort_callback_list.do_callbacks(this);
+        }
         _alloc_id = -1;
         _finalize_callback_list.do_callbacks(this);
         TransactionManager *tx_manager = &_db->transaction_manager();

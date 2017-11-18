@@ -180,6 +180,7 @@ AllocatorUnit::VariableAllocator::FreeFormChunk *AllocatorUnit::VariableAllocato
         // This chunk must not be in the DRAM lists since we go
         // in a sequence.
         // For later scans
+        // Also, no need to restore DRAM set here.
         if (_chunk_to_scan->has_space())
             _free_chunks.insert(_chunk_to_scan);
         _last_chunk_scanned = _chunk_to_scan;
@@ -189,8 +190,10 @@ AllocatorUnit::VariableAllocator::FreeFormChunk *AllocatorUnit::VariableAllocato
     // First free form allocation.
     if (_hdr->start_chunk == NULL)
         tx->write(&_hdr->start_chunk, dst_chunk);
-    else
+    else {
+        assert(_last_chunk_scanned != NULL);
         tx->write(&_last_chunk_scanned->next_chunk, dst_chunk);
+    }
     _last_chunk_scanned = dst_chunk;
 
     return dst_chunk;
@@ -204,13 +207,13 @@ void *AllocatorUnit::VariableAllocator::alloc_large(size_t sz)
     unsigned num_chunks = tot_size / CHUNK_SIZE;
     unsigned used = sz - (num_chunks - 1) * CHUNK_SIZE;
 
-    // Not wrapped in inner transaction. so changes won't be permanent.
-    // this does mean holding onto the main lock longer but given these
-    // allocations would be relatively rare, we choose this option. the
+    // Not wrapped in inner transaction. So changes won't be permanent.
+    // This does mean holding onto the main lock longer but given these
+    // allocations would be relatively rare, we choose this option. The
     // other option would be to make an entry for each chunk in this block
     // in PM list and DRAM list so that in case of a user TX rollback,
-    // we had all pages accounted for. but then there will be alot of
-    // pm operations to first put headers on every page, then have the
+    // we had all pages accounted for. But then there will be alot of
+    // PM operations to first put headers on every page, then have the
     // alloc call remove those headers and so on.
     FreeFormChunk *dst_chunk = alloc_chunks(num_chunks, used);
 
@@ -218,6 +221,11 @@ void *AllocatorUnit::VariableAllocator::alloc_large(size_t sz)
     // Since we allocate here only in non-borderline cases,
     // there will always be at least 8B.
     _free_chunks.insert(dst_chunk);
+
+    // This chunk should not be in the DRAM list in case of an abort.
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    AllocatorAbortCallback<VariableAllocator>::restore_dram_state(tx,
+                                               this, dst_chunk, true);
 
     return dst_chunk->compute_addr(CHUNK_SIZE - used);
 }
@@ -229,12 +237,19 @@ void *AllocatorUnit::VariableAllocator::alloc(size_t sz)
     if (sz > CHUNK_SIZE)
         return alloc_large(sz);
 
+    TransactionImpl *tx = TransactionImpl::get_tx();
+
     // Check the vector first.
     for (FreeFormChunk *chunk : _free_chunks) {
         addr = chunk->alloc(sz);
 
         if (addr != NULL) {
             if (!chunk->has_space()) {
+                // In case this transaction aborts, avoid a leak by putting this
+                // back in the free list.
+                AllocatorAbortCallback<VariableAllocator>::restore_dram_state(tx,
+                                                              this, chunk);
+
                 // Make sure this chunk no longer appears in the available list.
                 _free_chunks.erase(chunk);
             }
@@ -243,6 +258,15 @@ void *AllocatorUnit::VariableAllocator::alloc(size_t sz)
     }
 
     while (_chunk_to_scan != NULL) {
+        // If this transaction aborts, we want this chunk
+        // to be in the DRAM set in case it has space. Anyway this
+        // will only be called to restore in case of an abort. So using
+        // the space up for the following allocation would be totally fine.
+        if (_chunk_to_scan->has_space()) {
+            AllocatorAbortCallback<VariableAllocator>::restore_dram_state(tx,
+                                                  this, _chunk_to_scan);
+        }
+
         // This chunk must not be in the DRAM lists since we go
         // in a sequence.
         addr = _chunk_to_scan->alloc(sz);
@@ -259,6 +283,10 @@ void *AllocatorUnit::VariableAllocator::alloc(size_t sz)
     // Reached null while looking for addrs. So all others scanned.
     // If it comes out here, no luck allocating.
     FreeFormChunk *dst_chunk = alloc_chunk();
+
+    // This chunk will definitely have space in case of an abort.
+    AllocatorAbortCallback<VariableAllocator>::restore_dram_state(tx,
+                                               this, dst_chunk);
     addr = dst_chunk->alloc(sz);
 
     // For later scans
@@ -327,14 +355,18 @@ void AllocatorUnit::VariableAllocator::free(void *addr, size_t sz)
         sz = sz - (num_chunks - 1) * CHUNK_SIZE;
     }
 
+    TransactionImpl *tx = TransactionImpl::get_tx();
+
     FreeFormChunk *dst_chunk = reinterpret_cast<FreeFormChunk *>(chunk_base);
     unsigned space = dst_chunk->free_list;
     dst_chunk->free(addr, sz);
 
     if (dst_chunk->free_space == CHUNK_SIZE - HEADER_SIZE) {
+        // In case of an abort due to any exception like OutOfJournalSpace, this
+        // should be put back in the DRAM list.
+        AllocatorAbortCallback<VariableAllocator>::restore_dram_state(tx,
+                                               this, dst_chunk);
         _free_chunks.erase(dst_chunk);
-
-        TransactionImpl *tx = TransactionImpl::get_tx();
 
         // Need to update the implicit list
         // *** Consider doubly linked list here?
@@ -358,12 +390,80 @@ void AllocatorUnit::VariableAllocator::free(void *addr, size_t sz)
         if (_chunk_to_scan == dst_chunk)
             _chunk_to_scan = dst_chunk->next_chunk;
 
+        // Log the next_chunk part in case there is a rollback in free.
+        // We want to make sure the PM pointers are correctly restored.
+        // Other fields in the header were maintained when we did a free.
+        tx->log(&dst_chunk->next_chunk, sizeof(dst_chunk->next_chunk));
         _allocator.free_chunk(chunk_base);
     }
     // This was off the available list
-    else if (space == 0)
+    else if (space == 0) {
+        // In case there is abort due to anything else, this chunk should
+        // be removed from DRAM list.
+        AllocatorAbortCallback<VariableAllocator>::restore_dram_state(tx,
+                                               this, dst_chunk, true);
         _free_chunks.insert(dst_chunk);
+    }
+}
 
+void AllocatorUnit::VariableAllocator::restore_dram_chunk(void *chunk)
+{
+    FreeFormChunk *dst_chunk = static_cast<FreeFormChunk *>(chunk);
+
+    // There is a corner case where _last_chunk_scanned will be set
+    // to NULL if the chunk removed in free() was start_chunk. If then
+    // the TX was aborted, start_chunk would go back to non-NULL potentially
+    // and the alloc() case would try to use a NULL _last_chunk_scanned.
+    // So make sure that doesn't happen. But its not clear this is the
+    // best way to do it.
+    if (_hdr->start_chunk != NULL && _last_chunk_scanned == NULL) {
+        FreeFormChunk *temp = _hdr->start_chunk, *prev = _hdr->start_chunk;
+
+        // Will handle the worst case of only the start_chunk remaining.
+        temp = temp->next_chunk;
+        while(temp != NULL) {
+            if (temp == dst_chunk)
+                break;
+            prev = temp;
+            temp = temp->next_chunk;
+        }
+        _last_chunk_scanned = prev;
+        assert(_last_chunk_scanned != NULL);
+    }
+
+    // Important to check space before adding back because we might
+    // have added this chunk when something was freed but then rolled
+    // back.
+    if (dst_chunk->has_space())
+        _free_chunks.insert(dst_chunk);
+}
+
+void AllocatorUnit::VariableAllocator::remove_dram_chunk(void *chunk)
+{
+    FreeFormChunk *dst_chunk = static_cast<FreeFormChunk *>(chunk);
+
+    // We mostly call this function only when allocation of a large chunk is
+    // being rolled back. So we have to make sure _last_chunk_scanned is
+    // set back correctly in case it matched this chunk. But _chunk_to_scan
+    // is ok moving to the next chunk in the PM list. So no changes to
+    // that one.
+    // If this gets triggered cause a free() call was interrupted by an
+    // exception, then this is an overkill. But this is the only case, so
+    // leave it for now.***
+    if (_last_chunk_scanned == dst_chunk) {
+        FreeFormChunk *temp = _hdr->start_chunk, *prev = _hdr->start_chunk;
+
+        // Will handle the worst case of only the start_chunk remaining.
+        while(temp != NULL) {
+            if (temp == dst_chunk)
+                break;
+            prev = temp;
+            temp = temp->next_chunk;
+        }
+        _last_chunk_scanned = prev;
+    }
+
+    _free_chunks.erase(dst_chunk);
 }
 
 uint64_t AllocatorUnit::VariableAllocator::reserved_bytes() const
