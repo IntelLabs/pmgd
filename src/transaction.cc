@@ -106,6 +106,7 @@ TransactionImpl::~TransactionImpl()
     if (_tx_type & Transaction::ReadWrite) {
         if (!_committed) {
             rollback(_tx_handle, _jcur, _msync_needed, _pending_commits);
+            _abort_callback_list.do_callbacks(this);
         }
         _alloc_id = -1;
         _finalize_callback_list.do_callbacks(this);
