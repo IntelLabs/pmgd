@@ -283,3 +283,31 @@ void MultiAllocatorFreeCallback::delayed_free(TransactionImpl *tx, int alloc_id,
     auto *cb = f->target<MultiAllocatorFreeCallback>();
     cb->add(alloc_id, s);
 }
+
+uint64_t Allocator::used_bytes() const
+{
+    uint64_t used_bytes = 0;
+
+    // For FixSize Allocator
+    for (unsigned i = 0; i < _hdr->num_instances; ++i)
+        used_bytes += _allocators[i]->used_bytes();
+
+    used_bytes += _chunks.used_bytes() + _hdr->num_instances * CHUNK_SIZE -
+                  used_bytes;
+
+    return used_bytes;
+}
+
+unsigned Allocator::occupancy() const
+{
+    uint64_t reserved_bytes = _chunks.used_bytes() + CHUNK_SIZE;
+    return 100 * reserved_bytes / (_chunks.region_size() + CHUNK_SIZE);
+}
+
+unsigned Allocator::health() const
+{
+    unsigned health = 0;
+    for (unsigned i = 0; i < _hdr->num_instances; ++i)
+        health += _allocators[i]->health();
+    return health / _hdr->num_instances;
+}
