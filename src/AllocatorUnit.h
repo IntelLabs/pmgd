@@ -390,12 +390,7 @@ namespace PMGD {
                   RegionHeader *hdr, uint32_t alloc_id, bool create);
         void *alloc(size_t size);
 
-        uint64_t region_size() const
-            //{ return _chunks.region_size() + CHUNK_SIZE; }
-            { return CHUNK_SIZE; }
-
         uint64_t used_bytes() const;
-        unsigned occupancy() const;
         unsigned health() const;
     };
 }

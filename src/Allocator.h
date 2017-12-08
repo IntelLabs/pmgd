@@ -163,12 +163,11 @@ namespace PMGD {
         void free(void *addr, size_t size);
 
         // For stats
-        // *** TODO Incorrect computations right now.
         uint64_t region_size() const
             { return _chunks.region_size() + CHUNK_SIZE; }
-        uint64_t used_bytes() const { return 0; }
-        unsigned occupancy() const { return 0; }
-        unsigned health() const { return 0; }
+        uint64_t used_bytes() const;
+        unsigned occupancy() const;
+        unsigned health() const;
     };
 
     class MultiAllocatorFreeCallback

@@ -134,18 +134,10 @@ uint64_t AllocatorUnit::used_bytes() const
 
     // For ChunkAllocator
     // Consider every byte in the ChunkAllocator as used
-   /* used_bytes += _chunks.used_bytes() + CHUNK_SIZE -
-                  (_freeform_allocator.reserved_bytes() +
-                  _small_chunks.reserved_bytes());
-*/
-    return used_bytes;
-}
+    used_bytes += _freeform_allocator.reserved_bytes() +
+                  _small_chunks.reserved_bytes();
 
-unsigned AllocatorUnit::occupancy() const
-{
-    //uint64_t reserved_bytes = _chunks.used_bytes() + CHUNK_SIZE;
-    //return 100 * reserved_bytes / (_chunks.region_size() + CHUNK_SIZE);
-    return 0;
+    return used_bytes;
 }
 
 unsigned AllocatorUnit::health() const
