@@ -147,6 +147,7 @@ namespace PMGD {
         friend class AllocAbortTest;
         friend class MTAllocTest;
         friend class AvlTreeTest;
+        friend class MTAvlTreeTest;
         friend class EdgeIndexTest;
         friend class ListTest;
         friend class ChunkListTest;
