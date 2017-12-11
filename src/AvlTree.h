@@ -114,6 +114,7 @@ namespace PMGD {
 
         // Unit test and associated funtions
         friend class AvlTreeTest;
+        friend class MTAvlTreeTest;
         TreeNode *left(const TreeNode *curr) { return (curr == NULL) ? NULL : curr->left; }
         TreeNode *right(const TreeNode *curr) { return (curr == NULL) ? NULL : curr->right; }
         K *key(TreeNode *curr) { return (curr == NULL) ? NULL : &curr->key; }
