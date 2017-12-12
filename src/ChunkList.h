@@ -85,24 +85,36 @@ namespace PMGD {
         V* add(const K &key, Allocator &allocator);
         void remove(const K &key, Allocator &allocator);
         V* find(const K &val);
-        size_t num_elems() const { return _num_elems; }
+
+        // While the stats like calls have locks on them, if they are not used
+        // during quiescent period, they could cause a lot of LockTimeouts.
+        size_t num_elems() const
+        {
+            TransactionImpl *tx = TransactionImpl::get_tx();
+            tx->acquire_lock(TransactionImpl::IndexLock, this, false);
+            return _num_elems;
+        }
+
         size_t chunk_size_bytes() const { return CHUNK_SIZE; }
         size_t total_chunks() const;
         size_t health() const;
         size_t chunk_list_size() const {
-            return sizeof(*this) + total_chunks() * CHUNK_SIZE;
+            return total_chunks() * CHUNK_SIZE + sizeof(*this);
         }
 
-        std::vector<KeyValuePair<K,V> *> get_key_values() const;
+        std::vector<KeyValuePair<K,V> *> get_key_values();
     };
 
     template <typename K, typename V, unsigned CHUNK_SIZE>
     size_t ChunkList<K,V,CHUNK_SIZE>::total_chunks() const
     {
         size_t total_chunks = 0;
+        TransactionImpl *tx = TransactionImpl::get_tx();
+        tx->acquire_lock(TransactionImpl::IndexLock, this, false);
 
         ChunkListType *curr = _head;
         while (curr != NULL) {  // across chunks
+            tx->acquire_lock(TransactionImpl::IndexLock, curr, false);
             curr = curr->next;
             ++total_chunks;
         }
@@ -121,12 +133,15 @@ namespace PMGD {
     }
 
     template <typename K, typename V, unsigned CHUNK_SIZE>
-    std::vector<KeyValuePair<K,V> *> ChunkList<K,V,CHUNK_SIZE>::get_key_values() const
+    std::vector<KeyValuePair<K,V> *> ChunkList<K,V,CHUNK_SIZE>::get_key_values()
     {
         std::vector<KeyValuePair<K,V> *> key_values;
+        TransactionImpl *tx = TransactionImpl::get_tx();
+        tx->acquire_lock(TransactionImpl::IndexLock, this, false);
 
         ChunkListType *curr = _head;
         while (curr != NULL) {  // across chunks
+            tx->acquire_lock(TransactionImpl::IndexLock, curr, false);
             // Within a chunk
             int elems = 0, curr_slot = 0;
             uint16_t bit_pos = 1;
@@ -148,6 +163,11 @@ namespace PMGD {
     template <typename K, typename V, unsigned CHUNK_SIZE>
     V* ChunkList<K,V,CHUNK_SIZE>::add(const K &key, Allocator &allocator)
     {
+        // Acquire a read lock before traversing the chunk list otherwise
+        // someone might modify _head itself.
+        TransactionImpl *tx = TransactionImpl::get_tx();
+        tx->acquire_lock(TransactionImpl::IndexLock, this, false);
+
         // Need to check if the key exists before we can add
         // If it exists, return pointer to that element. The caller
         // will have to use the value part of key,value to enter the
@@ -161,6 +181,11 @@ namespace PMGD {
 
         // This list is not sorted, so search till the end
         while (curr != NULL) {  // across chunks
+            // Lock at the chunk level to avoid too fine grained locking.
+            // Besides, if there is a change, we have to change the bitmap
+            // that represents the entire chunk.
+            tx->acquire_lock(TransactionImpl::IndexLock, curr, false);
+
             // Within a chunk
             int elems = 0, curr_slot = 0;
             uint16_t bit_pos = 1;
@@ -174,6 +199,7 @@ namespace PMGD {
                         return &(curr->data[curr_slot].value());
                     elems++;
                 }
+
                 // If no key found and there is room in the chunk, remember
                 // the chunk number but still keep looking. This could be a
                 // hole cause some other key that was deleted from here
@@ -182,9 +208,11 @@ namespace PMGD {
                     empty_slot = curr_slot;
                 }
                 bit_pos <<= 1;
+
                 // Keep current with index position
                 ++curr_slot;
             }
+
             // If there is still some room left towards the end, and we have
             // not assigned anything to empty_chunk, do that now
             if (elems < MAX_PER_CHUNK && !empty_chunk) {
@@ -197,10 +225,13 @@ namespace PMGD {
             curr = curr->next;
         }
 
-        TransactionImpl *tx = TransactionImpl::get_tx();
+        // Will cause a change in num_elems.
+        tx->acquire_lock(TransactionImpl::IndexLock, this, true);
+
         // key not found
         if (empty_chunk) {
             uint16_t mask = 1;
+            tx->acquire_lock(TransactionImpl::IndexLock, empty_chunk, true);
             mask <<= empty_slot;
             tx->log_range(&empty_chunk->occupants, &empty_chunk->num_elems);
             ++empty_chunk->num_elems;
@@ -217,11 +248,14 @@ namespace PMGD {
 
             if (prev == NULL) // First ever chunk
                 tx->write(&_head, curr);
-            else
+            else {
+                tx->acquire_lock(TransactionImpl::IndexLock, prev, true);
                 tx->write(&(prev->next), curr);
+            }
 
             empty_slot = 0;
         }
+
         tx->write(&_num_elems, _num_elems + 1);
 
         curr->data[empty_slot].set_key(key);
@@ -236,11 +270,17 @@ namespace PMGD {
     template <typename K, typename V, unsigned CHUNK_SIZE>
     void ChunkList<K,V,CHUNK_SIZE>::remove(const K &key, Allocator &allocator)
     {
-        ChunkListType *prev = NULL, *curr = _head;
         TransactionImpl *tx = TransactionImpl::get_tx();
+
+        // Acquire a read lock before traaversing the chunk list otherwise
+        // someone might modify _head itself.
+        tx->acquire_lock(TransactionImpl::IndexLock, this, false);
+        ChunkListType *prev = NULL, *curr = _head;
 
         // This list is not sorted, so search till the end
         while (curr != NULL) {  // across chunks
+            tx->acquire_lock(TransactionImpl::IndexLock, curr, false);
+
             // Within a chunk
             int elems = 0, curr_slot = 0;
             uint16_t bit_pos = 1;
@@ -249,6 +289,9 @@ namespace PMGD {
                 // If the value is non-zero, there is, else not
                 if (curr->occupants & bit_pos) { // non-empty slot
                     if (key == curr->data[curr_slot].key()) {
+                        // This lock order is the same as in insert.
+                        tx->acquire_lock(TransactionImpl::IndexLock, this, true);
+                        tx->acquire_lock(TransactionImpl::IndexLock, curr, true);
                         tx->log_range(&curr->occupants, &curr->num_elems);
                         --curr->num_elems;
                         curr->occupants &= (~bit_pos);
@@ -258,8 +301,10 @@ namespace PMGD {
                             // Need to free this chunk
                             if (prev == NULL)
                                 tx->write(&_head, curr->next);
-                            else
+                            else {
+                                tx->acquire_lock(TransactionImpl::IndexLock, prev, true);
                                 tx->write(&(prev->next), curr->next);
+                            }
                             allocator.free(curr, CHUNK_SIZE);
                         } // No more elements in this chunk
                         return;
@@ -280,9 +325,13 @@ namespace PMGD {
     template <typename K, typename V, unsigned CHUNK_SIZE>
     V* ChunkList<K,V,CHUNK_SIZE>::find(const K &key)
     {
+        TransactionImpl *tx = TransactionImpl::get_tx();
+        tx->acquire_lock(TransactionImpl::IndexLock, this, false);
         ChunkListType *curr = _head;
+
         // This list is not sorted, so search till the end
         while (curr != NULL) {  // across chunks
+            tx->acquire_lock(TransactionImpl::IndexLock, curr, false);
             // Within a chunk
             int elems = 0, curr_slot = 0;
             uint16_t bit_pos = 1;
@@ -298,6 +347,7 @@ namespace PMGD {
                 // Keep current with index position
                 ++curr_slot;
             }
+
             // If not found in this chunk, move to next
             curr = curr->next;
         }
