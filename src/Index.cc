@@ -99,7 +99,7 @@ void Index::remove(const Property &p, void *n, GraphImpl *db)
         case PropertyType::Integer:
             {
                 LongValueIndex *prop_idx = static_cast<LongValueIndex *>(this);
-                dest = prop_idx->find(p.int_value());
+                dest = prop_idx->find(p.int_value(), true);
                 if (dest) {
                     dest->remove(n, allocator);
                     // TODO: Re-traversal of tree.
@@ -111,7 +111,7 @@ void Index::remove(const Property &p, void *n, GraphImpl *db)
         case PropertyType::Float:
             {
                 FloatValueIndex *prop_idx = static_cast<FloatValueIndex *>(this);
-                dest = prop_idx->find(p.float_value());
+                dest = prop_idx->find(p.float_value(), true);
                 if (dest) {
                     dest->remove(n, allocator);
                     // TODO: Re-traversal of tree.
@@ -123,7 +123,7 @@ void Index::remove(const Property &p, void *n, GraphImpl *db)
         case PropertyType::Boolean:
             {
                 BoolValueIndex *prop_idx = static_cast<BoolValueIndex *>(this);
-                dest = prop_idx->find(p.bool_value());
+                dest = prop_idx->find(p.bool_value(), true);
                 if (dest) {
                     dest->remove(n, allocator);
                     // TODO: Re-traversal of tree.
@@ -135,7 +135,7 @@ void Index::remove(const Property &p, void *n, GraphImpl *db)
         case PropertyType::Time:
             {
                 TimeValueIndex *prop_idx = static_cast<TimeValueIndex *>(this);
-                dest = prop_idx->find(p.time_value());
+                dest = prop_idx->find(p.time_value(), true);
                 if (dest) {
                     dest->remove(n, allocator);
                     // TODO: Re-traversal of tree.
@@ -148,7 +148,7 @@ void Index::remove(const Property &p, void *n, GraphImpl *db)
             {
                 TransientIndexString istr(p.string_value(), db->locale());
                 StringValueIndex *prop_idx = static_cast<StringValueIndex *>(this);
-                dest = prop_idx->find(istr);
+                dest = prop_idx->find(istr, true);
                 if (dest) {
                     dest->remove(n, allocator);
                     // TODO: Re-traversal of tree.

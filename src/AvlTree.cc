@@ -121,7 +121,7 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::rightleft_rotate(
 
 template <typename K, typename V>
 size_t AvlTree<K,V>::num_elems_recursive(AvlTree<K,V>::TreeNode *node,
-                                       TransactionImpl *tx)
+                                       TransactionImpl *tx) const
 {
     size_t count = 1;
 
@@ -135,7 +135,7 @@ size_t AvlTree<K,V>::num_elems_recursive(AvlTree<K,V>::TreeNode *node,
 }
 
 template <typename K, typename V>
-size_t AvlTree<K,V>::num_elems()
+size_t AvlTree<K,V>::num_elems() const
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
     tx->acquire_lock(TransactionImpl::IndexLock, this, false);
@@ -731,14 +731,19 @@ void AvlTree<K,V>::get_locks_find(const K &key, AvlTree::TreeNode **found)
 }
 
 template <typename K, typename V>
-V *AvlTree<K,V>::find(const K &key)
+V *AvlTree<K,V>::find(const K &key, bool write_lock_tree_node)
 {
     TreeNode *curr = NULL;
 
     get_locks_find(key, &curr);
 
-    if (curr != NULL)
+    if (curr != NULL) {
+        if (write_lock_tree_node) {
+            TransactionImpl *tx = TransactionImpl::get_tx();
+            tx->acquire_lock(TransactionImpl::IndexLock, curr, true);
+        }
         return &(curr->value);
+    }
     return NULL;
 }
 
