@@ -78,7 +78,7 @@ namespace PMGD {
         TreeNode *leftright_rotate(TreeNode *hinge, TransactionImpl *tx);
         TreeNode *rightleft_rotate(TreeNode *hinge, TransactionImpl *tx);
         int max(int val1, int val2) { return (val1 > val2) ? val1 : val2; }
-        size_t num_elems_recursive(AvlTree<K,V>::TreeNode *node, TransactionImpl *tx);
+        size_t num_elems_recursive(AvlTree<K,V>::TreeNode *node, TransactionImpl *tx) const;
 
         // Helpers for lock analysis
         int get_locks_add_recursive(TreeNode * const curr, const K &key,
@@ -123,7 +123,9 @@ namespace PMGD {
     public:
         AvlTree() : _tree(NULL) { }
 
-        size_t num_elems();
+        // While the stats like calls have locks on them, if they are not used
+        // during quiescent period, they could cause a lot of LockTimeouts.
+        size_t num_elems() const;
 
         // We could use a key value pair in the tree struct and return a pointer to
         // that but technically, the user shouldn't be allowed to modify anything
@@ -137,7 +139,12 @@ namespace PMGD {
         // cleaner option.
         int remove(const K &key, Allocator &allocator);
 
-        V *find(const K &key);
+        // Sometimes, find is used to get value that is then modified. Since
+        // we lock at the tree node level for value modifications, indicate
+        // in the find function if the main tree node should be write locked
+        // suggesting that the value corresponding to the given key is going
+        // to be modified.
+        V *find(const K &key, bool write_lock_tree_node = false);
 
         size_t treenode_size(TreeNode *node);
     };
