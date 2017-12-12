@@ -110,7 +110,6 @@ namespace PMGD {
         const EdgeIndex::EdgePosition *_pos;
         bool _vacant_flag = false;
         TransactionImpl *_tx;
-        IndexManager &_index_manager;
 
         friend class EdgeRef;
         Edge *get_edge() const { return _pos->value.key(); }
@@ -169,11 +168,10 @@ namespace PMGD {
               _key_pos(const_cast<EdgeIndex::KeyPosition *>(key_pos)),
               _tag(tag),
               _pos(pos),
-              _tx(TransactionImpl::get_tx()),
-              _index_manager(_tx->get_db()->index_manager())
+              _tx(TransactionImpl::get_tx())
         {
             if (_tx->is_read_write()) {
-                _index_manager.register_iterator(this,
+                _tx->iterator_callbacks().register_iterator(this,
                         [this](void *list_node) { remove_notify(list_node); });
             }
         }
@@ -217,7 +215,7 @@ namespace PMGD {
         ~Node_EdgeIteratorImpl()
         {
             if (_tx->is_read_write())
-                _index_manager.unregister_iterator(this);
+                _tx->iterator_callbacks().unregister_iterator(this);
         }
 
         operator bool() const { return _vacant_flag || _pos != NULL; }

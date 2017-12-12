@@ -367,7 +367,7 @@ V *AvlTree<K,V>::add(const K &key, Allocator &allocator)
         }
 
         if (rebalanced)
-            tx->get_db()->index_manager().iterator_rebalance_notify(this);
+            tx->iterator_callbacks().iterator_rebalance_notify(this);
     }
     return r;
 }
@@ -706,8 +706,7 @@ int AvlTree<K,V>::remove(const K &key, Allocator &allocator)
     }
 
     if (rebalanced)
-        tx->get_db()->index_manager().iterator_rebalance_notify(this);
-
+        tx->iterator_callbacks().iterator_rebalance_notify(this);
     return 0;
 }
 
