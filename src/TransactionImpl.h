@@ -49,6 +49,52 @@ namespace PMGD {
             enum LockTarget { NodeLock = 0, EdgeLock = 1, IndexLock = 2, NUM_LOCK_REGIONS = 3};
             enum LockState { LockNotFound = 0, ReadLock = 1, WriteLock = 2 };
 
+        // For the iterator callbacks used by AvlTreeIndex and others, we need a
+        // per transaction way of storing it. So capture
+        // it in a local class here and instantiate it in TX. Then the
+        // register and unregister functions will be the only ones in TX.
+        class IteratorCallbacks
+        {
+            CallbackList<void *, void *> _iterator_remove_list;
+            CallbackList<void *, void *> _iterator_rebalance_list;
+            CallbackList<void *, const PropertyRef &> _property_iterator_list;
+
+        public:
+            void register_iterator(void *key,
+                                   std::function<void(void *)> remove_callback)
+            {
+                _iterator_remove_list.register_callback(key, remove_callback);
+            }
+
+            void register_iterator(void *key,
+                                   std::function<void(void *)> remove_callback,
+                                   std::function<void(void *)> rebalance_callback)
+            {
+                _iterator_remove_list.register_callback(key, remove_callback);
+                _iterator_rebalance_list.register_callback(key, rebalance_callback);
+            }
+
+            void unregister_iterator(void *key)
+            {
+                _iterator_remove_list.unregister_callback(key);
+                _iterator_rebalance_list.unregister_callback(key);
+            }
+
+            void iterator_remove_notify(void *list_node) const
+                { _iterator_remove_list.do_callbacks(list_node); }
+            void iterator_rebalance_notify(void *tree) const
+                { _iterator_rebalance_list.do_callbacks(tree); }
+
+            void register_property_iterator(void *key, std::function<void(const PropertyRef &)> f)
+                { _property_iterator_list.register_callback(key, f); }
+            void unregister_property_iterator(void *key)
+                { _property_iterator_list.unregister_callback(key); }
+            void property_iterator_notify(const PropertyRef &p) const
+                { _property_iterator_list.do_callbacks(p); }
+
+        };
+
+
         private:
             typedef std::unordered_map<uint64_t, uint8_t> LockStatusMap;
             struct Locks {
@@ -99,6 +145,10 @@ namespace PMGD {
 
             // Information for locks that a TX could acquire.
             std::array<Locks, NUM_LOCK_REGIONS> _locks;
+
+            // Index manager has code to handle iterator changes within a
+            // transaction. Instantiate that here.
+            IteratorCallbacks _iter_callbacks;
 
             void log_je(void *src, size_t len);
             void finalize_commit();
@@ -154,6 +204,9 @@ namespace PMGD {
             // Add locks that this TX doesn't already own.
             LockState acquire_lock(LockTarget which, const void *addr, bool write = false)
                 { return _locks[which].acquire_lock(addr, write); }
+
+            IteratorCallbacks &iterator_callbacks()
+              { return _iter_callbacks; }
 
             // log data; user performs the writes
             void log(void *ptr, size_t len);

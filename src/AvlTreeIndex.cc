@@ -357,7 +357,6 @@ namespace PMGD {
         ListTraverser<void *> _list_it;
         bool _vacant_flag = false;
         TransactionImpl *_tx;
-        IndexManager &_index_manager;
 
         void finish_init() {
             if (!_path.empty()) {
@@ -373,11 +372,10 @@ namespace PMGD {
     public:
         Index_IteratorImplBase(IndexNode *tree)
             : _tree(tree), _curr(NULL), _list_it(NULL),
-              _tx(TransactionImpl::get_tx()),
-              _index_manager(_tx->get_db()->index_manager())
+              _tx(TransactionImpl::get_tx())
         {
             if (_tx->is_read_write()) {
-                _index_manager.register_iterator(this,
+                _tx->iterator_callbacks().register_iterator(this,
                     [this](void *list_node) { remove_notify(list_node); },
                     [this](void *tree)
                     { rebalance_notify(static_cast<IndexNode *>(tree)); });
@@ -387,7 +385,7 @@ namespace PMGD {
         ~Index_IteratorImplBase()
         {
             if (_tx->is_read_write())
-                _index_manager.unregister_iterator(this);
+                _tx->iterator_callbacks().unregister_iterator(this);
         }
 
         operator bool() const { return _vacant_flag || bool(_list_it); }
