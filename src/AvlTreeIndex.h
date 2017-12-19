@@ -43,33 +43,33 @@ namespace PMGD {
         class Stack;
 
         void find_start(TreeNode *root, const Compare &cmin, const Compare &cmax,
-                        Stack &path);
+                        Stack &path, TransactionImpl *tx);
         void add_right_tree(TreeNode *root, const Compare &cmax,
-                            Stack &path);
+                            Stack &path, TransactionImpl *tx);
         void find_start_min(TreeNode *root, const Compare &cmax,
-                            Stack &path);
+                            Stack &path, TransactionImpl *tx);
         void find_start_max(TreeNode *root, const Compare &cmin,
-                            Stack &path);
-        void add_full_right_tree(TreeNode *root, Stack &path);
-        void find_start_all(TreeNode *root, Stack &path);
-        void add_nodes_neq(TreeNode *root, const K &neq, Stack &path);
+                            Stack &path, TransactionImpl *tx);
+        void add_full_right_tree(TreeNode *root, Stack &path, TransactionImpl *tx);
+        void find_start_all(TreeNode *root, Stack &path, TransactionImpl *tx);
+        void add_nodes_neq(TreeNode *root, const K &neq, Stack &path, TransactionImpl *tx);
         void find_node_neq(TreeNode *root, const Compare &cur,
-                           const K &neq, Stack &path);
+                           const K &neq, Stack &path, TransactionImpl *tx);
 
         // For reverse iterators
         void find_start_reverse(TreeNode *root, const Compare &cmin, const Compare &cmax,
-                        Stack &path);
+                        Stack &path, TransactionImpl *tx);
         void add_left_tree(TreeNode *root, const Compare &cmin,
-                            Stack &path);
+                            Stack &path, TransactionImpl *tx);
         void find_start_max_reverse(TreeNode *root, const Compare &cmin,
-                            Stack &path);
+                            Stack &path, TransactionImpl *tx);
         void find_start_min_reverse(TreeNode *root, const Compare &cmax,
-                            Stack &path);
-        void find_start_all_reverse(TreeNode *root, Stack &path);
-        void add_full_left_tree(TreeNode *root, Stack &path);
-        void add_nodes_neq_reverse(TreeNode *root, const K &neq, Stack &path);
+                            Stack &path, TransactionImpl *tx);
+        void find_start_all_reverse(TreeNode *root, Stack &path, TransactionImpl *tx);
+        void add_full_left_tree(TreeNode *root, Stack &path, TransactionImpl *tx);
+        void add_nodes_neq_reverse(TreeNode *root, const K &neq, Stack &path, TransactionImpl *tx);
         void find_node_neq_reverse(TreeNode *root, const Compare &cur,
-                                   const K &neq, Stack &path);
+                                   const K &neq, Stack &path, TransactionImpl *tx);
 
         // For statistics
         void stats_recursive(TreeNode *root, Graph::IndexStats &stats);
