@@ -72,19 +72,25 @@ namespace PMGD {
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start(TreeNode *root,
                                    const Compare &cmin, const Compare &cmax,
-                                   Stack &path)
+                                   Stack &path,
+                                   TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+
+    // The main class was locked. So _tree should not change underneath it.
+    // Since the parent is locked, its ok to do the null check above before
+    // locking further.
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
     if (cmin.lessthan(root->key)) {
         if (cmax.greaterthanequal(root->key))
             path.push(root);
-        find_start(root->left, cmin, cmax, path);
+        find_start(root->left, cmin, cmax, path, tx);
     }
     else if (cmin.equals(root->key))
             path.push(root);
     else  // Need to look for min in the right subtree
-        find_start(root->right, cmin, cmax, path);
+        find_start(root->right, cmin, cmax, path, tx);
 }
 
 // We have already traversed to the min in the tree. So when
@@ -92,109 +98,126 @@ void AvlTreeIndex<K,V>::find_start(TreeNode *root,
 // make is that the value <(=) max.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_right_tree(TreeNode *root, const Compare &cmax,
-                                       Stack &path)
+                                       Stack &path,
+                                       TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
     if (cmax.greaterthanequal(root->key))
         path.push(root);
-    add_right_tree(root->left, cmax, path);
+    add_right_tree(root->left, cmax, path, tx);
 }
 
 // Find first element when no min given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_min(TreeNode *root, const Compare &cmax,
-                                       Stack &path)
+                                       Stack &path,
+                                       TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
+
     // min is the lowest element in the tree
     if (cmax.greaterthanequal(root->key))
         path.push(root);
-    find_start_min(root->left, cmax, path);
+    find_start_min(root->left, cmax, path, tx);
 }
 
 // Find first element when no max given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_max(TreeNode *root, const Compare &cmin,
-                                       Stack &path)
+                                       Stack &path,
+                                       TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
 
     if (cmin.lessthan(root->key)) {
         path.push(root);
-        find_start_max(root->left, cmin, path);
+        find_start_max(root->left, cmin, path, tx);
     }
     else if (cmin.equals(root->key))
         path.push(root);
     else  // Need to look for min in the right subtree
-        find_start_max(root->right, cmin, path);
+        find_start_max(root->right, cmin, path, tx);
 }
 
 // Add all elements when no max limit given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_full_right_tree(TreeNode *root,
-                                            Stack &path)
+                                            Stack &path,
+                                            TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
     path.push(root);
-    add_full_right_tree(root->left, path);
+    add_full_right_tree(root->left, path, tx);
 }
 
 // Find first element when no min/max given
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::find_start_all(TreeNode *root, Stack &path)
+void AvlTreeIndex<K,V>::find_start_all(TreeNode *root, Stack &path,
+        TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
     path.push(root);
-    find_start_all(root->left, path);
+    find_start_all(root->left, path, tx);
 }
 
 // Find min element of tree that is not equal to given key.
 // Same function works for traversing the remaining tree too.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_nodes_neq(TreeNode *root, const K &neq,
-                                      Stack &path)
+                                      Stack &path,
+                                      TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
     if (!(neq == root->key))
         path.push(root);
     else {
         // If the root is equal to the key, don't forget its right,
         // which we can add to the path without checking againt neq
         // because of uniqueness.
-        if (root->right != NULL)
+        if (root->right != NULL) {
+            tx->acquire_lock(TransactionImpl::IndexLock, root->right, false);
             path.push(root->right);
+        }
     }
-    add_nodes_neq(root->left, neq, path);
+    add_nodes_neq(root->left, neq, path, tx);
 }
 
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_node_neq(TreeNode *root, const Compare &cur,
-                                 const K &neq, Stack &path)
+                                 const K &neq, Stack &path,
+                                 TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
 
     if (neq == root->key) { // Found the unwanted node.
         // Skip the root then
         if (cur.lessthan(root->key))
-            find_start_max(root->left, cur, path);
+            find_start_max(root->left, cur, path, tx);
         else if (cur.equals(root->key))
-            find_start_all(root->right, path);
+            find_start_all(root->right, path, tx);
         else
-            find_start_max(root->right, cur, path);
+            find_start_max(root->right, cur, path, tx);
     }
     else {
         path.push(root);
         if (cur.lessthan(root->key))
-            find_node_neq(root->left, cur, neq, path);
+            find_node_neq(root->left, cur, neq, path, tx);
         else if (cur.greaterthan(root->key)) // equal to already taken care of
-            find_node_neq(root->right, cur, neq, path);
+            find_node_neq(root->right, cur, neq, path, tx);
     }
 }
 
@@ -202,31 +225,35 @@ void AvlTreeIndex<K,V>::find_node_neq(TreeNode *root, const Compare &cur,
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_reverse(TreeNode *root,
                                    const Compare &cmin, const Compare &cmax,
-                                   Stack &path)
+                                   Stack &path,
+                                   TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
     if (cmax.greaterthan(root->key)) {
         if (cmin.lessthanequal(root->key))
             path.push(root);
-        find_start_reverse(root->right, cmin, cmax, path);
+        find_start_reverse(root->right, cmin, cmax, path, tx);
     }
     else if (cmax.equals(root->key))
             path.push(root);
     else  // Need to look for max in the left subtree as well.
-        find_start_reverse(root->left, cmin, cmax, path);
+        find_start_reverse(root->left, cmin, cmax, path, tx);
 }
 
 // Find first element when no max given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_max_reverse(TreeNode *root, const Compare &cmin,
-                                       Stack &path)
+                                       Stack &path,
+                                       TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
     if (cmin.lessthanequal(root->key))
         path.push(root);
-    find_start_max_reverse(root->right, cmin, path);
+    find_start_max_reverse(root->right, cmin, path, tx);
 }
 
 // We have already traversed to the max in the tree. So when
@@ -234,96 +261,110 @@ void AvlTreeIndex<K,V>::find_start_max_reverse(TreeNode *root, const Compare &cm
 // make is that the value >(=) min.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_left_tree(TreeNode *root, const Compare &cmin,
-                                       Stack &path)
+                                       Stack &path,
+                                       TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
     if (cmin.lessthanequal(root->key))
         path.push(root);
-    add_left_tree(root->right, cmin, path);
+    add_left_tree(root->right, cmin, path, tx);
 }
 
 // Find first element when no min given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_start_min_reverse(TreeNode *root, const Compare &cmax,
-                                       Stack &path)
+                                       Stack &path,
+                                       TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
 
     if (cmax.greaterthan(root->key)) {
         path.push(root);
-        find_start_min_reverse(root->right, cmax, path);
+        find_start_min_reverse(root->right, cmax, path, tx);
     }
     else if (cmax.equals(root->key))
         path.push(root);
     else  // Need to look for max in the left subtree
-        find_start_min_reverse(root->left, cmax, path);
+        find_start_min_reverse(root->left, cmax, path, tx);
 }
 
 // Find first element when no min/max given
 template <typename K, typename V>
-void AvlTreeIndex<K,V>::find_start_all_reverse(TreeNode *root, Stack &path)
+void AvlTreeIndex<K,V>::find_start_all_reverse(TreeNode *root, Stack &path,
+                                               TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
     path.push(root);
-    find_start_all_reverse(root->right, path);
+    find_start_all_reverse(root->right, path, tx);
 }
 
 // Add all elements when no max limit given
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_full_left_tree(TreeNode *root,
-                                           Stack &path)
+                                           Stack &path,
+                                           TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
     path.push(root);
-    add_full_left_tree(root->right, path);
+    add_full_left_tree(root->right, path, tx);
 }
 
 // Find max element of tree that is not equal to given key.
 // Same function works for traversing the remaining tree too.
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::add_nodes_neq_reverse(TreeNode *root, const K &neq,
-                                      Stack &path)
+                                      Stack &path,
+                                      TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
     if (!(neq == root->key))
         path.push(root);
     else {
         // If the root is equal to the key, don't forget its left,
         // which we can add to the path without checking againt neq
         // because of uniqueness.
-        if (root->left != NULL)
+        if (root->left != NULL) {
+            tx->acquire_lock(TransactionImpl::IndexLock, root->left, false);
             path.push(root->left);
+        }
     }
-    add_nodes_neq_reverse(root->right, neq, path);
+    add_nodes_neq_reverse(root->right, neq, path, tx);
 }
 
 template <typename K, typename V>
 void AvlTreeIndex<K,V>::find_node_neq_reverse(TreeNode *root, const Compare &cur,
-                                     const K &neq, Stack &path)
+                                     const K &neq, Stack &path,
+                                     TransactionImpl *tx)
 {
     if (root == NULL)
         return;
+    tx->acquire_lock(TransactionImpl::IndexLock, root, false);
 
     if (neq == root->key) { // Found the unwanted node.
         // Skip the root then
         if (cur.greaterthan(root->key))
-            find_start_min_reverse(root->right, cur, path);
+            find_start_min_reverse(root->right, cur, path, tx);
         else if (cur.equals(root->key))
-            find_start_all_reverse(root->left, path);
+            find_start_all_reverse(root->left, path, tx);
         else
-            find_start_min_reverse(root->left, cur, path);
+            find_start_min_reverse(root->left, cur, path, tx);
     }
     else {
         path.push(root);
         if (cur.greaterthan(root->key))
-            find_node_neq_reverse(root->right, cur, neq, path);
+            find_node_neq_reverse(root->right, cur, neq, path, tx);
         else if (cur.lessthan(root->key))
-            find_node_neq_reverse(root->left, cur, neq, path);
+            find_node_neq_reverse(root->left, cur, neq, path, tx);
     }
 }
 
@@ -340,7 +381,8 @@ namespace PMGD {
         using Index_IteratorImplBase<K>::_path; \
         using Index_IteratorImplBase<K>::_list_it; \
         using Index_IteratorImplBase<K>::_vacant_flag; \
-        using Index_IteratorImplBase<K>::finish_init;
+        using Index_IteratorImplBase<K>::finish_init; \
+        using Index_IteratorImplBase<K>::_tx;
 
     // These iterator implementations are specific to instantiations
     // of AvlTreeIndex<K, V> with V = List<void *>.
@@ -479,7 +521,7 @@ namespace PMGD {
               _cmax(max, incl_max)
         {
             typename IndexNode::Compare cmin(min, incl_min);
-            _tree->find_start(tree->_tree, cmin, _cmax, _path);
+            _tree->find_start(tree->_tree, cmin, _cmax, _path, _tx);
             finish_init();
         }
 
@@ -489,15 +531,15 @@ namespace PMGD {
             : Index_IteratorImplBase<K>(tree),
               _cmax(max, incl_max)
         {
-            _tree->find_start_min(tree->_tree, _cmax, _path);
+            _tree->find_start_min(tree->_tree, _cmax, _path, _tx);
             finish_init();
         }
 
         void _next()
-            { _tree->add_right_tree(_curr->right, _cmax, _path); }
+            { _tree->add_right_tree(_curr->right, _cmax, _path, _tx); }
 
         void find_node(const typename IndexNode::Compare &cur)
-            { _tree->find_start(_tree->_tree, cur, _cmax, _path); }
+            { _tree->find_start(_tree->_tree, cur, _cmax, _path, _tx); }
     };
 
     // Handle ge, gt, dont_care.
@@ -512,7 +554,7 @@ namespace PMGD {
             : Index_IteratorImplBase<K>(tree)
         {
             typename IndexNode::Compare cmin(min, incl_min);
-            _tree->find_start_max(tree->_tree, cmin, _path);
+            _tree->find_start_max(tree->_tree, cmin, _path, _tx);
             finish_init();
         }
 
@@ -520,15 +562,15 @@ namespace PMGD {
         IndexRangeNomax_IteratorImpl(IndexNode *tree)
             : Index_IteratorImplBase<K>(tree)
         {
-            _tree->find_start_all(tree->_tree, _path);
+            _tree->find_start_all(tree->_tree, _path, _tx);
             finish_init();
         }
 
         void _next()
-            { _tree->add_full_right_tree(_curr->right, _path); }
+            { _tree->add_full_right_tree(_curr->right, _path, _tx); }
 
         void find_node(const typename IndexNode::Compare &cur)
-            { _tree->find_start_max(_tree->_tree, cur, _path); }
+            { _tree->find_start_max(_tree->_tree, cur, _path, _tx); }
     };
 
     template <typename K>
@@ -543,15 +585,15 @@ namespace PMGD {
         {
             // Get to the minimum of the tree but make sure that is
             // not the key itself
-            _tree->add_nodes_neq(tree->_tree, _neq, _path);
+            _tree->add_nodes_neq(tree->_tree, _neq, _path, _tx);
             finish_init();
         }
 
         void _next()
-            { _tree->add_nodes_neq(_curr->right, _neq, _path); }
+            { _tree->add_nodes_neq(_curr->right, _neq, _path, _tx); }
 
         void find_node(const typename IndexNode::Compare &cur)
-            { _tree->find_node_neq(_tree->_tree, cur, _neq, _path); }
+            { _tree->find_node_neq(_tree->_tree, cur, _neq, _path, _tx); }
     };
 
     // Reverse iterators.
@@ -569,7 +611,7 @@ namespace PMGD {
               _cmin(min, incl_min)
         {
             typename IndexNode::Compare cmax(max, incl_max);
-            _tree->find_start_reverse(tree->_tree, _cmin, cmax, _path);
+            _tree->find_start_reverse(tree->_tree, _cmin, cmax, _path, _tx);
             finish_init();
         }
 
@@ -579,15 +621,15 @@ namespace PMGD {
             : Index_IteratorImplBase<K>(tree),
               _cmin(min, incl_min)
         {
-            _tree->find_start_max_reverse(tree->_tree, _cmin, _path);
+            _tree->find_start_max_reverse(tree->_tree, _cmin, _path, _tx);
             finish_init();
         }
 
         void _next()
-            { _tree->add_left_tree(_curr->left, _cmin, _path); }
+            { _tree->add_left_tree(_curr->left, _cmin, _path, _tx); }
 
         void find_node(const typename IndexNode::Compare &cur)
-            { _tree->find_start_reverse(_tree->_tree, _cmin, cur, _path); }
+            { _tree->find_start_reverse(_tree->_tree, _cmin, cur, _path, _tx); }
     };
 
     // Handle lt, le, dont_care
@@ -600,7 +642,7 @@ namespace PMGD {
             : Index_IteratorImplBase<K>(tree)
         {
             typename IndexNode::Compare cmax(max, incl_max);
-            _tree->find_start_min_reverse(tree->_tree, cmax, _path);
+            _tree->find_start_min_reverse(tree->_tree, cmax, _path, _tx);
             finish_init();
         }
 
@@ -608,15 +650,15 @@ namespace PMGD {
         IndexRangeNomin_IteratorImpl(IndexNode *tree)
             : Index_IteratorImplBase<K>(tree)
         {
-            _tree->find_start_all_reverse(tree->_tree, _path);
+            _tree->find_start_all_reverse(tree->_tree, _path, _tx);
             finish_init();
         }
 
         void _next()
-            { _tree->add_full_left_tree(_curr->left, _path); }
+            { _tree->add_full_left_tree(_curr->left, _path, _tx); }
 
         void find_node(const typename IndexNode::Compare &cur)
-            { _tree->find_start_min_reverse(_tree->_tree, cur, _path); }
+            { _tree->find_start_min_reverse(_tree->_tree, cur, _path, _tx); }
     };
 
     template <typename K>
@@ -631,21 +673,24 @@ namespace PMGD {
         {
             // Get to the minimum of the tree but make sure that is
             // not the key itself
-            _tree->add_nodes_neq_reverse(tree->_tree, _neq, _path);
+            _tree->add_nodes_neq_reverse(tree->_tree, _neq, _path, _tx);
             finish_init();
         }
 
         void _next()
-            { _tree->add_nodes_neq_reverse(_curr->left, _neq, _path); }
+            { _tree->add_nodes_neq_reverse(_curr->left, _neq, _path, _tx); }
 
         void find_node(const typename IndexNode::Compare &cur)
-            { _tree->find_node_neq_reverse(_tree->_tree, cur, _neq, _path); }
+            { _tree->find_node_neq_reverse(_tree->_tree, cur, _neq, _path, _tx); }
     };
 }
 
 template <typename K, typename V>
 Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(bool reverse)
 {
+    // We can read lock the main index class here.
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    tx->acquire_lock(TransactionImpl::IndexLock, this, false);
     if (!reverse)
         return new IndexRangeNomax_IteratorImpl<K>(this);
     else
@@ -655,6 +700,9 @@ Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(bool reverse)
 template <typename K, typename V>
 Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(const K &key, PropertyPredicate::Op op, bool reverse)
 {
+    // We can read lock the main index class here.
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    tx->acquire_lock(TransactionImpl::IndexLock, this, false);
     Index_IteratorImplBase<K> *impl = NULL;
     switch (op) {
         case PropertyPredicate::Eq:
@@ -717,6 +765,8 @@ Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(const K &min, con
     else if (op == PropertyPredicate::GtLe)
         incl_min = false;
 
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    tx->acquire_lock(TransactionImpl::IndexLock, this, false);
     if (!reverse)
         return new IndexRange_IteratorImpl<K>(this, min, max, incl_min, incl_max);
     else
