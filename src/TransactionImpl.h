@@ -47,6 +47,8 @@ namespace PMGD {
 
     class TransactionImpl {
         public:
+            // Keep the NodeLock and EdgeLock values in sync with
+            // Graph::NodeIndex and Graph::EdgeIndex
             enum LockTarget { NodeLock = 0, EdgeLock = 1, IndexLock = 2, NUM_LOCK_REGIONS = 3};
             enum LockState { LockNotFound = 0, ReadLock = 1, WriteLock = 2 };
 
@@ -290,4 +292,11 @@ namespace PMGD {
             // roll-back the transaction
             static void recover_tx(const TransactionHandle &, bool, RangeSet &);
     };
+
+#define LOCK_NODE(node, write) \
+        TransactionImpl::get_tx()->acquire_lock(TransactionImpl::NodeLock, node, write)
+#define LOCK_EDGE(edge, write) \
+    TransactionImpl::get_tx()->acquire_lock(TransactionImpl::EdgeLock, edge, write)
+#define LOCK(type, obj, write) \
+    TransactionImpl::get_tx()->acquire_lock((TransactionImpl::LockTarget(type)), obj, write)
 };

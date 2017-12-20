@@ -59,7 +59,9 @@ namespace PMGD {
 
         // Use a locale pointer here so that callers, where locale is
         // irrelevant, do not need to acquire it from the GraphImpl object.
-        Index_IteratorImplIntf *get_iterator(const PropertyPredicate &pp, std::locale *loc, bool reverse);
+        Index_IteratorImplIntf *get_iterator(Graph::IndexType index_type,
+                                             const PropertyPredicate &pp, std::locale *loc,
+                                             bool reverse);
 
         // Function to gather statistics
         Graph::IndexStats get_stats();

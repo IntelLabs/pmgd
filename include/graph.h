@@ -117,6 +117,8 @@ namespace PMGD {
         void remove(Node &node);
         void remove(Edge &edge);
 
+        // Keep the TransactionImpl::NodeLock and EdgeLock values in sync with
+        // NodeIndex and EdgeIndex
         enum IndexType { NodeIndex, EdgeIndex };
         void create_index(IndexType index_type, StringID tag,
                           StringID property_id, const PropertyType ptype);

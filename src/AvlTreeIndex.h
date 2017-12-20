@@ -96,10 +96,12 @@ namespace PMGD {
         using AvlTree<K,V>::add;
         using AvlTree<K,V>::remove;
 
-        Index::Index_IteratorImplIntf *get_iterator(bool reverse);
-        Index::Index_IteratorImplIntf *get_iterator(const K &key, PropertyPredicate::Op op, bool reverse);
-        Index::Index_IteratorImplIntf *get_iterator(const K &min, const K &max, PropertyPredicate::Op op,
-                               bool reverse);
+        Index::Index_IteratorImplIntf *get_iterator(Graph::IndexType index_type, bool reverse);
+        Index::Index_IteratorImplIntf *get_iterator(Graph::IndexType index_type, const K &key,
+                                                    PropertyPredicate::Op op, bool reverse);
+        Index::Index_IteratorImplIntf *get_iterator(Graph::IndexType index_type, const K &min,
+                                                    const K &max, PropertyPredicate::Op op,
+                                                    bool reverse);
 
         // For statistics
         void index_stats_info(Graph::IndexStats &stats);
