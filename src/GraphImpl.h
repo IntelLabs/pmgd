@@ -43,9 +43,11 @@ namespace PMGD {
     struct RegionInfo;
 
     class GraphImpl {
+    public:
         typedef FixedAllocator NodeTable;
         typedef FixedAllocator EdgeTable;
 
+    private:
         struct GraphInfo;
 
         struct GraphInit {
