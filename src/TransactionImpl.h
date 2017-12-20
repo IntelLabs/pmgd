@@ -47,7 +47,10 @@ namespace PMGD {
 
     class TransactionImpl {
         public:
-            enum LockTarget { NodeLock = 0, EdgeLock = 1, IndexLock = 2, NUM_LOCK_REGIONS = 3};
+            enum LockTarget { NodeLock = Graph::IndexType::NodeIndex,
+                              EdgeLock = Graph::IndexType::EdgeIndex,
+                              IndexLock,
+                              NUM_LOCK_REGIONS };
             enum LockState { LockNotFound = 0, ReadLock = 1, WriteLock = 2 };
 
         // For the iterator callbacks used by AvlTreeIndex and others, we need a
@@ -212,6 +215,13 @@ namespace PMGD {
             // Add locks that this TX doesn't already own.
             LockState acquire_lock(LockTarget which, const void *addr, bool write = false)
                 { return _locks[which].acquire_lock(addr, write); }
+
+            static void lock_node(const void *node, bool write)
+                { get_tx()->acquire_lock(NodeLock, node, write); }
+            static void lock_edge(const void *edge, bool write)
+                { get_tx()->acquire_lock(EdgeLock, edge, write); }
+            static void lock(Graph::IndexType type, const void *obj, bool write)
+                { get_tx()->acquire_lock(LockTarget(type), obj, write); }
 
             IteratorCallbacks &iterator_callbacks()
               { return _iter_callbacks; }
