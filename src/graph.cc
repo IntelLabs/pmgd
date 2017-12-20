@@ -90,16 +90,25 @@ Graph::~Graph()
 
 Node &Graph::add_node(StringID tag)
 {
-    Node *node = (Node *)_impl->node_table().alloc();
-    node->init(tag, _impl->node_table().object_size(), _impl->allocator());
+    // The FixedAllocator doesn't implement its own locking. So lock
+    // it here such that it is reusable by the same transaction in case
+    // it needs to allocate multiple nodes.
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::NodeTable &ntable = _impl->node_table();
+    tx->acquire_lock(TransactionImpl::NodeLock, &ntable, true);
+    Node *node = (Node *)ntable.alloc();
+    node->init(tag, ntable.object_size(), _impl->allocator());
     _impl->index_manager().add_node(node, _impl->allocator());
     return *node;
 }
 
 Edge &Graph::add_edge(Node &src, Node &dest, StringID tag)
 {
-    Edge *edge = (Edge *)_impl->edge_table().alloc();
-    edge->init(src, dest, tag, _impl->edge_table().object_size());
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::EdgeTable &etable = _impl->edge_table();
+    tx->acquire_lock(TransactionImpl::EdgeLock, &etable, true);
+    Edge *edge = (Edge *)etable.alloc();
+    edge->init(src, dest, tag, etable.object_size());
     src.add_edge(edge, Outgoing, tag, _impl->allocator());
     dest.add_edge(edge, Incoming, tag, _impl->allocator());
     _impl->index_manager().add_edge(edge, _impl->allocator());
@@ -108,22 +117,36 @@ Edge &Graph::add_edge(Node &src, Node &dest, StringID tag)
 
 void Graph::remove(Node &node)
 {
-    Allocator &allocator = _impl->allocator();
-    node.remove_all_properties();
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::NodeTable &ntable = _impl->node_table();
+    tx->acquire_lock(TransactionImpl::NodeLock, &ntable, true);
+    tx->acquire_lock(TransactionImpl::NodeLock, &node, true);
     node.get_edges().process([this](Edge &edge) { remove(edge); });
-    node.cleanup(allocator);
+    Allocator &allocator = _impl->allocator();
     _impl->index_manager().remove_node(&node, allocator);
-    _impl->node_table().free(&node);
+
+    // Remove edges before properties to ensure we can get all locks
+    // before doing the work.
+    node.remove_all_properties();
+    node.cleanup(allocator);
+    ntable.free(&node);
 }
 
 void Graph::remove(Edge &edge)
 {
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::EdgeTable &etable = _impl->edge_table();
+    tx->acquire_lock(TransactionImpl::EdgeLock, &etable, true);
+    tx->acquire_lock(TransactionImpl::EdgeLock, &edge, true);
     Allocator &allocator = _impl->allocator();
-    edge.remove_all_properties();
+    _impl->index_manager().remove_edge(&edge, allocator);
     edge.get_source().remove_edge(&edge, Outgoing, allocator);
     edge.get_destination().remove_edge(&edge, Incoming, allocator);
-    _impl->index_manager().remove_edge(&edge, allocator);
-    _impl->edge_table().free(&edge);
+
+    // Remove edge from nodes before properties to ensure we can get all locks
+    // before doing the work.
+    edge.remove_all_properties();
+    etable.free(&edge);
 }
 
 void Graph::create_index(IndexType index_type, StringID tag,
@@ -358,7 +381,10 @@ void Graph_Iterator<B, T>::check_vacant()
 
 NodeIterator Graph::get_nodes()
 {
-    return NodeIterator(new Graph_NodeIteratorImpl(_impl->node_table()));
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::NodeTable &ntable = _impl->node_table();
+    tx->acquire_lock(TransactionImpl::NodeLock, &ntable, false);
+    return NodeIterator(new Graph_NodeIteratorImpl(ntable));
 }
 
 NodeIterator Graph::get_nodes(StringID tag)
@@ -383,7 +409,10 @@ NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp, bool re
 
 EdgeIterator Graph::get_edges()
 {
-    return EdgeIterator(new Graph_EdgeIteratorImpl(_impl->edge_table()));
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::EdgeTable &etable = _impl->edge_table();
+    tx->acquire_lock(TransactionImpl::EdgeLock, &etable, false);
+    return EdgeIterator(new Graph_EdgeIteratorImpl(etable));
 }
 
 EdgeIterator Graph::get_edges(StringID tag)
@@ -407,11 +436,19 @@ EdgeIterator Graph::get_edges(StringID tag, const PropertyPredicate &pp, bool re
 
 NodeID Graph::get_id(const Node &node) const
 {
+    // The node id acquired from node_table which will not change unless
+    // the node is being removed. So read lock the node.
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    tx->acquire_lock(TransactionImpl::NodeLock, &node, false);
     return _impl->node_table().get_id(&node);
 }
 
 EdgeID Graph::get_id(const Edge &edge) const
 {
+    // The edge id acquired from the edge table which will not change unless
+    // the edge is being removed. So read lock the edge.
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    tx->acquire_lock(TransactionImpl::EdgeLock, &edge, false);
     return _impl->edge_table().get_id(&edge);
 }
 
