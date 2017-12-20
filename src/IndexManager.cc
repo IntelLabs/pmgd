@@ -397,7 +397,8 @@ Index::Index_IteratorImplIntf *IndexManager::get_iterator
     // This index can never be null cause we create it for each non-zero tag.
     // The second parameter here is the locale which we surely do not need for
     // a boolean property.
-    return prop0_idx->get_iterator(PropertyPredicate(0, PropertyPredicate::Eq, true), NULL, false);
+    return prop0_idx->get_iterator(index_type, PropertyPredicate(0, PropertyPredicate::Eq, true),
+                                    NULL, false);
 }
 
 void IndexManager::update

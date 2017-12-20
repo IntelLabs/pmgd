@@ -382,7 +382,8 @@ namespace PMGD {
         using Index_IteratorImplBase<K>::_list_it; \
         using Index_IteratorImplBase<K>::_vacant_flag; \
         using Index_IteratorImplBase<K>::finish_init; \
-        using Index_IteratorImplBase<K>::_tx;
+        using Index_IteratorImplBase<K>::_tx; \
+        using Index_IteratorImplBase<K>::_index_type;
 
     // These iterator implementations are specific to instantiations
     // of AvlTreeIndex<K, V> with V = List<void *>.
@@ -399,6 +400,7 @@ namespace PMGD {
         ListTraverser<void *> _list_it;
         bool _vacant_flag = false;
         TransactionImpl *_tx;
+        Graph::IndexType _index_type;
 
         void finish_init() {
             if (!_path.empty()) {
@@ -455,13 +457,18 @@ namespace PMGD {
             return true;
         }
 
+        void set_index_type(Graph::IndexType index_type)
+          { _index_type = index_type; }
+
         void *ref() const
         {
             // _vacant_flag indicates that the object referred to by the
             // iterator has been removed from the index.
             if (EXPECT_FALSE(_vacant_flag))
                 throw PMGDException(VacantIterator);
-            return _list_it.ref();
+            void *value = _list_it.ref();
+            TransactionImpl::lock(_index_type, value, false);
+            return value;
         }
 
         void remove_notify(void *list_node)
@@ -686,19 +693,25 @@ namespace PMGD {
 }
 
 template <typename K, typename V>
-Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(bool reverse)
+Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(Graph::IndexType index_type, bool reverse)
 {
     // We can read lock the main index class here.
     TransactionImpl *tx = TransactionImpl::get_tx();
     tx->acquire_lock(TransactionImpl::IndexLock, this, false);
+    Index_IteratorImplBase<K> *impl = NULL;
+
     if (!reverse)
-        return new IndexRangeNomax_IteratorImpl<K>(this);
+        impl = new IndexRangeNomax_IteratorImpl<K>(this);
     else
-        return new IndexRangeNomin_IteratorImpl<K>(this);
+        impl =  new IndexRangeNomin_IteratorImpl<K>(this);
+
+    impl->set_index_type(index_type);
+    return impl;
 }
 
 template <typename K, typename V>
-Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(const K &key, PropertyPredicate::Op op, bool reverse)
+Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(Graph::IndexType index_type, const K &key,
+                                                    PropertyPredicate::Op op, bool reverse)
 {
     // We can read lock the main index class here.
     TransactionImpl *tx = TransactionImpl::get_tx();
@@ -746,13 +759,14 @@ Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(const K &key, Pro
             break;
     }
 
+    impl->set_index_type(index_type);
     return impl;
 }
 
 template <typename K, typename V>
-Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(const K &min, const K& max,
-                                          PropertyPredicate::Op op,
-                                          bool reverse)
+Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(Graph::IndexType index_type, const K &min,
+                                                               const K& max, PropertyPredicate::Op op,
+                                                               bool reverse)
 {
     bool incl_min = true, incl_max = true;
 
@@ -767,10 +781,15 @@ Index::Index_IteratorImplIntf *AvlTreeIndex<K,V>::get_iterator(const K &min, con
 
     TransactionImpl *tx = TransactionImpl::get_tx();
     tx->acquire_lock(TransactionImpl::IndexLock, this, false);
+    Index_IteratorImplBase<K> *impl = NULL;
+
     if (!reverse)
-        return new IndexRange_IteratorImpl<K>(this, min, max, incl_min, incl_max);
+        impl =  new IndexRange_IteratorImpl<K>(this, min, max, incl_min, incl_max);
     else
-        return new IndexRangeReverse_IteratorImpl<K>(this, min, max, incl_min, incl_max);
+        impl =  new IndexRangeReverse_IteratorImpl<K>(this, min, max, incl_min, incl_max);
+
+    impl->set_index_type(index_type);
+    return impl;
 }
 
 template <typename K, typename V>

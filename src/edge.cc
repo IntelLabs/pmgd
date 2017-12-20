@@ -50,23 +50,54 @@ EdgeID Edge::get_id() const
 
 EdgeID EdgeRef::get_id() const
 {
+    // get_id() for Edge takes care of locking.
     return edge()->get_id();
 }
 
+StringID Edge::get_tag() const
+{
+    return _tag;
+}
+
+Node &Edge::get_source() const
+{
+    TransactionImpl::lock_node(_src, false);
+    return *_src;
+}
+
+Node &Edge::get_destination() const
+{
+    TransactionImpl::lock_node(_dest, false);
+    return *_dest;
+}
+
 bool Edge::check_property(StringID id, Property &result) const
-    { return _property_list.check_property(id, result); }
+{
+    return _property_list.check_property(id, result);
+}
 
 Property Edge::get_property(StringID id) const
-    { return _property_list.get_property(id); }
+{
+    return _property_list.get_property(id);
+}
 
 PropertyIterator Edge::get_properties() const
-    { return _property_list.get_properties(); }
+{
+    return _property_list.get_properties();
+}
 
 void Edge::set_property(StringID id, const Property &new_value)
-    { _property_list.set_property(id, new_value, Graph::EdgeIndex, _tag, this); }
+{
+    TransactionImpl::lock_edge(this, true);
+    _property_list.set_property(id, new_value, Graph::EdgeIndex, _tag, this);
+}
 
 void Edge::remove_property(StringID id)
-    { _property_list.remove_property(id, Graph::EdgeIndex, _tag, this); }
+{
+    TransactionImpl::lock_edge(this, true);
+    _property_list.remove_property(id, Graph::EdgeIndex, _tag, this);
+}
 
+// Only called from Graph remove edge where edge is already locked.
 void Edge::remove_all_properties()
     { _property_list.remove_all_properties(Graph::EdgeIndex, _tag, this); }
