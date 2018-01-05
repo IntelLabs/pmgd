@@ -668,7 +668,7 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::remove_recursive(AvlTree<K,V>::Tr
 }
 
 template <typename K, typename V>
-void AvlTree<K,V>::remove(const K &key, Allocator &allocator)
+int AvlTree<K,V>::remove(const K &key, Allocator &allocator)
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
     bool rebalanced = false;
@@ -681,7 +681,7 @@ void AvlTree<K,V>::remove(const K &key, Allocator &allocator)
     // but its key will be moved into the node represented by to_change.
     TreeNode *to_delete = NULL, *to_change = NULL, *to_lock;
     if (get_locks_remove(key, &to_lock, &to_delete, &to_change, tx) < 0)
-        return;
+        return -1;
 
     if (to_lock == _tree) {
         tx->log(&_tree, sizeof(_tree));
@@ -707,6 +707,8 @@ void AvlTree<K,V>::remove(const K &key, Allocator &allocator)
 
     if (rebalanced)
         tx->get_db()->index_manager().iterator_rebalance_notify(this);
+
+    return 0;
 }
 
 template <typename K, typename V>
