@@ -33,7 +33,7 @@
 #include "graph.h"
 #include "os.h"
 
-namespace Jarvis {
+namespace PMGD {
     struct RegionInfo {
         static const int REGION_NAME_LEN = 32;
         char name[REGION_NAME_LEN];

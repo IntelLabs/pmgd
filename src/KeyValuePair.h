@@ -29,7 +29,7 @@
 
 #pragma once
 
-namespace Jarvis {
+namespace PMGD {
     template <typename KeyType, typename ValueType> class KeyValuePair {
         KeyType _key;
         ValueType _value;

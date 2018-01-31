@@ -28,13 +28,13 @@
  */
 
 #include <string.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "StringID.h"
 #include "common.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-void Java_jarvis_StringID_init(JNIEnv *env, jobject stringid, jstring name)
+void Java_pmgd_StringID_init(JNIEnv *env, jobject stringid, jstring name)
 {
     static jfieldID fid = 0;
     if (fid == 0) {
@@ -53,7 +53,7 @@ void Java_jarvis_StringID_init(JNIEnv *env, jobject stringid, jstring name)
 }
 
 
-jstring Java_jarvis_StringID_nameNative(JNIEnv *env, jobject, jint id)
+jstring Java_pmgd_StringID_nameNative(JNIEnv *env, jobject, jint id)
 {
     const char *s = id == 0 ? "" : StringID(id).name().c_str();
     return env->NewStringUTF(s);
@@ -65,7 +65,7 @@ jobject new_java_stringid(JNIEnv *env, StringID sid)
     static jclass cls = 0;
     static jmethodID ctor = 0;
     if (ctor == 0) {
-        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/StringID"));
+        cls = (jclass)env->NewGlobalRef(env->FindClass("pmgd/StringID"));
         ctor = env->GetMethodID(cls, "<init>", "(I)V");
         assert(ctor != 0);
     }

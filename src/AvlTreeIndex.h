@@ -32,7 +32,7 @@
 #include "AvlTree.h"
 #include "TransactionImpl.h"
 
-namespace Jarvis {
+namespace PMGD {
     template<typename K, typename V> class AvlTreeIndex
                             : public Index, public AvlTree<K,V>
     {

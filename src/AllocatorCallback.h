@@ -32,7 +32,7 @@
 #include <list>
 #include "TransactionImpl.h"
 
-namespace Jarvis {
+namespace PMGD {
     template <typename A, typename S>
     class AllocatorCallback
     {

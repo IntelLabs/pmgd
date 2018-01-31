@@ -28,16 +28,16 @@
  */
 
 /*
- * This test checks Jarvis Index Stats
+ * This test checks PMGD Index Stats
  */
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 #include <stdlib.h>     /* system, NULL, EXIT_FAILURE */
 
-using namespace Jarvis;
+using namespace PMGD;
 
 void printStats(Graph::IndexStats stats)
 {

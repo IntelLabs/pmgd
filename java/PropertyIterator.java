@@ -28,14 +28,14 @@
  */
 
 /*
- * Java wrapper for Jarvis PropertyIterator.
+ * Java wrapper for PMGD PropertyIterator.
  */
 
-package jarvis;
+package pmgd;
 
 public class PropertyIterator {
-    private long jarvisHandle;
-    private PropertyIterator(long handle) { jarvisHandle = handle; }
+    private long pmgdHandle;
+    private PropertyIterator(long handle) { pmgdHandle = handle; }
 
     public native boolean done(); // corresponds to operator bool
     public native void next();

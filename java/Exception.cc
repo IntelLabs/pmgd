@@ -31,9 +31,9 @@
 #include <string.h>
 #include "common.h"
 
-void JavaThrow(JNIEnv *env, Jarvis::Exception e)
+void JavaThrow(JNIEnv *env, PMGD::Exception e)
 {
-    jclass cls = env->FindClass("jarvis/Exception");
+    jclass cls = env->FindClass("pmgd/Exception");
     jmethodID constr = env->GetMethodID(cls, "<init>",
         "(ILjava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;I)V");
     jobject exc = env->NewObject(cls, constr,

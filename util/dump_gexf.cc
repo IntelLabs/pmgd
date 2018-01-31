@@ -30,11 +30,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <unordered_map>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
 using namespace std;
-using namespace Jarvis;
+using namespace PMGD;
 
 static void dump_gexf_node_attr(FILE *f, const string name, const string type);
 static void dump_gexf_node_attrs(Graph &db, FILE *f);

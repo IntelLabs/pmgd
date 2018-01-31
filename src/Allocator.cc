@@ -33,7 +33,7 @@
 #include "exception.h"
 #include "Allocator.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 constexpr unsigned Allocator::fixed_sizes[];
 

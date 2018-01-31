@@ -28,16 +28,16 @@
  */
 
 /*
- * Java wrapper for Jarvis PropertyPredicate
+ * Java wrapper for PMGD PropertyPredicate
  *
  * This object is created from Java and passed in
- * to Jarvis functions that use it. It does not persist in Jarvis.
+ * to PMGD functions that use it. It does not persist in PMGD.
  */
 
-package jarvis;
+package pmgd;
 
 public class PropertyPredicate {
-    private long jarvisHandle;
+    private long pmgdHandle;
 
     public enum Op { DontCare, Eq, Ne, Gt, Ge, Lt, Le,
                      GeLe, GeLt, GtLe, GtLt };

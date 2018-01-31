@@ -34,10 +34,10 @@
 #include <vector>
 #include <string.h>
 #include <stdio.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 struct IndexSpecification {
     Graph::IndexType _index_type;

@@ -33,7 +33,7 @@
 #include "property.h"
 #include "iterator.h"
 
-namespace Jarvis {
+namespace PMGD {
     class Graph;
     typedef uint64_t EdgeID;
 

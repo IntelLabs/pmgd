@@ -37,10 +37,10 @@
 #include "iterator.h"
 #include "callback.h"
 
-namespace Jarvis {
+namespace PMGD {
     class Allocator;
 
-    // This class creates/maintains all indexes in Jarvis.
+    // This class creates/maintains all indexes in PMGD.
     // It supports the create_index() API visible to the user
     // There are separate indices for nodes and edges.
     // Each node/edge index first goes through its tag (default = 0

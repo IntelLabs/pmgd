@@ -33,10 +33,10 @@
 #include <set>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 using namespace std;
 
 long long num_nodes = 0;
@@ -50,7 +50,7 @@ static void dump_properties(PropertyIterator);
 
 int main(int argc, char *argv[])
 {
-    const char ID_STR[] = "jarvis.loader.id";
+    const char ID_STR[] = "pmgd.loader.id";
     int fail = 0;
 
     try {
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         db.create_index(Graph::EdgeIndex, 0, "name", PropertyType::String);
         tx.commit();
 
-        load(db, "allgoodcases.jarvis", true, node_added, edge_added);
+        load(db, "allgoodcases.pmgd", true, node_added, edge_added);
         printf("count of nodes: %lld, count of edges: %lld\n", num_nodes, num_edges);
 
         // Remove properties (long strings) to empty chunk lists
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
                 PropertyPredicate pp("id1", PropertyPredicate::Eq, remove_vals[i]);
                 for (NodeIterator ni = db.get_nodes("tag1", pp); ni; ni.next()) {
                     printf("Removing node with id1=%d, node id: %lld\n",
-                        remove_vals[i], ni->get_property("jarvis.loader.id").int_value());
+                        remove_vals[i], ni->get_property("pmgd.loader.id").int_value());
                     db.remove(*ni);
                 }
             }

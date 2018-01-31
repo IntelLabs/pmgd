@@ -39,7 +39,7 @@
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
-import jarvis.*;
+import pmgd.*;
 
 public class DateTest {
     public static void main(String[] args)
@@ -81,7 +81,7 @@ public class DateTest {
             System.out.println("Count: " + count);
             if (count == expected)
                 System.out.println("Test passed");
-        } catch (jarvis.Exception e) {
+        } catch (pmgd.Exception e) {
             e.print();
             return;
         }

@@ -32,7 +32,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace Jarvis {
+namespace PMGD {
     // some useful constants
     static const size_t SIZE_1TB = 0x10000000000;
     static const size_t SIZE_1GB = 0x40000000;

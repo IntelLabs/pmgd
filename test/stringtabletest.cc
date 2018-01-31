@@ -38,13 +38,13 @@
 #include <set>
 #include <chrono>
 #include <ctime>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
 using namespace std;
 using namespace std::chrono;
 
-using namespace Jarvis;
+using namespace PMGD;
 
 int main()
 {

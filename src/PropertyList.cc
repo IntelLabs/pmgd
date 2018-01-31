@@ -40,9 +40,9 @@
 #include "GraphImpl.h"
 #include "arch.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-namespace Jarvis {
+namespace PMGD {
 #pragma pack(push, 1)
     struct PropertyRef::BlobRef {
         void *value;
@@ -79,7 +79,7 @@ namespace Jarvis {
         PropertyRef *ref()
         {
             if (_vacant_flag)
-                throw JarvisException(VacantIterator);
+                throw PMGDException(VacantIterator);
             return &_cur;
         }
 
@@ -174,7 +174,7 @@ Property PropertyList::get_property(StringID id) const
     PropertyRef p;
 
     if (!find_property(id, p))
-        throw JarvisException(PropertyNotFound, id.name());
+        throw PMGDException(PropertyNotFound, id.name());
 
     return p.get_value();
 }
@@ -658,7 +658,7 @@ void PropertyRef::set_value(const Property &p, unsigned size,
 void PropertyRef::set_blob(const void *value, std::size_t size,
                            Allocator &allocator)
 {
-    if (size > UINT_MAX) throw JarvisException(NotImplemented);
+    if (size > UINT_MAX) throw PMGDException(NotImplemented);
     void *p = allocator.alloc(size);
     memcpy(p, value, size);
     TransactionImpl::flush_range(p, size);
@@ -677,7 +677,7 @@ bool PropertyRef::bool_value() const
         case p_boolean_false: return false;
         case p_boolean_true: return true;
     }
-    throw JarvisException(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 long long PropertyRef::int_value() const
@@ -690,7 +690,7 @@ long long PropertyRef::int_value() const
             v >>= CHAR_BIT * shift;
         return v;
     }
-    throw JarvisException(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 std::string PropertyRef::string_value() const
@@ -708,21 +708,21 @@ std::string PropertyRef::string_value() const
             return std::string((const char *)v->value, v->size);
         }
     }
-    throw JarvisException(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 double PropertyRef::float_value() const
 {
     if (ptype() == p_float)
         return *(double *)val();
-    throw JarvisException(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 Time PropertyRef::time_value() const
 {
     if (ptype() == p_time)
         return *(Time *)val();
-    throw JarvisException(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 Property::blob_t PropertyRef::blob_value() const
@@ -731,7 +731,7 @@ Property::blob_t PropertyRef::blob_value() const
         BlobRef *v = (BlobRef *)val();
         return Property::blob_t(v->value, v->size);
     }
-    throw JarvisException(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 

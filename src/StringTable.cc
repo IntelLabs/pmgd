@@ -34,7 +34,7 @@
 #include "exception.h"
 #include "arch.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 StringTable::StringTable(const uint64_t region_addr, size_t len,
                          unsigned stringid_len, bool create)
@@ -90,7 +90,7 @@ bool StringTable::get(const char *name, uint16_t &id, bool add)
     uint16_t hash = hash_fnv_1a(name, length);
 
     if (length > MAX_STRINGID_LEN)
-        throw JarvisException(InvalidID);
+        throw PMGDException(InvalidID);
 
     while (true) {
         uint64_t offset = hash * MAX_STRINGID_LEN;

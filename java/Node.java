@@ -28,16 +28,16 @@
  */
 
 /*
- * Corresponds to the node.h file in Jarvis.
+ * Corresponds to the node.h file in PMGD.
  */
 
-package jarvis;
+package pmgd;
 
 import java.util.Objects;
 
 public class Node {
-    private long jarvisHandle;
-    private Node(long handle) { jarvisHandle = handle; }
+    private long pmgdHandle;
+    private Node(long handle) { pmgdHandle = handle; }
 
     // Override equals method to support equal hash on nodes
     // that point to the same object in PM
@@ -45,13 +45,13 @@ public class Node {
     public boolean equals(Object other)
     {
         Node no = (Node)other;
-        return jarvisHandle == no.jarvisHandle;
+        return pmgdHandle == no.pmgdHandle;
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(jarvisHandle);
+        return Objects.hash(pmgdHandle);
     }
 
     public enum Direction { Any, Outgoing, Incoming };

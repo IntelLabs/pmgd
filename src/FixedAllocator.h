@@ -34,7 +34,7 @@
 #include "TransactionImpl.h"
 #include "AllocatorCallback.h"
 
-namespace Jarvis {
+namespace PMGD {
     /**
      * Fixed-size allocator
      *

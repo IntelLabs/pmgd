@@ -33,7 +33,7 @@
 #include "iterator.h"
 #include "node.h"
 
-namespace Jarvis {
+namespace PMGD {
     template <typename B>
     class IteratorFilter : public B::Impl_type {
     protected:
@@ -52,7 +52,7 @@ namespace Jarvis {
                     case Pass: return true;
                     case Stop: done(); return false;
                     case PassStop: _done = true; return true;
-                    default: throw JarvisException(NotImplemented);
+                    default: throw PMGDException(NotImplemented);
                 }
             }
             return false;
@@ -71,7 +71,7 @@ namespace Jarvis {
         typename B::Ref_type *ref()
         {
             if (_base_impl == NULL)
-                throw JarvisException(NullIterator);
+                throw PMGDException(NullIterator);
             return _base_impl->ref();
         }
 

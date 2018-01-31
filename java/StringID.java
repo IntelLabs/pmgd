@@ -28,10 +28,10 @@
  */
 
 /*
- * Corresponds to the stringid.h file in Jarvis.
+ * Corresponds to the stringid.h file in PMGD.
  */
 
-package jarvis;
+package pmgd;
 
 public class StringID {
     private int _id;

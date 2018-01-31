@@ -31,7 +31,7 @@
 #include <iostream>
 #include <string.h>
 
-#include "jarvis.h"
+#include "pmgd.h"
 #include "../src/ChunkList.h"
 #include "../src/os.h"
 #include "../src/Allocator.h"
@@ -39,10 +39,10 @@
 #include "../src/KeyValuePair.h"
 #include "../src/GraphConfig.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 using namespace std;
 
-namespace Jarvis {
+namespace PMGD {
     class ChunkListTest {
     public:
         void print(ChunkList<int,int,64> *list)

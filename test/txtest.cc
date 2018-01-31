@@ -28,14 +28,14 @@
  */
 
 /*
- * Test for Jarvis transactions
+ * Test for PMGD transactions
  */
 
 #include <stdio.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 static void dump(Graph &db);
 static void dump_no_tx(Graph &db);

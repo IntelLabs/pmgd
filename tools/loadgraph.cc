@@ -33,10 +33,10 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 void print_usage(FILE *stream);
 
@@ -132,9 +132,9 @@ void print_usage(FILE *stream)
     fprintf(stream, "  -h  print this help and exit\n");
     fprintf(stream, "  -t  input is tab-separated integers (default)\n");
     fprintf(stream, "  -g  input is GraphSON\n");
-    fprintf(stream, "  -j  input is the Jarvis Lake graph text format\n");
+    fprintf(stream, "  -j  input is the PMGD graph text format\n");
     fprintf(stream, "  -a  load graph into a non-empty graphstore\n");
-    fprintf(stream, "  -i  add jarvis.loader.id property to every node\n");
+    fprintf(stream, "  -i  add pmgd.loader.id property to every node\n");
     fprintf(stream, "\n");
     fprintf(stream, "GRAPHSTORE must already exist (e.g., using mkgraph) and is expected to\n");
     fprintf(stream, "be empty.  The loader will fail with a warning if GRAPHSTORE is not\n");
@@ -144,7 +144,7 @@ void print_usage(FILE *stream)
     fprintf(stream, "The graph loader reads its input from FILE, if provided, or standard\n");
     fprintf(stream, "input otherwise.  The graph loader supports three input formats:\n");
     fprintf(stream, "tab-separated integers (file extension 'tsv'), GraphSON (file extension\n");
-    fprintf(stream, "'gson'), or the Jarvis Lake graph text format (file extension 'jtxt').\n");
+    fprintf(stream, "'gson'), or the PMGD graph text format (file extension 'jtxt').\n");
     fprintf(stream, "\n");
     fprintf(stream, "The graph loader attempts to infer the input format based on the\n");
     fprintf(stream, "extension of the supplied file.  Failing that it relies on the user\n");
@@ -153,8 +153,8 @@ void print_usage(FILE *stream)
     fprintf(stream, "\n");
     fprintf(stream, "If the input file is tab-separated integers or GraphSON or if the -i option\n");
     fprintf(stream, "is specified, loadgraph adds a property to each node with the identifier\n");
-    fprintf(stream, "'jarvis.loader.id' and it creates an index on that property. If the input\n");
-    fprintf(stream, "file is Jarvis Lake format and the -i option is not specifed, loadgraph\n");
+    fprintf(stream, "'pmgd.loader.id' and it creates an index on that property. If the input\n");
+    fprintf(stream, "file is PMGD format and the -i option is not specifed, loadgraph\n");
     fprintf(stream, "keeps the loader id and index in memory instead of storing it in the graph.\n");
     fprintf(stream, "This can save space in the graph when the loader id is not needed later.\n");
 }

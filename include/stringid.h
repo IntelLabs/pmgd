@@ -32,7 +32,7 @@
 #include <string>
 #include <stdint.h>
 
-namespace Jarvis {
+namespace PMGD {
     class StringID {
         uint16_t _id;
         static bool get(const char *, StringID &stringid, bool add);

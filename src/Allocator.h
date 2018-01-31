@@ -38,7 +38,7 @@
 #include "TransactionImpl.h"
 #include "compiler.h"
 
-namespace Jarvis {
+namespace PMGD {
     /**
      *  Generic allocator
      *

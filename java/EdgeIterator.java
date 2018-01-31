@@ -28,14 +28,14 @@
  */
 
 /*
- * Java wrapper for Jarvis EdgeIterator
+ * Java wrapper for PMGD EdgeIterator
  */
 
-package jarvis;
+package pmgd;
 
 public class EdgeIterator {
-    private long jarvisHandle;
-    private EdgeIterator(long handle) { jarvisHandle = handle; }
+    private long pmgdHandle;
+    private EdgeIterator(long handle) { pmgdHandle = handle; }
 
     public native boolean done(); // replaces operator bool()
     public native void next();

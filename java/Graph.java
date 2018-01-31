@@ -28,17 +28,17 @@
  */
 
 /*
- * Corresponds to the graph.h file in Jarvis.
+ * Corresponds to the graph.h file in PMGD.
  *
  * Notes:
  *  - Omitting Config options at the moment
  *  - need to implement index
  */
 
-package jarvis;
+package pmgd;
 
 public class Graph {
-    private long jarvisHandle;
+    private long pmgdHandle;
 
     public enum OpenOptions { ReadWrite, Create, ReadOnly };
     public enum IndexType { NodeIndex, EdgeIndex };
@@ -140,6 +140,6 @@ public class Graph {
     public native void dispose();
 
     static {
-        System.loadLibrary("jarvis-jni");
+        System.loadLibrary("pmgd-jni");
     }
 }

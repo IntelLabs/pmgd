@@ -34,7 +34,7 @@
 #include "exception.h"
 #include "arch.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 TransactionManager::TransactionManager(
             uint64_t transaction_table_addr, uint64_t transaction_table_size,
@@ -53,7 +53,7 @@ TransactionManager::TransactionManager(
     // However, the computation of _max_transactions and _max_extents
     // and the following requirement will not need to change.
     if (_max_extents < _max_transactions)
-        throw JarvisException(InvalidConfig);
+        throw PMGDException(InvalidConfig);
 
     if (create) {
         reset_table();
@@ -103,7 +103,7 @@ void TransactionManager::recover(bool read_only)
 
         if (tx_id & TransactionHdr::ACTIVE) {
             if (read_only)
-                throw JarvisException(ReadOnly);
+                throw PMGDException(ReadOnly);
 
             tx_id &= ~TransactionHdr::ACTIVE;
             TransactionHandle handle(tx_id, i, hdr->jbegin, hdr->jend);
@@ -145,7 +145,7 @@ TransactionHandle TransactionManager::alloc_transaction(bool read_only)
             return TransactionHandle(tx_id, i, tx_jbegin(i), tx_jend(i));
         }
     }
-    throw JarvisException(OutOfTransactions);
+    throw PMGDException(OutOfTransactions);
 }
 
 void TransactionManager::free_transaction(const TransactionHandle &handle)

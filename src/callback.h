@@ -32,7 +32,7 @@
 #include <functional>
 #include <algorithm>
 
-namespace Jarvis {
+namespace PMGD {
     template <typename O, typename P> class CallbackList {
         typedef std::function<void(P)> F;
         struct Callback { O key; F f; };

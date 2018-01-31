@@ -33,7 +33,7 @@
 #include "List.h"
 #include "AvlTreeIndex.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 IndexManager::IndexList *IndexManager::add_tag_index(
                                            Graph::IndexType index_type,
@@ -94,9 +94,9 @@ void IndexManager::create_index(Graph::IndexType index_type, StringID tag,
                 *prop_idx = new (allocator.alloc(sizeof(StringValueIndex))) StringValueIndex(ptype);
                 break;
             case PropertyType::NoValue:
-                throw JarvisException(NotImplemented);
+                throw PMGDException(NotImplemented);
             case PropertyType::Blob:
-                throw JarvisException(PropertyTypeInvalid);
+                throw PMGDException(PropertyTypeInvalid);
         }
     }
 }

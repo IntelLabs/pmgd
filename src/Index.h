@@ -32,7 +32,7 @@
 #include "iterator.h"
 #include "graph.h"
 
-namespace Jarvis {
+namespace PMGD {
     class Node;
     class Allocator;
     class GraphImpl;
@@ -55,7 +55,7 @@ namespace Jarvis {
         void add(const Property &p, void *n, GraphImpl *db);
         void remove(const Property &p, void *n, GraphImpl *db);
         void check_type(const PropertyType ptype)
-            { if (_ptype != ptype) throw JarvisException(PropertyTypeMismatch); }
+            { if (_ptype != ptype) throw PMGDException(PropertyTypeMismatch); }
 
         // Use a locale pointer here so that callers, where locale is
         // irrelevant, do not need to acquire it from the GraphImpl object.

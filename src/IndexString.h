@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include <locale>
 
-namespace Jarvis {
+namespace PMGD {
     // String representation for Index nodes
     // This version of the class will always create a PM copy.
     class IndexString {

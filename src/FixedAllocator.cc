@@ -41,7 +41,7 @@
 #include "FixedAllocator.h"
 #include "TransactionImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 #define ALLOC_OFFSET(sz) ((sizeof(RegionHeader) + (sz) - 1) & ~((sz) - 1))
 FixedAllocator::FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
@@ -100,7 +100,7 @@ void *FixedAllocator::alloc()
     else
     {
         if (((uint64_t)_pm->tail_ptr + _pm->size) > _pm->max_addr)
-            throw JarvisException(BadAlloc);
+            throw PMGDException(BadAlloc);
 
         /* Free list exhausted, we are growing our pool of objects by one */
         p = _pm->tail_ptr;
@@ -130,7 +130,7 @@ void *FixedAllocator::alloc(unsigned num)
     // as usual. It could cause allocator to refuse contiguous requests
     // even if there was enough space. But keeping it simple for now.
     if (((uint64_t)_pm->tail_ptr + num * _pm->size) > _pm->max_addr)
-        throw JarvisException(BadAlloc);
+        throw PMGDException(BadAlloc);
 
     p = _pm->tail_ptr;
     tx->write(&_pm->tail_ptr, (uint64_t *)((uint64_t)_pm->tail_ptr + num * _pm->size));

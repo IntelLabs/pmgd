@@ -39,7 +39,7 @@
 // Also, from some simple tests, it does seem like balancing starts
 // to become less frequent as the tree grows larger.
 
-namespace Jarvis {
+namespace PMGD {
     class TransactionImpl;
     template<typename K, typename V> class AvlTree {
     protected:

@@ -28,18 +28,18 @@
  */
 
 /*
- * Java wrapper for Jarvis NodeIterator
+ * Java wrapper for PMGD NodeIterator
  */
 
-package jarvis;
+package pmgd;
 
 public class NodeIterator {
-    private long jarvisHandle;
+    private long pmgdHandle;
     private Node current;
 
     private NodeIterator(long handle, Node origin)
     {
-        jarvisHandle = handle;
+        pmgdHandle = handle;
         current = origin;
     }
 
@@ -62,7 +62,7 @@ public class NodeIterator {
 
     // Wrap the functions for node, so we can act on the current
     // Because java doesn't allow overriding operators, we cannot
-    //  just let them slide through to jarvis.
+    //  just let them slide through to pmgd.
     public Node get_current() throws Exception
     {
         null_check("get_current");

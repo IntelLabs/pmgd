@@ -36,12 +36,12 @@
 #include <time.h>
 #include <string.h>
 #include <iostream>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-static const char ID_STR[] = "jarvis.loader.id";
+static const char ID_STR[] = "pmgd.loader.id";
 static StringID ID;
 
 /* To support reading from a file or standard input */
@@ -61,7 +61,7 @@ public:
                 int err = errno;
                 delete _stream;
                 _stream = NULL;
-                throw JarvisException(LoaderOpenFailed, err, filename);
+                throw PMGDException(LoaderOpenFailed, err, filename);
             }
         }
     }
@@ -78,7 +78,7 @@ public:
     }
 };
 
-static Node *get_node(Graph &db, long long id, Jarvis::StringID tag,
+static Node *get_node(Graph &db, long long id, PMGD::StringID tag,
                         std::function<void(Node &)> node_func)
 {
     NodeIterator nodes = db.get_nodes(0,
@@ -94,7 +94,7 @@ static Node *get_node(Graph &db, long long id, Jarvis::StringID tag,
 
 static Edge *get_edge(Graph &db, long long id,
         long long src_id, long long dst_id,
-        Jarvis::StringID tag,
+        PMGD::StringID tag,
         std::function<void(Node &)> node_func,
         std::function<void(Edge &)> edge_func)
 {
@@ -241,20 +241,20 @@ static void load_gson(Graph &db,
 {
     Json::Value jgraph = root["graph"];
     if (jgraph.type() != Json::objectValue) {
-        throw JarvisException(LoaderFormatError, "graph not found");
+        throw PMGDException(LoaderFormatError, "graph not found");
     }
 
     Json::Value jmode = jgraph["mode"];
     if (jmode.type() != Json::stringValue) {
-        throw JarvisException(LoaderFormatError, "mode not found");
+        throw PMGDException(LoaderFormatError, "mode not found");
     }
     if (jmode.asString().compare("NORMAL")) {
-        throw JarvisException(LoaderFormatError, "mode not supported");
+        throw PMGDException(LoaderFormatError, "mode not supported");
     }
 
     Json::Value jnodes = jgraph["vertices"];
     if (jnodes.type() != Json::arrayValue) {
-        throw JarvisException(LoaderFormatError, "nodes not found");
+        throw PMGDException(LoaderFormatError, "nodes not found");
     }
     Transaction tx(db, Transaction::ReadWrite);
     ID = StringID(ID_STR);
@@ -265,7 +265,7 @@ static void load_gson(Graph &db,
 
     Json::Value jedges = jgraph["edges"];
     if (jedges.type() != Json::arrayValue) {
-        throw JarvisException(LoaderFormatError, "edges not found");
+        throw PMGDException(LoaderFormatError, "edges not found");
     }
     load_edges(db, jedges, node_func, edge_func);
 }
@@ -281,7 +281,7 @@ void load_gson(Graph &db, const char *filename,
     Json::Reader reader(features);
 
     if (!reader.parse(input, root))
-        throw JarvisException(LoaderParseError);
+        throw PMGDException(LoaderParseError);
 
     input.close();
 

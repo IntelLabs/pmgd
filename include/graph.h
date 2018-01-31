@@ -34,7 +34,7 @@
 #include "iterator.h"
 #include "property.h"
 
-namespace Jarvis {
+namespace PMGD {
     class GraphImpl;
     class Node;
     class Edge;

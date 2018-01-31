@@ -28,16 +28,16 @@
  */
 
 #include <string.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "NodeIterator.h"
 #include "common.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-void Java_jarvis_NodeIterator_next(JNIEnv *env, jobject ni)
+void Java_pmgd_NodeIterator_next(JNIEnv *env, jobject ni)
 {
     try {
-        NodeIterator &j_ni = *(getJarvisHandle<NodeIterator>(env, ni));
+        NodeIterator &j_ni = *(getPMGDHandle<NodeIterator>(env, ni));
 
         j_ni.next();
 
@@ -46,7 +46,7 @@ void Java_jarvis_NodeIterator_next(JNIEnv *env, jobject ni)
         static jfieldID fid = 0;
         if (fid == 0) {
             jclass cls = env->GetObjectClass(ni);
-            fid = env->GetFieldID(cls, "current", "Ljarvis/Node;");
+            fid = env->GetFieldID(cls, "current", "Lpmgd/Node;");
         }
         env->SetObjectField(ni, fid, cur);
     }
@@ -55,9 +55,9 @@ void Java_jarvis_NodeIterator_next(JNIEnv *env, jobject ni)
     }
 }
 
-void Java_jarvis_NodeIterator_dispose(JNIEnv *env, jobject ni)
+void Java_pmgd_NodeIterator_dispose(JNIEnv *env, jobject ni)
 {
-    NodeIterator *j_ni = getJarvisHandle<NodeIterator>(env, ni);
+    NodeIterator *j_ni = getPMGDHandle<NodeIterator>(env, ni);
     delete j_ni;
-    setJarvisHandle(env, ni, static_cast<NodeIterator *>(NULL));
+    setPMGDHandle(env, ni, static_cast<NodeIterator *>(NULL));
 }

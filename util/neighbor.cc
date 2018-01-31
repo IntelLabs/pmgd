@@ -33,10 +33,10 @@
 #include <unordered_set>
 #include <queue>
 #include <deque>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "neighbor.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 static Node *get_neighbor(const Node &n, const EdgeRef &e, const Direction &dir)
 {
@@ -88,7 +88,7 @@ class NeighborIteratorImpl : public NodeIteratorImplIntf
 
 public:
     NeighborIteratorImpl(const Node &node,
-                         const Jarvis::Direction dir,
+                         const PMGD::Direction dir,
                          const StringID tag,
                          const bool unique)
         : _node(node), _dir(dir), _unique(unique), _ei(node.get_edges(dir, tag))
@@ -274,13 +274,13 @@ public:
 };
 
 NeighborhoodIterator::NeighborhoodIterator(NeighborhoodIteratorImpl *i)
-    : Jarvis::NodeIterator(i) { }
+    : PMGD::NodeIterator(i) { }
 
 NeighborhoodIterator::NeighborhoodIterator(NeighborhoodIterator &i)
-    : Jarvis::NodeIterator(i) { }
+    : PMGD::NodeIterator(i) { }
 
 NeighborhoodIterator::NeighborhoodIterator(NeighborhoodIterator &&i)
-    : Jarvis::NodeIterator(i) { }
+    : PMGD::NodeIterator(i) { }
 
 int NeighborhoodIterator::distance() const {
     NeighborhoodIteratorImpl *impl = static_cast<NeighborhoodIteratorImpl *>(_impl);

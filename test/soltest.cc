@@ -28,15 +28,15 @@
  */
 
 /*
- * This test checks Jarvis signs of life.
+ * This test checks PMGD signs of life.
  */
 
 #include <stdio.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include "jarvis.h"
+#include "pmgd.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 std::string property_text(const Property &p)
 {
@@ -48,7 +48,7 @@ std::string property_text(const Property &p)
         case PropertyType::Float: return std::to_string(p.float_value());
         case PropertyType::Time: return "<time value>";
         case PropertyType::Blob: return "<blob value>";
-        default: throw JarvisException(PropertyTypeInvalid);
+        default: throw PMGDException(PropertyTypeInvalid);
     }
 }
 

@@ -42,7 +42,7 @@
 #pragma warning(disable : 4200)
 #endif
 
-namespace Jarvis {
+namespace PMGD {
     enum Disposition { DontPass, Pass, Stop, PassStop, Prune, PassPrune };
 
     template <typename R> class IteratorImplIntf {
@@ -91,14 +91,14 @@ namespace Jarvis {
         Ref_type &operator*() const
         {
             if (!_impl)
-                throw JarvisException(NullIterator);
+                throw PMGDException(NullIterator);
             return *_impl->ref();
         }
 
         Ref_type *operator->() const
         {
             if (!_impl)
-                throw JarvisException(NullIterator);
+                throw PMGDException(NullIterator);
             return _impl->ref();
         }
 
@@ -114,7 +114,7 @@ namespace Jarvis {
     };
 };
 
-namespace Jarvis {
+namespace PMGD {
     class Node;
     typedef Node NodeRef;
     typedef IteratorImplIntf<NodeRef> NodeIteratorImplIntf;
@@ -135,7 +135,7 @@ namespace Jarvis {
     };
 };
 
-namespace Jarvis {
+namespace PMGD {
     class Node;
     class Edge;
     class Allocator;
@@ -282,7 +282,7 @@ namespace Jarvis {
     };
 };
 
-namespace Jarvis {
+namespace PMGD {
     class Edge;
     class EdgeRef;
 

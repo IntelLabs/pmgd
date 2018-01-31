@@ -32,10 +32,10 @@
  */
 
 #include <stdio.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "../util/util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 int main(int argc, char **argv)
 {

@@ -34,7 +34,7 @@
 #include "Allocator.h"
 #include "TransactionImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 Allocator::VariableAllocator::VariableAllocator(Allocator &allocator,
                      RegionHeader *hdr, bool create)

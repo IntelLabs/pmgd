@@ -19,10 +19,10 @@ SRC_OBJS := $(patsubst %.cc,%.o, $(SRC_SRCS))
 OBJS += $(SRC_OBJS)
 
 # Add to the global list of libraries (with path to final destination).
-LIBS += lib/jarvis.lib lib/libjarvis.so
+LIBS += lib/pmgd.lib lib/libpmgd.so
 
 # Add the library to the global list of files to clean.
-CLEANFILES += src/jarvis.lib src/libjarvis.so
+CLEANFILES += src/pmgd.lib src/libpmgd.so
 
 # Add lib to the global list of directories to clean.
 CLEANDIRS += lib
@@ -36,28 +36,28 @@ src/%.o: src/%.cc $(MAKEFILE_LIST)
 	$(CC) $(SRC_CFLAGS) -o $@ -c $<
 
 # A rule to build the library.
-src/jarvis.lib: $(SRC_OBJS)
+src/pmgd.lib: $(SRC_OBJS)
 	$(call print,AR,$@)
 	$(AR) cr $@ $(SRC_OBJS)
 
 # How to install said library.
-lib/jarvis.lib: src/jarvis.lib
+lib/pmgd.lib: src/pmgd.lib
 	$(call print,INSTALL,$@)
 	$(INSTALL) -D $< $@
 
 # A rule to build a shared library.
-src/libjarvis.so: $(SRC_OBJS)
+src/libpmgd.so: $(SRC_OBJS)
 	$(call print,LD,$@)
 	$(CC) -shared -o $@ $(SRC_OBJS)
 
 # How to install said library.
-lib/libjarvis.so: src/libjarvis.so
+lib/libpmgd.so: src/libpmgd.so
 	$(call print,INSTALL,$@)
 	$(INSTALL) -D $< $@
 
 # What to build in this directory.
 PHONY += src
-src: src/jarvis.lib src/libjarvis.so
+src: src/pmgd.lib src/libpmgd.so
 
 # Don't attempt to rebuild this Makeconf.
 src/Makeconf : ;

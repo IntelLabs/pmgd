@@ -33,10 +33,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "../util/util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 static int count(EdgeIterator &&);
 

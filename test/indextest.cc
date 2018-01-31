@@ -28,15 +28,15 @@
  */
 
 /*
- * This test checks Jarvis Index (eq iterators)
+ * This test checks PMGD Index (eq iterators)
  */
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 int main(int argc, char **argv)
 {

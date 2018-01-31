@@ -28,7 +28,7 @@
  */
 
 /*
- * Corresponds to the filter.h file in Jarvis.
+ * Corresponds to the filter.h file in PMGD.
  */
 
 public class Filter {

@@ -4,12 +4,12 @@ rem Definitions
 
 setlocal
 set PATH=%PATH%;%ICPP_COMPILER15%\bin\intel64\;C:\GnuWin32\bin\;"C:\Program Files (x86)\Git\bin"
-git rev-list --max-count=1 --abbrev-commit HEAD > %TEMP%\jarvis-commit-id.txt
-set /p COMMITID=<%TEMP%\jarvis-commit-id.txt
-git status -s -uno >> %TEMP%\jarvis-commit-id.txt
-sed "N;s/\n/ /" %TEMP%\jarvis-commit-id.txt > %TEMP%\jarvis-commit-id-plus.txt
-set /p COMMITIDPLUS=<%TEMP%\jarvis-commit-id-plus.txt
-del %TEMP%\jarvis-commit-id.txt %TEMP%\jarvis-commit-id-plus.txt
+git rev-list --max-count=1 --abbrev-commit HEAD > %TEMP%\pmgd-commit-id.txt
+set /p COMMITID=<%TEMP%\pmgd-commit-id.txt
+git status -s -uno >> %TEMP%\pmgd-commit-id.txt
+sed "N;s/\n/ /" %TEMP%\pmgd-commit-id.txt > %TEMP%\pmgd-commit-id-plus.txt
+set /p COMMITIDPLUS=<%TEMP%\pmgd-commit-id-plus.txt
+del %TEMP%\pmgd-commit-id.txt %TEMP%\pmgd-commit-id-plus.txt
 
 rem One-time code generation
 rem There is not unistd.h on Windows platform, remove the line
@@ -45,7 +45,7 @@ icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\Allocator.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Fosrc\ /c src\windows.cc
 
-lib /nologo /OUT:src\jarvis.lib /MACHINE:X64 src\graph.obj ^
+lib /nologo /OUT:src\pmgd.lib /MACHINE:X64 src\graph.obj ^
     src\GraphConfig.obj src\node.obj src\edge.obj src\property.obj ^
     src\stringid.obj src\StringTable.obj src\PropertyList.obj ^
     src\TransactionManager.obj src\transaction.obj src\Index.obj ^
@@ -59,14 +59,14 @@ icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\text.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\neighbor.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\dump_debug.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\dump_jarvis.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\dump_pmgd.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\dump_gexf.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\load_tsv.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /Od /GR- /EHsc /MDd /Z7 /Zl /DNOPM /Foutil\ /c util\load_gson.cc /I3rdparty
 
-lib /nologo /OUT:util\jarvis-util.lib /MACHINE:X64 ^
+lib /nologo /OUT:util\pmgd-util.lib /MACHINE:X64 ^
     util\exception.obj util\text.obj util\neighbor.obj ^
-    util\dump_debug.obj util\dump_jarvis.obj util\dump_gexf.obj ^
+    util\dump_debug.obj util\dump_pmgd.obj util\dump_gexf.obj ^
     util\load_tsv.obj util\load_gson.obj ^
     util\loader.obj util\scanner.obj
 
@@ -81,8 +81,8 @@ lib /nologo /OUT:3rdparty\jsoncpp\jsoncpp.lib /MACHINE:X64 ^
     3rdparty\jsoncpp\jsoncpp.obj
 
 mkdir lib\Debug
-copy src\jarvis.lib       lib\Debug
-copy util\jarvis-util.lib lib\Debug
+copy src\pmgd.lib       lib\Debug
+copy util\pmgd-util.lib lib\Debug
 mkdir 3rdparty\lib\Debug
 copy 3rdparty\strptime\strptime.lib 3rdparty\lib\Debug
 copy 3rdparty\jsoncpp\jsoncpp.lib   3rdparty\lib\Debug
@@ -109,7 +109,7 @@ icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\Allocator.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Fosrc\ /c src\windows.cc
 
-lib /nologo /OUT:src\jarvis.lib /MACHINE:X64 src\graph.obj ^
+lib /nologo /OUT:src\pmgd.lib /MACHINE:X64 src\graph.obj ^
     src\GraphConfig.obj src\node.obj src\edge.obj src\property.obj ^
     src\stringid.obj src\StringTable.obj src\PropertyList.obj ^
     src\TransactionManager.obj src\transaction.obj src\Index.obj ^
@@ -123,14 +123,14 @@ icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\text.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\neighbor.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\dump_debug.cc
-icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\dump_jarvis.cc
+icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\dump_pmgd.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\dump_gexf.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\load_tsv.cc
 icl /nologo /TP /Qstd=c++11 /Iinclude /O3 /GR- /EHsc /MD  /Z7 /Zl /DNOPM /Foutil\ /c util\load_gson.cc /I3rdparty
 
-lib /nologo /OUT:util\jarvis-util.lib /MACHINE:X64 ^
+lib /nologo /OUT:util\pmgd-util.lib /MACHINE:X64 ^
     util\exception.obj util\text.obj util\neighbor.obj ^
-    util\dump_debug.obj util\dump_jarvis.obj util\dump_gexf.obj ^
+    util\dump_debug.obj util\dump_pmgd.obj util\dump_gexf.obj ^
     util\load_tsv.obj util\load_gson.obj ^
     util\loader.obj util\scanner.obj
 
@@ -145,8 +145,8 @@ lib /nologo /OUT:3rdparty\jsoncpp\jsoncpp.lib /MACHINE:X64 ^
     3rdparty\jsoncpp\jsoncpp.obj
 
 mkdir lib\Release
-copy src\jarvis.lib       lib\Release
-copy util\jarvis-util.lib lib\Release
+copy src\pmgd.lib       lib\Release
+copy util\pmgd-util.lib lib\Release
 mkdir 3rdparty\lib\Release
 copy 3rdparty\strptime\strptime.lib 3rdparty\lib\Release
 copy 3rdparty\jsoncpp\jsoncpp.lib   3rdparty\lib\Release
@@ -156,8 +156,8 @@ rem Build the tools with the Visual Studio compiler
 cl /nologo /W2 /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotools\mkgraph.obj /c tools\mkgraph.cc
 link /nologo tools\mkgraph.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     /OUT:tools\mkgraph.exe /MACHINE:X64 ^
     /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
@@ -166,8 +166,8 @@ link /nologo tools\mkgraph.obj ^
 cl /nologo /W2 /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotools\dumpgraph.obj /c tools\dumpgraph.cc
 link /nologo tools\dumpgraph.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     3rdparty\lib\Release\strptime.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
@@ -180,8 +180,8 @@ link /nologo tools\dumpgraph.obj ^
 cl /nologo /W2 /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotools\loadgraph.obj /c tools\loadgraph.cc
 link /nologo tools\loadgraph.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     3rdparty\lib\Release\strptime.lib ^
     3rdparty\lib\Release\jsoncpp.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
@@ -197,7 +197,7 @@ copy tools\*.exe bin
 
 rem Archive
 
-zip -q jarvis-%COMMITID%-bin.zip ^
+zip -q pmgd-%COMMITID%-bin.zip ^
     include\*.h util\util.h util\neighbor.h ^
     lib\Release\*.lib bin\*.exe ^
     3rdparty\lib\Release\*.lib 3rdparty\jsoncpp\LICENSE ^
@@ -205,8 +205,8 @@ zip -q jarvis-%COMMITID%-bin.zip ^
     3rdparty\jsoncpp\json\* ^
     3rdparty\strptime\README 3rdparty\strptime\COPYING ^
     3rdparty\strptime\ORIGIN 3rdparty\strptime\strptime.c
-zip -q jarvis-%COMMITID%-dbg.zip lib\Debug\*.lib 3rdparty\lib\Debug\*.lib
-zip -q jarvis-%COMMITID%-src.zip src\*.h src\*.cc ^
+zip -q pmgd-%COMMITID%-dbg.zip lib\Debug\*.lib 3rdparty\lib\Debug\*.lib
+zip -q pmgd-%COMMITID%-src.zip src\*.h src\*.cc ^
     util\loader.h util\*.l util\*.y util\dump.cc util\exception.cc ^
     util\load_gson.cc util\load_tsv.cc util\text.cc tools\*.cc
 
@@ -215,7 +215,7 @@ rem Build some representative tests
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\soltest.obj /c test\soltest.cc
 link /nologo test\soltest.obj ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     /OUT:test\soltest.exe /MACHINE:X64 ^
     /LIBPATH:"%VSINSTALLDIR%\VC\lib\amd64" ^
@@ -224,8 +224,8 @@ link /nologo test\soltest.obj ^
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\propertytest.obj /c test\propertytest.cc
 link /nologo test\propertytest.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     3rdparty\lib\Release\strptime.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
@@ -238,8 +238,8 @@ link /nologo test\propertytest.obj ^
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\removetest.obj /c test\removetest.cc
 link /nologo test\removetest.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     3rdparty\lib\Release\strptime.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
@@ -252,8 +252,8 @@ link /nologo test\removetest.obj ^
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\propertypredicatetest.obj /c test\propertypredicatetest.cc
 link /nologo test\propertypredicatetest.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     3rdparty\lib\Release\strptime.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
@@ -266,8 +266,8 @@ link /nologo test\propertypredicatetest.obj ^
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\indextest.obj /c test\indextest.cc
 link /nologo test\indextest.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     3rdparty\lib\Release\strptime.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
@@ -280,8 +280,8 @@ link /nologo test\indextest.obj ^
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\indexrangetest.obj /c test\indexrangetest.cc
 link /nologo test\indexrangetest.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     3rdparty\lib\Release\strptime.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
@@ -294,8 +294,8 @@ link /nologo test\indexrangetest.obj ^
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\reverseindexrangetest.obj /c test\reverseindexrangetest.cc
 link /nologo test\reverseindexrangetest.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     3rdparty\lib\Release\strptime.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
@@ -308,8 +308,8 @@ link /nologo test\reverseindexrangetest.obj ^
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\emailindextest.obj /c test\emailindextest.cc
 link /nologo test\emailindextest.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     3rdparty\lib\Release\strptime.lib ^
     3rdparty\lib\Release\jsoncpp.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
@@ -323,8 +323,8 @@ link /nologo test\emailindextest.obj ^
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\load_tsv_test.obj /c test\load_tsv_test.cc
 link /nologo test\load_tsv_test.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\svml_dispmd.lib" ^
@@ -336,8 +336,8 @@ link /nologo test\load_tsv_test.obj ^
 cl /nologo /TP /Iinclude /Iutil /O2 /GR- /EHsc /MD ^
     /Fotest\neighbortest.obj /c test\neighbortest.cc
 link /nologo test\neighbortest.obj ^
-    lib\Release\jarvis-util.lib ^
-    lib\Release\jarvis.lib ^
+    lib\Release\pmgd-util.lib ^
+    lib\Release\pmgd.lib ^
     3rdparty\lib\Release\strptime.lib ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libirc.lib" ^
     "%ICPP_COMPILER15%\compiler\lib\intel64\libmmd.lib" ^

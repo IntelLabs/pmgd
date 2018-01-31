@@ -28,16 +28,16 @@
  */
 
 /*
- * This test checks Jarvis Allocator Stats
+ * This test checks PMGD Allocator Stats
  */
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 #include <iostream>
 
-using namespace Jarvis;
+using namespace PMGD;
 
 void printStats(std::vector<Graph::AllocatorStats> st)
 {
@@ -193,7 +193,7 @@ int main(int argc, char **argv)
 
         tx_stats.commit();
     }
-    catch (Jarvis::Exception e) {
+    catch (PMGD::Exception e) {
         print_exception(e);
         return 1;
     }

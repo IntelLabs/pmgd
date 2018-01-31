@@ -28,10 +28,10 @@
  */
 
 /*
- * Corresponds to the exception.h file in Jarvis.
+ * Corresponds to the exception.h file in PMGD.
  */
 
-package jarvis;
+package pmgd;
 
 public class Exception extends java.lang.Exception
 {

@@ -37,7 +37,7 @@
 #include "GraphImpl.h"
 #include "arch.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 // Transaction definitions
 Transaction::Transaction(Graph &db, int options)
@@ -87,7 +87,7 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
     // nested dependent transactions not supported yet
     if (_per_thread_tx != NULL && read_write
             && !(_tx_type & Transaction::Independent))
-        throw JarvisException(NotImplemented);
+        throw PMGDException(NotImplemented);
 
     _tx_handle = db->transaction_manager().alloc_transaction(!read_write);
 
@@ -130,9 +130,9 @@ void TransactionImpl::log(void *ptr, size_t len)
 
     if (_jcur + je_entries >= jend()) {
         if (_tx_type & Transaction::ReadWrite)
-            throw JarvisException(OutOfJournalSpace);
+            throw PMGDException(OutOfJournalSpace);
         else
-            throw JarvisException(ReadOnly);
+            throw PMGDException(ReadOnly);
     }
 
     for (unsigned i = 0; i < je_entries - 1; i++) {

@@ -34,7 +34,7 @@
 #include "Allocator.h"
 #include "TransactionImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 using namespace std;
 
 Allocator::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,

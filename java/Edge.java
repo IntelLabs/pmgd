@@ -28,14 +28,14 @@
  */
 
 /*
- * Corresponds to the edge.h file in Jarvis.
+ * Corresponds to the edge.h file in PMGD.
  */
 
-package jarvis;
+package pmgd;
 
 public class Edge {
-    private long jarvisHandle;
-    private Edge(long handle) { jarvisHandle = handle; }
+    private long pmgdHandle;
+    private Edge(long handle) { pmgdHandle = handle; }
 
     public native StringID get_tag() throws Exception;
     public native Node get_source() throws Exception;

@@ -32,7 +32,7 @@
 #include <string>
 #include <stdint.h>
 
-namespace Jarvis {
+namespace PMGD {
     class StringTable {
         // Non-PM counters
         const unsigned MAX_STRINGID_LEN;

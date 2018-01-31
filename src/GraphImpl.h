@@ -38,7 +38,7 @@
 #include "os.h"
 #include "StringTable.h"
 
-namespace Jarvis {
+namespace PMGD {
     struct RegionInfo;
 
     class GraphImpl {
@@ -101,7 +101,7 @@ namespace Jarvis {
         void check_read_write()
         {
             if (_init.read_only)
-                throw JarvisException(ReadOnly);
+                throw PMGDException(ReadOnly);
         }
     };
 };

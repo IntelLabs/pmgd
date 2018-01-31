@@ -33,10 +33,10 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 void print_usage(FILE *stream);
 
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
         switch (type) {
             case DEBUG: dump_debug(db); break;
             case GEXF: dump_gexf(db); break;
-            case JTXT: dump_jarvis(db); break;
+            case JTXT: dump_pmgd(db); break;
         }
     }
     catch (Exception e) {
@@ -111,5 +111,5 @@ void print_usage(FILE *stream)
     fprintf(stream, "  -r  open the graph read/write, so recovery can be performed if necessary\n");
     fprintf(stream, "  -d  debug mode: list all nodes then all edges (default)\n");
     fprintf(stream, "  -x  dump in the GEXF file format\n");
-    fprintf(stream, "  -j  dump in the Jarvis Lake graph text format\n");
+    fprintf(stream, "  -j  dump in the PMGD graph text format\n");
 }

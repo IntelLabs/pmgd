@@ -28,17 +28,17 @@
  */
 
 /*
- * This test checks Jarvis get_neighbors search iterator
+ * This test checks PMGD get_neighbors search iterator
  */
 
 #include <stdio.h>
 #include <vector>
 #include <algorithm>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 #include "neighbor.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 int main(int argc, char **argv)
 {

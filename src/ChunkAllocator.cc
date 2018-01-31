@@ -34,7 +34,7 @@
 #include "Allocator.h"
 #include "TransactionImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 void *Allocator::ChunkAllocator::alloc(size_t sz)
 {

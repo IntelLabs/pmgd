@@ -31,14 +31,14 @@
 #include <iostream>
 #include <string.h>
 
-#include "jarvis.h"
+#include "pmgd.h"
 #include "../src/List.h"
 #include "../src/os.h"
 #include "../src/Allocator.h"
 #include "../src/GraphConfig.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 using namespace std;
 
 int main()

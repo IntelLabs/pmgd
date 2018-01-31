@@ -33,7 +33,7 @@
 #include "List.h"
 #include "IndexString.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 // hinge-->new_root-->its left and right children
 // The return value of this function gets assigned to
@@ -305,7 +305,7 @@ size_t AvlTree<K,V>::treenode_size(TreeNode *node)
     return sizeof(*node);
 }
 
-namespace Jarvis {
+namespace PMGD {
     // Specialization for the IndexString case
     template <>
     size_t AvlTree<IndexString, List<void *> >::treenode_size(TreeNode *node)

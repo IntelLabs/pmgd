@@ -38,7 +38,7 @@
 #include "edge.h"
 #include "KeyValuePair.h"
 
-namespace Jarvis {
+namespace PMGD {
     // This class sits in PM. No DRAM image. So create a pointer
     // and typecast
     class EdgeIndex {

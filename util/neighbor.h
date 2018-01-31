@@ -30,7 +30,7 @@
 #pragma once
 
 #include <vector>
-#include "jarvis.h"
+#include "pmgd.h"
 
 /**
  * These functions return an iterator over neighbors of the
@@ -56,19 +56,19 @@
 
 struct EdgeConstraint
 {
-    Jarvis::Direction dir;
-    Jarvis::StringID tag;
+    PMGD::Direction dir;
+    PMGD::StringID tag;
 };
 
 struct JointNeighborConstraint
 {
     EdgeConstraint edge_constraint;
-    const Jarvis::Node &node;
+    const PMGD::Node &node;
 };
 
 class NeighborhoodIteratorImpl;
 
-class NeighborhoodIterator : public Jarvis::NodeIterator
+class NeighborhoodIterator : public PMGD::NodeIterator
 {
 public:
     explicit NeighborhoodIterator(NeighborhoodIteratorImpl *i);
@@ -79,64 +79,64 @@ public:
 };
 
 
-extern Jarvis::NodeIterator get_neighbors
-    (const Jarvis::Node &node,
-     Jarvis::Direction dir = Jarvis::Any,
-     Jarvis::StringID tag = 0,
+extern PMGD::NodeIterator get_neighbors
+    (const PMGD::Node &node,
+     PMGD::Direction dir = PMGD::Any,
+     PMGD::StringID tag = 0,
      bool unique = true);
 
-extern Jarvis::NodeIterator get_joint_neighbors
+extern PMGD::NodeIterator get_joint_neighbors
     (const std::vector<JointNeighborConstraint> &constraints,
      bool unique = true);
 
 extern NeighborhoodIterator get_neighborhood
-    (const Jarvis::Node &node,
+    (const PMGD::Node &node,
      const std::vector<EdgeConstraint> &constraints,
      bool bfs);
 
-extern Jarvis::NodeIterator get_nhop_neighbors
-    (const Jarvis::Node &node,
+extern PMGD::NodeIterator get_nhop_neighbors
+    (const PMGD::Node &node,
      const std::vector<EdgeConstraint> &constraints);
 
 
-inline Jarvis::NodeIterator get_neighbors
-    (const Jarvis::Node &node,
+inline PMGD::NodeIterator get_neighbors
+    (const PMGD::Node &node,
      EdgeConstraint constraint,
      bool unique = true)
 {
     return get_neighbors(node, constraint.dir, constraint.tag, unique);
 }
 
-inline Jarvis::NodeIterator get_neighbors(const Jarvis::Node &node, bool unique)
+inline PMGD::NodeIterator get_neighbors(const PMGD::Node &node, bool unique)
 {
-    return get_neighbors(node, Jarvis::Any, 0, unique);
+    return get_neighbors(node, PMGD::Any, 0, unique);
 }
 
-inline Jarvis::NodeIterator get_neighbors
-    (const Jarvis::Node &node, Jarvis::Direction dir, bool unique)
+inline PMGD::NodeIterator get_neighbors
+    (const PMGD::Node &node, PMGD::Direction dir, bool unique)
 {
     return get_neighbors(node, dir, 0, unique);
 }
 
-inline Jarvis::NodeIterator get_neighbors
-    (const Jarvis::Node &node, Jarvis::StringID tag, bool unique = true)
+inline PMGD::NodeIterator get_neighbors
+    (const PMGD::Node &node, PMGD::StringID tag, bool unique = true)
 {
-    return get_neighbors(node, Jarvis::Any, tag, unique);
+    return get_neighbors(node, PMGD::Any, tag, unique);
 }
 
 
 inline NeighborhoodIterator get_neighborhood
-    (const Jarvis::Node &node, int max_hops,
+    (const PMGD::Node &node, int max_hops,
      bool bfs)
 {
     typedef std::vector<EdgeConstraint> V;
-    EdgeConstraint constraint{Jarvis::Any, 0};
+    EdgeConstraint constraint{PMGD::Any, 0};
     return get_neighborhood(node, V(max_hops, constraint), bfs);
 }
 
 inline NeighborhoodIterator get_neighborhood
-    (const Jarvis::Node &node, int max_hops,
-     Jarvis::Direction dir,
+    (const PMGD::Node &node, int max_hops,
+     PMGD::Direction dir,
      bool bfs)
 {
     typedef std::vector<EdgeConstraint> V;
@@ -145,18 +145,18 @@ inline NeighborhoodIterator get_neighborhood
 }
 
 inline NeighborhoodIterator get_neighborhood
-    (const Jarvis::Node &node, int max_hops,
-     Jarvis::StringID tag,
+    (const PMGD::Node &node, int max_hops,
+     PMGD::StringID tag,
      bool bfs)
 {
     typedef std::vector<EdgeConstraint> V;
-    EdgeConstraint constraint{Jarvis::Any, tag};
+    EdgeConstraint constraint{PMGD::Any, tag};
     return get_neighborhood(node, V(max_hops, constraint), bfs);
 }
 
 inline NeighborhoodIterator get_neighborhood
-    (const Jarvis::Node &node, int max_hops,
-     Jarvis::Direction dir, Jarvis::StringID tag,
+    (const PMGD::Node &node, int max_hops,
+     PMGD::Direction dir, PMGD::StringID tag,
      bool bfs)
 {
     typedef std::vector<EdgeConstraint> V;
@@ -165,7 +165,7 @@ inline NeighborhoodIterator get_neighborhood
 }
 
 inline NeighborhoodIterator get_neighborhood
-    (const Jarvis::Node &node, int max_hops,
+    (const PMGD::Node &node, int max_hops,
      EdgeConstraint constraint,
      bool bfs)
 {
@@ -174,43 +174,43 @@ inline NeighborhoodIterator get_neighborhood
 }
 
 
-inline Jarvis::NodeIterator get_nhop_neighbors
-    (const Jarvis::Node &node, int hops)
+inline PMGD::NodeIterator get_nhop_neighbors
+    (const PMGD::Node &node, int hops)
 {
     typedef std::vector<EdgeConstraint> V;
-    EdgeConstraint constraint{Jarvis::Any, 0};
+    EdgeConstraint constraint{PMGD::Any, 0};
     return get_nhop_neighbors(node, V(hops, constraint));
 }
 
-inline Jarvis::NodeIterator get_nhop_neighbors
-    (const Jarvis::Node &node, int hops,
-     Jarvis::Direction dir)
+inline PMGD::NodeIterator get_nhop_neighbors
+    (const PMGD::Node &node, int hops,
+     PMGD::Direction dir)
 {
     typedef std::vector<EdgeConstraint> V;
     EdgeConstraint constraint{dir, 0};
     return get_nhop_neighbors(node, V(hops, constraint));
 }
 
-inline Jarvis::NodeIterator get_nhop_neighbors
-    (const Jarvis::Node &node, int hops,
-     Jarvis::StringID tag)
+inline PMGD::NodeIterator get_nhop_neighbors
+    (const PMGD::Node &node, int hops,
+     PMGD::StringID tag)
 {
     typedef std::vector<EdgeConstraint> V;
-    EdgeConstraint constraint{Jarvis::Any, tag};
+    EdgeConstraint constraint{PMGD::Any, tag};
     return get_nhop_neighbors(node, V(hops, constraint));
 }
 
-inline Jarvis::NodeIterator get_nhop_neighbors
-    (const Jarvis::Node &node, int hops,
-     Jarvis::Direction dir, Jarvis::StringID tag)
+inline PMGD::NodeIterator get_nhop_neighbors
+    (const PMGD::Node &node, int hops,
+     PMGD::Direction dir, PMGD::StringID tag)
 {
     typedef std::vector<EdgeConstraint> V;
     EdgeConstraint constraint{dir, tag};
     return get_nhop_neighbors(node, V(hops, constraint));
 }
 
-inline Jarvis::NodeIterator get_nhop_neighbors
-    (const Jarvis::Node &node, int hops,
+inline PMGD::NodeIterator get_nhop_neighbors
+    (const PMGD::Node &node, int hops,
      EdgeConstraint constraint)
 {
     typedef std::vector<EdgeConstraint> V;

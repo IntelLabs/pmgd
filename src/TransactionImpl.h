@@ -39,7 +39,7 @@
 #include "callback.h"
 #include "compiler.h"
 
-namespace Jarvis {
+namespace PMGD {
     class GraphImpl;
 
     class TransactionImpl {
@@ -83,7 +83,7 @@ namespace Jarvis {
             void check_read_write()
             {
                 if (!(_tx_type & Transaction::ReadWrite))
-                    throw JarvisException(ReadOnly);
+                    throw PMGDException(ReadOnly);
             }
 
             void register_commit_callback(void *key, std::function<void(TransactionImpl *)> f)
@@ -140,7 +140,7 @@ namespace Jarvis {
             static inline TransactionImpl *get_tx()
             {
                 if (_per_thread_tx == NULL)
-                    throw JarvisException(NoTransaction);
+                    throw PMGDException(NoTransaction);
                 return _per_thread_tx;
             }
 

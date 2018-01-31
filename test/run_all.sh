@@ -78,7 +78,7 @@ tests=( alloctest avltest chunklisttest edgeindextest
         statsindextest statsallocatortest
         soltest stringtabletest txtest removetest
         test720 test750 test767
-        load_jarvis_tests
+        load_pmgd_tests
         BindingsTest DateTest )
 
 graph_dirs=( fixedallocgraph varallocgraph avlgraph chunklistgraph edgeindexgraph
@@ -149,7 +149,7 @@ do
                 status=1
             fi
             ;;
-        load_jarvis_tests) sh load_jarvis_tests.sh || status=1;;
+        load_pmgd_tests) sh load_pmgd_tests.sh || status=1;;
         *) ${TEST_DIR}/$test n1 n2 n3 n4 || status=1;;
     esac > ${TEST_DIR}/log/${test}.log
 

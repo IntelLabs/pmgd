@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <map>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "../util/util.h"
 #include "loader.h"
 
@@ -47,15 +47,15 @@ extern int yyparse(yy_params);
 static class Current {
     bool _is_node;
     union {
-        Jarvis::Node *_node;
-        Jarvis::Edge *_edge;
+        PMGD::Node *_node;
+        PMGD::Edge *_edge;
     };
 
 public:
     Current() { }
-    Jarvis::Node *operator=(Jarvis::Node *n) { _is_node = true; _node = n; return n; }
-    void operator=(Jarvis::Edge &e) { _is_node = false; _edge = &e; }
-    void set_property(const Jarvis::StringID *id, const Jarvis::Property &p) {
+    PMGD::Node *operator=(PMGD::Node *n) { _is_node = true; _node = n; return n; }
+    void operator=(PMGD::Edge &e) { _is_node = false; _edge = &e; }
+    void set_property(const PMGD::StringID *id, const PMGD::Property &p) {
         if (_is_node)
             _node->set_property(*id, p);
         else
@@ -64,7 +64,7 @@ public:
 } current;
 
 template <typename T>
-static Jarvis::Node *get_node(yy_params &params, const T &id, Jarvis::StringID *tag);
+static PMGD::Node *get_node(yy_params &params, const T &id, PMGD::StringID *tag);
 %}
 
 /* Causes parser to generate more detailed error messages for syntax errors. */
@@ -78,18 +78,18 @@ static Jarvis::Node *get_node(yy_params &params, const T &id, Jarvis::StringID *
  * deleted at the point of use.
  * The scanner returns token types STRING and QUOTED_STRING, both of
  * type std::string, also allocated with new and deleted when used.
- * The Node type is an exception: it is a pointer to an actual Jarvis
+ * The Node type is an exception: it is a pointer to an actual PMGD
  * Node, so it doesn't need to be deleted.
  */
 %union {
     long long i;
     std::string *s;
-    Jarvis::Node *n;
-    Jarvis::StringID *id;
+    PMGD::Node *n;
+    PMGD::StringID *id;
 }
 
 %{
-extern int yyerror(Jarvis::Graph &, const char *);
+extern int yyerror(PMGD::Graph &, const char *);
 %}
 
 %token ERROR
@@ -119,8 +119,8 @@ s:        tx
         ;
 
 tx:
-          { params.tx = new Jarvis::Transaction(params.db,
-                                             Jarvis::Transaction::ReadWrite); }
+          { params.tx = new PMGD::Transaction(params.db,
+                                             PMGD::Transaction::ReadWrite); }
           node_or_edge
           { params.tx->commit(); delete params.tx; }
 
@@ -135,7 +135,7 @@ node_def:     node properties
 edge_def: node properties node properties
               ':' tag
               {
-                  Jarvis::Edge &edge = params.db.add_edge(*$1, *$3, *$6);
+                  PMGD::Edge &edge = params.db.add_edge(*$1, *$3, *$6);
                   if (params.edge_func)
                       params.edge_func(edge);
                   current = edge;
@@ -144,7 +144,7 @@ edge_def: node properties node properties
               edge_properties
         | node properties node properties
               {
-                  Jarvis::Edge &edge = params.db.add_edge(*$1, *$3, 0);
+                  PMGD::Edge &edge = params.db.add_edge(*$1, *$3, 0);
                   if (params.edge_func)
                       params.edge_func(edge);
                   current = edge;
@@ -170,10 +170,10 @@ node:     INTEGER tag
               }
         ;
 
-tag :     /* empty */ { $$ = new Jarvis::StringID(0); }
+tag :     /* empty */ { $$ = new PMGD::StringID(0); }
         | '#' STRING
               {
-                  $$ = new Jarvis::StringID($2->c_str());
+                  $$ = new PMGD::StringID($2->c_str());
                   delete $2;
               }
         ;
@@ -222,8 +222,8 @@ property:
                   unsigned long usec;
                   int hr_offset, min_offset;
                   if (!string_to_tm(*$3, &tm, &usec, &hr_offset, &min_offset))
-                      throw JarvisException(LoaderFormatError);
-                  Jarvis::Time time(&tm, usec, hr_offset, min_offset);
+                      throw PMGDException(LoaderFormatError);
+                  PMGD::Time time(&tm, usec, hr_offset, min_offset);
                   current.set_property($1, time);
                   delete $1;
                   delete $3;
@@ -243,23 +243,23 @@ property:
 
         | property_id
               {
-                  current.set_property($1, Jarvis::Property());
+                  current.set_property($1, PMGD::Property());
                   delete $1;
               }
         ;
 
 property_id: STRING
               {
-                  $$ = new Jarvis::StringID($1->c_str());
+                  $$ = new PMGD::StringID($1->c_str());
                   delete $1;
               }
         ;
 
 %%
 
-using namespace Jarvis;
+using namespace PMGD;
 
-static const char ID_STR[] = "jarvis.loader.id";
+static const char ID_STR[] = "pmgd.loader.id";
 
 class Index {
     struct IndexBase {
@@ -293,7 +293,7 @@ void load(Graph &db, const char *filename, bool use_index,
 {
     FILE *f = strcmp(filename, "-") == 0 ? stdin : fopen(filename, "r");
     if (f == NULL)
-        throw JarvisException(LoaderOpenFailed, errno, filename);
+        throw PMGDException(LoaderOpenFailed, errno, filename);
 
     load(db, f, use_index, node_func, edge_func);
 }
@@ -400,5 +400,5 @@ template <typename T> Node *Index::find(const T &id)
 
 int yyerror(yy_params, const char *err)
 {
-    throw JarvisException(LoaderParseError, err);
+    throw PMGDException(LoaderParseError, err);
 }

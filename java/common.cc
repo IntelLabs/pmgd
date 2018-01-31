@@ -28,10 +28,10 @@
  */
 
 #include <string.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "common.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 THREAD jobject java_transaction;
 
@@ -45,7 +45,7 @@ jobject new_java_node(JNIEnv *env, Node &obj)
     static jclass cls = 0;
     static jmethodID ctor = 0;
     if (ctor == 0) {
-        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Node"));
+        cls = (jclass)env->NewGlobalRef(env->FindClass("pmgd/Node"));
         ctor = env->GetMethodID(cls, "<init>", "(J)V");
         assert(ctor != 0);
     }
@@ -57,7 +57,7 @@ jobject new_java_edge(JNIEnv *env, Edge &obj)
     static jclass cls = 0;
     static jmethodID ctor = 0;
     if (ctor == 0) {
-        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Edge"));
+        cls = (jclass)env->NewGlobalRef(env->FindClass("pmgd/Edge"));
         ctor = env->GetMethodID(cls, "<init>", "(J)V");
         assert(ctor != 0);
     }
@@ -69,7 +69,7 @@ jobject new_java_property(JNIEnv *env, Property *obj)
     static jclass cls = 0;
     static jmethodID ctor = 0;
     if (ctor == 0) {
-        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Property"));
+        cls = (jclass)env->NewGlobalRef(env->FindClass("pmgd/Property"));
         ctor = env->GetMethodID(cls, "<init>", "(JZ)V");
         assert(ctor != 0);
     }
@@ -91,8 +91,8 @@ jobject java_node_iterator(JNIEnv *env, NodeIterator &&ni)
     static jclass cls = 0;
     static jmethodID ctor = 0;
     if (ctor == 0) {
-        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/NodeIterator"));
-        ctor = env->GetMethodID(cls, "<init>", "(JLjarvis/Node;)V");
+        cls = (jclass)env->NewGlobalRef(env->FindClass("pmgd/NodeIterator"));
+        ctor = env->GetMethodID(cls, "<init>", "(JLpmgd/Node;)V");
         assert(ctor != 0);
     }
 
@@ -108,7 +108,7 @@ jobject java_edge_iterator(JNIEnv *env, EdgeIterator &&ei)
     static jclass cls = 0;
     static jmethodID ctor = 0;
     if (ctor == 0) {
-        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/EdgeIterator"));
+        cls = (jclass)env->NewGlobalRef(env->FindClass("pmgd/EdgeIterator"));
         ctor = env->GetMethodID(cls, "<init>", "(J)V");
         assert(ctor != 0);
     }
@@ -125,7 +125,7 @@ jobject java_property_iterator(JNIEnv *env, PropertyIterator &&pi)
     static jclass cls = 0;
     static jmethodID ctor = 0;
     if (ctor == 0) {
-        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/PropertyIterator"));
+        cls = (jclass)env->NewGlobalRef(env->FindClass("pmgd/PropertyIterator"));
         ctor = env->GetMethodID(cls, "<init>", "(J)V");
         assert(ctor != 0);
     }
@@ -140,8 +140,8 @@ static void add_node_iterator(JNIEnv *env, jobject i)
     static jclass cls = 0;
     static jmethodID method = 0;
     if (method == 0) {
-        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Transaction"));
-        method = env->GetMethodID(cls, "add_iterator", "(Ljarvis/NodeIterator;)V");
+        cls = (jclass)env->NewGlobalRef(env->FindClass("pmgd/Transaction"));
+        method = env->GetMethodID(cls, "add_iterator", "(Lpmgd/NodeIterator;)V");
         assert(method != 0);
     }
     assert(java_transaction != 0);
@@ -153,8 +153,8 @@ static void add_edge_iterator(JNIEnv *env, jobject i)
     static jclass cls = 0;
     static jmethodID method = 0;
     if (method == 0) {
-        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Transaction"));
-        method = env->GetMethodID(cls, "add_iterator", "(Ljarvis/EdgeIterator;)V");
+        cls = (jclass)env->NewGlobalRef(env->FindClass("pmgd/Transaction"));
+        method = env->GetMethodID(cls, "add_iterator", "(Lpmgd/EdgeIterator;)V");
         assert(method != 0);
     }
     assert(java_transaction != 0);
@@ -166,8 +166,8 @@ static void add_property_iterator(JNIEnv *env, jobject i)
     static jclass cls = 0;
     static jmethodID method = 0;
     if (method == 0) {
-        cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Transaction"));
-        method = env->GetMethodID(cls, "add_iterator", "(Ljarvis/PropertyIterator;)V");
+        cls = (jclass)env->NewGlobalRef(env->FindClass("pmgd/Transaction"));
+        method = env->GetMethodID(cls, "add_iterator", "(Lpmgd/PropertyIterator;)V");
         assert(method != 0);
     }
     assert(java_transaction != 0);

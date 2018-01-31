@@ -29,12 +29,12 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-static const char ID_STR[] = "jarvis.loader.id";
+static const char ID_STR[] = "pmgd.loader.id";
 
 static Node &get_node(Graph &db, long long id,
                       std::function<void(Node &)> node_func);
@@ -45,7 +45,7 @@ void load_tsv(Graph &db, const char *filename,
 {
     FILE *f = strcmp(filename, "-") == 0 ? stdin : fopen(filename, "r");
     if (f == NULL)
-        throw JarvisException(LoaderOpenFailed, errno, filename);
+        throw PMGDException(LoaderOpenFailed, errno, filename);
 
     load_tsv(db, f, node_func, edge_func);
 }
@@ -63,7 +63,7 @@ void load_tsv(Graph &db, FILE *f,
     while (fgets(buf, sizeof buf, f) != NULL) {
         long long a, b;
         if (sscanf(buf, "%lld %lld", &a, &b) != 2)
-            throw JarvisException(LoaderParseError);
+            throw PMGDException(LoaderParseError);
         Transaction tx(db, Transaction::ReadWrite);
         Node &src = get_node(db, a, node_func);
         Node &dst = get_node(db, b, node_func);
@@ -90,5 +90,5 @@ static Node &get_node(Graph &db, long long id,
     return node;
 }
 
-void do_nothing_node(Jarvis::Node &) { }
-void do_nothing_edge(Jarvis::Edge &) { }
+void do_nothing_node(PMGD::Node &) { }
+void do_nothing_edge(PMGD::Edge &) { }

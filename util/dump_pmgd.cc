@@ -1,5 +1,5 @@
 /**
- * @file   dump_jarvis.cc
+ * @file   dump_pmgd.cc
  *
  * @section LICENSE
  *
@@ -29,24 +29,24 @@
 
 #include <stdio.h>
 #include <string>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 static void print_node(Graph &db, const Node &n, FILE *f, StringID strid);
 static void print_edge(Graph &db, const Edge &n, FILE *f, StringID strid);
 static void print_property_list(PropertyIterator p, FILE *f);
 static void print_property(const PropertyIterator &p, FILE *f);
 
-void dump_jarvis(Graph &db, FILE *f)
+void dump_pmgd(Graph &db, FILE *f)
 {
     StringID strid = 0;
     try {
         // Ensure String id is in the string table
-        strid = "jarvis.loader.id";
+        strid = "pmgd.loader.id";
     }
-    catch (Jarvis::Exception e) {
+    catch (PMGD::Exception e) {
         if (e.num != ExceptionType::ReadOnly)
             throw;
     }
@@ -132,7 +132,7 @@ static void print_property(const PropertyIterator &p, FILE *f)
         case PropertyType::Float: value = std::to_string(p->float_value()); break;
         case PropertyType::Time: value = time_to_string(p->time_value()); break;
         case PropertyType::Blob: /* TBD */ return; // break;
-        default: throw JarvisException(PropertyTypeInvalid);
+        default: throw PMGDException(PropertyTypeInvalid);
     }
     fprintf(f, " = %s", value.c_str());
 }

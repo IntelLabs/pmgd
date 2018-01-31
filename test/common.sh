@@ -33,15 +33,15 @@ find_test_dir()
 {
     CURR_DIR=`basename $PWD`
     # Search only in the restricted set
-    JARVIS_DIRS=( "test" "src" "tools" "util" "include" "lib" )
-    echo ${JARVIS_DIRS[@]} | grep ${CURR_DIR}
+    PMGD_DIRS=( "test" "src" "tools" "util" "include" "lib" )
+    echo ${PMGD_DIRS[@]} | grep ${CURR_DIR}
     if [ $? -eq 0 ]; then
         TEST_DIR=../test
     else
-        # Pick the first jarvis git folder
-        TEST_DIR=`find ~ -type d -name ".git" | grep -w jarvis | xargs -n 1 dirname 2>/dev/null | head`/test
+        # Pick the first pmgd git folder
+        TEST_DIR=`find ~ -type d -name ".git" | grep -w pmgd | xargs -n 1 dirname 2>/dev/null | head`/test
         if [ "$TEST_DIR" = "/test" ]; then
-            echo "No jarvis folder found"
+            echo "No pmgd folder found"
             TEST_DIR=$PWD
             return 2
         fi

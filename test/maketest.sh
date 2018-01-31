@@ -34,7 +34,7 @@ prog="maketest"
 usage()
 {
     echo "Usage: $prog [OPTION]..."
-    echo "Run a makefile test on the Jarvis Lake sources"
+    echo "Run a makefile test on the PMGD sources"
     echo ""
     echo "  -v=LEVEL  set verbose level (0, 1, 2)"
     echo "  -h        print this message"
@@ -50,11 +50,11 @@ for i in "$@"; do
 done
 
 cwd=`pwd`
-if echo $cwd | grep -vq jarvis; then
-    echo "$prog: Fatal: Not inside a jarvis directory" >&2
+if echo $cwd | grep -vq pmgd; then
+    echo "$prog: Fatal: Not inside a pmgd directory" >&2
     exit 1
 fi
-root=`echo $cwd | sed 's,\(.*\/jarvis\).*,\1,'`
+root=`echo $cwd | sed 's,\(.*\/pmgd\).*,\1,'`
 cd $root
 
 cleanuplist=""

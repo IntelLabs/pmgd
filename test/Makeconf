@@ -31,8 +31,8 @@ TEST_TESTS := $(patsubst %.cc,%, \
 # Add to the global list of tests.
 TESTS += $(TEST_TESTS)
 
-# The jarvis libraries against which we link.
-TEST_LIBS = lib/jarvis.lib lib/jarvis-util.lib
+# The pmgd libraries against which we link.
+TEST_LIBS = lib/pmgd.lib lib/pmgd-util.lib
 
 # Override the global defaults.
 TEST_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
@@ -53,9 +53,9 @@ test/emailindextest: test/emailindextest.o $(TEST_LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(TEST_LIBS) -ljsoncpp
 
-test/%.class: test/%.java lib/libjarvis.so lib/libjarvis-util.so lib/jarvis-jni.jar
+test/%.class: test/%.java lib/libpmgd.so lib/libpmgd-util.so lib/pmgd-jni.jar
 	$(call print,JC,$@)
-	$(JC) -cp lib/jarvis-jni.jar -d test $<
+	$(JC) -cp lib/pmgd-jni.jar -d test $<
 
 # Override the global rule for building a preprocessed file from a C++ file.
 test/%.i: test/%.cc $(MAKEFILE_LIST)

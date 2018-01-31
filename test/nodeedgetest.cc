@@ -33,10 +33,10 @@
 #include <stdio.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 // Specialized function defined here instead of util::dump. This has to
 // test the various iterator options for Node::get_edges()

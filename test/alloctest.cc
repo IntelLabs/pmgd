@@ -33,13 +33,13 @@
 
 #include <iostream>
 #include <string.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 #include "../src/Allocator.h"
 #include "../src/os.h"
 #include "exception.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 static void passfail(long id, long expected, long actual);
 static std::ostream& operator<< (std::ostream &out, Exception& e);

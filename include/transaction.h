@@ -32,7 +32,7 @@
 #include <stddef.h>
 #include "graph.h"
 
-namespace Jarvis {
+namespace PMGD {
     class TransactionImpl;
 
     class Transaction {

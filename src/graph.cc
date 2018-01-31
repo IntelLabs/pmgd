@@ -43,7 +43,7 @@
 #include "Index.h"
 #include "filter.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 static constexpr char info_name[] = "graph.jdb";
 
@@ -153,7 +153,7 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
     }
     else {
         if (info->version != GraphInfo::VERSION)
-            throw JarvisException(VersionMismatch);
+            throw PMGDException(VersionMismatch);
     }
 }
 
@@ -172,7 +172,7 @@ void GraphImpl::GraphInfo::init(const GraphConfig &config)
 
     unsigned size = config.locale_name.length() + 1;
     if (size > sizeof locale_name)
-        throw JarvisException(InvalidConfig);
+        throw PMGDException(InvalidConfig);
     memcpy(locale_name, config.locale_name.c_str(), size);
 
     TransactionImpl::flush_range(this, sizeof *this);
@@ -220,7 +220,7 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
     persistent_barrier(11);
 }
 
-namespace Jarvis {
+namespace PMGD {
     template <typename B, typename T>
     class Graph_Iterator : public B {
         const FixedAllocator &table;
@@ -336,7 +336,7 @@ template <typename B, typename T>
 void Graph_Iterator<B, T>::check_vacant()
 {
     if (table.is_free(_cur))
-        throw JarvisException(VacantIterator);
+        throw PMGDException(VacantIterator);
 }
 
 

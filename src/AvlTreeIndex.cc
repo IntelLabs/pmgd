@@ -34,9 +34,9 @@
 #include "IndexString.h"
 #include "GraphImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-namespace Jarvis {
+namespace PMGD {
     template <typename K, typename V> class AvlTreeIndex<K,V>::Compare {
         K _val;
         bool _equal;
@@ -327,7 +327,7 @@ void AvlTreeIndex<K,V>::find_node_neq_reverse(TreeNode *root, const Compare &cur
     }
 }
 
-namespace Jarvis {
+namespace PMGD {
 
 // The BASE_DECLS macro is used to avoid repeating the list of typedefs
 // and using declarations in all seven derived classes.
@@ -420,7 +420,7 @@ namespace Jarvis {
             // _vacant_flag indicates that the object referred to by the
             // iterator has been removed from the index.
             if (EXPECT_FALSE(_vacant_flag))
-                throw JarvisException(VacantIterator);
+                throw PMGDException(VacantIterator);
             return _list_it.ref();
         }
 

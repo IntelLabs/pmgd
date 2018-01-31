@@ -34,7 +34,7 @@
 #include "Allocator.h"
 #include "TransactionImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 #define ALLOC_OFFSET(bitints,sz) ((sizeof(FixedChunk) + (bitints)*4 + (sz) - 1) & ~((sz) - 1))
 

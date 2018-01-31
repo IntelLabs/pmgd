@@ -14,8 +14,8 @@ TOOLS_BINS += $(patsubst %.cc,%, $(TOOLS_SRCS))
 # Add to the global list of binary utilities.
 BINS += $(TOOLS_BINS)
 
-# The jarvis libraries against which we link.
-TOOLS_LIBS = lib/jarvis.lib lib/jarvis-util.lib
+# The pmgd libraries against which we link.
+TOOLS_LIBS = lib/pmgd.lib lib/pmgd-util.lib
 
 # Override the global defaults.
 TOOLS_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util

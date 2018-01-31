@@ -29,10 +29,10 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 void print_exception(const Exception &e, FILE *f)
 {

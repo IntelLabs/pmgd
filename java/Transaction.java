@@ -28,18 +28,18 @@
  */
 
 /*
- * Corresponds to the transactions.h file in Jarvis.
+ * Corresponds to the transactions.h file in PMGD.
  *
  * Notes:
  */
 
-package jarvis;
+package pmgd;
 
 import java.util.Collection;
 import java.util.ArrayList;
 
 public class Transaction {
-    private long jarvisHandle;
+    private long pmgdHandle;
     private Collection<NodeIterator> node_iterators = new ArrayList<NodeIterator>();
     private Collection<EdgeIterator> edge_iterators = new ArrayList<EdgeIterator>();
     private Collection<PropertyIterator> property_iterators = new ArrayList<PropertyIterator>();

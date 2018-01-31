@@ -1,4 +1,4 @@
 *.o
 *.d
-jarvis.lib
-libjarvis.so
+pmgd.lib
+libpmgd.so

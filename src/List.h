@@ -34,7 +34,7 @@
 #include "GraphImpl.h"
 #include "IndexManager.h"
 
-namespace Jarvis {
+namespace PMGD {
     template<typename T> class List;
 
     // Simple one way sorted list right now that disallows duplicates

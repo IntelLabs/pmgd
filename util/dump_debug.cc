@@ -30,10 +30,10 @@
 #include <stdio.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 static void dump_nodes(Graph &db, FILE *f);
 static void dump_edges(Graph &db, FILE *f);

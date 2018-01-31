@@ -35,7 +35,7 @@
 #include "KeyValuePair.h"
 #include "TransactionImpl.h"
 
-namespace Jarvis {
+namespace PMGD {
     // List of chunks. Size passed at creation time. The number of
     // objects of type T per chunk will obviously depend on the size
     // of this chunk - (current number of elements in the chunk + a

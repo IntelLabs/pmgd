@@ -1,4 +1,4 @@
-# @file   load_jarvis_tests.sh
+# @file   load_pmgd_tests.sh
 #
 # @section LICENSE
 #
@@ -37,18 +37,18 @@ fi
 
 TOOLS_DIR=${TEST_DIR}/../tools
 PATH=$PATH:${TOOLS_DIR}
-GRAPH=load_jarvis_graph
+GRAPH=load_pmgd_graph
 
 echo "SCRIPT_DIR=${SCRIPT_DIR}, TEST_DIR=${TEST_DIR}, GRAPH_DIR=${GRAPH_DIR}"
 status=0
 
-# Eventually use dumpgraph -j <load_jarvis_graph> to generate the ideal output
+# Eventually use dumpgraph -j <load_pmgd_graph> to generate the ideal output
 # to compare with test.out
 echo "Test all good cases."
 mkgraph ${GRAPH_DIR}/$GRAPH
-loadgraph -j ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/allgoodcases.jarvis
-dumpgraph -j  ${GRAPH_DIR}/$GRAPH > ${SCRIPT_DIR}/tmp.jarvis
-diff ${SCRIPT_DIR}/allgoodcases.jarvis ${SCRIPT_DIR}/tmp.jarvis
+loadgraph -j ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/allgoodcases.pmgd
+dumpgraph -j  ${GRAPH_DIR}/$GRAPH > ${SCRIPT_DIR}/tmp.pmgd
+diff ${SCRIPT_DIR}/allgoodcases.pmgd ${SCRIPT_DIR}/tmp.pmgd
 RET_VAL=$?
 if [ $RET_VAL == 0 ]; then
     echo "Test Passed"
@@ -56,7 +56,7 @@ else
     echo "Test Failed"
     status=1
 fi
-rm -rf ${GRAPH_DIR}/$GRAPH  ${SCRIPT_DIR}/tmp.jarvis
+rm -rf ${GRAPH_DIR}/$GRAPH  ${SCRIPT_DIR}/tmp.pmgd
 
 ## Couple more acceptable case(s)
 echo "Test node/edge properties together."
@@ -69,9 +69,9 @@ echo "21 #tag2 { id1 = 25, prop%22 = \"Hello world!\", _common = 2014-07-03T22:4
 22 #tag1 { id1 = 38 };
 21 22 : #edge2;
 EOF
-) > ${SCRIPT_DIR}/onegoodcase.jarvis
-dumpgraph -j  ${GRAPH_DIR}/$GRAPH > ${SCRIPT_DIR}/tmp.jarvis
-diff ${SCRIPT_DIR}/onegoodcase.jarvis ${SCRIPT_DIR}/tmp.jarvis
+) > ${SCRIPT_DIR}/onegoodcase.pmgd
+dumpgraph -j  ${GRAPH_DIR}/$GRAPH > ${SCRIPT_DIR}/tmp.pmgd
+diff ${SCRIPT_DIR}/onegoodcase.pmgd ${SCRIPT_DIR}/tmp.pmgd
 RET_VAL=$?
 if [ $RET_VAL == 0 ]; then
     echo "Test Passed"
@@ -79,19 +79,19 @@ else
     echo "Test Failed"
     status=1
 fi
-rm -rf ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/tmp.jarvis ${SCRIPT_DIR}/onegoodcase.jarvis
+rm -rf ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/tmp.pmgd ${SCRIPT_DIR}/onegoodcase.pmgd
 
 echo "Property names starting with digit."
 mkgraph ${GRAPH_DIR}/$GRAPH
 echo "1 #tag2 { 12id1 = 25 };" | loadgraph -j ${GRAPH_DIR}/$GRAPH
-dumpgraph -j  ${GRAPH_DIR}/$GRAPH > ${SCRIPT_DIR}/tmp.jarvis
+dumpgraph -j  ${GRAPH_DIR}/$GRAPH > ${SCRIPT_DIR}/tmp.pmgd
 # Create the expected output to match against
 (
     cat <<EOF
 1 #tag2 { 12id1 = 25 };
 EOF
-) > ${SCRIPT_DIR}/onegoodcase.jarvis
-diff ${SCRIPT_DIR}/onegoodcase.jarvis ${SCRIPT_DIR}/tmp.jarvis
+) > ${SCRIPT_DIR}/onegoodcase.pmgd
+diff ${SCRIPT_DIR}/onegoodcase.pmgd ${SCRIPT_DIR}/tmp.pmgd
 RET_VAL=$?
 if [ $RET_VAL == 0 ]; then
     echo "Test Passed"
@@ -99,12 +99,12 @@ else
     echo "Test Failed"
     status=1
 fi
-rm -rf ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/tmp.jarvis ${SCRIPT_DIR}/onegoodcase.jarvis
+rm -rf ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/tmp.pmgd ${SCRIPT_DIR}/onegoodcase.pmgd
 
 echo "Test string 'id' values."
 mkgraph ${GRAPH_DIR}/$GRAPH
 echo "u21str #tag2 { id1 = 25 } u22str1! #tag1 { id1 = 38 } : #edge2 { id = 3344 };" | loadgraph -j -i ${GRAPH_DIR}/$GRAPH
-dumpgraph -j  ${GRAPH_DIR}/$GRAPH > ${SCRIPT_DIR}/tmp.jarvis
+dumpgraph -j  ${GRAPH_DIR}/$GRAPH > ${SCRIPT_DIR}/tmp.pmgd
 # Create the expected output to match against
 (
     cat <<EOF
@@ -112,8 +112,8 @@ u21str #tag2 { id1 = 25 };
 u22str1! #tag1 { id1 = 38 };
 u21str u22str1! : #edge2 { id = 3344 };
 EOF
-) > ${SCRIPT_DIR}/onegoodcase.jarvis
-diff ${SCRIPT_DIR}/onegoodcase.jarvis ${SCRIPT_DIR}/tmp.jarvis
+) > ${SCRIPT_DIR}/onegoodcase.pmgd
+diff ${SCRIPT_DIR}/onegoodcase.pmgd ${SCRIPT_DIR}/tmp.pmgd
 RET_VAL=$?
 if [ $RET_VAL == 0 ]; then
     echo "Test Passed"
@@ -121,7 +121,7 @@ else
     echo "Test Failed"
     status=1
 fi
-rm -rf ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/tmp.jarvis ${SCRIPT_DIR}/onegoodcase.jarvis
+rm -rf ${GRAPH_DIR}/$GRAPH ${SCRIPT_DIR}/tmp.pmgd ${SCRIPT_DIR}/onegoodcase.pmgd
 
 ## Echo bad cases and check for exception
 

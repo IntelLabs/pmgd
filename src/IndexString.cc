@@ -33,7 +33,7 @@
 #include "TransactionImpl.h"
 #include "Allocator.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 IndexString::IndexString(const IndexString &istr)
 {

@@ -30,9 +30,9 @@
 #include "EdgeIndex.h"
 #include "exception.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-namespace Jarvis {
+namespace PMGD {
     void EdgeIndex::add(StringID key, Edge* edge, Node* node,
             Allocator &allocator)
     {

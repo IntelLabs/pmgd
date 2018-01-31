@@ -27,7 +27,7 @@
  *
  */
 
-import jarvis.*;
+import pmgd.*;
 
 public class BindingsTest {
     public static void main(String[] args)
@@ -331,13 +331,13 @@ public class BindingsTest {
             // Dump it out for verification purposes
             dump(db);
 
-        } catch (jarvis.Exception e) {
+        } catch (pmgd.Exception e) {
             e.print();
             return;
         }
     }
 
-    static void dump(Graph db) throws jarvis.Exception
+    static void dump(Graph db) throws pmgd.Exception
     {
         Transaction tx = new Transaction(db, false, true);
         for (NodeIterator i = db.get_nodes(); !i.done(); i.next())
@@ -347,7 +347,7 @@ public class BindingsTest {
         tx.commit();
     }
 
-    static void dump(Graph db, Node n) throws jarvis.Exception
+    static void dump(Graph db, Node n) throws pmgd.Exception
     {
         System.out.printf("Node %d%s:\n", db.get_id(n), tag_text(n.get_tag()));
         for (PropertyIterator i = n.get_properties(); !i.done(); i.next())
@@ -364,7 +364,7 @@ public class BindingsTest {
                               db.get_id(i.get_current()));
     }
 
-    static void dump(Graph db, Edge e) throws jarvis.Exception
+    static void dump(Graph db, Edge e) throws pmgd.Exception
     {
         System.out.printf("Edge %d%s: n%d -> n%d\n",
             db.get_id(e), tag_text(e.get_tag()),
@@ -384,7 +384,7 @@ public class BindingsTest {
         return "";
     }
 
-    static String property_text(Property p) throws jarvis.Exception
+    static String property_text(Property p) throws pmgd.Exception
     {
         switch (p.type()) {
             case Property.NoValue: return "no value";

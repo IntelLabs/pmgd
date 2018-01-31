@@ -28,13 +28,13 @@
  */
 
 /*
- * Corresponds to the Property.h file in Jarvis.
+ * Corresponds to the Property.h file in PMGD.
  *
  * Notes:
  *  - Omitting blob as an option for property types
  */
 
-package jarvis;
+package pmgd;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -105,8 +105,8 @@ public class Property {
         }
     }
 
-    private long jarvisHandle;
-    private Property(long handle, boolean dummy) { jarvisHandle = handle; }
+    private long pmgdHandle;
+    private Property(long handle, boolean dummy) { pmgdHandle = handle; }
 
     public Property() throws Exception
     {

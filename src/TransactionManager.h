@@ -32,7 +32,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace Jarvis {
+namespace PMGD {
     // TransactionId is never reset and should not roll-over.
     // A 63-bit transaction ID supports a billion transactions
     // per second for 100 years. The high bit is used to indicate

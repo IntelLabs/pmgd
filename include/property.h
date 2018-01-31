@@ -37,7 +37,7 @@
 #include "exception.h"
 #include "stringid.h"
 
-namespace Jarvis {
+namespace PMGD {
     enum class PropertyType { NoValue = 1, Boolean, Integer, String,
                               Float, Time, Blob };
 
@@ -139,7 +139,7 @@ namespace Jarvis {
 #undef MAX
 #endif
 
-        void check(PropertyType t) const { if (_type != t) throw JarvisException(PropertyTypeMismatch); }
+        void check(PropertyType t) const { if (_type != t) throw PMGDException(PropertyTypeMismatch); }
 
     public:
         Property() : _type(PropertyType::NoValue) { }

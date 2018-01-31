@@ -31,7 +31,7 @@
 
 #include <string>
 
-namespace Jarvis {
+namespace PMGD {
     enum ExceptionType {
         UndefinedException,
 
@@ -98,6 +98,6 @@ namespace Jarvis {
         {}
     };
 
-#define JarvisException(name, ...) \
-    Jarvis::Exception(Jarvis::name, #name, ##__VA_ARGS__, __FILE__, __LINE__)
+#define PMGDException(name, ...) \
+    PMGD::Exception(PMGD::name, #name, ##__VA_ARGS__, __FILE__, __LINE__)
 };

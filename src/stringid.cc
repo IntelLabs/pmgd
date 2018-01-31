@@ -34,7 +34,7 @@
 #include "TransactionImpl.h"
 #include "GraphImpl.h"
 
-bool Jarvis::StringID::get(const char *s, StringID &stringid, bool add)
+bool PMGD::StringID::get(const char *s, StringID &stringid, bool add)
 {
     if (s == NULL || *s == '\0') {
         stringid._id = 0;
@@ -46,7 +46,7 @@ bool Jarvis::StringID::get(const char *s, StringID &stringid, bool add)
     }
 }
 
-std::string Jarvis::StringID::name() const
+std::string PMGD::StringID::name() const
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
     return tx->get_db()->string_table().get(_id);

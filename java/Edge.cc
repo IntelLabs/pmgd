@@ -28,15 +28,15 @@
  */
 
 #include <string.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "Edge.h"
 #include "common.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-jobject Java_jarvis_Edge_get_1tag(JNIEnv *env, jobject edge)
+jobject Java_pmgd_Edge_get_1tag(JNIEnv *env, jobject edge)
 {
-    Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
+    Edge &j_edge = *(getPMGDHandle<Edge>(env, edge));
     try {
         return new_java_stringid(env, j_edge.get_tag());
     }
@@ -46,9 +46,9 @@ jobject Java_jarvis_Edge_get_1tag(JNIEnv *env, jobject edge)
     }
 }
 
-jobject Java_jarvis_Edge_get_1source(JNIEnv *env, jobject edge)
+jobject Java_pmgd_Edge_get_1source(JNIEnv *env, jobject edge)
 {
-    Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
+    Edge &j_edge = *(getPMGDHandle<Edge>(env, edge));
     try {
         return new_java_node(env, j_edge.get_source());
     }
@@ -58,9 +58,9 @@ jobject Java_jarvis_Edge_get_1source(JNIEnv *env, jobject edge)
     }
 }
 
-jobject Java_jarvis_Edge_get_1destination(JNIEnv *env, jobject edge)
+jobject Java_pmgd_Edge_get_1destination(JNIEnv *env, jobject edge)
 {
-    Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
+    Edge &j_edge = *(getPMGDHandle<Edge>(env, edge));
     try {
         return new_java_node(env, j_edge.get_destination());
     }
@@ -70,9 +70,9 @@ jobject Java_jarvis_Edge_get_1destination(JNIEnv *env, jobject edge)
     }
 }
 
-jobject Java_jarvis_Edge_get_1property(JNIEnv *env, jobject edge, jint id)
+jobject Java_pmgd_Edge_get_1property(JNIEnv *env, jobject edge, jint id)
 {
-    Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
+    Edge &j_edge = *(getPMGDHandle<Edge>(env, edge));
     try {
         Property result;
         if (j_edge.check_property(id, result))
@@ -86,9 +86,9 @@ jobject Java_jarvis_Edge_get_1property(JNIEnv *env, jobject edge, jint id)
     }
 }
 
-jobject Java_jarvis_Edge_get_1properties(JNIEnv *env, jobject edge)
+jobject Java_pmgd_Edge_get_1properties(JNIEnv *env, jobject edge)
 {
-    Edge &j_edge = *(getJarvisHandle<Edge>(env,edge));
+    Edge &j_edge = *(getPMGDHandle<Edge>(env,edge));
     try {
         return java_property_iterator(env, j_edge.get_properties());
     }
@@ -98,11 +98,11 @@ jobject Java_jarvis_Edge_get_1properties(JNIEnv *env, jobject edge)
     }
 }
 
-void Java_jarvis_Edge_set_1property
+void Java_pmgd_Edge_set_1property
     (JNIEnv *env, jobject edge, jint id, jobject prop)
 {
-    Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
-    Property &j_prop = *(getJarvisHandle<Property>(env, prop));
+    Edge &j_edge = *(getPMGDHandle<Edge>(env, edge));
+    Property &j_prop = *(getPMGDHandle<Property>(env, prop));
     try {
         j_edge.set_property(id, j_prop);
     }
@@ -111,9 +111,9 @@ void Java_jarvis_Edge_set_1property
     }
 }
 
-void Java_jarvis_Edge_remove_1property(JNIEnv *env, jobject edge, jint id)
+void Java_pmgd_Edge_remove_1property(JNIEnv *env, jobject edge, jint id)
 {
-    Edge &j_edge = *(getJarvisHandle<Edge>(env, edge));
+    Edge &j_edge = *(getPMGDHandle<Edge>(env, edge));
     try {
         j_edge.remove_property(id);
     }

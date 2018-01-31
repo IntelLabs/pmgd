@@ -28,14 +28,14 @@
  */
 
 /*
- * This test checks Jarvis property lists
+ * This test checks PMGD property lists
  */
 
 #include <stdio.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 void dump_properties(PropertyIterator);
 

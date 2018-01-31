@@ -31,10 +31,10 @@
 #include <string>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 long long num_nodes = 0;
 long long num_edges = 0;

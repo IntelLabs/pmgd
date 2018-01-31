@@ -33,13 +33,13 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-// Add an exception to the list of Jarvis exceptions.
-namespace Jarvis {
+// Add an exception to the list of PMGD exceptions.
+namespace PMGD {
     enum AppExceptionType {
         TestFailure = AppExceptionBase,
     };
@@ -64,9 +64,9 @@ void test1(Graph &db)
     StringID id3("x");
     StringID id;
     if (!StringID::lookup("x", id))
-        throw JarvisException(TestFailure);
+        throw PMGDException(TestFailure);
     if (StringID::lookup("y", id))
-        throw JarvisException(TestFailure);
+        throw PMGDException(TestFailure);
 }
 
 // Test that a read-only transaction cannot be used to modify the db.
@@ -76,11 +76,11 @@ void test2a(Graph &db)
         db.add_node(0);
     }
     catch (Exception e) {
-        if (e.num != Jarvis::ReadOnly)
+        if (e.num != PMGD::ReadOnly)
             throw e;
         return;
     }
-    throw JarvisException(TestFailure);
+    throw PMGDException(TestFailure);
 }
 
 void test2b(Graph &db)
@@ -90,11 +90,11 @@ void test2b(Graph &db)
         StringID id("y");
     }
     catch (Exception e) {
-        if (e.num != Jarvis::ReadOnly)
+        if (e.num != PMGD::ReadOnly)
             throw e;
         return;
     }
-    throw JarvisException(TestFailure);
+    throw PMGDException(TestFailure);
 }
 
 void test2(Graph &db)
@@ -116,7 +116,7 @@ void test3(Graph &db)
             throw e;
         return;
     }
-    throw JarvisException(TestFailure);
+    throw PMGDException(TestFailure);
 }
 
 
@@ -143,7 +143,7 @@ void test4c(Graph &db)
             throw e;
         return;
     }
-    throw JarvisException(TestFailure);
+    throw PMGDException(TestFailure);
 }
 
 // Test that the outer transaction is still usable.

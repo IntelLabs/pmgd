@@ -33,12 +33,12 @@
 #include <stdio.h>
 #include <assert.h>
 #include <locale>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "../src/IndexString.h"
 #include "util.h"
 
 using namespace std;
-using namespace Jarvis;
+using namespace PMGD;
 
 int main()
 {

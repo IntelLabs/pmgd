@@ -27,27 +27,27 @@
  *
  */
 
-#include "jarvis.h"
+#include "pmgd.h"
 #include "EdgeIterator.h"
 #include "common.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-void JNICALL Java_jarvis_EdgeIterator_next(JNIEnv *env, jobject ei)
+void JNICALL Java_pmgd_EdgeIterator_next(JNIEnv *env, jobject ei)
 {
-    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
+    EdgeIterator &j_ei = *(getPMGDHandle<EdgeIterator>(env, ei));
     j_ei.next();
 }
 
-jboolean JNICALL Java_jarvis_EdgeIterator_done (JNIEnv *env, jobject ei)
+jboolean JNICALL Java_pmgd_EdgeIterator_done (JNIEnv *env, jobject ei)
 {
-    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
+    EdgeIterator &j_ei = *(getPMGDHandle<EdgeIterator>(env, ei));
     return !bool(j_ei);
 }
 
-jobject JNICALL Java_jarvis_EdgeIterator_get_1current(JNIEnv *env, jobject ei)
+jobject JNICALL Java_pmgd_EdgeIterator_get_1current(JNIEnv *env, jobject ei)
 {
-    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
+    EdgeIterator &j_ei = *(getPMGDHandle<EdgeIterator>(env, ei));
 
     try {
         return new_java_edge(env, *j_ei);
@@ -59,9 +59,9 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1current(JNIEnv *env, jobject ei)
 }
 
 
-jobject JNICALL Java_jarvis_EdgeIterator_get_1tag(JNIEnv *env, jobject ei)
+jobject JNICALL Java_pmgd_EdgeIterator_get_1tag(JNIEnv *env, jobject ei)
 {
-    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
+    EdgeIterator &j_ei = *(getPMGDHandle<EdgeIterator>(env, ei));
     try {
         return new_java_stringid(env, j_ei->get_tag());
     }
@@ -72,9 +72,9 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1tag(JNIEnv *env, jobject ei)
 }
 
 
-jobject JNICALL Java_jarvis_EdgeIterator_get_1source(JNIEnv *env, jobject ei)
+jobject JNICALL Java_pmgd_EdgeIterator_get_1source(JNIEnv *env, jobject ei)
 {
-    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
+    EdgeIterator &j_ei = *(getPMGDHandle<EdgeIterator>(env, ei));
     try {
         return new_java_node(env, j_ei->get_source());
     }
@@ -84,9 +84,9 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1source(JNIEnv *env, jobject ei)
     }
 }
 
-jobject JNICALL Java_jarvis_EdgeIterator_get_1destination(JNIEnv *env, jobject ei)
+jobject JNICALL Java_pmgd_EdgeIterator_get_1destination(JNIEnv *env, jobject ei)
 {
-    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
+    EdgeIterator &j_ei = *(getPMGDHandle<EdgeIterator>(env, ei));
     try {
         return new_java_node(env, j_ei->get_destination());
     }
@@ -97,10 +97,10 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1destination(JNIEnv *env, jobject e
 }
 
 
-jobject JNICALL Java_jarvis_EdgeIterator_get_1property
+jobject JNICALL Java_pmgd_EdgeIterator_get_1property
     (JNIEnv *env, jobject ei, jint id)
 {
-    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
+    EdgeIterator &j_ei = *(getPMGDHandle<EdgeIterator>(env, ei));
     try {
         Property result;
         if (j_ei->check_property(id, result))
@@ -114,9 +114,9 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1property
     }
 }
 
-jobject JNICALL Java_jarvis_EdgeIterator_get_1properties(JNIEnv *env, jobject ei)
+jobject JNICALL Java_pmgd_EdgeIterator_get_1properties(JNIEnv *env, jobject ei)
 {
-    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
+    EdgeIterator &j_ei = *(getPMGDHandle<EdgeIterator>(env, ei));
     try {
         return java_property_iterator(env, j_ei->get_properties());
     }
@@ -126,11 +126,11 @@ jobject JNICALL Java_jarvis_EdgeIterator_get_1properties(JNIEnv *env, jobject ei
     }
 }
 
-void JNICALL Java_jarvis_EdgeIterator_set_1property
+void JNICALL Java_pmgd_EdgeIterator_set_1property
     (JNIEnv *env, jobject ei, jint id, jobject value)
 {
-    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
-    Property &j_value = *(getJarvisHandle<Property>(env, value));
+    EdgeIterator &j_ei = *(getPMGDHandle<EdgeIterator>(env, ei));
+    Property &j_value = *(getPMGDHandle<Property>(env, value));
 
     try {
         j_ei->set_property(id, j_value);
@@ -140,10 +140,10 @@ void JNICALL Java_jarvis_EdgeIterator_set_1property
     }
 }
 
-void JNICALL Java_jarvis_EdgeIterator_remove_1property
+void JNICALL Java_pmgd_EdgeIterator_remove_1property
     (JNIEnv *env, jobject ei, jint id)
 {
-    EdgeIterator &j_ei = *(getJarvisHandle<EdgeIterator>(env, ei));
+    EdgeIterator &j_ei = *(getPMGDHandle<EdgeIterator>(env, ei));
     try {
         j_ei->remove_property(id);
     }
@@ -152,9 +152,9 @@ void JNICALL Java_jarvis_EdgeIterator_remove_1property
     }
 }
 
-void JNICALL Java_jarvis_EdgeIterator_dispose(JNIEnv *env, jobject ei)
+void JNICALL Java_pmgd_EdgeIterator_dispose(JNIEnv *env, jobject ei)
 {
-    EdgeIterator *j_ei = getJarvisHandle<EdgeIterator>(env, ei);
+    EdgeIterator *j_ei = getPMGDHandle<EdgeIterator>(env, ei);
     delete j_ei;
-    setJarvisHandle(env, ei, static_cast<EdgeIterator *>(NULL));
+    setPMGDHandle(env, ei, static_cast<EdgeIterator *>(NULL));
 }

@@ -33,7 +33,7 @@
 #include "GraphImpl.h"
 #include "TransactionImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 void Edge::init(Node &src, Node &dest, StringID tag, unsigned obj_size)
 {
