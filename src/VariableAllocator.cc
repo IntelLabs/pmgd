@@ -267,39 +267,39 @@ void Allocator::VariableAllocator::free(void *addr, size_t sz)
     unsigned space = dst_chunk->free_list;
     dst_chunk->free(addr, sz);
 
-    // This was off the available list
-    if (space == 0 && dst_chunk->free_space < CHUNK_SIZE - HEADER_SIZE)
-        _free_chunks.insert(dst_chunk);
-
     if (dst_chunk->free_space == CHUNK_SIZE - HEADER_SIZE) {
         _free_chunks.erase(dst_chunk);
 
         TransactionImpl *tx = TransactionImpl::get_tx();
+
         // Need to update the implicit list
         // *** Consider doubly linked list here?
-        FreeFormChunk *temp = _hdr->start_chunk;
+        FreeFormChunk *temp = _hdr->start_chunk, *prev = NULL;
         if (temp == dst_chunk) {
-            if (_chunk_to_scan == dst_chunk)
-                _chunk_to_scan = NULL;
-            tx->log(_hdr, sizeof(RegionHeader));
-            _hdr->start_chunk = dst_chunk->next_chunk;
+            tx->write(&_hdr->start_chunk, dst_chunk->next_chunk);
         }
         else {
-            FreeFormChunk *prev = temp;
             while(temp != NULL) {
                 if (temp == dst_chunk) {
-                    if (_chunk_to_scan == dst_chunk)
-                        _chunk_to_scan = prev;
-                    tx->log(&prev->next_chunk, sizeof(prev->next_chunk));
-                    prev->next_chunk = dst_chunk->next_chunk;  // works even if only 1 chunk
+                    tx->write(&prev->next_chunk, dst_chunk->next_chunk);
                     break;
                 }
                 prev = temp;
                 temp = temp->next_chunk;
             }
         }
+
+        if (_last_chunk_scanned == dst_chunk)
+            _last_chunk_scanned = prev;
+        if (_chunk_to_scan == dst_chunk)
+            _chunk_to_scan = dst_chunk->next_chunk;
+
         _allocator.free_chunk(chunk_base);
     }
+    // This was off the available list
+    else if (space == 0)
+        _free_chunks.insert(dst_chunk);
+
 }
 
 uint64_t Allocator::VariableAllocator::reserved_bytes() const
