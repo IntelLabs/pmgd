@@ -76,8 +76,10 @@ void Allocator::clean_free_list(TransactionImpl *tx, const std::list<free_info_t
             _fixsize_allocator[alloc_idx]->free(s.addr);
         else if (_chunk_allocator.is_borderline(s.size))
             _chunk_allocator.free(s.addr, s.size);
-        else
-            _freeform_allocator.free(s.addr, s.size);
+        else {
+            _freeform_allocator.free(s.addr,
+                (s.size < VariableAllocator::MIN_ALLOC_BYTES ? VariableAllocator::MIN_ALLOC_BYTES : s.size));
+        }
     }
 }
 
