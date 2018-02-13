@@ -94,6 +94,7 @@ void *Allocator::FlexFixedAllocator::alloc()
         }
     }
 
+    // If it comes out here, no luck allocating.
     FixedAllocatorInfo *fa_info = add_new_pool();
     addr = fa_info->fa->alloc();
     fa_info->num_allocated++;
@@ -161,6 +162,8 @@ void Allocator::FlexFixedAllocator::free(void *addr)
             hdr = hdr->next_pool_hdr;
         }
         assert(hdr != NULL);
+
+        // Since we haven't actually freed anything in PM, just count 1 less
         num_allocated = FixedAllocator::num_allocated(&(hdr->fa_hdr)) - 1;
     }
 
@@ -182,6 +185,9 @@ void Allocator::FlexFixedAllocator::free(void *addr)
                 fa_next->prev = prev;
             }
         }
+
+        if (_last_hdr_scanned == hdr)
+            _last_hdr_scanned = prev;
 
         // The free_chunk function already rounds down to base.
         _allocator.free_chunk(pool_base);
