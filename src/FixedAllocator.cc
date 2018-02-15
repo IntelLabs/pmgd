@@ -154,8 +154,10 @@ void FixedAllocator::free(void *p, unsigned num)
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
 
-    if (((uint64_t)p + _pm->size * num) == (uint64_t)_pm->tail_ptr)
+    if (((uint64_t)p + _pm->size * num) == (uint64_t)_pm->tail_ptr) {
         tx->write(&_pm->tail_ptr, (uint64_t *)p);
+        tx->write(&_pm->num_allocated, _pm->num_allocated - num);
+    }
     else {
         tx->log_range(&_pm->free_ptr, &_pm->num_allocated);
         void *free_ptr = _pm->free_ptr;
