@@ -1,3 +1,32 @@
+/**
+ * @file   FlexFixedAllocator.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <stddef.h>
 #include <assert.h>
 
@@ -5,7 +34,7 @@
 #include "Allocator.h"
 #include "TransactionImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 using namespace std;
 
 Allocator::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
@@ -94,6 +123,7 @@ void *Allocator::FlexFixedAllocator::alloc()
         }
     }
 
+    // If it comes out here, no luck allocating.
     FixedAllocatorInfo *fa_info = add_new_pool();
     addr = fa_info->fa->alloc();
     fa_info->num_allocated++;
@@ -161,6 +191,8 @@ void Allocator::FlexFixedAllocator::free(void *addr)
             hdr = hdr->next_pool_hdr;
         }
         assert(hdr != NULL);
+
+        // Since we haven't actually freed anything in PM, just count 1 less
         num_allocated = FixedAllocator::num_allocated(&(hdr->fa_hdr)) - 1;
     }
 
@@ -182,6 +214,9 @@ void Allocator::FlexFixedAllocator::free(void *addr)
                 fa_next->prev = prev;
             }
         }
+
+        if (_last_hdr_scanned == hdr)
+            _last_hdr_scanned = prev;
 
         // The free_chunk function already rounds down to base.
         _allocator.free_chunk(pool_base);

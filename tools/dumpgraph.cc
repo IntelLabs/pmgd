@@ -1,13 +1,42 @@
 /**
+ * @file   dumpgraph.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
+/**
  * Dump the content of a graphstore to standard output
  */
 
 #include <string.h>
 #include <stdio.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 void print_usage(FILE *stream);
 
@@ -62,7 +91,7 @@ int main(int argc, char **argv)
         switch (type) {
             case DEBUG: dump_debug(db); break;
             case GEXF: dump_gexf(db); break;
-            case JTXT: dump_jarvis(db); break;
+            case JTXT: dump_pmgd(db); break;
         }
     }
     catch (Exception e) {
@@ -82,5 +111,5 @@ void print_usage(FILE *stream)
     fprintf(stream, "  -r  open the graph read/write, so recovery can be performed if necessary\n");
     fprintf(stream, "  -d  debug mode: list all nodes then all edges (default)\n");
     fprintf(stream, "  -x  dump in the GEXF file format\n");
-    fprintf(stream, "  -j  dump in the Jarvis Lake graph text format\n");
+    fprintf(stream, "  -j  dump in the PMGD graph text format\n");
 }

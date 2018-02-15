@@ -1,3 +1,32 @@
+/**
+ * @file   iterator.h
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #pragma once
 
 #include <stddef.h>
@@ -13,7 +42,7 @@
 #pragma warning(disable : 4200)
 #endif
 
-namespace Jarvis {
+namespace PMGD {
     enum Disposition { DontPass, Pass, Stop, PassStop, Prune, PassPrune };
 
     template <typename R> class IteratorImplIntf {
@@ -62,14 +91,14 @@ namespace Jarvis {
         Ref_type &operator*() const
         {
             if (!_impl)
-                throw Exception(NullIterator);
+                throw PMGDException(NullIterator);
             return *_impl->ref();
         }
 
         Ref_type *operator->() const
         {
             if (!_impl)
-                throw Exception(NullIterator);
+                throw PMGDException(NullIterator);
             return _impl->ref();
         }
 
@@ -85,7 +114,7 @@ namespace Jarvis {
     };
 };
 
-namespace Jarvis {
+namespace PMGD {
     class Node;
     typedef Node NodeRef;
     typedef IteratorImplIntf<NodeRef> NodeIteratorImplIntf;
@@ -106,7 +135,7 @@ namespace Jarvis {
     };
 };
 
-namespace Jarvis {
+namespace PMGD {
     class Node;
     class Edge;
     class Allocator;
@@ -253,7 +282,7 @@ namespace Jarvis {
     };
 };
 
-namespace Jarvis {
+namespace PMGD {
     class Edge;
     class EdgeRef;
 

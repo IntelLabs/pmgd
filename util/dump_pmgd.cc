@@ -1,23 +1,52 @@
+/**
+ * @file   dump_pmgd.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <stdio.h>
 #include <string>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 static void print_node(Graph &db, const Node &n, FILE *f, StringID strid);
 static void print_edge(Graph &db, const Edge &n, FILE *f, StringID strid);
 static void print_property_list(PropertyIterator p, FILE *f);
 static void print_property(const PropertyIterator &p, FILE *f);
 
-void dump_jarvis(Graph &db, FILE *f)
+void dump_pmgd(Graph &db, FILE *f)
 {
     StringID strid = 0;
     try {
         // Ensure String id is in the string table
-        strid = "jarvis.loader.id";
+        strid = "pmgd.loader.id";
     }
-    catch (Jarvis::Exception e) {
+    catch (PMGD::Exception e) {
         if (e.num != ExceptionType::ReadOnly)
             throw;
     }
@@ -103,7 +132,7 @@ static void print_property(const PropertyIterator &p, FILE *f)
         case PropertyType::Float: value = std::to_string(p->float_value()); break;
         case PropertyType::Time: value = time_to_string(p->time_value()); break;
         case PropertyType::Blob: /* TBD */ return; // break;
-        default: throw Exception(PropertyTypeInvalid);
+        default: throw PMGDException(PropertyTypeInvalid);
     }
     fprintf(f, " = %s", value.c_str());
 }

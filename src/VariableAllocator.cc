@@ -1,3 +1,32 @@
+/**
+ * @file   VariableAllocator.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <stddef.h>
 #include <assert.h>
 
@@ -5,7 +34,7 @@
 #include "Allocator.h"
 #include "TransactionImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 Allocator::VariableAllocator::VariableAllocator(Allocator &allocator,
                      RegionHeader *hdr, bool create)
@@ -267,39 +296,39 @@ void Allocator::VariableAllocator::free(void *addr, size_t sz)
     unsigned space = dst_chunk->free_list;
     dst_chunk->free(addr, sz);
 
-    // This was off the available list
-    if (space == 0 && dst_chunk->free_space < CHUNK_SIZE - HEADER_SIZE)
-        _free_chunks.insert(dst_chunk);
-
     if (dst_chunk->free_space == CHUNK_SIZE - HEADER_SIZE) {
         _free_chunks.erase(dst_chunk);
 
         TransactionImpl *tx = TransactionImpl::get_tx();
+
         // Need to update the implicit list
         // *** Consider doubly linked list here?
-        FreeFormChunk *temp = _hdr->start_chunk;
+        FreeFormChunk *temp = _hdr->start_chunk, *prev = NULL;
         if (temp == dst_chunk) {
-            if (_chunk_to_scan == dst_chunk)
-                _chunk_to_scan = NULL;
-            tx->log(_hdr, sizeof(RegionHeader));
-            _hdr->start_chunk = dst_chunk->next_chunk;
+            tx->write(&_hdr->start_chunk, dst_chunk->next_chunk);
         }
         else {
-            FreeFormChunk *prev = temp;
             while(temp != NULL) {
                 if (temp == dst_chunk) {
-                    if (_chunk_to_scan == dst_chunk)
-                        _chunk_to_scan = prev;
-                    tx->log(&prev->next_chunk, sizeof(prev->next_chunk));
-                    prev->next_chunk = dst_chunk->next_chunk;  // works even if only 1 chunk
+                    tx->write(&prev->next_chunk, dst_chunk->next_chunk);
                     break;
                 }
                 prev = temp;
                 temp = temp->next_chunk;
             }
         }
+
+        if (_last_chunk_scanned == dst_chunk)
+            _last_chunk_scanned = prev;
+        if (_chunk_to_scan == dst_chunk)
+            _chunk_to_scan = dst_chunk->next_chunk;
+
         _allocator.free_chunk(chunk_base);
     }
+    // This was off the available list
+    else if (space == 0)
+        _free_chunks.insert(dst_chunk);
+
 }
 
 uint64_t Allocator::VariableAllocator::reserved_bytes() const

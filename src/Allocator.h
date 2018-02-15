@@ -1,3 +1,32 @@
+/**
+ * @file   Allocator.h
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #pragma once
 
 #include <list>
@@ -9,7 +38,7 @@
 #include "TransactionImpl.h"
 #include "compiler.h"
 
-namespace Jarvis {
+namespace PMGD {
     /**
      *  Generic allocator
      *
@@ -190,7 +219,7 @@ namespace Jarvis {
                 // since the access allocator structure takes care of accessing
                 // the correct sized entities.
 
-                FixedChunk(unsigned obj_size, unsigned bitmap_ints);
+                FixedChunk(unsigned obj_size, unsigned bitmap_ints, unsigned max_spots);
                 void *alloc(unsigned obj_size, unsigned bitmap_ints);
                 void free(void *addr, unsigned obj_size, unsigned bitmap_ints);
             };
@@ -211,6 +240,7 @@ namespace Jarvis {
             // internal computations.
             unsigned _obj_size;
             unsigned _bitmap_ints;
+            unsigned _max_spots;   // Just store this to avoid computing repeatedly.
 
             // Store a reference to the allocator for requesting new small chunks.
             // Manage small chunks within the 2MB space, one pool at a time.

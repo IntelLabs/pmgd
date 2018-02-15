@@ -1,9 +1,38 @@
+/**
+ * @file   Property.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <string.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "Property.h"
 #include "common.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 static jclass time_cls = 0;
 static jmethodID time_ctor = 0;
@@ -20,9 +49,9 @@ static jfieldID time_tz_min_id = 0;
 static void get_time_class(JNIEnv *env);
 
 
-jint Java_jarvis_Property_type(JNIEnv *env, jobject prop)
+jint Java_pmgd_Property_type(JNIEnv *env, jobject prop)
 {
-    Property &j_prop = *(getJarvisHandle<Property>(env, prop));
+    Property &j_prop = *(getPMGDHandle<Property>(env, prop));
     try {
         PropertyType pt = j_prop.type();
         return (int)pt;
@@ -33,9 +62,9 @@ jint Java_jarvis_Property_type(JNIEnv *env, jobject prop)
     }
 }
 
-jboolean Java_jarvis_Property_bool_1value(JNIEnv *env, jobject prop)
+jboolean Java_pmgd_Property_bool_1value(JNIEnv *env, jobject prop)
 {
-    Property &j_prop = *(getJarvisHandle<Property>(env, prop));
+    Property &j_prop = *(getPMGDHandle<Property>(env, prop));
     try {
         bool j_bool = j_prop.bool_value();
         return j_bool;
@@ -46,9 +75,9 @@ jboolean Java_jarvis_Property_bool_1value(JNIEnv *env, jobject prop)
     }
 }
 
-jlong Java_jarvis_Property_int_1value(JNIEnv *env , jobject prop)
+jlong Java_pmgd_Property_int_1value(JNIEnv *env , jobject prop)
 {
-    Property &j_prop = *(getJarvisHandle<Property>(env, prop));
+    Property &j_prop = *(getPMGDHandle<Property>(env, prop));
     try {
         long j_int = j_prop.int_value();
         return j_int;
@@ -59,9 +88,9 @@ jlong Java_jarvis_Property_int_1value(JNIEnv *env , jobject prop)
     }
 }
 
-jstring Java_jarvis_Property_string_1value(JNIEnv *env, jobject prop)
+jstring Java_pmgd_Property_string_1value(JNIEnv *env, jobject prop)
 {
-    Property &j_prop = *(getJarvisHandle<Property>(env, prop));
+    Property &j_prop = *(getPMGDHandle<Property>(env, prop));
     try {
         const char* j_str = j_prop.string_value().c_str();
         return env->NewStringUTF(j_str);
@@ -72,9 +101,9 @@ jstring Java_jarvis_Property_string_1value(JNIEnv *env, jobject prop)
     }
 }
 
-jdouble Java_jarvis_Property_float_1value(JNIEnv *env, jobject prop)
+jdouble Java_pmgd_Property_float_1value(JNIEnv *env, jobject prop)
 {
-    Property &j_prop = *(getJarvisHandle<Property>(env, prop));
+    Property &j_prop = *(getPMGDHandle<Property>(env, prop));
     try {
         return j_prop.float_value();
     }
@@ -84,10 +113,10 @@ jdouble Java_jarvis_Property_float_1value(JNIEnv *env, jobject prop)
     }
 }
 
-jobject Java_jarvis_Property_time_1value(JNIEnv *env, jobject prop)
+jobject Java_pmgd_Property_time_1value(JNIEnv *env, jobject prop)
 {
     get_time_class(env);
-    Property &j_prop = *(getJarvisHandle<Property>(env, prop));
+    Property &j_prop = *(getPMGDHandle<Property>(env, prop));
     try {
         Time j_t = j_prop.time_value();
         jobject t = env->NewObject(time_cls, time_ctor);
@@ -108,69 +137,69 @@ jobject Java_jarvis_Property_time_1value(JNIEnv *env, jobject prop)
     }
 }
 
-void Java_jarvis_Property_newPropertyNative__(JNIEnv *env, jobject prop)
+void Java_pmgd_Property_newPropertyNative__(JNIEnv *env, jobject prop)
 {
     try {
         Property *j_prop = new Property();
-        setJarvisHandle(env, prop, j_prop);
+        setPMGDHandle(env, prop, j_prop);
     }
     catch (Exception e) {
         JavaThrow(env, e);
     }
 }
 
-void Java_jarvis_Property_newPropertyNative__Z(JNIEnv *env, jobject prop,
+void Java_pmgd_Property_newPropertyNative__Z(JNIEnv *env, jobject prop,
                                         jboolean v)
 {
     bool j_v = (bool)v;
     try {
         Property *j_prop = new Property(j_v);
-        setJarvisHandle(env, prop, j_prop);
+        setPMGDHandle(env, prop, j_prop);
     }
     catch (Exception e) {
         JavaThrow(env, e);
     }
 }
 
-void Java_jarvis_Property_newPropertyNative__J(JNIEnv *env, jobject prop,
+void Java_pmgd_Property_newPropertyNative__J(JNIEnv *env, jobject prop,
                                         jlong v)
 {
     long long j_v = (long long) v;
     try {
         Property *j_prop = new Property(j_v);
-        setJarvisHandle(env, prop, j_prop);
+        setPMGDHandle(env, prop, j_prop);
     }
     catch (Exception e) {
         JavaThrow(env, e);
     }
 }
 
-void Java_jarvis_Property_newPropertyNative__Ljava_lang_String_2(JNIEnv *env, jobject prop, jstring v)
+void Java_pmgd_Property_newPropertyNative__Ljava_lang_String_2(JNIEnv *env, jobject prop, jstring v)
 {
     const char *j_v = env->GetStringUTFChars(v, 0);
     try {
         Property *j_prop = new Property(j_v);
-        setJarvisHandle(env, prop, j_prop);
+        setPMGDHandle(env, prop, j_prop);
     }
     catch (Exception e) {
         JavaThrow(env, e);
     }
 }
 
-void Java_jarvis_Property_newPropertyNative__D(JNIEnv *env, jobject prop,
+void Java_pmgd_Property_newPropertyNative__D(JNIEnv *env, jobject prop,
                                         jdouble v)
 {
     double j_v = (double) v;
     try {
         Property *j_prop = new Property(j_v);
-        setJarvisHandle(env, prop, j_prop);
+        setPMGDHandle(env, prop, j_prop);
     }
     catch (Exception e) {
         JavaThrow(env, e);
     }
 }
 
-void Java_jarvis_Property_newPropertyNative__Ljarvis_Property_00024Time_2
+void Java_pmgd_Property_newPropertyNative__Lpmgd_Property_00024Time_2
     (JNIEnv *env, jobject prop, jobject time)
 {
     get_time_class(env);
@@ -187,7 +216,7 @@ void Java_jarvis_Property_newPropertyNative__Ljarvis_Property_00024Time_2
         t.tz_hour = env->GetIntField(time, time_tz_hour_id);
         t.tz_min = env->GetIntField(time, time_tz_min_id) / 15;
         Property *j_prop = new Property(t);
-        setJarvisHandle(env, prop, j_prop);
+        setPMGDHandle(env, prop, j_prop);
     }
     catch (Exception e) {
         JavaThrow(env, e);
@@ -197,7 +226,7 @@ void Java_jarvis_Property_newPropertyNative__Ljarvis_Property_00024Time_2
 static void get_time_class(JNIEnv *env)
 {
     if (time_ctor == 0) {
-        time_cls = (jclass)env->NewGlobalRef(env->FindClass("jarvis/Property$Time"));
+        time_cls = (jclass)env->NewGlobalRef(env->FindClass("pmgd/Property$Time"));
         time_ctor = env->GetMethodID(time_cls, "<init>", "()V");
         assert(time_ctor != 0);
 
@@ -213,9 +242,9 @@ static void get_time_class(JNIEnv *env)
     }
 }
 
-void Java_jarvis_Property_dispose(JNIEnv *env, jobject prop)
+void Java_pmgd_Property_dispose(JNIEnv *env, jobject prop)
 {
-    Property *j_prop = getJarvisHandle<Property>(env, prop);
+    Property *j_prop = getPMGDHandle<Property>(env, prop);
     delete j_prop;
-    setJarvisHandle(env, prop, static_cast<Property *>(NULL));
+    setPMGDHandle(env, prop, static_cast<Property *>(NULL));
 }

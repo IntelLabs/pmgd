@@ -1,3 +1,32 @@
+/**
+ * @file   graph.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <stddef.h>
 #include <string.h>
 #include "graph.h"
@@ -14,7 +43,7 @@
 #include "Index.h"
 #include "filter.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 static constexpr char info_name[] = "graph.jdb";
 
@@ -124,7 +153,7 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
     }
     else {
         if (info->version != GraphInfo::VERSION)
-            throw Exception(VersionMismatch);
+            throw PMGDException(VersionMismatch);
     }
 }
 
@@ -143,7 +172,7 @@ void GraphImpl::GraphInfo::init(const GraphConfig &config)
 
     unsigned size = config.locale_name.length() + 1;
     if (size > sizeof locale_name)
-        throw Exception(InvalidConfig);
+        throw PMGDException(InvalidConfig);
     memcpy(locale_name, config.locale_name.c_str(), size);
 
     TransactionImpl::flush_range(this, sizeof *this);
@@ -191,7 +220,7 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
     persistent_barrier(11);
 }
 
-namespace Jarvis {
+namespace PMGD {
     template <typename B, typename T>
     class Graph_Iterator : public B {
         const FixedAllocator &table;
@@ -307,7 +336,7 @@ template <typename B, typename T>
 void Graph_Iterator<B, T>::check_vacant()
 {
     if (table.is_free(_cur))
-        throw Exception(VacantIterator);
+        throw PMGDException(VacantIterator);
 }
 
 

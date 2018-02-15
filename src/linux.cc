@@ -1,3 +1,32 @@
+/**
+ * @file   linux.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <string>
 #include <unistd.h>
 #include <fcntl.h>
@@ -9,7 +38,7 @@
 #include "os.h"
 #include "exception.h"
 
-class Jarvis::os::MapRegion::OSMapRegion {
+class PMGD::os::MapRegion::OSMapRegion {
     int _fd;
 public:
     OSMapRegion(const char *db_name, const char *region_name,
@@ -20,7 +49,7 @@ public:
 };
 
 
-Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
+PMGD::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
                                  uint64_t map_addr, uint64_t map_len,
                                  bool &create, bool truncate, bool read_only)
     : _s(new OSMapRegion(db_name, region_name, map_addr, map_len,
@@ -28,12 +57,12 @@ Jarvis::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
 {
 }
 
-Jarvis::os::MapRegion::~MapRegion()
+PMGD::os::MapRegion::~MapRegion()
 {
     delete _s;
 }
 
-Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
+PMGD::os::MapRegion::OSMapRegion::OSMapRegion
     (const char *db_name, const char *region_name,
      uint64_t map_addr, uint64_t map_len,
      bool &create, bool truncate, bool read_only)
@@ -50,14 +79,14 @@ Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
     int open_flags = read_only * O_RDONLY | !read_only * O_RDWR
                      | create * O_CREAT | truncate * O_TRUNC;
     if ((_fd = open(filename.c_str(), open_flags, 0666)) < 0)
-        throw Exception(OpenFailed, errno, filename + " (open)");
+        throw PMGDException(OpenFailed, errno, filename + " (open)");
 
     // check for size before mmap'ing
     struct stat sb;
     if (fstat(_fd, &sb) < 0) {
         int err = errno;
         close(_fd);
-        throw Exception(OpenFailed, err, filename + " (fstat)");
+        throw PMGDException(OpenFailed, err, filename + " (fstat)");
     }
 
     if (sb.st_size == off_t(map_len)) {
@@ -65,17 +94,17 @@ Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
     }
     else if (sb.st_size == 0 && create) {
         if (read_only)
-            throw Exception(ReadOnly);
+            throw PMGDException(ReadOnly);
 
         if (ftruncate(_fd, map_len) < 0) {
             int err = errno;
             close(_fd);
-            throw Exception(OpenFailed, err, filename + " (ftruncate)");
+            throw PMGDException(OpenFailed, err, filename + " (ftruncate)");
         }
     }
     else {
         close(_fd);
-        throw Exception(OpenFailed, filename + " was not the expected size");
+        throw PMGDException(OpenFailed, filename + " was not the expected size");
     }
 
     if (mmap((void *)map_addr, map_len,
@@ -84,11 +113,11 @@ Jarvis::os::MapRegion::OSMapRegion::OSMapRegion
     {
         int err = errno;
         close(_fd);
-        throw Exception(OpenFailed, err, filename + " (mmap)");
+        throw PMGDException(OpenFailed, err, filename + " (mmap)");
     }
 }
 
-Jarvis::os::MapRegion::OSMapRegion::~OSMapRegion()
+PMGD::os::MapRegion::OSMapRegion::~OSMapRegion()
 {
     close(_fd);
 }
@@ -106,7 +135,7 @@ Jarvis::os::MapRegion::OSMapRegion::~OSMapRegion()
 // errors and make them appear to be an out-of-space condition.
 // It might be possible to distinguish by examining the faulting
 // address.
-Jarvis::os::SigHandler::SigHandler()
+PMGD::os::SigHandler::SigHandler()
 {
     struct sigaction sa;
     sa.sa_handler = sigbus_handler;
@@ -115,14 +144,14 @@ Jarvis::os::SigHandler::SigHandler()
     sigaction(SIGBUS, &sa, NULL);
 }
 
-void Jarvis::os::SigHandler::sigbus_handler(int)
+void PMGD::os::SigHandler::sigbus_handler(int)
 {
-    throw Exception(OutOfSpace);
+    throw PMGDException(OutOfSpace);
 }
 
-size_t Jarvis::os::get_default_region_size() { return SIZE_1TB; }
+size_t PMGD::os::get_default_region_size() { return SIZE_1TB; }
 
-size_t Jarvis::os::get_alignment(size_t size)
+size_t PMGD::os::get_alignment(size_t size)
 {
     if (size >= SIZE_1GB)
         return SIZE_1GB;

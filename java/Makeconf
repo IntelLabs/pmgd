@@ -7,18 +7,18 @@ JAVA_SRCS := $(addprefix java/, \
                          PropertyPredicate.java StringID.java)
 
 # Derived lists.
-JAVA_JOBJS := $(patsubst java/%.java,java/jarvis/%.class, $(JAVA_SRCS))
+JAVA_JOBJS := $(patsubst java/%.java,java/pmgd/%.class, $(JAVA_SRCS))
 JAVA_CSRCS := $(patsubst java/%.java,java/%.cc, $(JAVA_SRCS))
 JAVA_CHDRS := $(patsubst java/%.java,java/%.h, $(JAVA_SRCS))
 JAVA_COBJS := $(patsubst java/%.java,java/%.o, $(JAVA_SRCS))
 JAVA_COBJS += java/common.o
 
 # We must list inner classes explicitly.
-JAVA_JOBJS += java/jarvis/Graph\$$OpenOptions.class
-JAVA_JOBJS += java/jarvis/Graph\$$IndexType.class
-JAVA_JOBJS += java/jarvis/Node\$$Direction.class
-JAVA_JOBJS += java/jarvis/PropertyPredicate\$$Op.class
-JAVA_JOBJS += java/jarvis/Property\$$Time.class
+JAVA_JOBJS += java/pmgd/Graph\$$OpenOptions.class
+JAVA_JOBJS += java/pmgd/Graph\$$IndexType.class
+JAVA_JOBJS += java/pmgd/Node\$$Direction.class
+JAVA_JOBJS += java/pmgd/PropertyPredicate\$$Op.class
+JAVA_JOBJS += java/pmgd/Property\$$Time.class
 
 # Add to the global list of objects.
 OBJS += $(JAVA_COBJS)
@@ -29,14 +29,14 @@ CLEANFILES += $(JAVA_JOBJS)
 # Add the generated headers to the list of files to clean.
 CLEANFILES += $(JAVA_CHDRS)
 
-# Add the jarvis subdirectory to the list of directories to clean.
-CLEANDIRS += java/jarvis
+# Add the pmgd subdirectory to the list of directories to clean.
+CLEANDIRS += java/pmgd
 
 # Add to the global list of libraries (with path to final destination).
-LIBS += lib/libjarvis-jni.so lib/jarvis-jni.jar
+LIBS += lib/libpmgd-jni.so lib/pmgd-jni.jar
 
 # Add the library to the global list of files to clean.
-CLEANFILES += java/jarvis-jni.jar java/libjarvis-jni.so
+CLEANFILES += java/pmgd-jni.jar java/libpmgd-jni.so
 
 # Where to find some key C header files related to JNI.
 JAVA_HOME := $(shell dirname $$(dirname $$(readlink -f $$(which $(JC)))))
@@ -63,44 +63,44 @@ java/%.o: java/%.cc $(MAKEFILE_LIST)
 	$(CC) $(JAVA_CFLAGS) -o $@ -c $<
 
 # Rule for building a JNI header file for a class.
-java/%.h: java/jarvis/%.class $(MAKEFILE_LIST)
+java/%.h: java/pmgd/%.class $(MAKEFILE_LIST)
 	$(call print,JH,$@)
-	$(JH) -jni -force -cp java -o $@ jarvis.$*
+	$(JH) -jni -force -cp java -o $@ pmgd.$*
 
 # Special rule for building JNI header file Property.h to work around
 # bug in javah.
-java/Property.h: java/jarvis/Property.class $(MAKEFILE_LIST)
+java/Property.h: java/pmgd/Property.class $(MAKEFILE_LIST)
 	$(call print,JH,$@)
-	$(JH) -jni -force -cp java -o $@ jarvis.Property
-	/bin/echo -e '/Ljarvis_Property_Time/s/_Time/_00024Time/\nw' | ed java/Property.h
+	$(JH) -jni -force -cp java -o $@ pmgd.Property
+	/bin/echo -e '/Lpmgd_Property_Time/s/_Time/_00024Time/\nw' | ed java/Property.h
 
 # A rule to build a jar file.
 # There is a bug in make version 3.81 that does not handle the
 # presence of substring '\$' properly in automatic variables in some
 # circumstances, so instead of $(subst java/,,$^) we have to write
 # $(subst java/,,$(JAVA_JOBJS).
-java/jarvis-jni.jar: $(JAVA_JOBJS)
+java/pmgd-jni.jar: $(JAVA_JOBJS)
 	$(call print,JAR,$@)
 	cd java && $(JAR) cf $(subst java/,,$@) $(subst java/,,$(JAVA_JOBJS))
 
 # How to install said jar file.
-lib/jarvis-jni.jar: java/jarvis-jni.jar
+lib/pmgd-jni.jar: java/pmgd-jni.jar
 	$(call print,INSTALL,$@)
 	$(INSTALL) -D $< $@
 
 # A rule to build a shared library.
-java/libjarvis-jni.so: $(JAVA_COBJS) lib/libjarvis-util.so lib/libjarvis.so
+java/libpmgd-jni.so: $(JAVA_COBJS) lib/libpmgd-util.so lib/libpmgd.so
 	$(call print,LD,$@)
-	$(CC) -shared -o $@ $(filter %.o,$^) -L lib -ljarvis-util -ljarvis
+	$(CC) -shared -o $@ $(filter %.o,$^) -L lib -lpmgd-util -lpmgd
 
 # How to install said library.
-lib/libjarvis-jni.so: java/libjarvis-jni.so
+lib/libpmgd-jni.so: java/libpmgd-jni.so
 	$(call print,INSTALL,$@)
 	$(INSTALL) -D $< $@
 
 # What to build in this directory.
 PHONY += java
-java: java/jarvis-jni.jar java/libjarvis-jni.so
+java: java/pmgd-jni.jar java/libpmgd-jni.so
 
 # Don't attempt to rebuild this Makeconf.
 java/Makeconf : ;

@@ -1,16 +1,45 @@
 /**
+ * @file   rotest.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
+/**
  * Dump the content of a graphstore to standard output
  */
 
 #include <string.h>
 #include <stdio.h>
-#include "jarvis.h"
+#include "pmgd.h"
 #include "util.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-// Add an exception to the list of Jarvis exceptions.
-namespace Jarvis {
+// Add an exception to the list of PMGD exceptions.
+namespace PMGD {
     enum AppExceptionType {
         TestFailure = AppExceptionBase,
     };
@@ -35,9 +64,9 @@ void test1(Graph &db)
     StringID id3("x");
     StringID id;
     if (!StringID::lookup("x", id))
-        throw Exception(TestFailure);
+        throw PMGDException(TestFailure);
     if (StringID::lookup("y", id))
-        throw Exception(TestFailure);
+        throw PMGDException(TestFailure);
 }
 
 // Test that a read-only transaction cannot be used to modify the db.
@@ -47,11 +76,11 @@ void test2a(Graph &db)
         db.add_node(0);
     }
     catch (Exception e) {
-        if (e.num != Jarvis::ReadOnly)
+        if (e.num != PMGD::ReadOnly)
             throw e;
         return;
     }
-    throw Exception(TestFailure);
+    throw PMGDException(TestFailure);
 }
 
 void test2b(Graph &db)
@@ -61,11 +90,11 @@ void test2b(Graph &db)
         StringID id("y");
     }
     catch (Exception e) {
-        if (e.num != Jarvis::ReadOnly)
+        if (e.num != PMGD::ReadOnly)
             throw e;
         return;
     }
-    throw Exception(TestFailure);
+    throw PMGDException(TestFailure);
 }
 
 void test2(Graph &db)
@@ -87,7 +116,7 @@ void test3(Graph &db)
             throw e;
         return;
     }
-    throw Exception(TestFailure);
+    throw PMGDException(TestFailure);
 }
 
 
@@ -114,7 +143,7 @@ void test4c(Graph &db)
             throw e;
         return;
     }
-    throw Exception(TestFailure);
+    throw PMGDException(TestFailure);
 }
 
 // Test that the outer transaction is still usable.

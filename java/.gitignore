@@ -12,7 +12,7 @@ StringID.h
 Transaction.h
 *.o
 *.d
-jarvis/*.class
-jarvis-jni.jar
-libjarvis-jni.so
+pmgd/*.class
+pmgd-jni.jar
+libpmgd-jni.so
 .built

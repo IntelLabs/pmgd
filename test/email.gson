@@ -1,3 +1,32 @@
+/**
+ * @file   email.gson
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 {
 	"graph": {
 		"mode":"NORMAL",
@@ -221,7 +250,7 @@
 			{
 				"_id": 63,
 				"MessageId": "<E1WsCfa-0007Lf-F4@srl-dev3>",
-				"Subject": "Jarvis Performance Regression Report 06-04",
+				"Subject": "PMGD Performance Regression Report 06-04",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -292,7 +321,7 @@
 			{
 				"_id": 71,
 				"MessageId": "<8C6DCFAC80AAF149AF059028349BE7BF27A95AC9@ORSMSX113.amr.corp.intel.com>",
-				"Subject": "Jarvis Lake ",
+				"Subject": "PMGD ",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -305,7 +334,7 @@
 			{
 				"_id": 73,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B710F50@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: Jarvis Lake ",
+				"Subject": "RE: PMGD ",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": true,
@@ -318,7 +347,7 @@
 			{
 				"_id": 74,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B71105B@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: Jarvis Lake ",
+				"Subject": "RE: PMGD ",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -331,7 +360,7 @@
 			{
 				"_id": 75,
 				"Size": 451468,
-				"Filename": "Jarvis Lake v0.34 staff.pdf",
+				"Filename": "PMGD v0.34 staff.pdf",
 				"Filepath": "",
 				"Filesize": 447758,
 				"Created": "Thu Jun 05 14:08:14 PDT 2014",
@@ -340,7 +369,7 @@
 			{
 				"_id": 76,
 				"MessageId": "<8C6DCFAC80AAF149AF059028349BE7BF27A96661@ORSMSX113.amr.corp.intel.com>",
-				"Subject": "RE: Jarvis Lake ",
+				"Subject": "RE: PMGD ",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -366,7 +395,7 @@
 			{
 				"_id": 79,
 				"MessageId": "<201406052358.s55NwIUP030412@plxv1142.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. 57a6c1130c26f01dd1b27c2847c7aa69f7a84f8c",
+				"Subject": "[SCM] pmgd branch master updated. 57a6c1130c26f01dd1b27c2847c7aa69f7a84f8c",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -379,7 +408,7 @@
 			{
 				"_id": 82,
 				"MessageId": "<201406060008.s5608HGa005654@plxv1142.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. 4dfd5a762f4d746fa0206511b298393ae6d42004",
+				"Subject": "[SCM] pmgd branch master updated. 4dfd5a762f4d746fa0206511b298393ae6d42004",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -418,7 +447,7 @@
 			{
 				"_id": 87,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B7114F0@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "O-build: O notation to build Jarvis such that all output files go to \"dir\"",
+				"Subject": "O-build: O notation to build PMGD such that all output files go to \"dir\"",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -431,7 +460,7 @@
 			{
 				"_id": 89,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B7115F4@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "Jarvis Lake v0.38",
+				"Subject": "PMGD v0.38",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -446,7 +475,7 @@
 			{
 				"_id": 91,
 				"Size": 1195734,
-				"Filename": "Jarvis Lake v0.38.docx",
+				"Filename": "PMGD v0.38.docx",
 				"Filepath": "",
 				"Filesize": 1192042,
 				"Created": "Mon Jun 09 09:49:15 PDT 2014",
@@ -455,7 +484,7 @@
 			{
 				"_id": 92,
 				"MessageId": "<201406092049.s59KnEQh026208@plxv1142.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. c9d6bad809e05e69afbb84ab6420568267e01e83",
+				"Subject": "[SCM] pmgd branch master updated. c9d6bad809e05e69afbb84ab6420568267e01e83",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -494,7 +523,7 @@
 			{
 				"_id": 98,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B711A59@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "Jarvis Lake Meeting 6/4/2014",
+				"Subject": "PMGD Meeting 6/4/2014",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -507,7 +536,7 @@
 			{
 				"_id": 100,
 				"Size": 30442,
-				"Filename": "Jarvis Lake Meeting 642014.one",
+				"Filename": "PMGD Meeting 642014.one",
 				"Filepath": "",
 				"Filesize": 26720,
 				"Created": "Wed Jun 11 16:09:42 PDT 2014",
@@ -525,7 +554,7 @@
 			{
 				"_id": 102,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B711A6A@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "Jarvis Lake Meeting 6/11/2014",
+				"Subject": "PMGD Meeting 6/11/2014",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -538,7 +567,7 @@
 			{
 				"_id": 104,
 				"Size": 31710,
-				"Filename": "Jarvis Lake Meeting 6112014.one",
+				"Filename": "PMGD Meeting 6112014.one",
 				"Filepath": "",
 				"Filesize": 27984,
 				"Created": "Wed Jun 11 16:10:06 PDT 2014",
@@ -556,7 +585,7 @@
 			{
 				"_id": 106,
 				"MessageId": "<201406120301.s5C31wOL021281@plxv1143.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. fe16bc251f8e9b9a98b1ee4790463fdfcbde9857",
+				"Subject": "[SCM] pmgd branch master updated. fe16bc251f8e9b9a98b1ee4790463fdfcbde9857",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -595,7 +624,7 @@
 			{
 				"_id": 112,
 				"MessageId": "<167C5EBFB9E5DC45897E7FA7CFB2188AA2B7145D@ORSMSX110.amr.corp.intel.com>",
-				"Subject": "RE: O-build: O notation to build Jarvis such that all output files go to \"dir\"",
+				"Subject": "RE: O-build: O notation to build PMGD such that all output files go to \"dir\"",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -621,7 +650,7 @@
 			{
 				"_id": 114,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B711EE4@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: O-build: O notation to build Jarvis such that all output files go to \"dir\"",
+				"Subject": "RE: O-build: O notation to build PMGD such that all output files go to \"dir\"",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -634,7 +663,7 @@
 			{
 				"_id": 115,
 				"MessageId": "<201406132149.s5DLncpR003425@plxv1143.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. 9358127dd4d24b1372758f6fdf4336ce113c0d6b",
+				"Subject": "[SCM] pmgd branch master updated. 9358127dd4d24b1372758f6fdf4336ce113c0d6b",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -647,7 +676,7 @@
 			{
 				"_id": 117,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B712070@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: [SCM] jarvis branch master updated. 9358127dd4d24b1372758f6fdf4336ce113c0d6b",
+				"Subject": "RE: [SCM] pmgd branch master updated. 9358127dd4d24b1372758f6fdf4336ce113c0d6b",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -736,7 +765,7 @@
 			{
 				"_id": 128,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B7125E8@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "Jarvis Lake v0.38",
+				"Subject": "PMGD v0.38",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": true,
@@ -751,7 +780,7 @@
 			{
 				"_id": 129,
 				"Size": 1196374,
-				"Filename": "Jarvis Lake v0.38.docx",
+				"Filename": "PMGD v0.38.docx",
 				"Filepath": "",
 				"Filesize": 1192682,
 				"Created": "Mon Jun 09 09:49:15 PDT 2014",
@@ -760,7 +789,7 @@
 			{
 				"_id": 130,
 				"MessageId": "<009401cf89ca$50bdaa40$f238fec0$@lantz@intel.com>",
-				"Subject": "Internationalization in Jarvis",
+				"Subject": "Internationalization in PMGD",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": true,
@@ -825,7 +854,7 @@
 			{
 				"_id": 137,
 				"MessageId": "<E1WxHLG-0000kE-Ep@srl-dev3>",
-				"Subject": "Jarvis Performance Regression Report 06-18",
+				"Subject": "PMGD Performance Regression Report 06-18",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -883,7 +912,7 @@
 			{
 				"_id": 144,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B712A2D@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "Jarvis Lake: An Experimental Persistent Memory Graph Data Store (v0.39)",
+				"Subject": "PMGD: An Experimental Persistent Memory Graph Data Store (v0.39)",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -896,7 +925,7 @@
 			{
 				"_id": 146,
 				"Size": 456210,
-				"Filename": "Jarvis Lake v0.39 staff with change bars.pdf",
+				"Filename": "PMGD v0.39 staff with change bars.pdf",
 				"Filepath": "",
 				"Filesize": 452432,
 				"Created": "Wed Jun 18 11:33:56 PDT 2014",
@@ -905,7 +934,7 @@
 			{
 				"_id": 147,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B712A45@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: Jarvis Lake v0.38",
+				"Subject": "RE: PMGD v0.38",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": true,
@@ -918,7 +947,7 @@
 			{
 				"_id": 148,
 				"Size": 1197640,
-				"Filename": "Jarvis Lake v0.38_Vishakha - Responses.docx",
+				"Filename": "PMGD v0.38_Vishakha - Responses.docx",
 				"Filepath": "",
 				"Filesize": 1193864,
 				"Created": "Tue Jun 17 14:22:25 PDT 2014",
@@ -927,7 +956,7 @@
 			{
 				"_id": 149,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B712B6F@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: [SCM] jarvis branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
+				"Subject": "RE: [SCM] pmgd branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": true,
@@ -940,7 +969,7 @@
 			{
 				"_id": 151,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B712B62@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: [SCM] jarvis branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
+				"Subject": "RE: [SCM] pmgd branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -966,7 +995,7 @@
 			{
 				"_id": 154,
 				"MessageId": "<201406190401.s5J41Kbx022074@plxv1143.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
+				"Subject": "[SCM] pmgd branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -979,7 +1008,7 @@
 			{
 				"_id": 155,
 				"MessageId": "<167C5EBFB9E5DC45897E7FA7CFB2188AA2B71AD7@ORSMSX110.amr.corp.intel.com>",
-				"Subject": "RE: [SCM] jarvis branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
+				"Subject": "RE: [SCM] pmgd branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -992,7 +1021,7 @@
 			{
 				"_id": 156,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B712DC6@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: [SCM] jarvis branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
+				"Subject": "RE: [SCM] pmgd branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1005,7 +1034,7 @@
 			{
 				"_id": 157,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B712DD2@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: [SCM] jarvis branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
+				"Subject": "RE: [SCM] pmgd branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1018,7 +1047,7 @@
 			{
 				"_id": 158,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B712E8B@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: Jarvis Lake v0.38",
+				"Subject": "RE: PMGD v0.38",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1031,7 +1060,7 @@
 			{
 				"_id": 159,
 				"MessageId": "<201406200207.s5K27JvE020819@plxv1142.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. 08be168cd74641d86b1b63edcb45370ba8cd772a",
+				"Subject": "[SCM] pmgd branch master updated. 08be168cd74641d86b1b63edcb45370ba8cd772a",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1044,7 +1073,7 @@
 			{
 				"_id": 161,
 				"MessageId": "<201406210559.s5L5xwsn015709@plxv1142.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. 568d9fa3deb04239bd319e99c4c1a37ed98e744e",
+				"Subject": "[SCM] pmgd branch master updated. 568d9fa3deb04239bd319e99c4c1a37ed98e744e",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1096,7 +1125,7 @@
 			{
 				"_id": 167,
 				"MessageId": "<167C5EBFB9E5DC45897E7FA7CFB2188AA2B79067@ORSMSX110.amr.corp.intel.com>",
-				"Subject": "RE: [Jarvis 0000699]: Sort order for strings",
+				"Subject": "RE: [PMGD 0000699]: Sort order for strings",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1226,7 +1255,7 @@
 			{
 				"_id": 178,
 				"MessageId": "<201406240439.s5O4dd5J014278@plxv1143.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. 44f87bdf75b5507619d155047b69e078f6d9e1a3",
+				"Subject": "[SCM] pmgd branch master updated. 44f87bdf75b5507619d155047b69e078f6d9e1a3",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1252,7 +1281,7 @@
 			{
 				"_id": 181,
 				"MessageId": "<201406240235.s5O2Z1ro002993@plxv1143.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. 1250b1b1c1464f0cec4ed4ab821fe3658e18490f",
+				"Subject": "[SCM] pmgd branch master updated. 1250b1b1c1464f0cec4ed4ab821fe3658e18490f",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1265,7 +1294,7 @@
 			{
 				"_id": 183,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B7170F4@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "Jarvis Lake Document v0.40",
+				"Subject": "PMGD Document v0.40",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1278,7 +1307,7 @@
 			{
 				"_id": 186,
 				"Size": 1200542,
-				"Filename": "Jarvis Lake v0.40.docx",
+				"Filename": "PMGD v0.40.docx",
 				"Filepath": "",
 				"Filesize": 1196850,
 				"Created": "Wed Jun 18 12:05:54 PDT 2014",
@@ -1331,7 +1360,7 @@
 			{
 				"_id": 194,
 				"MessageId": "<E1Wzog6-0001Ly-Tk@srl-dev3>",
-				"Subject": "Jarvis Performance Regression Report 06-25",
+				"Subject": "PMGD Performance Regression Report 06-25",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1402,7 +1431,7 @@
 			{
 				"_id": 203,
 				"MessageId": "<201406252039.s5PKdElv004130@plxv1142.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. ab3bb3268d389a826194a98b7118e38349f05f2d",
+				"Subject": "[SCM] pmgd branch master updated. ab3bb3268d389a826194a98b7118e38349f05f2d",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1467,7 +1496,7 @@
 			{
 				"_id": 209,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B717363@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "Jarvis Lake Meeting 6/25/2014",
+				"Subject": "PMGD Meeting 6/25/2014",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1480,7 +1509,7 @@
 			{
 				"_id": 211,
 				"Size": 30134,
-				"Filename": "Jarvis Lake Meeting 6252014.one",
+				"Filename": "PMGD Meeting 6252014.one",
 				"Filepath": "",
 				"Filesize": 26408,
 				"Created": "Wed Jun 25 17:09:10 PDT 2014",
@@ -1524,7 +1553,7 @@
 			{
 				"_id": 216,
 				"MessageId": "<201406262302.s5QN2SXB013278@plxv1142.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. 546901225ad9ba4b82ce49c277001b9f8b13079e",
+				"Subject": "[SCM] pmgd branch master updated. 546901225ad9ba4b82ce49c277001b9f8b13079e",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1537,7 +1566,7 @@
 			{
 				"_id": 218,
 				"MessageId": "<E1X0RkP-0005Ci-Dj@srl-dev3>",
-				"Subject": "Jarvis: include test failure",
+				"Subject": "PMGD: include test failure",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1550,7 +1579,7 @@
 			{
 				"_id": 220,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B717854@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: Jarvis: include test failure",
+				"Subject": "RE: PMGD: include test failure",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1563,7 +1592,7 @@
 			{
 				"_id": 221,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B717862@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: Jarvis: include test failure",
+				"Subject": "RE: PMGD: include test failure",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": true,
@@ -1604,7 +1633,7 @@
 			{
 				"_id": 224,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B7178A5@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: Jarvis: include test failure",
+				"Subject": "RE: PMGD: include test failure",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": true,
@@ -1617,7 +1646,7 @@
 			{
 				"_id": 225,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B7178BD@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: Jarvis: include test failure",
+				"Subject": "RE: PMGD: include test failure",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1643,7 +1672,7 @@
 			{
 				"_id": 228,
 				"MessageId": "<201406272117.s5RLHopZ029829@plxv1143.pdx.intel.com>",
-				"Subject": "[SCM] jarvis branch master updated. 97aac6160e4a6d9b9f4b81e0cefb9f9886996ec0",
+				"Subject": "[SCM] pmgd branch master updated. 97aac6160e4a6d9b9f4b81e0cefb9f9886996ec0",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": true,
@@ -1656,7 +1685,7 @@
 			{
 				"_id": 230,
 				"MessageId": "<25828FC7F58A7146B818FE358CBCFEB65B7178ED@ORSMSX115.amr.corp.intel.com>",
-				"Subject": "RE: [SCM] jarvis branch master updated. 97aac6160e4a6d9b9f4b81e0cefb9f9886996ec0",
+				"Subject": "RE: [SCM] pmgd branch master updated. 97aac6160e4a6d9b9f4b81e0cefb9f9886996ec0",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": false,
@@ -1807,7 +1836,7 @@
 			{
 				"_id": 244,
 				"MessageId": "<8A158B313883A842895FCA4DA863036581ED6D3A@ORSMSX103.amr.corp.intel.com>",
-				"Subject": "RE: Jarvis Lake: An Experimental Persistent Memory Graph Data Store (v0.39)",
+				"Subject": "RE: PMGD: An Experimental Persistent Memory Graph Data Store (v0.39)",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": true,
@@ -1822,7 +1851,7 @@
 			{
 				"_id": 245,
 				"MessageId": "<8A158B313883A842895FCA4DA863036581ED6DA1@ORSMSX103.amr.corp.intel.com>",
-				"Subject": "RE: Jarvis Lake: An Experimental Persistent Memory Graph Data Store (v0.39)",
+				"Subject": "RE: PMGD: An Experimental Persistent Memory Graph Data Store (v0.39)",
 				"Priority": "0",
 				"Importance": "1",
 				"Replied?": true,
@@ -2265,12 +2294,12 @@
 			},
 			{
 				"_id": 185,
-				"Topic": "Jarvis Lake Document v0.40",
+				"Topic": "PMGD Document v0.40",
 				"_label": "Conversation"
 			},
 			{
 				"_id": 210,
-				"Topic": "Jarvis Lake Meeting 6/25/2014",
+				"Topic": "PMGD Meeting 6/25/2014",
 				"_label": "Conversation"
 			},
 			{
@@ -2280,12 +2309,12 @@
 			},
 			{
 				"_id": 229,
-				"Topic": "[SCM] jarvis branch master updated. 97aac6160e4a6d9b9f4b81e0cefb9f9886996ec0",
+				"Topic": "[SCM] pmgd branch master updated. 97aac6160e4a6d9b9f4b81e0cefb9f9886996ec0",
 				"_label": "Conversation"
 			},
 			{
 				"_id": 81,
-				"Topic": "[SCM] jarvis branch master updated. 57a6c1130c26f01dd1b27c2847c7aa69f7a84f8c",
+				"Topic": "[SCM] pmgd branch master updated. 57a6c1130c26f01dd1b27c2847c7aa69f7a84f8c",
 				"_label": "Conversation"
 			},
 			{
@@ -2305,12 +2334,12 @@
 			},
 			{
 				"_id": 219,
-				"Topic": "Jarvis: include test failure",
+				"Topic": "PMGD: include test failure",
 				"_label": "Conversation"
 			},
 			{
 				"_id": 138,
-				"Topic": "Jarvis Performance Regression Report 06-18",
+				"Topic": "PMGD Performance Regression Report 06-18",
 				"_label": "Conversation"
 			},
 			{
@@ -2320,17 +2349,17 @@
 			},
 			{
 				"_id": 179,
-				"Topic": "[SCM] jarvis branch master updated. 44f87bdf75b5507619d155047b69e078f6d9e1a3",
+				"Topic": "[SCM] pmgd branch master updated. 44f87bdf75b5507619d155047b69e078f6d9e1a3",
 				"_label": "Conversation"
 			},
 			{
 				"_id": 83,
-				"Topic": "[SCM] jarvis branch master updated. 4dfd5a762f4d746fa0206511b298393ae6d42004",
+				"Topic": "[SCM] pmgd branch master updated. 4dfd5a762f4d746fa0206511b298393ae6d42004",
 				"_label": "Conversation"
 			},
 			{
 				"_id": 64,
-				"Topic": "Jarvis Performance Regression Report 06-04",
+				"Topic": "PMGD Performance Regression Report 06-04",
 				"_label": "Conversation"
 			},
 			{
@@ -2340,7 +2369,7 @@
 			},
 			{
 				"_id": 182,
-				"Topic": "[SCM] jarvis branch master updated. 1250b1b1c1464f0cec4ed4ab821fe3658e18490f",
+				"Topic": "[SCM] pmgd branch master updated. 1250b1b1c1464f0cec4ed4ab821fe3658e18490f",
 				"_label": "Conversation"
 			},
 			{
@@ -2350,22 +2379,22 @@
 			},
 			{
 				"_id": 131,
-				"Topic": "Internationalization in Jarvis",
+				"Topic": "Internationalization in PMGD",
 				"_label": "Conversation"
 			},
 			{
 				"_id": 162,
-				"Topic": "[SCM] jarvis branch master updated. 568d9fa3deb04239bd319e99c4c1a37ed98e744e",
+				"Topic": "[SCM] pmgd branch master updated. 568d9fa3deb04239bd319e99c4c1a37ed98e744e",
 				"_label": "Conversation"
 			},
 			{
 				"_id": 160,
-				"Topic": "[SCM] jarvis branch master updated. 08be168cd74641d86b1b63edcb45370ba8cd772a",
+				"Topic": "[SCM] pmgd branch master updated. 08be168cd74641d86b1b63edcb45370ba8cd772a",
 				"_label": "Conversation"
 			},
 			{
 				"_id": 72,
-				"Topic": "Jarvis Lake ",
+				"Topic": "PMGD ",
 				"_label": "Conversation"
 			},
 			{
@@ -2375,7 +2404,7 @@
 			},
 			{
 				"_id": 217,
-				"Topic": "[SCM] jarvis branch master updated. 546901225ad9ba4b82ce49c277001b9f8b13079e",
+				"Topic": "[SCM] pmgd branch master updated. 546901225ad9ba4b82ce49c277001b9f8b13079e",
 				"_label": "Conversation"
 			},
 			{
@@ -2395,7 +2424,7 @@
 			},
 			{
 				"_id": 204,
-				"Topic": "[SCM] jarvis branch master updated. ab3bb3268d389a826194a98b7118e38349f05f2d",
+				"Topic": "[SCM] pmgd branch master updated. ab3bb3268d389a826194a98b7118e38349f05f2d",
 				"_label": "Conversation"
 			},
 			{
@@ -2425,7 +2454,7 @@
 			},
 			{
 				"_id": 145,
-				"Topic": "Jarvis Lake: An Experimental Persistent Memory Graph Data Store (v0.39)",
+				"Topic": "PMGD: An Experimental Persistent Memory Graph Data Store (v0.39)",
 				"_label": "Conversation"
 			},
 			{
@@ -2450,12 +2479,12 @@
 			},
 			{
 				"_id": 88,
-				"Topic": "O-build: O notation to build Jarvis such that all output files go to \"dir\"",
+				"Topic": "O-build: O notation to build PMGD such that all output files go to \"dir\"",
 				"_label": "Conversation"
 			},
 			{
 				"_id": 99,
-				"Topic": "Jarvis Lake Meeting 6/4/2014",
+				"Topic": "PMGD Meeting 6/4/2014",
 				"_label": "Conversation"
 			},
 			{
@@ -2490,7 +2519,7 @@
 			},
 			{
 				"_id": 150,
-				"Topic": "[SCM] jarvis branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
+				"Topic": "[SCM] pmgd branch master updated. d0523aac6698d63f5de1ea34c0bb13a27e18102c",
 				"_label": "Conversation"
 			},
 			{
@@ -2500,7 +2529,7 @@
 			},
 			{
 				"_id": 90,
-				"Topic": "Jarvis Lake v0.38",
+				"Topic": "PMGD v0.38",
 				"_label": "Conversation"
 			},
 			{
@@ -2510,7 +2539,7 @@
 			},
 			{
 				"_id": 93,
-				"Topic": "[SCM] jarvis branch master updated. c9d6bad809e05e69afbb84ab6420568267e01e83",
+				"Topic": "[SCM] pmgd branch master updated. c9d6bad809e05e69afbb84ab6420568267e01e83",
 				"_label": "Conversation"
 			},
 			{
@@ -2520,7 +2549,7 @@
 			},
 			{
 				"_id": 107,
-				"Topic": "[SCM] jarvis branch master updated. fe16bc251f8e9b9a98b1ee4790463fdfcbde9857",
+				"Topic": "[SCM] pmgd branch master updated. fe16bc251f8e9b9a98b1ee4790463fdfcbde9857",
 				"_label": "Conversation"
 			},
 			{
@@ -2530,12 +2559,12 @@
 			},
 			{
 				"_id": 116,
-				"Topic": "[SCM] jarvis branch master updated. 9358127dd4d24b1372758f6fdf4336ce113c0d6b",
+				"Topic": "[SCM] pmgd branch master updated. 9358127dd4d24b1372758f6fdf4336ce113c0d6b",
 				"_label": "Conversation"
 			},
 			{
 				"_id": 168,
-				"Topic": "[Jarvis 0000699]: Sort order for strings",
+				"Topic": "[PMGD 0000699]: Sort order for strings",
 				"_label": "Conversation"
 			},
 			{
@@ -2550,12 +2579,12 @@
 			},
 			{
 				"_id": 195,
-				"Topic": "Jarvis Performance Regression Report 06-25",
+				"Topic": "PMGD Performance Regression Report 06-25",
 				"_label": "Conversation"
 			},
 			{
 				"_id": 103,
-				"Topic": "Jarvis Lake Meeting 6/11/2014",
+				"Topic": "PMGD Meeting 6/11/2014",
 				"_label": "Conversation"
 			}
 		],

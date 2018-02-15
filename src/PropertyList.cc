@@ -1,3 +1,32 @@
+/**
+ * @file   PropertyList.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <stddef.h>
 #include <limits.h>
 #include <assert.h>
@@ -11,9 +40,9 @@
 #include "GraphImpl.h"
 #include "arch.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
-namespace Jarvis {
+namespace PMGD {
 #pragma pack(push, 1)
     struct PropertyRef::BlobRef {
         void *value;
@@ -50,7 +79,7 @@ namespace Jarvis {
         PropertyRef *ref()
         {
             if (_vacant_flag)
-                throw Exception(VacantIterator);
+                throw PMGDException(VacantIterator);
             return &_cur;
         }
 
@@ -145,7 +174,7 @@ Property PropertyList::get_property(StringID id) const
     PropertyRef p;
 
     if (!find_property(id, p))
-        throw Exception(PropertyNotFound, id.name());
+        throw PMGDException(PropertyNotFound, id.name());
 
     return p.get_value();
 }
@@ -629,7 +658,7 @@ void PropertyRef::set_value(const Property &p, unsigned size,
 void PropertyRef::set_blob(const void *value, std::size_t size,
                            Allocator &allocator)
 {
-    if (size > UINT_MAX) throw Exception(NotImplemented);
+    if (size > UINT_MAX) throw PMGDException(NotImplemented);
     void *p = allocator.alloc(size);
     memcpy(p, value, size);
     TransactionImpl::flush_range(p, size);
@@ -648,7 +677,7 @@ bool PropertyRef::bool_value() const
         case p_boolean_false: return false;
         case p_boolean_true: return true;
     }
-    throw Exception(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 long long PropertyRef::int_value() const
@@ -661,7 +690,7 @@ long long PropertyRef::int_value() const
             v >>= CHAR_BIT * shift;
         return v;
     }
-    throw Exception(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 std::string PropertyRef::string_value() const
@@ -679,21 +708,21 @@ std::string PropertyRef::string_value() const
             return std::string((const char *)v->value, v->size);
         }
     }
-    throw Exception(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 double PropertyRef::float_value() const
 {
     if (ptype() == p_float)
         return *(double *)val();
-    throw Exception(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 Time PropertyRef::time_value() const
 {
     if (ptype() == p_time)
         return *(Time *)val();
-    throw Exception(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 Property::blob_t PropertyRef::blob_value() const
@@ -702,7 +731,7 @@ Property::blob_t PropertyRef::blob_value() const
         BlobRef *v = (BlobRef *)val();
         return Property::blob_t(v->value, v->size);
     }
-    throw Exception(PropertyTypeMismatch);
+    throw PMGDException(PropertyTypeMismatch);
 }
 
 

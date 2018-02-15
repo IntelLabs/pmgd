@@ -1,4 +1,33 @@
-import jarvis.*;
+/**
+ * @file   BindingsTest.java
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
+import pmgd.*;
 
 public class BindingsTest {
     public static void main(String[] args)
@@ -302,13 +331,13 @@ public class BindingsTest {
             // Dump it out for verification purposes
             dump(db);
 
-        } catch (jarvis.Exception e) {
+        } catch (pmgd.Exception e) {
             e.print();
             return;
         }
     }
 
-    static void dump(Graph db) throws jarvis.Exception
+    static void dump(Graph db) throws pmgd.Exception
     {
         Transaction tx = new Transaction(db, false, true);
         for (NodeIterator i = db.get_nodes(); !i.done(); i.next())
@@ -318,7 +347,7 @@ public class BindingsTest {
         tx.commit();
     }
 
-    static void dump(Graph db, Node n) throws jarvis.Exception
+    static void dump(Graph db, Node n) throws pmgd.Exception
     {
         System.out.printf("Node %d%s:\n", db.get_id(n), tag_text(n.get_tag()));
         for (PropertyIterator i = n.get_properties(); !i.done(); i.next())
@@ -335,7 +364,7 @@ public class BindingsTest {
                               db.get_id(i.get_current()));
     }
 
-    static void dump(Graph db, Edge e) throws jarvis.Exception
+    static void dump(Graph db, Edge e) throws pmgd.Exception
     {
         System.out.printf("Edge %d%s: n%d -> n%d\n",
             db.get_id(e), tag_text(e.get_tag()),
@@ -355,7 +384,7 @@ public class BindingsTest {
         return "";
     }
 
-    static String property_text(Property p) throws jarvis.Exception
+    static String property_text(Property p) throws pmgd.Exception
     {
         switch (p.type()) {
             case Property.NoValue: return "no value";

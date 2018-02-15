@@ -1,5 +1,5 @@
 ##
-# Main Makefile for the Jarvis Lake library.
+# Main Makefile for the PMGD library.
 
 # make must forget all it knows about suffixes.
 .SUFFIXES:

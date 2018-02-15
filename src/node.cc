@@ -1,3 +1,32 @@
+/**
+ * @file   node.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <stddef.h>
 #include <string.h> // for memcpy
 #include "exception.h"
@@ -10,7 +39,7 @@
 #include "IndexManager.h"
 #include "TransactionImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 void Node::init(StringID tag, unsigned object_size, Allocator &index_allocator)
 {
@@ -59,10 +88,10 @@ Node &Node::get_neighbor(Direction dir, StringID edge_tag) const
         if (pos)
             return *pos->value.value();
     }
-    throw Exception(NullIterator);
+    throw PMGDException(NullIterator);
 }
 
-namespace Jarvis {
+namespace PMGD {
     // TODO Make the lists more opaque to this class
     class Node_EdgeIteratorImpl : public EdgeIteratorImplIntf {
         EdgeRef _ref;
@@ -198,7 +227,7 @@ namespace Jarvis {
             // _vacant_flag indicates that the edge referred to by the iterator
             // has been deleted.
             if (_vacant_flag)
-                throw Exception(VacantIterator);
+                throw PMGDException(VacantIterator);
             return &_ref;
         }
 
@@ -287,20 +316,20 @@ EdgeIterator Node::get_edges() const
     return EdgeIterator(new Node_EdgeIteratorImpl(_in_edges, _out_edges, this));
 }
 
-bool Jarvis::Node::check_property(StringID id, Property &result) const
+bool PMGD::Node::check_property(StringID id, Property &result) const
     { return _property_list.check_property(id, result); }
 
-Jarvis::Property Jarvis::Node::get_property(StringID id) const
+PMGD::Property PMGD::Node::get_property(StringID id) const
     { return _property_list.get_property(id); }
 
-Jarvis::PropertyIterator Jarvis::Node::get_properties() const
+PMGD::PropertyIterator PMGD::Node::get_properties() const
     { return _property_list.get_properties(); }
 
-void Jarvis::Node::set_property(StringID id, const Property &new_value)
+void PMGD::Node::set_property(StringID id, const Property &new_value)
     { _property_list.set_property(id, new_value, Graph::NodeIndex, _tag, this); }
 
-void Jarvis::Node::remove_property(StringID id)
+void PMGD::Node::remove_property(StringID id)
     { _property_list.remove_property(id, Graph::NodeIndex, _tag, this); }
 
-void Jarvis::Node::remove_all_properties()
+void PMGD::Node::remove_all_properties()
     { _property_list.remove_all_properties(Graph::NodeIndex, _tag, this); }

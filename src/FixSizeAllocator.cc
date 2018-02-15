@@ -1,3 +1,32 @@
+/**
+ * @file   FixSizeAllocator.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <stddef.h>
 #include <assert.h>
 
@@ -5,7 +34,9 @@
 #include "Allocator.h"
 #include "TransactionImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
+
+#define ALLOC_OFFSET(bitints,sz) ((sizeof(FixedChunk) + (bitints)*4 + (sz) - 1) & ~((sz) - 1))
 
 Allocator::FixSizeAllocator::FixSizeAllocator(FlexFixedAllocator &allocator,
                                     RegionHeader *hdr,
@@ -25,14 +56,17 @@ Allocator::FixSizeAllocator::FixSizeAllocator(FlexFixedAllocator &allocator,
 
     _chunk_to_scan = hdr->start_chunk;
     _last_chunk_scanned = NULL;
+
+    _max_spots = (SMALL_CHUNK_SIZE - ALLOC_OFFSET(_bitmap_ints, _obj_size)) /
+                          _obj_size;
 }
 
-#define ALLOC_OFFSET(bitints,sz) ((sizeof(FixedChunk) + (bitints)*4 + (sz) - 1) & ~((sz) - 1))
-Allocator::FixSizeAllocator::FixedChunk::FixedChunk(unsigned obj_size, unsigned bitmap_ints)
+Allocator::FixSizeAllocator::FixedChunk::FixedChunk(unsigned obj_size,
+                                                    unsigned bitmap_ints,
+                                                    unsigned max_spots)
 {
     next_chunk = NULL;
-    free_spots = (SMALL_CHUNK_SIZE - ALLOC_OFFSET(bitmap_ints, obj_size)) /
-                          obj_size;
+    free_spots = max_spots;
     next_index = 0;
     for (unsigned i = 0; i < bitmap_ints; ++i)
         occupants[i] = 0;
@@ -109,13 +143,13 @@ void *Allocator::FixSizeAllocator::alloc()
 
     // Check the vector first.
     if (it != _free_chunks.end()) {
-        FixedChunk *chunk = *it;
-        addr = chunk->alloc(_obj_size, _bitmap_ints);
+        FixedChunk *dst_chunk = *it;
+        addr = dst_chunk->alloc(_obj_size, _bitmap_ints);
 
         // If the chunk is in the list, it should have space.
         assert(addr != NULL);
 
-        if (chunk->free_spots == 0) {
+        if (dst_chunk->free_spots == 0) {
             // Make sure this chunk no longer appears in the available list.
             _free_chunks.erase(it);
         }
@@ -125,18 +159,18 @@ void *Allocator::FixSizeAllocator::alloc()
     TransactionImpl *tx = TransactionImpl::get_tx();
 
     while (_chunk_to_scan != NULL) {
-        FixedChunk *cur_chunk = _chunk_to_scan;
+        FixedChunk *dst_chunk = _chunk_to_scan;
         _last_chunk_scanned = _chunk_to_scan;
         _chunk_to_scan = _chunk_to_scan->next_chunk;
 
         // This chunk must not be in the DRAM lists since we go
         // in a sequence.
-        if (cur_chunk->free_spots > 0) {
-            addr = cur_chunk->alloc(_obj_size, _bitmap_ints);
+        if (dst_chunk->free_spots > 0) {
+            addr = dst_chunk->alloc(_obj_size, _bitmap_ints);
 
             // For later scans
-            if (cur_chunk->free_spots > 0)
-                _free_chunks.insert(cur_chunk);
+            if (dst_chunk->free_spots > 0)
+                _free_chunks.insert(dst_chunk);
 
             return addr;
         }
@@ -144,7 +178,9 @@ void *Allocator::FixSizeAllocator::alloc()
 
     // Reached null while looking for addrs. So all others scanned.
     // If it comes out here, no luck allocating.
-    FixedChunk *dst_chunk = new (_allocator.alloc()) FixedChunk(_obj_size, _bitmap_ints);
+    FixedChunk *dst_chunk = new (_allocator.alloc()) FixedChunk(_obj_size,
+                                                                _bitmap_ints,
+                                                                _max_spots);
 
     // First free form allocation.
     if (_hdr->start_chunk == NULL)
@@ -198,46 +234,45 @@ void Allocator::FixSizeAllocator::free(void *addr)
     FixedChunk *dst_chunk = reinterpret_cast<FixedChunk *>(chunk_base);
 
     unsigned space = dst_chunk->free_spots;
+    assert(space < _max_spots);
     dst_chunk->free(addr, _obj_size, _bitmap_ints);
 
-    // This was off the available list
-    if (space == 0)
-        _free_chunks.insert(dst_chunk);
 
     // If this frees up the entire fixed chunk, and this was the only chunk
     // in the 2MB page, return the 2MB page. But only if this isn't the current
     // allocation chunk that the DRAM object uses to search for free space.
-    unsigned max_spots = (SMALL_CHUNK_SIZE - ALLOC_OFFSET(_bitmap_ints, _obj_size)) /
-                          _obj_size;
-    if (dst_chunk->free_spots == max_spots) {
+    if (dst_chunk->free_spots == _max_spots) {
         _free_chunks.erase(dst_chunk);
 
         TransactionImpl *tx = TransactionImpl::get_tx();
+
         // Need to update the implicit list
         // *** Consider doubly linked list here?
-        FixedChunk *temp = _hdr->start_chunk;
+        FixedChunk *temp = _hdr->start_chunk, *prev = NULL;
         if (temp == dst_chunk) {
-            if (_chunk_to_scan == dst_chunk)
-                _chunk_to_scan = NULL;
-            tx->log(_hdr, sizeof(RegionHeader));
-            _hdr->start_chunk = dst_chunk->next_chunk;
+            tx->write(&_hdr->start_chunk, dst_chunk->next_chunk);
         }
         else {
-            FixedChunk *prev = temp;
             while(temp != NULL) {
                 if (temp == dst_chunk) {
-                    if (_chunk_to_scan == dst_chunk)
-                        _chunk_to_scan = prev;
-                    tx->log(&prev->next_chunk, sizeof(prev->next_chunk));
-                    prev->next_chunk = dst_chunk->next_chunk;  // works even if only 1 chunk
+                    tx->write(&prev->next_chunk, dst_chunk->next_chunk);
                     break;
                 }
                 prev = temp;
                 temp = temp->next_chunk;
             }
         }
+
+        if (_last_chunk_scanned == dst_chunk)
+            _last_chunk_scanned = prev;
+        if (_chunk_to_scan == dst_chunk)
+            _chunk_to_scan = dst_chunk->next_chunk;
+
         _allocator.free(dst_chunk);
     }
+    // This was off the available list
+    else if (space == 0)
+        _free_chunks.insert(dst_chunk);
 }
 
 uint64_t Allocator::FixSizeAllocator::used_bytes() const

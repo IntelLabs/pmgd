@@ -1,10 +1,39 @@
+/**
+ * @file   Allocator.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <stddef.h>
 #include <assert.h>
 
 #include "exception.h"
 #include "Allocator.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 constexpr unsigned Allocator::fixed_sizes[];
 
@@ -76,8 +105,10 @@ void Allocator::clean_free_list(TransactionImpl *tx, const std::list<free_info_t
             _fixsize_allocator[alloc_idx]->free(s.addr);
         else if (_chunk_allocator.is_borderline(s.size))
             _chunk_allocator.free(s.addr, s.size);
-        else
-            _freeform_allocator.free(s.addr, s.size);
+        else {
+            _freeform_allocator.free(s.addr,
+                (s.size < VariableAllocator::MIN_ALLOC_BYTES ? VariableAllocator::MIN_ALLOC_BYTES : s.size));
+        }
     }
 }
 

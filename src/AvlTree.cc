@@ -1,10 +1,39 @@
+/**
+ * @file   AvlTree.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include <string.h>    // For memset
 #include "AvlTree.h"
 #include "node.h"
 #include "List.h"
 #include "IndexString.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 // hinge-->new_root-->its left and right children
 // The return value of this function gets assigned to
@@ -168,65 +197,66 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::remove_recursive(AvlTree<K,V>::Tr
                                                 const K &key, Allocator &allocator,
                                                 TransactionImpl *tx, bool &rebalanced)
 {
-    if (curr == NULL) {
+    if (curr == NULL)
         return NULL;
-    }
-    if (key == curr->key) {
-        // If no children or just one child, just free given node and return
-        // non-empty child or NULL
-        if (curr->left == NULL || curr->right == NULL) {
-            TreeNode *temp = curr->left != NULL ? curr->left : curr->right;
-            curr->key.~K();
-            // The value node gets destroyed by the caller.
-            // So the tree code doesn't need to free any pointers there.
-            allocator.free(curr, sizeof *curr);
-            tx->write(&_num_elems, _num_elems - 1);
-            // This nodes and its own childrens' heights won't get affected
-            // by this step. So return a level up where the parent will be go
-            // through balancing check
-            return temp;
-        }
-        // curr has both children.
-        // Find its in-order predecessor to exchange data,value with. This
-        // predecessor will then be the actual deleted node.
-        // But we will have to run delete again and traverse again cause
-        // the heights and rotations need to be done correctly.
-        TreeNode *to_replace = find_max(curr->left);
-        // This node will never be NULL.
-        tx->log(curr, sizeof *curr);
-        curr->key = to_replace->key;
-        curr->value = to_replace->value;
-        tx->log(&curr->left, sizeof(curr->left));
-        curr->left = remove_recursive(curr->left, to_replace->key, allocator, tx, rebalanced);
-        return curr;
-    }
-    else if (key < curr->key) {
-        // Log only the left pointer because the rotates might log a lot
-        // more with some overlap
-        tx->log(&curr->left, sizeof(curr->left));
-        curr->left = remove_recursive(curr->left, key, allocator, tx, rebalanced);
-        // Right tree too large?
-        if (height(curr->left) - height(curr->right) == -2) {
-            //if (key < curr->right->key)
-            if (curr->right->left != NULL)
-                curr = leftright_rotate(curr, tx);
-            else
-                curr = left_rotate(curr, tx);
-            rebalanced = true;
-        }
-    }
-    else {
+
+    if (key > curr->key) {
         // Log only the right pointer because the rotates might log a lot
         // more with some overlap
         tx->log(&curr->right, sizeof(curr->right));
         curr->right = remove_recursive(curr->right, key, allocator, tx, rebalanced);
         // Left tree too large?
         if (height(curr->left) - height(curr->right) == 2) {
-            //if (key > curr->left->key)
-            if (curr->left->right != NULL)
-                curr = rightleft_rotate(curr, tx);
-            else
+            // Find taller child of left child now. Left is clearly not null
+            if (height(curr->left->left) > height(curr->left->right))
                 curr = right_rotate(curr, tx);
+            else
+                curr = rightleft_rotate(curr, tx);
+            rebalanced = true;
+        }
+    }
+    else {
+        if (key == curr->key) {
+            // If no children or just one child, just free given node and return
+            // non-empty child or NULL
+            if (curr->left == NULL || curr->right == NULL) {
+                TreeNode *temp = curr->left != NULL ? curr->left : curr->right;
+                curr->key.~K();
+                // The value node gets destroyed by the caller.
+                // So the tree code doesn't need to free any pointers there.
+                allocator.free(curr, sizeof *curr);
+                tx->write(&_num_elems, _num_elems - 1);
+                // This node's and its own childrens' heights won't get affected
+                // by this step. So return a level up where the parent will be go
+                // through balancing check
+                return temp;
+            }
+            // curr has both children.
+            // Find its in-order predecessor to exchange data,value with. This
+            // predecessor will then be the actual deleted node.
+            // But we will have to run delete again and traverse again cause
+            // the heights and rotations need to be done correctly.
+            TreeNode *to_replace = find_max(curr->left);
+            // This node will never be NULL.
+            tx->log(curr, sizeof *curr);
+            curr->key = to_replace->key;
+            curr->value = to_replace->value;
+            tx->log(&curr->left, sizeof(curr->left));
+            curr->left = remove_recursive(curr->left, to_replace->key, allocator, tx, rebalanced);
+        }
+        else {
+            // Log only the left pointer because the rotates might log a lot
+            // more with some overlap
+            tx->log(&curr->left, sizeof(curr->left));
+            curr->left = remove_recursive(curr->left, key, allocator, tx, rebalanced);
+        }
+        // Right tree too large?
+        if (height(curr->left) - height(curr->right) == -2) {
+            // Find tallest child of right tree for rotate. Right tree is not null.
+            if (height(curr->right->left) > height(curr->right->right))
+                curr = leftright_rotate(curr, tx);
+            else
+                curr = left_rotate(curr, tx);
             rebalanced = true;
         }
     }
@@ -275,7 +305,7 @@ size_t AvlTree<K,V>::treenode_size(TreeNode *node)
     return sizeof(*node);
 }
 
-namespace Jarvis {
+namespace PMGD {
     // Specialization for the IndexString case
     template <>
     size_t AvlTree<IndexString, List<void *> >::treenode_size(TreeNode *node)

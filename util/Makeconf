@@ -1,7 +1,7 @@
 # List of sources for this directory.
 UTIL_SRCS := $(addprefix util/, \
                          exception.cc text.cc neighbor.cc \
-                         dump_debug.cc dump_gexf.cc dump_jarvis.cc \
+                         dump_debug.cc dump_gexf.cc dump_pmgd.cc \
                          load_tsv.cc load_gson.cc loader.y scanner.l)
 
 # Derive a list of objects.
@@ -13,7 +13,7 @@ UTIL_OBJS := $(patsubst %.cc,%.o, \
 OBJS += $(UTIL_OBJS)
 
 # Add to the global list of libraries (with path to final destination).
-LIBS += lib/jarvis-util.lib lib/libjarvis-util.so
+LIBS += lib/pmgd-util.lib lib/libpmgd-util.so
 
 # Add the output of flex and bison to the global list of files to clean.
 CLEANFILES += $(patsubst %.y,%.cc, \
@@ -24,7 +24,7 @@ CLEANFILES += $(patsubst %.y,%.hh, \
                   $(filter %.y %.l, $(UTIL_SRCS))))
 
 # Add the library to the global list of files to clean.
-CLEANFILES += util/jarvis-util.lib util/libjarvis-util.so
+CLEANFILES += util/pmgd-util.lib util/libpmgd-util.so
 
 # We already added lib to CLEANDIRS in ../src/Makeconf
 
@@ -47,28 +47,28 @@ util/%.o: util/%.cc $(MAKEFILE_LIST)
 	$(CC) $(UTIL_CFLAGS) -o $@ -c $<
 
 # A rule to build the library.
-util/jarvis-util.lib: $(UTIL_OBJS)
+util/pmgd-util.lib: $(UTIL_OBJS)
 	$(call print,AR,$@)
 	$(AR) cr $@ $(UTIL_OBJS)
 
 # How to install said library.
-lib/jarvis-util.lib: util/jarvis-util.lib
+lib/pmgd-util.lib: util/pmgd-util.lib
 	$(call print,INSTALL,$@)
 	$(INSTALL) -D $< $@
 
 # A rule to build a shared library.
-util/libjarvis-util.so: $(UTIL_OBJS)
+util/libpmgd-util.so: $(UTIL_OBJS)
 	$(call print,LD,$@)
 	$(CC) -shared -o $@ $(UTIL_OBJS)
 
 # How to install said library.
-lib/libjarvis-util.so: util/libjarvis-util.so
+lib/libpmgd-util.so: util/libpmgd-util.so
 	$(call print,INSTALL,$@)
 	$(INSTALL) -D $< $@
 
 # What to build in this directory.
 PHONY += util
-util: util/jarvis-util.lib util/libjarvis-util.so
+util: util/pmgd-util.lib util/libpmgd-util.so
 
 # Don't attempt to rebuild this Makeconf.
 util/Makeconf : ;

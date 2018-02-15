@@ -1,7 +1,36 @@
+/**
+ * @file   property.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #include "property.h"
 #include "iterator.h"
 
-Jarvis::Property::Property(const Property &a)
+PMGD::Property::Property(const Property &a)
     : _type(a._type)
 {
     switch (a._type) {
@@ -16,14 +45,14 @@ Jarvis::Property::Property(const Property &a)
     }
 }
 
-Jarvis::Property::~Property()
+PMGD::Property::~Property()
 {
     if (_type == PropertyType::String) {
         v_string().std::string::~string();
     }
 }
 
-void Jarvis::Property::operator=(const Property &a)
+void PMGD::Property::operator=(const Property &a)
 {
     if (_type == PropertyType::String)
         v_string().std::string::~string();
@@ -40,7 +69,7 @@ void Jarvis::Property::operator=(const Property &a)
     }
 }
 
-bool Jarvis::Property::operator<(const Property &a) const
+bool PMGD::Property::operator<(const Property &a) const
 {
     check(a._type);
 
@@ -56,7 +85,7 @@ bool Jarvis::Property::operator<(const Property &a) const
     }
 }
 
-Jarvis::Time::Time(const struct tm *tm, unsigned long usec_arg,
+PMGD::Time::Time(const struct tm *tm, unsigned long usec_arg,
                    int hr_offset, int min_offset)
     : time_val(0)
 {
@@ -79,7 +108,7 @@ Jarvis::Time::Time(const struct tm *tm, unsigned long usec_arg,
     tz_spare = 0;
 }
 
-void Jarvis::Time::fill_tm_utc(struct tm *tm) const
+void PMGD::Time::fill_tm_utc(struct tm *tm) const
 {
     memset(tm, 0, sizeof(struct tm));
     tm->tm_sec = sec;
@@ -90,7 +119,7 @@ void Jarvis::Time::fill_tm_utc(struct tm *tm) const
     tm->tm_year = year - 1900;
 }
 
-void Jarvis::Time::get_utc(struct tm *tm) const
+void PMGD::Time::get_utc(struct tm *tm) const
 {
     if (tm == NULL)
         return;
@@ -99,7 +128,7 @@ void Jarvis::Time::get_utc(struct tm *tm) const
     timegm(tm);  // Fills wday
 }
 
-void Jarvis::Time::get_tm(struct tm *tm) const
+void PMGD::Time::get_tm(struct tm *tm) const
 {
     if (tm == NULL)
         return;
@@ -110,14 +139,14 @@ void Jarvis::Time::get_tm(struct tm *tm) const
     timegm(tm);  // Fills wday
 }
 
-time_t Jarvis::Time::get_time() const
+time_t PMGD::Time::get_time() const
 {
     struct tm tm;
     get_utc(&tm);
     return timegm(&tm);
 }
 
-uint64_t Jarvis::Time::get_time_in_usec() const
+uint64_t PMGD::Time::get_time_in_usec() const
 {
     return get_time() * 1000000ULL + usec;
 }

@@ -1,3 +1,32 @@
+/**
+ * @file   FixedAllocator.cc
+ *
+ * @section LICENSE
+ *
+ * The MIT License
+ *
+ * @copyright Copyright (c) 2017 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 /*
  * TODOs
  * - Write random data in regions in debug mode
@@ -12,7 +41,7 @@
 #include "FixedAllocator.h"
 #include "TransactionImpl.h"
 
-using namespace Jarvis;
+using namespace PMGD;
 
 #define ALLOC_OFFSET(sz) ((sizeof(RegionHeader) + (sz) - 1) & ~((sz) - 1))
 FixedAllocator::FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
@@ -71,7 +100,7 @@ void *FixedAllocator::alloc()
     else
     {
         if (((uint64_t)_pm->tail_ptr + _pm->size) > _pm->max_addr)
-            throw Exception(BadAlloc);
+            throw PMGDException(BadAlloc);
 
         /* Free list exhausted, we are growing our pool of objects by one */
         p = _pm->tail_ptr;
@@ -101,7 +130,7 @@ void *FixedAllocator::alloc(unsigned num)
     // as usual. It could cause allocator to refuse contiguous requests
     // even if there was enough space. But keeping it simple for now.
     if (((uint64_t)_pm->tail_ptr + num * _pm->size) > _pm->max_addr)
-        throw Exception(BadAlloc);
+        throw PMGDException(BadAlloc);
 
     p = _pm->tail_ptr;
     tx->write(&_pm->tail_ptr, (uint64_t *)((uint64_t)_pm->tail_ptr + num * _pm->size));
@@ -154,8 +183,10 @@ void FixedAllocator::free(void *p, unsigned num)
 {
     TransactionImpl *tx = TransactionImpl::get_tx();
 
-    if (((uint64_t)p + _pm->size * num) == (uint64_t)_pm->tail_ptr)
+    if (((uint64_t)p + _pm->size * num) == (uint64_t)_pm->tail_ptr) {
         tx->write(&_pm->tail_ptr, (uint64_t *)p);
+        tx->write(&_pm->num_allocated, _pm->num_allocated - num);
+    }
     else {
         tx->log_range(&_pm->free_ptr, &_pm->num_allocated);
         void *free_ptr = _pm->free_ptr;
