@@ -31,6 +31,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <emmintrin.h>
+#include <immintrin.h>
+#include "arch.h"
 
 namespace PMGD {
     // TransactionId is never reset and should not roll-over.
@@ -88,7 +91,31 @@ namespace PMGD {
                            uint64_t journal_size,
                            bool create, bool read_only);
 
-        TransactionHandle alloc_transaction(bool read_only);
-        void free_transaction(const TransactionHandle &);
+        TransactionHandle alloc_transaction(bool read_only, bool flush);
+        void free_transaction(const TransactionHandle &, bool sync);
+
+        // Need a neutral spot to declare the following functions
+        // that handle persistence via PM way or msync way. In case
+        // of msync, the caller decides based on Graph create time
+        // flags if some msync action is needed or not.
+        static inline void flush(void *addr, bool sync)
+        {
+#ifndef NOPM  // Means there is PM
+            clflush(addr);
+#else   // MSYNC
+            if (sync)
+                os::flush(addr);
+#endif
+        }
+
+        static inline void barrier(bool commit)
+        {
+#ifndef NOPM
+            persistent_barrier();
+#else   // MSYNC
+            if (commit)
+                os::commit();
+#endif
+        }
     };
 };

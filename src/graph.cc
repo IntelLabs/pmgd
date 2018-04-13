@@ -137,6 +137,7 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
                                 const Graph::Config *user_config)
     : create(options & Graph::Create),
       read_only(options & Graph::ReadOnly),
+      msync_options(options & Graph::AlwaysMsync),
       info_map(name, info_name,
                GraphConfig::BASE_ADDRESS, GraphConfig::INFO_SIZE,
                create, false, read_only),
@@ -217,7 +218,7 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
                   ? std::locale(_init.info->locale_name)
                   : std::locale())
 {
-    persistent_barrier();
+    TransactionManager::barrier(true);
 }
 
 namespace PMGD {

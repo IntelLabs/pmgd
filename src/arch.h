@@ -74,7 +74,7 @@ static inline void memory_barrier() // Instruct compiler not to re-order
     __asm__ volatile ("" : : : "memory");
 }
 
-#define CONCAT_(x, y)     x ## y
+#define CONCAT_(x, y)     x##y
 #define CONCAT(x, y)      CONCAT_(x, y)
 
 static inline void clflush(void *addr)

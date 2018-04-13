@@ -50,6 +50,7 @@ namespace PMGD {
         struct GraphInit {
             bool create;
             bool read_only;
+            unsigned msync_options;
             unsigned node_size;
             unsigned edge_size;
 
@@ -102,6 +103,11 @@ namespace PMGD {
         {
             if (_init.read_only)
                 throw PMGDException(ReadOnly);
+        }
+
+        int msync_options()
+        {
+            return _init.msync_options == 0 ? Graph::MsyncOnCommit : _init.msync_options;
         }
     };
 };

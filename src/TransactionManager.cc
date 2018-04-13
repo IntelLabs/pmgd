@@ -83,7 +83,7 @@ void TransactionManager::reset_table()
         hdr->tx_id = 0;
         hdr->jbegin = tx_jbegin(i);
         hdr->jend = tx_jend(i);
-        clflush(hdr);
+        flush(hdr, true);
     }
 }
 
@@ -110,7 +110,7 @@ void TransactionManager::recover(bool read_only)
             TransactionImpl::recover_tx(handle);
 
             hdr->tx_id = tx_id;
-            clflush(hdr);
+            flush(hdr, true);
         }
 
         if (tx_id > max_tx_id)
@@ -119,7 +119,7 @@ void TransactionManager::recover(bool read_only)
     _cur_tx_id = max_tx_id;
 }
 
-TransactionHandle TransactionManager::alloc_transaction(bool read_only)
+TransactionHandle TransactionManager::alloc_transaction(bool read_only, bool sync)
 {
     if (read_only) {
         // For a read-only transaction, don't allocate a transaction ID
@@ -141,14 +141,14 @@ TransactionHandle TransactionManager::alloc_transaction(bool read_only)
         if ((prev_tx_id & TransactionHdr::ACTIVE) == 0
             && cmpxchg(hdr->tx_id, prev_tx_id, tx_id | TransactionHdr::ACTIVE))
         {
-            clflush(hdr);
+            flush(hdr, sync);
             return TransactionHandle(tx_id, i, tx_jbegin(i), tx_jend(i));
         }
     }
     throw PMGDException(OutOfTransactions);
 }
 
-void TransactionManager::free_transaction(const TransactionHandle &handle)
+void TransactionManager::free_transaction(const TransactionHandle &handle, bool sync)
 {
     // If handle.index is -1, this is a read-only transaction, and
     // nothing needs to be done.
@@ -156,7 +156,7 @@ void TransactionManager::free_transaction(const TransactionHandle &handle)
         // Writing 0 to the transaction-id commits the transaction
         TransactionHdr *hdr = &_tx_table[handle.index];
         hdr->tx_id &= ~TransactionHdr::ACTIVE;
-        clflush(hdr);
-        persistent_barrier();
+        flush(hdr, sync);
+        barrier(sync);
     }
 }

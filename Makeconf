@@ -5,7 +5,7 @@
 OPT ?= -O3
 
 # Are we building on a platform with support for persistent memory?
-PMFLUSH ?= $(shell if grep -q clwb /proc/cpuinfo; then echo "-DPMFLUSH=clwb"; elif grep -q clflushopt /proc/cpuinfo; then echo "-DPMFLUSH=clflushopt"; else echo "-DPMFLUSH=clflush"; echo "-DNOPM"; fi)
+PMFLUSH ?= $(shell if grep -q clwb /proc/cpuinfo; then echo "-DPMFLUSH=clwb"; elif grep -q clflushopt /proc/cpuinfo; then echo "-DPMFLUSH=clflushopt"; else echo "-DPMFLUSH=clflush -DNOPM"; fi)
 
 # By default let us treat warnings as an error.
 WERROR ?= -Werror
