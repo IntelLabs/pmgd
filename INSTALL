@@ -10,8 +10,15 @@ You will need to set JAVA_HOME to point to your JDK
 
 
 Compilation:
-After that it is a make in the main folder.
+After that it is a make in the main folder. The default is a non-debug build.
 The make file puts all the libraries in a lib/ folder.
+
+To compile a debug build: make OPT=-g
+To compile for a different system that might be PM-enabled (provides clwb
+or clflushopt):
+make PMFLUSH="-DPMFLUSH=clwb"
+OR
+make PMFLUSH="-DPMFLUSH=clflushopt"
 
 
 Underlying file system:
@@ -27,9 +34,14 @@ test this soon and update instructions here.
 
 However, we have been using PMGD on an ext4-based file system at the risk
 of sacrificing durability. The code when compiled on a system that does
-not support PM, does not flush data to the disk on its own. The current
-release expects applications to call msync to avoid disk write penalties
-at small transaction boundaries.
+not support PM, chooses a weaker durability option where msyncs are done
+on transaction commit or abort boundaries. There are Graph options that
+allow a user to control when, if at all, msync should be done, with an
+extreme case of replacing every persistent barrier with an msync using
+AlwaysMsync when opening a graph. It is important to understand that PMGD
+has been developed with persistent memory in mind. So use on a DRAM based
+ext4 system is simply to enable the system use till the point of hardware
+availability.
 
 
 How to copy a PMGD database:

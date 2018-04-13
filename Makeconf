@@ -5,7 +5,7 @@
 OPT ?= -O3
 
 # Are we building on a platform with support for persistent memory?
-PM ?= $(shell if ! grep -q pcommit /proc/cpuinfo; then echo "-DNOPM"; fi)
+PMFLUSH ?= $(shell if grep -q clwb /proc/cpuinfo; then echo "-DPMFLUSH=clwb"; elif grep -q clflushopt /proc/cpuinfo; then echo "-DPMFLUSH=clflushopt"; else echo "-DPMFLUSH=clflush -DNOPM"; fi)
 
 # By default let us treat warnings as an error.
 WERROR ?= -Werror
@@ -73,7 +73,7 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
           -Wno-parentheses -Wno-conversion -Wno-sign-compare $(WERROR)
 
 # Flags for C++ compilation.
-CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
+CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PMFLUSH) -MP -MMD
 
 # Define CLEANFILES, CLEANDIRS, and PHONY as immediate variables!
 CLEANFILES :=

@@ -49,6 +49,8 @@ namespace PMGD {
 
             GraphImpl *_db;
             int _tx_type;
+            bool _flush;    // false only when NoMsync used for msync cases.
+            bool _always_sync;  // true only when AlwaysMsync used for msync cases.
             bool _committed;
 
             TransactionHandle _tx_handle;

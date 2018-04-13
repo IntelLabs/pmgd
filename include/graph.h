@@ -47,7 +47,9 @@ namespace PMGD {
         GraphImpl *_impl;
 
     public:
-        enum OpenOptions { ReadWrite = 0, Create = 1, ReadOnly = 2 };
+        // In case of msync, MsyncOnCommit is the default.
+        enum OpenOptions { ReadWrite = 0, Create = 1, ReadOnly = 2, NoMsync = 4,
+                           MsyncOnCommit = 8, AlwaysMsync = 12};
 
         struct Config {
             struct AllocatorInfo {

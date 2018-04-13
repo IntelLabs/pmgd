@@ -36,7 +36,7 @@ TEST_LIBS = lib/pmgd.lib lib/pmgd-util.lib
 
 # Override the global defaults.
 TEST_INCLUDES := $(INCLUDES) -I$(ROOTDIR)/util
-TEST_CFLAGS := --std=c++11 $(TEST_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
+TEST_CFLAGS := --std=c++11 $(TEST_INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PMFLUSH) -MP -MMD
 
 # Default rule for linking a test.
 test/%: test/%.o $(TEST_LIBS)

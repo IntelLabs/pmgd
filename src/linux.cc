@@ -34,6 +34,7 @@
 #include <sys/mman.h>
 #include <signal.h>
 #include <errno.h>
+#include <list>
 
 #include "os.h"
 #include "exception.h"
@@ -122,6 +123,71 @@ PMGD::os::MapRegion::OSMapRegion::~OSMapRegion()
     close(_fd);
 }
 
+struct range_t {
+    uint64_t base;
+    uint64_t end;
+};
+
+class range_list_t {
+    std::list<range_t> _list;
+    typedef std::list<range_t>::iterator iter;
+public:
+    void add(const range_t &);
+    void commit();
+};
+
+static range_list_t pending_commits;
+
+static const unsigned PAGE_SIZE = 4096;
+static const unsigned PAGE_OFFSET = PAGE_SIZE - 1;
+static const uint64_t PAGE_MASK = ~uint64_t(PAGE_OFFSET);
+
+void PMGD::os::flush(void *addr)
+{
+    uint64_t aligned_addr = (uint64_t)addr & PAGE_MASK;
+    pending_commits.add(range_t{aligned_addr, aligned_addr + PAGE_SIZE});
+}
+
+void PMGD::os::commit()
+{
+    pending_commits.commit();
+}
+
+void range_list_t::add(const range_t &new_range)
+{
+    iter list_end = _list.end();
+    for (iter i = _list.begin(); i != list_end; i++) {
+        if (new_range.base <= i->end) {
+            if (new_range.end < i->base) {
+                _list.insert(i, new_range);
+            }
+            else {
+                if (new_range.base < i->base)
+                    i->base = new_range.base;
+                if (new_range.end > i->end) {
+                    uint64_t new_end = new_range.end;
+                    iter next = std::next(i);
+                    while (next != list_end && new_end >= next->base) {
+                        if (new_end < next->end)
+                            new_end = next->end;
+                        next = _list.erase(next);
+                    }
+                    i->end = new_end;
+                }
+            }
+            return;
+        }
+    }
+    _list.insert(list_end, new_range);
+}
+
+void range_list_t::commit()
+{
+    iter list_end = _list.end();
+    for (auto i = _list.begin(); i != list_end; i++)
+        msync((void *)i->base, i->end - i->base, MS_SYNC);
+    _list.clear();
+}
 
 // Linux delivers SIGBUS when an attempted access to a memory-mapped
 // file cannot be satisfied, either because the access is beyond the
