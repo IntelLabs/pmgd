@@ -217,7 +217,7 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
                   ? std::locale(_init.info->locale_name)
                   : std::locale())
 {
-    persistent_barrier(11);
+    persistent_barrier();
 }
 
 namespace PMGD {
