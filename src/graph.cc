@@ -71,7 +71,7 @@ struct GraphImpl::GraphInfo {
     // wasting space due to alignment constraints.
     Allocator::RegionHeader allocator_hdr;
 
-    void init(const GraphConfig &);
+    void init(const GraphConfig &, bool);
 
     GraphInfo(const GraphInfo &) = delete;
     ~GraphInfo() = delete;
@@ -142,12 +142,26 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
                create, false, read_only),
       info(reinterpret_cast<GraphInfo *>(GraphConfig::BASE_ADDRESS))
 {
+    int msync_options = options & Graph::AlwaysMsync;
+    switch (msync_options) {
+    case 0:
+    case Graph::MsyncOnCommit:
+        msync_needed = true;
+        always_msync = false;
+        break;
+    case Graph::AlwaysMsync:
+        msync_needed = always_msync = true;
+        break;
+    case Graph::NoMsync:
+        msync_needed = always_msync = false;
+    }
+
     // create was modified by _info_map constructor
     // depending on whether the file existed or not
     // For a new graph, initialize the info structure
     if (create) {
         const GraphConfig config(user_config);
-        info->init(config);
+        info->init(config, msync_needed);
         node_size = config.node_size;
         edge_size = config.edge_size;
     }
@@ -157,7 +171,7 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
     }
 }
 
-void GraphImpl::GraphInfo::init(const GraphConfig &config)
+void GraphImpl::GraphInfo::init(const GraphConfig &config, bool msync_needed)
 {
     version = VERSION;
     transaction_info = config.transaction_info;
@@ -175,7 +189,7 @@ void GraphImpl::GraphInfo::init(const GraphConfig &config)
         throw PMGDException(InvalidConfig);
     memcpy(locale_name, config.locale_name.c_str(), size);
 
-    TransactionImpl::flush_range(this, sizeof *this);
+    TransactionImpl::flush_range(this, sizeof *this, msync_needed);
 }
 
 GraphImpl::MapRegion::MapRegion(
@@ -197,27 +211,28 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
                            _init.info->transaction_info.len,
                            _init.info->journal_info.addr,
                            _init.info->journal_info.len,
-                           _init.create, _init.read_only),
-      _index_manager(_init.info->indexmanager_info.addr, _init.create),
+                           _init.create, _init.read_only,
+                           _init.msync_needed),
+      _index_manager(_init.info->indexmanager_info.addr, _init.create, _init.msync_needed),
       _string_table(_init.info->stringtable_info.addr,
                     _init.info->stringtable_info.len,
                     _init.info->max_stringid_length,
-                    _init.create),
+                    _init.create, _init.msync_needed),
       _node_table(_init.info->node_info.addr,
                   _init.node_size, _init.info->node_info.len,
-                  _init.create),
+                  _init.create, _init.msync_needed),
       _edge_table(_init.info->edge_info.addr,
                   _init.edge_size, _init.info->edge_info.len,
-                  _init.create),
+                  _init.create, _init.msync_needed),
       _allocator(_init.info->allocator_info.addr,
                  _init.info->allocator_info.len,
                  &_init.info->allocator_hdr,
-                 _init.create),
+                 _init.create, _init.msync_needed),
       _locale(_init.info->locale_name[0] != '\0'
                   ? std::locale(_init.info->locale_name)
                   : std::locale())
 {
-    persistent_barrier();
+    TransactionManager::commit(_init.msync_needed);
 }
 
 namespace PMGD {

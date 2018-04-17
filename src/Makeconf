@@ -28,10 +28,12 @@ CLEANFILES += src/pmgd.lib src/libpmgd.so
 CLEANDIRS += lib
 
 # Override the global defaults.
-SRC_CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) -fPIC $(WFLAGS) $(PM) -MP -MMD -DCOMMIT_ID="\"$(COMMIT_ID)\""
+SRC_CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) -fPIC $(WFLAGS) \
+                -D$(PMOPT) -DPMFLUSH=$(PMFLUSH) -MP -MMD -DCOMMIT_ID="\"$(COMMIT_ID)\""
 
 # Override the global rule for building an object file from a C++ file.
 src/%.o: src/%.cc $(MAKEFILE_LIST)
+	$(if $(PMOPT),,$(error "PMOPT must be defined as PM or MSYNC"))
 	$(call print,CC,$@)
 	$(CC) $(SRC_CFLAGS) -o $@ -c $<
 

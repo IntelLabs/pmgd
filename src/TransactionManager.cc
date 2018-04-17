@@ -39,7 +39,8 @@ using namespace PMGD;
 TransactionManager::TransactionManager(
             uint64_t transaction_table_addr, uint64_t transaction_table_size,
             uint64_t journal_addr, uint64_t journal_size,
-            bool create, bool read_only)
+            bool create, bool read_only,
+            bool msync_needed)
     : _tx_table(reinterpret_cast<TransactionHdr *>(transaction_table_addr)),
       _journal_addr(reinterpret_cast<void *>(journal_addr)),
       _max_transactions(transaction_table_size / sizeof (TransactionHdr)),
@@ -56,11 +57,11 @@ TransactionManager::TransactionManager(
         throw PMGDException(InvalidConfig);
 
     if (create) {
-        reset_table();
+        reset_table(msync_needed);
         _cur_tx_id = 0;
     }
     else
-        recover(read_only);
+        recover(read_only, msync_needed);
 }
 
 void *TransactionManager::tx_jbegin(int index)
@@ -75,7 +76,7 @@ void *TransactionManager::tx_jend(int index)
     return static_cast<uint8_t *>(_journal_addr) + ((index+1) * _extent_size);
 }
 
-void TransactionManager::reset_table()
+void TransactionManager::reset_table(bool msync_needed)
 {
     for (int i = 0; i < _max_transactions; i++)
     {
@@ -83,11 +84,11 @@ void TransactionManager::reset_table()
         hdr->tx_id = 0;
         hdr->jbegin = tx_jbegin(i);
         hdr->jend = tx_jend(i);
-        clflush(hdr);
+        flush(hdr, msync_needed);
     }
 }
 
-void TransactionManager::recover(bool read_only)
+void TransactionManager::recover(bool read_only, bool msync_needed)
 {
     // If there are any active transactions in the transaction table,
     // create a TransactionHandle and call recover_tx for each one.
@@ -107,10 +108,10 @@ void TransactionManager::recover(bool read_only)
 
             tx_id &= ~TransactionHdr::ACTIVE;
             TransactionHandle handle(tx_id, i, hdr->jbegin, hdr->jend);
-            TransactionImpl::recover_tx(handle);
+            TransactionImpl::recover_tx(handle, msync_needed);
 
             hdr->tx_id = tx_id;
-            clflush(hdr);
+            flush(hdr, msync_needed);
         }
 
         if (tx_id > max_tx_id)
@@ -119,7 +120,7 @@ void TransactionManager::recover(bool read_only)
     _cur_tx_id = max_tx_id;
 }
 
-TransactionHandle TransactionManager::alloc_transaction(bool read_only)
+TransactionHandle TransactionManager::alloc_transaction(bool read_only, bool msync_needed)
 {
     if (read_only) {
         // For a read-only transaction, don't allocate a transaction ID
@@ -141,14 +142,14 @@ TransactionHandle TransactionManager::alloc_transaction(bool read_only)
         if ((prev_tx_id & TransactionHdr::ACTIVE) == 0
             && cmpxchg(hdr->tx_id, prev_tx_id, tx_id | TransactionHdr::ACTIVE))
         {
-            clflush(hdr);
+            flush(hdr, msync_needed);
             return TransactionHandle(tx_id, i, tx_jbegin(i), tx_jend(i));
         }
     }
     throw PMGDException(OutOfTransactions);
 }
 
-void TransactionManager::free_transaction(const TransactionHandle &handle)
+void TransactionManager::free_transaction(const TransactionHandle &handle, bool msync_needed)
 {
     // If handle.index is -1, this is a read-only transaction, and
     // nothing needs to be done.
@@ -156,7 +157,7 @@ void TransactionManager::free_transaction(const TransactionHandle &handle)
         // Writing 0 to the transaction-id commits the transaction
         TransactionHdr *hdr = &_tx_table[handle.index];
         hdr->tx_id &= ~TransactionHdr::ACTIVE;
-        clflush(hdr);
-        persistent_barrier();
+        flush(hdr, msync_needed);
+        commit(msync_needed);
     }
 }

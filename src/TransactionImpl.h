@@ -49,6 +49,8 @@ namespace PMGD {
 
             GraphImpl *_db;
             int _tx_type;
+            bool _msync_needed;    // false only when NoMsync used for msync cases.
+            bool _always_msync;  // true only when AlwaysMsync used for msync cases.
             bool _committed;
 
             TransactionHandle _tx_handle;
@@ -61,7 +63,8 @@ namespace PMGD {
             void log_je(void *src, size_t len);
             void finalize_commit();
             static void rollback(const TransactionHandle &h,
-                                 const JournalEntry *jend);
+                                 const JournalEntry *jend,
+                                 bool msync_needed);
 
             TransactionId tx_id() const { return _tx_handle.id; }
             JournalEntry *jbegin()
@@ -145,10 +148,13 @@ namespace PMGD {
             }
 
             // flush a range using clflushopt. Caller must call
-            // persistent_barrier to ensure the flushed data is durable.
-            static void flush_range(void *ptr, size_t len);
+            // commit to ensure the flushed data is durable.
+            static void flush_range(void *ptr, size_t len, bool msync_needed);
+
+            // Another variation where TX is already present in the caller.
+            void flush_range(void *ptr, size_t len);
 
             // roll-back the transaction
-            static void recover_tx(const TransactionHandle &);
+            static void recover_tx(const TransactionHandle &, bool);
     };
 };

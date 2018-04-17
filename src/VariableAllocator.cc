@@ -123,7 +123,7 @@ void *Allocator::VariableAllocator::FreeFormChunk::alloc(size_t sz)
     }
 }
 
-Allocator::VariableAllocator::FreeFormChunk::FreeFormChunk(unsigned used)
+Allocator::VariableAllocator::FreeFormChunk::FreeFormChunk(TransactionImpl *tx, unsigned used)
 {
     next_chunk = NULL;
     free_space = CHUNK_SIZE - HEADER_SIZE - used;
@@ -133,7 +133,7 @@ Allocator::VariableAllocator::FreeFormChunk::FreeFormChunk(unsigned used)
     free_spot->next = 0;
     free_spot->size = free_space;
     max_cont_space = free_space;
-    TransactionImpl::flush_range(this, sizeof(FreeFormChunk) + sizeof(free_spot_t));
+    tx->flush_range(this, sizeof(FreeFormChunk) + sizeof(free_spot_t));
 }
 
 void *Allocator::VariableAllocator::alloc_large(size_t sz)
@@ -144,7 +144,9 @@ void *Allocator::VariableAllocator::alloc_large(size_t sz)
     unsigned num_chunks = tot_size / CHUNK_SIZE;
     unsigned used = sz - (num_chunks - 1) * CHUNK_SIZE;
 
-    FreeFormChunk *dst_chunk = new (_allocator.alloc_chunk(num_chunks)) FreeFormChunk(used);
+    TransactionImpl *tx = TransactionImpl::get_tx();
+
+    FreeFormChunk *dst_chunk = new (_allocator.alloc_chunk(num_chunks)) FreeFormChunk(tx, used);
 
     void *addr = dst_chunk->compute_addr(CHUNK_SIZE - used);
 
@@ -160,8 +162,6 @@ void *Allocator::VariableAllocator::alloc_large(size_t sz)
         _last_chunk_scanned = _chunk_to_scan;
         _chunk_to_scan = _chunk_to_scan->next_chunk;
     }
-
-    TransactionImpl *tx = TransactionImpl::get_tx();
 
     // First free form allocation.
     if (_hdr->start_chunk == NULL)
@@ -216,7 +216,7 @@ void *Allocator::VariableAllocator::alloc(size_t sz)
 
     // Reached null while looking for addrs. So all others scanned.
     // If it comes out here, no luck allocating.
-    FreeFormChunk *dst_chunk = new (_allocator.alloc_chunk()) FreeFormChunk;
+    FreeFormChunk *dst_chunk = new (_allocator.alloc_chunk()) FreeFormChunk(tx);
 
     // First free form allocation.
     if (_hdr->start_chunk == NULL)

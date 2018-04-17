@@ -89,7 +89,8 @@ namespace PMGD {
         AvlTreeIndex(PropertyType ptype) : Index(ptype), AvlTree<K,V>()
         {
             // This will flush for both the base classes too.
-            TransactionImpl::flush_range(this, sizeof *this);
+            TransactionImpl *tx = TransactionImpl::get_tx();
+            tx->flush_range(this, sizeof *this);
         }
 
         using AvlTree<K,V>::add;

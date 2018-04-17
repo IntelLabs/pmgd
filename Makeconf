@@ -4,8 +4,13 @@
 # Default optimization level.
 OPT ?= -O3
 
-# Are we building on a platform with support for persistent memory?
-PM ?= $(shell if ! grep -q pcommit /proc/cpuinfo; then echo "-DNOPM"; fi)
+# Indicate which clflush instruction should be used with PM
+# This test is based on the assumption that the code is built
+# on the system it will be run on. Otherwise PMFLUSH should
+# be defined by a make parameter as clwb, clflushopt, or clflush.
+PMFLUSH ?= $(shell if grep -q clwb /proc/cpuinfo; then echo "clwb"; \
+                   elif grep -q clflushopt /proc/cpuinfo; then echo "clflushopt"; \
+                   else echo "clflush"; fi)
 
 # By default let us treat warnings as an error.
 WERROR ?= -Werror
@@ -73,7 +78,8 @@ WFLAGS := -Wall -Wpointer-arith -Wcast-align -Wwrite-strings \
           -Wno-parentheses -Wno-conversion -Wno-sign-compare $(WERROR)
 
 # Flags for C++ compilation.
-CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) $(PM) -MP -MMD
+CFLAGS := --std=c++11 $(INCLUDES) $(OPT) $(FFLAGS) $(WFLAGS) \
+            -DPMFLUSH=$(PMFLUSH) -MP -MMD
 
 # Define CLEANFILES, CLEANDIRS, and PHONY as immediate variables!
 CLEANFILES :=

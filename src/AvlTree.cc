@@ -131,7 +131,7 @@ typename AvlTree<K,V>::TreeNode *AvlTree<K,V>::add_recursive(AvlTree<K,V>::TreeN
         temp->right = NULL;
 
         // Since new_node is new allocation, just flush it without logging.
-        TransactionImpl::flush_range(temp, sizeof *temp);
+        tx->flush_range(temp, sizeof *temp);
         tx->write(&_num_elems, _num_elems + 1);
         return temp;
     }

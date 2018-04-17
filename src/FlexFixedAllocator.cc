@@ -40,10 +40,11 @@ using namespace std;
 Allocator::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
                       RegionHeader *hdr_addr,
                       unsigned object_size, uint64_t pool_size,
-                      Allocator &allocator, bool create)
+                      Allocator &allocator, bool create, bool msync_needed)
     : _pm(hdr_addr),
       _obj_size(object_size), _pool_size(pool_size),
       _max_objs_per_pool(pool_size / object_size),
+      _msync_needed(msync_needed),
       _allocator(allocator)
 {
     // Make sure we have a well-aligned pool_addr.
@@ -68,7 +69,7 @@ Allocator::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
     _last_hdr_scanned = _pm;
     if (num_allocated < _max_objs_per_pool) {
         FixedAllocator *fa = new FixedAllocator(pool_addr, &_pm->fa_hdr,
-                            _obj_size, _pool_size, create);
+                            _obj_size, _pool_size, create, msync_needed);
         _fa_pools.insert(pair<uint64_t,FixedAllocatorInfo*>(pool_addr,
                             new FixedAllocatorInfo{fa, _pm,
                             NULL, fa->num_allocated()}) );
@@ -106,7 +107,7 @@ void *Allocator::FlexFixedAllocator::alloc()
         int64_t num_allocated = FixedAllocator::num_allocated(&hdr->fa_hdr);
         if (num_allocated < _max_objs_per_pool) {
             FixedAllocator *fa = new FixedAllocator(hdr->pool_base, &hdr->fa_hdr,
-                                    _obj_size, _pool_size, false);
+                                    _obj_size, _pool_size, false, _msync_needed);
             addr = fa->alloc();
             num_allocated++;
 
@@ -144,11 +145,13 @@ Allocator::FlexFixedAllocator::FixedAllocatorInfo *Allocator::FlexFixedAllocator
 
     hdr->pool_base = pool_addr;
     FixedAllocator *fa = new FixedAllocator(pool_addr, &(hdr->fa_hdr),
-                            _obj_size, _pool_size, true);
+                            _obj_size, _pool_size, true, _msync_needed);
     hdr->next_pool_hdr = NULL;
-    TransactionImpl::flush_range(hdr, sizeof(*hdr) - sizeof(hdr->fa_hdr));
 
     TransactionImpl *tx = TransactionImpl::get_tx();
+
+    tx->flush_range(hdr, sizeof(*hdr) - sizeof(hdr->fa_hdr));
+
     tx->write(&_last_hdr_scanned->next_pool_hdr, hdr);
 
     FixedAllocatorInfo *fa_info = new FixedAllocatorInfo{fa,
@@ -231,7 +234,7 @@ void Allocator::FlexFixedAllocator::free(void *addr)
     else {
         if (fa == NULL) {
             fa = new FixedAllocator(pool_base, &(hdr->fa_hdr),
-                                    _obj_size, _pool_size, false);
+                                    _obj_size, _pool_size, false, _msync_needed);
         }
         fa->free(addr, 1);
         if (fa_info == NULL) {
