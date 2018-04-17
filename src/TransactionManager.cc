@@ -157,6 +157,6 @@ void TransactionManager::free_transaction(const TransactionHandle &handle)
         TransactionHdr *hdr = &_tx_table[handle.index];
         hdr->tx_id &= ~TransactionHdr::ACTIVE;
         clflush(hdr);
-        persistent_barrier(24);
+        persistent_barrier();
     }
 }
