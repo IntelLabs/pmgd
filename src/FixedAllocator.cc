@@ -155,9 +155,6 @@ void FixedAllocator::free(void *p)
     // assert(Check free list for p);
     TransactionImpl *tx = TransactionImpl::get_tx();
 
-    tx->log(p, sizeof(uint64_t));
-    *(uint64_t *)p = FREE_BIT;
-
     AllocatorCallback<FixedAllocator, void *>::delayed_free(tx, this, p);
 }
 
