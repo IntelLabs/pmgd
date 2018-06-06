@@ -137,7 +137,17 @@ namespace PMGD {
                 flush_range(dst, len);
             }
 
-            void commit() { _committed = true; }
+            void commit()
+            {
+                if (_tx_type & Transaction::ReadWrite) {
+                    // Finalize calls clean free list which could cause lock
+                    // timeout failure or sometimes JournalSpace exception.
+                    // So catch it and treat it as a case for
+                    // rollback.
+                    finalize_commit();
+                }
+                _committed = true;
+            }
 
             // get current transaction
             static inline TransactionImpl *get_tx()
