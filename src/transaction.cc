@@ -101,9 +101,7 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
 TransactionImpl::~TransactionImpl()
 {
     if (_tx_type & Transaction::ReadWrite) {
-        if (_committed) {
-            finalize_commit();
-        } else {
+        if (!_committed) {
             rollback(_tx_handle, _jcur, _msync_needed);
         }
         TransactionManager *tx_manager = &_db->transaction_manager();
@@ -112,7 +110,6 @@ TransactionImpl::~TransactionImpl()
 
     _per_thread_tx = _outer_tx;
 }
-
 
 void TransactionImpl::log_je(void *src_ptr, size_t len)
 {
