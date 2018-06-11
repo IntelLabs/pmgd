@@ -15,6 +15,7 @@ TEST_SRCS := $(addprefix test/, \
                          reverseindexrangetest.cc emailindextest.cc \
                          removetest.cc \
                          mtalloctest.cc stripelocktest.cc mtavltest.cc \
+                         mtaddfindremovetest.cc \
                          rotest.cc BindingsTest.java DateTest.java \
                          neighbortest.cc aborttest.cc \
                          test720.cc test750.cc test767.cc)
@@ -71,6 +72,11 @@ test/mtavltest: test/mtavltest.o $(TEST_LIBS)
 
 # Special case for stripelocktest.
 test/stripelocktest: test/stripelocktest.o $(TEST_LIBS)
+	$(call print,LINK,$@)
+	$(CC) $(OPT) -o $@ $< $(TEST_LIBS) -lpthread
+
+# Special case for stripelocktest.
+test/mtaddfindremovetest: test/mtaddfindremovetest.o $(TEST_LIBS)
 	$(call print,LINK,$@)
 	$(CC) $(OPT) -o $@ $< $(TEST_LIBS) -lpthread
 

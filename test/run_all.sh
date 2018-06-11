@@ -77,7 +77,7 @@ tests=( alloctest allocaborttest avltest chunklisttest edgeindextest
         reverseindexrangetest rotest
         statsindextest statsallocatortest
         soltest stringtabletest txtest removetest
-        mtalloctest stripelocktest mtavltest
+        mtalloctest stripelocktest mtavltest mtaddfindremovetest
         test720 test750 test767
         load_pmgd_tests
         BindingsTest DateTest )
@@ -91,7 +91,7 @@ graph_dirs=( fixedallocgraph varallocgraph avlgraph chunklistgraph edgeindexgrap
              statsindexgraph statsallocatorgraph
              reverseindexrangegraph rograph
              solgraph stringtablegraph txgraph removegraph
-             mtallocgraph
+             mtallocgraph mtaddfindremovegraph
              test720graph test750graph test767graph
              bindingsgraph )
 
