@@ -75,7 +75,8 @@ THREAD TransactionImpl *TransactionImpl::_per_thread_tx = NULL;
 TransactionImpl::TransactionImpl(GraphImpl *db, int options)
     : _db(db),
       _tx_type(options),
-      _committed(false)
+      _committed(false),
+      _locks { Locks(db->node_locks()), Locks(db->edge_locks()), Locks(db->index_locks()) }
 {
     static_assert(sizeof (TransactionImpl::JournalEntry) == 64, "Journal entry size is not 64 bytes.");
 
@@ -94,23 +95,32 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
     _jcur = jbegin();
     _outer_tx = _per_thread_tx;
     _per_thread_tx = this; // Install per-thread TX
+
+    _alloc_id = -1;
 }
 
 TransactionImpl::~TransactionImpl()
 {
     if (_tx_type & Transaction::ReadWrite) {
-        if (_committed) {
-            finalize_commit();
-        } else {
+        if (!_committed) {
             rollback(_tx_handle, _jcur);
+            _abort_callback_list.do_callbacks(this);
         }
+        _alloc_id = -1;
+        _finalize_callback_list.do_callbacks(this);
+    }
+
+    for (unsigned i = 0; i < NUM_LOCK_REGIONS; ++i)
+        _locks[i].unlock_all();
+
+    // Free the journal after everything is done.
+    if (_tx_type & Transaction::ReadWrite) {
         TransactionManager *tx_manager = &_db->transaction_manager();
         tx_manager->free_transaction(_tx_handle);
     }
 
     _per_thread_tx = _outer_tx;
 }
-
 
 void TransactionImpl::log_je(void *src_ptr, size_t len)
 {
@@ -201,3 +211,43 @@ void TransactionImpl::rollback(const TransactionHandle &h,
     }
     persistent_barrier(40);
 }
+
+TransactionImpl::LockState TransactionImpl::Locks::acquire_lock(const void *addr, bool write)
+{
+    uint64_t stripeid = mainlock.get_stripe_id(addr);
+    typedef LockStatusMap::iterator LockMapIt;
+    std::pair<LockMapIt, bool> pair =
+        mylocks.insert(std::pair<uint64_t, uint8_t>(stripeid, LockNotFound));
+    LockMapIt it = pair.first;
+    if (!pair.second) {  // Insert didn't happen cause lock existed
+        if (write && it->second != WriteLock) {  // what we had was a read lock
+            mainlock.upgrade_lock(stripeid);
+            it->second = WriteLock;
+            return ReadLock;
+        }
+        return (LockState)it->second;
+    }
+    else {  // Lock not in system.
+        if (write) {
+            mainlock.write_lock(stripeid);
+            it->second = WriteLock;
+        }
+        else {
+            mainlock.read_lock(stripeid);
+            it->second = ReadLock;
+        }
+        return LockNotFound;
+    }
+}
+
+void TransactionImpl::Locks::unlock_all()
+{
+    for (auto it = mylocks.begin(); it != mylocks.end(); ++it) {
+        if (it->second == WriteLock)
+            mainlock.write_unlock(it->first);
+        else if (it->second == ReadLock)
+            mainlock.read_unlock(it->first);
+    }
+    mylocks.clear();
+}
+

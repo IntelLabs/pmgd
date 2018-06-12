@@ -69,7 +69,7 @@ mkdir -p log
 # While this list could be constructed dynamically, keep it static
 # to allow for choosing and making sure we don't delete wrong dirs
 # by mistake.
-tests=( alloctest avltest chunklisttest edgeindextest
+tests=( alloctest allocaborttest avltest chunklisttest edgeindextest
         emailindextest filtertest indextest indexstringtest
         indexrangetest listtest load_gson_test load_tsv_test
         neighbortest nodeedgetest propertychunktest propertypredicatetest
@@ -77,11 +77,13 @@ tests=( alloctest avltest chunklisttest edgeindextest
         reverseindexrangetest rotest
         statsindextest statsallocatortest
         soltest stringtabletest txtest removetest
+        mtalloctest stripelocktest mtavltest mtaddfindremovetest
         test720 test750 test767
         load_pmgd_tests
         BindingsTest DateTest )
 
 graph_dirs=( fixedallocgraph varallocgraph avlgraph chunklistgraph edgeindexgraph
+             fixedallocabortgraph varallocabortgraph varallocabortlargegraph
              emailindexgraph filtergraph indexgraph indexstringgraph
              indexrangegraph listgraph load_gson_graph load_tsv_graph
              neighborgraph nodeedgegraph propertychunkgraph ppgraph
@@ -89,6 +91,7 @@ graph_dirs=( fixedallocgraph varallocgraph avlgraph chunklistgraph edgeindexgrap
              statsindexgraph statsallocatorgraph
              reverseindexrangegraph rograph
              solgraph stringtablegraph txgraph removegraph
+             mtallocgraph mtaddfindremovegraph
              test720graph test750graph test767graph
              bindingsgraph )
 

@@ -30,6 +30,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <locale.h>
+#include <thread>
 #include "graph.h"
 #include "GraphConfig.h"
 #include "GraphImpl.h"
@@ -48,6 +49,11 @@ static const size_t INDEX_MANAGER_SIZE = SIZE_4KB;
 static const int DEFAULT_MAX_STRINGID_LENGTH = 16;
 static const int DEFAULT_MAX_STRINGIDS = 4096;
 static const size_t DEFAULT_STRING_TABLE_SIZE = DEFAULT_MAX_STRINGIDS * DEFAULT_MAX_STRINGID_LENGTH;
+
+static const unsigned DEFAULT_NUM_ALLOCATORS = 1;
+
+static const size_t DEFAULT_STRIPED_LOCK_SIZE = SIZE_2MB;
+static const unsigned DEFAULT_STRIPE_WIDTH = 64;  // bytes
 
 static inline size_t align(size_t addr, size_t alignment)
 {
@@ -108,7 +114,33 @@ GraphConfig::GraphConfig(const Graph::Config *user_config)
 
     size_t allocator_region_size = VALUE(allocator_region_size, default_region_size);
     if (allocator_region_size % Allocator::CHUNK_SIZE != 0)
-        throw PMGDException(InvalidConfig);
+        throw PMGDException(InvalidConfig, "Invalid allocator region size");
+
+    // Put constraints on number of instances based on the region size
+    // and core count.
+    num_allocators = VALUE(num_allocators, DEFAULT_NUM_ALLOCATORS);
+    if (allocator_region_size < 2 * Allocator::CHUNK_SIZE || num_allocators < 1)
+        throw PMGDException(InvalidConfig, "Cannot even support one allocator instance");
+    if (num_allocators * 2 * Allocator::CHUNK_SIZE > allocator_region_size)
+        throw PMGDException(InvalidConfig, "Not enough space to create so many allocators\n");
+    if (num_allocators > std::thread::hardware_concurrency())
+        throw PMGDException(InvalidConfig, "Max allocators allowed: " +
+                                       std::to_string(std::thread::hardware_concurrency()));
+
+    size_t default_striped_lock_size;
+    default_striped_lock_size = VALUE(default_striped_lock_size, DEFAULT_STRIPED_LOCK_SIZE);
+    check_power_of_two(default_striped_lock_size);
+    node_striped_lock_size = VALUE(node_striped_lock_size, default_striped_lock_size);
+    check_power_of_two(node_striped_lock_size);
+    edge_striped_lock_size = VALUE(edge_striped_lock_size, default_striped_lock_size);
+    check_power_of_two(edge_striped_lock_size);
+    index_striped_lock_size = VALUE(index_striped_lock_size, default_striped_lock_size);
+    check_power_of_two(index_striped_lock_size);
+
+    unsigned default_width = VALUE(default_stripe_width, DEFAULT_STRIPE_WIDTH);
+    node_stripe_width = VALUE(node_stripe_width, default_width);
+    edge_stripe_width = VALUE(edge_stripe_width, default_width);
+    index_stripe_width = VALUE(index_stripe_width, default_width);
 
     // 'Addr' is updated by init_region_info to the end of the region,
     // so it can be used to determine the base address of the next region.

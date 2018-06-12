@@ -44,6 +44,7 @@ namespace PMGD {
 
     class Graph {
         friend class Transaction;
+        friend class Allocator;
         GraphImpl *_impl;
 
     public:
@@ -66,6 +67,28 @@ namespace PMGD {
             size_t transaction_table_size;
             size_t journal_size;
             size_t allocator_region_size;
+
+            unsigned num_allocators;
+
+            // The parameters below are DRAM-based parameters that can be
+            // modified each time the graph is created/opened. The variables
+            // above are PM-based parameters which are fixed once the graph
+            // is created. It could be worthwhile moving these to a separate
+            // structure if it makes sense. locale_name is not included in
+            // the DRAM variable list.
+            size_t default_striped_lock_size; // bytes
+            size_t node_striped_lock_size;    // bytes
+            size_t edge_striped_lock_size;    // bytes
+            size_t index_striped_lock_size;   // bytes
+
+            // Indicate how many bytes get covered by one
+            // bucket in the stripe lock. Keep it modular per
+            // lock stripe since nodes, edges and index nodes
+            // can be of very different sizes.
+            unsigned default_stripe_width;
+            unsigned node_stripe_width;
+            unsigned edge_stripe_width;
+            unsigned index_stripe_width;
 
             std::string locale_name;
 
