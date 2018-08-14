@@ -519,7 +519,7 @@ void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
         // Flush from the beginning of the chunk because the
         // chunk initialization code depends on us doing it
         // (to avoid redundant flushes).
-        TransactionImpl::flush_range(_pos._chunk, _pos._offset + log_size);
+        tx->flush_range(_pos._chunk, _pos._offset + log_size);
     }
 }
 
@@ -661,7 +661,8 @@ void PropertyRef::set_blob(const void *value, std::size_t size,
     if (size > UINT_MAX) throw PMGDException(NotImplemented);
     void *p = allocator.alloc(size);
     memcpy(p, value, size);
-    TransactionImpl::flush_range(p, size);
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    tx->flush_range(p, size);
     BlobRef *v = (BlobRef *)val();
     v->value = p;
     v->size = uint32_t(size);

@@ -31,6 +31,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <emmintrin.h>
+#include <immintrin.h>
+#include "arch.h"
+#include "os.h"
 
 namespace PMGD {
     // TransactionId is never reset and should not roll-over.
@@ -73,8 +77,8 @@ namespace PMGD {
         size_t _extent_size;
         int _max_extents;
 
-        void reset_table();
-        void recover(bool read_only);
+        void reset_table(bool msync_needed);
+        void recover(bool read_only, bool msync_needed);
         void *tx_jbegin(int index);
         void *tx_jend(int index);
 
@@ -86,9 +90,34 @@ namespace PMGD {
                            uint64_t transaction_table_size,
                            uint64_t journal_addr,
                            uint64_t journal_size,
-                           bool create, bool read_only);
+                           bool create, bool read_only,
+                           bool msync_needed);
 
-        TransactionHandle alloc_transaction(bool read_only);
-        void free_transaction(const TransactionHandle &);
+        TransactionHandle alloc_transaction(bool read_only, bool msync_needed);
+        void free_transaction(const TransactionHandle &, bool msync_needed);
+
+        // Need a neutral spot to declare the following functions
+        // that handle persistence via PM way or msync way. In case
+        // of msync, the caller decides based on Graph create time
+        // flags if some msync action is needed or not.
+        static inline void flush(void *addr, bool msync_needed)
+        {
+#ifdef PM  // Means there is PM
+            clflush(addr);
+#else   // MSYNC
+            if (msync_needed)
+                os::flush(addr);
+#endif
+        }
+
+        static inline void commit(bool msync_commit)
+        {
+#ifdef PM
+            persistent_barrier();
+#else   // MSYNC
+            if (msync_commit)
+                os::commit();
+#endif
+        }
     };
 };

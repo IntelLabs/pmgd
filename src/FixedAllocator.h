@@ -90,11 +90,11 @@ namespace PMGD {
 
         FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create);
+                               bool create, bool msync_needed);
 
         FixedAllocator(uint64_t pool_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create);
+                               bool create, bool msync_needed);
 
         // Primary allocator functions; serialized
         void *alloc();

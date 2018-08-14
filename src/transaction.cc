@@ -81,15 +81,17 @@ TransactionImpl::TransactionImpl(GraphImpl *db, int options)
 
     bool read_write = _tx_type & Transaction::ReadWrite;
 
-    if (read_write)
+    if (read_write) {
         db->check_read_write();
+        db->msync_options(_msync_needed, _always_msync);
+    }
 
     // nested dependent transactions not supported yet
     if (_per_thread_tx != NULL && read_write
             && !(_tx_type & Transaction::Independent))
         throw PMGDException(NotImplemented);
 
-    _tx_handle = db->transaction_manager().alloc_transaction(!read_write);
+    _tx_handle = db->transaction_manager().alloc_transaction(!read_write, _msync_needed);
 
     _jcur = jbegin();
     _outer_tx = _per_thread_tx;
@@ -102,10 +104,10 @@ TransactionImpl::~TransactionImpl()
         if (_committed) {
             finalize_commit();
         } else {
-            rollback(_tx_handle, _jcur);
+            rollback(_tx_handle, _jcur, _msync_needed);
         }
         TransactionManager *tx_manager = &_db->transaction_manager();
-        tx_manager->free_transaction(_tx_handle);
+        tx_manager->free_transaction(_tx_handle, _msync_needed);
     }
 
     _per_thread_tx = _outer_tx;
@@ -119,7 +121,7 @@ void TransactionImpl::log_je(void *src_ptr, size_t len)
     memcpy(&_jcur->data[0], src_ptr, len);
     memory_barrier();
     _jcur->tx_id = tx_id();
-    clflush(_jcur);
+    TransactionManager::flush(_jcur, _msync_needed);
     _jcur++;
 }
 
@@ -141,7 +143,7 @@ void TransactionImpl::log(void *ptr, size_t len)
     }
 
     log_je(ptr, len % JE_MAX_LEN);
-    persistent_barrier(31);
+    TransactionManager::commit(_always_msync);
 }
 
 void TransactionImpl::finalize_commit()
@@ -150,8 +152,8 @@ void TransactionImpl::finalize_commit()
 
     // Flush (and make durable) dirty in-place data pointed to by log entries
     for (JournalEntry *je = jbegin(); je < _jcur; je++)
-        clflush(je->addr);
-    persistent_barrier(34);
+        TransactionManager::flush(je->addr, _msync_needed);
+    TransactionManager::commit(_msync_needed);
 }
 
 
@@ -167,26 +169,32 @@ static inline T align_high(T var, size_t sz)
     return (T)(((uint64_t)var + (sz-1)) & ~(sz-1));
 }
 
-void TransactionImpl::flush_range(void *ptr, size_t len)
+void TransactionImpl::flush_range(void *ptr, size_t len, bool msync_needed)
 {
     // adjust the size to flush
     len = align_high(len + ((size_t)ptr & (64-1)), 64);
 
     char *addr, *eptr;
     for (addr = (char *)ptr, eptr = (char *)ptr+len; addr < eptr; addr += 64)
-        clflush(addr);
+        TransactionManager::flush(addr, msync_needed);
+}
+
+void TransactionImpl::flush_range(void *ptr, size_t len)
+{
+    flush_range(ptr, len, _msync_needed);
 }
 
 // static function to allow recovery from TransactionManager.
 // There are no real TransactionImpl objects at recovery time.
-void TransactionImpl::recover_tx(const TransactionHandle &h)
+void TransactionImpl::recover_tx(const TransactionHandle &h, bool msync_needed)
 {
     JournalEntry *jend = static_cast<JournalEntry *>(h.jend);
-    rollback(h, jend);
+    rollback(h, jend, msync_needed);
 }
 
 void TransactionImpl::rollback(const TransactionHandle &h,
-                               const JournalEntry *jend)
+                               const JournalEntry *jend,
+                               bool msync_needed)
 {
     JournalEntry *je;
     JournalEntry *jbegin = static_cast<JournalEntry *>(h.jbegin);
@@ -197,7 +205,10 @@ void TransactionImpl::rollback(const TransactionHandle &h,
     // rollback in the reverse order
     while (je-- > jbegin) {
         memcpy(je->addr, &je->data[0], je->len);
-        clflush(je->addr);
+        TransactionManager::flush(je->addr, msync_needed);
     }
-    persistent_barrier(40);
+
+    // Unless we have NoMsync, rollback can safely commit in case
+    // of PM=MSYNC
+    TransactionManager::commit(msync_needed);
 }

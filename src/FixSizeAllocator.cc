@@ -77,8 +77,6 @@ Allocator::FixSizeAllocator::FixedChunk::FixedChunk(unsigned obj_size,
     int sub_idx = free_spots % num_entries;
     uint32_t mask = ~( (1u << sub_idx) - 1);
     occupants[main_idx] |= mask;
-
-    TransactionImpl::flush_range(this, sizeof(*this));
 }
 
 void *Allocator::FixSizeAllocator::FixedChunk::alloc(unsigned obj_size,
@@ -181,6 +179,8 @@ void *Allocator::FixSizeAllocator::alloc()
     FixedChunk *dst_chunk = new (_allocator.alloc()) FixedChunk(_obj_size,
                                                                 _bitmap_ints,
                                                                 _max_spots);
+
+    tx->flush_range(dst_chunk, sizeof(FixedChunk));
 
     // First free form allocation.
     if (_hdr->start_chunk == NULL)

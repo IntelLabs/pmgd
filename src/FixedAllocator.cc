@@ -46,7 +46,7 @@ using namespace PMGD;
 #define ALLOC_OFFSET(sz) ((sizeof(RegionHeader) + (sz) - 1) & ~((sz) - 1))
 FixedAllocator::FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create)
+                               bool create, bool msync_needed)
     : _pm(hdr_addr),
       _pool_addr(pool_addr)
 {
@@ -68,16 +68,16 @@ FixedAllocator::FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
         _pm->max_addr = pool_addr + pool_size;
         _pm->size = object_size;
 
-        TransactionImpl::flush_range(_pm, sizeof(*_pm));
+        TransactionImpl::flush_range(_pm, sizeof(*_pm), msync_needed);
     }
 }
 
 FixedAllocator::FixedAllocator(uint64_t pool_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create)
+                               bool create, bool msync_needed)
     : FixedAllocator(pool_addr, reinterpret_cast<RegionHeader *>(pool_addr),
                      object_size, pool_size,
-                     create)
+                     create, msync_needed)
 { }
 
 void *FixedAllocator::alloc()

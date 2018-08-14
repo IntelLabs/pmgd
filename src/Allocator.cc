@@ -38,14 +38,14 @@ using namespace PMGD;
 constexpr unsigned Allocator::fixed_sizes[];
 
 Allocator::Allocator(uint64_t pool_addr, uint64_t pool_size,
-                      RegionHeader *hdr, bool create)
+                      RegionHeader *hdr, bool create, bool msync_needed)
     : _pm_base(reinterpret_cast<uint64_t *>(pool_addr)),
       _size(pool_size),
       _chunks(pool_addr + CHUNK_SIZE, &hdr->chunks_hdr,
-                CHUNK_SIZE, pool_size - CHUNK_SIZE, create),
+                CHUNK_SIZE, pool_size - CHUNK_SIZE, create, msync_needed),
       _freeform_allocator(*this, &hdr->freeform_hdr, create),
       _small_chunks(pool_addr, &hdr->flex_hdr, FixSizeAllocator::SMALL_CHUNK_SIZE,
-                CHUNK_SIZE, *this, create),
+                CHUNK_SIZE, *this, create, msync_needed),
       _chunk_allocator(*this)
 {
     for (unsigned i = 0; i < NUM_FIXED_SIZES; ++i) {

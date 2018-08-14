@@ -73,52 +73,17 @@ static inline void memory_barrier() // Instruct compiler not to re-order
     __asm__ volatile ("" : : : "memory");
 }
 
-#if defined(HSPM) || !defined(NOPM)
-__asm__ (
-    ".macro pcommit\n\t"
-    ".byte 0x66, 0x0f, 0xae, 0xf8\n\t"
-    ".endm\n\t"
-
-    ".macro clflushopt mem\n\t"
-    ".byte 0x66\n\t"
-    "clflush \\mem\n\t"
-    ".endm\n\t"
-
-    ".macro mysfence param\n\t"
-    ".byte 0x66\n\t"
-    "lfence\n\t"
-    "mov \\param, %al\n\t"
-    ".endm\n\t"
-
-    ".macro mypcommit param\n\t"
-    ".byte 0x66\n\t"
-    "sfence\n\t"
-    "mov \\param, %al\n\t"
-    ".endm\n\t"
-
-    ".macro mymemset\n\t"
-    ".byte 0x66\n\t"
-    "mfence\n\t"
-    ".endm\n\t"
-);
-#endif
+#define CONCAT_(x, y)     x##y
+#define CONCAT(x, y)      CONCAT_(x, y)
+#define STRINGIFY_(x)     #x
+#define STRINGIFY(x)      STRINGIFY_(x) 
 
 static inline void clflush(void *addr)
 {
-#ifndef NOPM
-    __asm__("clflushopt \"%0\"" : "+m"(*(char *)addr) : : "memory");
-#endif
+    __asm__(STRINGIFY(PMFLUSH) " %0" : : "m"(*(char *)addr), "m"(*(char (*)[64])((uintptr_t)addr & -64)));
 }
 
-static inline void persistent_barrier(uint8_t param)
+static inline void persistent_barrier()
 {
-#if defined(HSPM)
-    __asm__ volatile ("mysfence %0"  : : "N"(param));
-    __asm__ volatile ("mypcommit %0" : : "N"(param+1));
-    __asm__ volatile ("mysfence %0"  : : "N"(param+2));
-#elif !defined(NOPM)
     __asm__ volatile ("sfence" : : : "memory");
-    __asm__ volatile ("pcommit" : : : "memory");
-    __asm__ volatile ("sfence" : : : "memory");
-#endif
 }

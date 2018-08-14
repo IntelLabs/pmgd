@@ -107,7 +107,7 @@ namespace PMGD {
         new_node->value = value;
         new_node->next = _list;
         // Since new_node is new allocation, just flush it without logging.
-        TransactionImpl::flush_range(new_node, sizeof *new_node);
+        tx->flush_range(new_node, sizeof *new_node);
 
         // Since _list and _num_elems are contiguous, log() makes sense
         tx->log(this, sizeof *this);

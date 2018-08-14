@@ -78,7 +78,7 @@ namespace PMGD {
                 // accommodate a request anyway.
                 uint32_t max_cont_space;  // Max contiguous space in this chunk
 
-                FreeFormChunk(unsigned used = 0);
+                FreeFormChunk(TransactionImpl *tx, unsigned used = 0);
                 bool has_space() { return max_cont_space >= MIN_ALLOC_BYTES; }
                 void *alloc(size_t sz);
                 void free(void *addr, size_t size);
@@ -178,6 +178,9 @@ namespace PMGD {
             uint64_t _pool_size;
             unsigned _max_objs_per_pool;
 
+            // For msync cases
+            bool _msync_needed;
+
             // Store a reference to the main allocator for times that we need
             // a new pool
             Allocator &_allocator;
@@ -196,7 +199,7 @@ namespace PMGD {
 
             FlexFixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
                         unsigned object_size, uint64_t pool_size,
-                        Allocator &allocator, bool create);
+                        Allocator &allocator, bool create, bool msync_needed);
 
             void *alloc();
             void free(void *addr);
@@ -357,7 +360,7 @@ namespace PMGD {
         Allocator(const Allocator &) = delete;
         void operator=(const Allocator &) = delete;
         Allocator(uint64_t pool_addr, uint64_t pool_size,
-                    RegionHeader *hdr, bool create);
+                    RegionHeader *hdr, bool create, bool msync_needed);
         void *alloc(size_t size);
         void free(void *addr, size_t size);
 

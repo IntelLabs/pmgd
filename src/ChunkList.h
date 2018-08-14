@@ -62,18 +62,23 @@ namespace PMGD {
 
     public:
         // Constructor for temporary objects. No need to log.
+        // Assumes that the caller takes care of flushing the
+        // header value.
         ChunkList()
         {
             _head = NULL;
             _num_elems = 0;
-            TransactionImpl::flush_range(this, sizeof *this);
         }
 
         // The variables above should just get mapped to the right area
         // and init will be called only the first time.
         // Called as part of node creation. Will be flushed when
         // new node is flushed.
-        void init() { *this = ChunkList(); }
+        void init(bool msync_needed)
+        {
+            *this = ChunkList();
+            TransactionImpl::flush_range(this, sizeof *this, msync_needed);
+        }
 
         V* add(const K &key, Allocator &allocator);
         void remove(const K &key, Allocator &allocator);
@@ -206,7 +211,7 @@ namespace PMGD {
             curr->num_elems = 1;
             curr->occupants |= 1;
             curr->next = NULL;
-            TransactionImpl::flush_range(curr, sizeof (ChunkListType));
+            tx->flush_range(curr, sizeof (ChunkListType));
 
             if (prev == NULL) // First ever chunk
                 tx->write(&_head, curr);
@@ -221,7 +226,7 @@ namespace PMGD {
         // Do a placement new here to make sure value is initialized
         void *space = &(curr->data[empty_slot].value());
         V *value = new (space) V();
-        TransactionImpl::flush_range(&curr->data[empty_slot], sizeof(KeyValuePair<K,V>));
+        tx->flush_range(&curr->data[empty_slot], sizeof(KeyValuePair<K,V>));
 
         return value;
     }

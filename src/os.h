@@ -65,5 +65,8 @@ namespace PMGD {
 
         size_t get_default_region_size();
         size_t get_alignment(size_t size);
+
+        void flush(void *addr);
+        void commit();
     };
 };

@@ -34,8 +34,10 @@
 #include <sys/mman.h>
 #include <signal.h>
 #include <errno.h>
+#include <list>
 
 #include "os.h"
+#include "RangeSet.h"
 #include "exception.h"
 
 class PMGD::os::MapRegion::OSMapRegion {
@@ -47,7 +49,6 @@ public:
 
     ~OSMapRegion();
 };
-
 
 PMGD::os::MapRegion::MapRegion(const char *db_name, const char *region_name,
                                  uint64_t map_addr, uint64_t map_len,
@@ -122,6 +123,24 @@ PMGD::os::MapRegion::OSMapRegion::~OSMapRegion()
     close(_fd);
 }
 
+static PMGD::os::RangeSet pending_commits;
+
+static const unsigned PAGE_SIZE = 4096;
+static const unsigned PAGE_OFFSET = PAGE_SIZE - 1;
+static const uint64_t PAGE_MASK = ~uint64_t(PAGE_OFFSET);
+
+void PMGD::os::flush(void *addr)
+{
+    uint64_t aligned_addr = (uint64_t)addr & PAGE_MASK;
+    pending_commits.add(aligned_addr, aligned_addr + PAGE_SIZE);
+}
+
+void PMGD::os::commit()
+{
+    for (auto i = pending_commits.begin(); i != pending_commits.end(); i++)
+        msync((void *)i->start, i->end - i->start, MS_SYNC);
+    pending_commits.clear();
+}
 
 // Linux delivers SIGBUS when an attempted access to a memory-mapped
 // file cannot be satisfied, either because the access is beyond the
