@@ -53,15 +53,15 @@ namespace PMGD {
     class PropertyListIteratorImpl : public PropertyIteratorImplIntf {
         PropertyRef _cur;
         bool _vacant_flag = false;
-        IndexManager &_index_manager;
+        TransactionImpl *_tx;
 
     public:
         PropertyListIteratorImpl(const PropertyList *list)
             : _cur(list),
-              _index_manager(TransactionImpl::get_tx()->get_db()->index_manager())
+              _tx(TransactionImpl::get_tx())
         {
             if (_cur.skip_to_next()) {
-                _index_manager.register_property_iterator(this,
+                _tx->iterator_callbacks().register_property_iterator(this,
                         [this](const PropertyRef &p) { notify(p); });
             }
             else {
@@ -71,7 +71,7 @@ namespace PMGD {
 
         ~PropertyListIteratorImpl()
         {
-            _index_manager.unregister_property_iterator(this);
+            _tx->iterator_callbacks().unregister_property_iterator(this);
         }
 
         operator bool() const { return _vacant_flag || _cur._chunk != NULL; }
@@ -264,7 +264,6 @@ void PropertyList::remove_all_properties(
     // there are no properties in the list.
     TransactionImpl *tx = TransactionImpl::get_tx();
     GraphImpl *db = tx->get_db();
-    IndexManager &index_manager = db->index_manager();
     Allocator &allocator = db->allocator();
     PropertyRef p(this);
     bool first = true;
@@ -273,7 +272,7 @@ void PropertyList::remove_all_properties(
             case PropertyRef::p_link: {
                 uint8_t *chunk = p._chunk;
                 p.follow_link();
-                index_manager.property_iterator_notify(PropertyRef(chunk, 0));
+                tx->iterator_callbacks().property_iterator_notify(PropertyRef(chunk, 0));
                 if (!first)
                     allocator.free(chunk, PropertyList::chunk_size);
                 first = false;
@@ -297,7 +296,7 @@ void PropertyList::remove_all_properties(
         }
         p.skip();
     }
-    index_manager.property_iterator_notify(PropertyRef(p._chunk, 0));
+    tx->iterator_callbacks().property_iterator_notify(PropertyRef(p._chunk, 0));
     if (!first)
         allocator.free(p._chunk, PropertyList::chunk_size);
     tx->write<uint8_t>(&_chunk0[1], PropertyRef::p_end);
@@ -526,7 +525,7 @@ void PropertyList::PropertySpace::set_property(StringID id, const Property &p,
 
 void PropertyRef::free(TransactionImpl *tx)
 {
-    tx->get_db()->index_manager().property_iterator_notify(*this);
+    tx->iterator_callbacks().property_iterator_notify(*this);
 
     if (ptype() == p_string_ptr || ptype() == p_blob) {
         Allocator &allocator = tx->get_db()->allocator();

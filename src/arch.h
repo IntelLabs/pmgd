@@ -52,6 +52,10 @@ static inline bool bts(volatile T &m, int bit)
 }
 
 template <typename T>
+static inline void atomic_and(volatile T &m, T v)
+  { asm volatile ("lock and%z0 %1, %0" : "+m"(m) : "ri"(v)); }
+
+template <typename T>
 static inline unsigned bsr(T value)
 {
     T r;
@@ -73,11 +77,23 @@ static inline void memory_barrier() // Instruct compiler not to re-order
     __asm__ volatile ("" : : : "memory");
 }
 
+template <typename T>
+static inline T xadd(volatile T &m, T v)
+{
+    T r = v;
+    asm volatile ("lock xadd %1, %0" : "+m"(m), "+r"(r));
+    return r;
+}
+
+static inline void pause()
+{
+    asm("pause");
+}
+
 #define CONCAT_(x, y)     x##y
 #define CONCAT(x, y)      CONCAT_(x, y)
 #define STRINGIFY_(x)     #x
 #define STRINGIFY(x)      STRINGIFY_(x) 
-
 static inline void clflush(void *addr)
 {
     __asm__(STRINGIFY(PMFLUSH) " %0" : : "m"(*(char *)addr), "m"(*(char (*)[64])((uintptr_t)addr & -64)));

@@ -151,14 +151,12 @@ void FixedAllocator::free(void *p)
     assert(p >= (void *)((uint64_t)_pool_addr + _alloc_offset) && p < _pm->tail_ptr);
     // Check to make sure it is a multiple of the size.
     assert((uint64_t)p % _pm->size == 0);
+
     // Check to make sure this object was indeed allocated.
     // assert(Check free list for p);
     TransactionImpl *tx = TransactionImpl::get_tx();
 
-    tx->log(p, sizeof(uint64_t));
-    *(uint64_t *)p = FREE_BIT;
-
-    AllocatorCallback<FixedAllocator, void *>::delayed_free(tx, this, p);
+    AllocatorCallback::delayed_free(tx, this, p);
 }
 
 void FixedAllocator::clean_free_list
@@ -181,8 +179,14 @@ void FixedAllocator::clean_free_list
 // This should only be called at commit time by Allocator::clean_free_list()
 void FixedAllocator::free(void *p, unsigned num)
 {
-    TransactionImpl *tx = TransactionImpl::get_tx();
+    // Check to make sure given address was allocated from this allocator.
+    assert(p >= (void *)((uint64_t)_pool_addr + _alloc_offset));
+    assert((void *)((uint64_t)p + _pm->size * num) <= _pm->tail_ptr);
 
+    // Check to make sure it is a multiple of the size.
+    assert((uint64_t)p % _pm->size == 0);
+
+    TransactionImpl *tx = TransactionImpl::get_tx();
     if (((uint64_t)p + _pm->size * num) == (uint64_t)_pm->tail_ptr) {
         tx->write(&_pm->tail_ptr, (uint64_t *)p);
         tx->write(&_pm->num_allocated, _pm->num_allocated - num);

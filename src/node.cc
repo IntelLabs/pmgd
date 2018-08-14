@@ -41,6 +41,11 @@
 
 using namespace PMGD;
 
+#define LOCK_NODE(node, write) { \
+    TransactionImpl *tx = TransactionImpl::get_tx(); \
+    tx->acquire_lock(TransactionImpl::NodeLock, node, write); \
+}
+
 void Node::init(StringID tag, unsigned object_size, Allocator &index_allocator)
 {
     _out_edges = EdgeIndex::create(index_allocator);
@@ -57,11 +62,15 @@ void Node::cleanup(Allocator &index_allocator)
 
 NodeID Node::get_id() const
 {
+    // The node id acquired from node_table which will not change unless
+    // the node is being removed. So read lock the node.
+    LOCK_NODE(this, false);
     return TransactionImpl::get_tx()->get_db()->node_table().get_id(this);
 }
 
 void Node::add_edge(Edge *edge, Direction dir, StringID tag, Allocator &index_allocator)
 {
+    LOCK_NODE(this, true);
     if (dir == Outgoing)
         _out_edges->add(tag, edge, &edge->get_destination(), index_allocator);
     else
@@ -70,6 +79,7 @@ void Node::add_edge(Edge *edge, Direction dir, StringID tag, Allocator &index_al
 
 void Node::remove_edge(Edge *edge, Direction dir, Allocator &index_allocator)
 {
+    LOCK_NODE(this, true);
     if (dir == Outgoing)
         _out_edges->remove(edge->get_tag(), edge, index_allocator);
     else
@@ -78,6 +88,7 @@ void Node::remove_edge(Edge *edge, Direction dir, Allocator &index_allocator)
 
 Node &Node::get_neighbor(Direction dir, StringID edge_tag) const
 {
+    LOCK_NODE(this, false);
     if (dir == Outgoing || dir == Any) {
         const EdgeIndex::EdgePosition *pos = _out_edges->get_first(edge_tag);
         if (pos)
@@ -110,7 +121,6 @@ namespace PMGD {
         const EdgeIndex::EdgePosition *_pos;
         bool _vacant_flag = false;
         TransactionImpl *_tx;
-        IndexManager &_index_manager;
 
         friend class EdgeRef;
         Edge *get_edge() const { return _pos->value.key(); }
@@ -169,11 +179,10 @@ namespace PMGD {
               _key_pos(const_cast<EdgeIndex::KeyPosition *>(key_pos)),
               _tag(tag),
               _pos(pos),
-              _tx(TransactionImpl::get_tx()),
-              _index_manager(_tx->get_db()->index_manager())
+              _tx(TransactionImpl::get_tx())
         {
             if (_tx->is_read_write()) {
-                _index_manager.register_iterator(this,
+                _tx->iterator_callbacks().register_iterator(this,
                         [this](void *list_node) { remove_notify(list_node); });
             }
         }
@@ -217,7 +226,7 @@ namespace PMGD {
         ~Node_EdgeIteratorImpl()
         {
             if (_tx->is_read_write())
-                _index_manager.unregister_iterator(this);
+                _tx->iterator_callbacks().unregister_iterator(this);
         }
 
         operator bool() const { return _vacant_flag || _pos != NULL; }
@@ -266,6 +275,7 @@ EdgeIterator Node::get_edges(Direction dir, StringID tag) const
         return get_edges(tag);
     if (tag == 0)
         return get_edges(dir);
+    LOCK_NODE(this, false);
     EdgeIndex *idx = (dir == Outgoing) ? _out_edges : _in_edges;
     return EdgeIterator(new Node_EdgeIteratorImpl(idx, this, dir, tag));
 }
@@ -274,6 +284,7 @@ EdgeIterator Node::get_edges(Direction dir) const
 {
     if (dir == Any)
         return get_edges();
+    LOCK_NODE(this, false);
     EdgeIndex *idx = (dir == Outgoing) ? _out_edges : _in_edges;
     // Ensure there is at least one element in this index for
     // the constructors to not crash. Not needed when you pass
@@ -288,6 +299,7 @@ EdgeIterator Node::get_edges(StringID tag) const
 {
     if (tag == 0)
         return get_edges();
+    LOCK_NODE(this, false);
     size_t in_elems = _in_edges->num_elems();
     size_t out_elems = _out_edges->num_elems();
     // Ensure there is at least one element in this index for
@@ -303,6 +315,7 @@ EdgeIterator Node::get_edges(StringID tag) const
 
 EdgeIterator Node::get_edges() const
 {
+    LOCK_NODE(this, false);
     size_t in_elems = _in_edges->num_elems();
     size_t out_elems = _out_edges->num_elems();
     // Ensure there is at least one element in this index for
@@ -317,19 +330,38 @@ EdgeIterator Node::get_edges() const
 }
 
 bool PMGD::Node::check_property(StringID id, Property &result) const
-    { return _property_list.check_property(id, result); }
+{
+    LOCK_NODE(this, false);
+    return _property_list.check_property(id, result);
+}
 
 PMGD::Property PMGD::Node::get_property(StringID id) const
-    { return _property_list.get_property(id); }
+{
+    LOCK_NODE(this, false);
+    return _property_list.get_property(id);
+}
 
 PMGD::PropertyIterator PMGD::Node::get_properties() const
-    { return _property_list.get_properties(); }
+{
+    LOCK_NODE(this, false);
+    return _property_list.get_properties();
+}
 
 void PMGD::Node::set_property(StringID id, const Property &new_value)
-    { _property_list.set_property(id, new_value, Graph::NodeIndex, _tag, this); }
+{
+    LOCK_NODE(this, true);
+    _property_list.set_property(id, new_value, Graph::NodeIndex, _tag, this);
+}
 
 void PMGD::Node::remove_property(StringID id)
-    { _property_list.remove_property(id, Graph::NodeIndex, _tag, this); }
+{
+    LOCK_NODE(this, true);
+    _property_list.remove_property(id, Graph::NodeIndex, _tag, this);
+}
 
 void PMGD::Node::remove_all_properties()
-    { _property_list.remove_all_properties(Graph::NodeIndex, _tag, this); }
+{
+    // This function is only called from remove_node in Graph.
+    // The node is already write locked in that case. So no need to lock.
+    _property_list.remove_all_properties(Graph::NodeIndex, _tag, this);
+}
