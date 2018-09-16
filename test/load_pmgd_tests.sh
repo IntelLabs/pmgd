@@ -26,14 +26,21 @@
 
 #!/bin/bash
 
-SCRIPT_DIR=`dirname $0`
-GRAPH_DIR=$SCRIPT_DIR
+if [ $# != 1 ]; then
+    echo "Need graph dir as argument"
+    exit -2
+fi
 
-source ${SCRIPT_DIR}/common.sh
+GRAPH_DIR=$1
+SCRIPT_DIR=`dirname $0`
+
+cd ${SCRIPT_DIR}
+source ./common.sh
 find_test_dir
 if [ $? != 0 ]; then
     exit -2
 fi
+cd -
 
 TOOLS_DIR=${TEST_DIR}/../tools
 PATH=$PATH:${TOOLS_DIR}
