@@ -46,16 +46,16 @@ using namespace PMGD;
 #define ALLOC_OFFSET(sz) ((sizeof(RegionHeader) + (sz) - 1) & ~((sz) - 1))
 FixedAllocator::FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create, bool msync_needed)
+                               const CommonParams &params)
     : _pm(hdr_addr),
       _pool_addr(pool_addr)
 {
     if ((uint64_t)hdr_addr == pool_addr)
-        _alloc_offset = ALLOC_OFFSET(create ? object_size : _pm->size);
+        _alloc_offset = ALLOC_OFFSET(params.create ? object_size : _pm->size);
     else
         _alloc_offset = 0;
 
-    if (create) {
+    if (params.create) {
         // Object size must be a power of 2 and at least 8 bytes.
         assert(object_size >= sizeof(uint64_t));
         assert(!(object_size & (object_size - 1)));
@@ -68,16 +68,16 @@ FixedAllocator::FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
         _pm->max_addr = pool_addr + pool_size;
         _pm->size = object_size;
 
-        TransactionImpl::flush_range(_pm, sizeof(*_pm), msync_needed);
+        TransactionImpl::flush_range(_pm, sizeof(*_pm), params.msync_needed);
     }
 }
 
 FixedAllocator::FixedAllocator(uint64_t pool_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create, bool msync_needed)
+                               const CommonParams &params)
     : FixedAllocator(pool_addr, reinterpret_cast<RegionHeader *>(pool_addr),
                      object_size, pool_size,
-                     create, msync_needed)
+                     params)
 { }
 
 void *FixedAllocator::alloc()

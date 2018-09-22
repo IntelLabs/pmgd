@@ -33,6 +33,7 @@
 #include <stdint.h>
 #include "TransactionImpl.h"
 #include "AllocatorCallback.h"
+#include "GraphConfig.h"
 
 namespace PMGD {
     /**
@@ -90,11 +91,11 @@ namespace PMGD {
 
         FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create, bool msync_needed);
+                               const CommonParams &params);
 
         FixedAllocator(uint64_t pool_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create, bool msync_needed);
+                               const CommonParams &params);
 
         // Primary allocator functions; serialized
         void *alloc();

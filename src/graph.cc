@@ -135,33 +135,32 @@ void Graph::create_index(IndexType index_type, StringID tag,
 
 GraphImpl::GraphInit::GraphInit(const char *name, int options,
                                 const Graph::Config *user_config)
-    : create(options & Graph::Create),
-      read_only(options & Graph::ReadOnly),
+    : params{(options & Graph::Create), (options & Graph::ReadOnly), false, false},
       info_map(name, info_name,
                GraphConfig::BASE_ADDRESS, GraphConfig::INFO_SIZE,
-               create, false, read_only),
+               params.create, false, params.read_only),
       info(reinterpret_cast<GraphInfo *>(GraphConfig::BASE_ADDRESS))
 {
     int msync_options = options & Graph::AlwaysMsync;
     switch (msync_options) {
     case 0:
     case Graph::MsyncOnCommit:
-        msync_needed = true;
-        always_msync = false;
+        params.msync_needed = true;
+        params.always_msync = false;
         break;
     case Graph::AlwaysMsync:
-        msync_needed = always_msync = true;
+        params.msync_needed = params.always_msync = true;
         break;
     case Graph::NoMsync:
-        msync_needed = always_msync = false;
+        params.msync_needed = params.always_msync = false;
     }
 
     // create was modified by _info_map constructor
     // depending on whether the file existed or not
     // For a new graph, initialize the info structure
-    if (create) {
+    if (params.create) {
         const GraphConfig config(user_config);
-        info->init(config, msync_needed);
+        info->init(config, params.msync_needed);
         node_size = config.node_size;
         edge_size = config.edge_size;
     }
@@ -200,39 +199,43 @@ GraphImpl::MapRegion::MapRegion(
 
 GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
     : _init(name, options, config),
-      _transaction_region(name, _init.info->transaction_info, _init.create, _init.read_only),
-      _journal_region(name, _init.info->journal_info, _init.create, _init.read_only),
-      _indexmanager_region(name, _init.info->indexmanager_info, _init.create, _init.read_only),
-      _stringtable_region(name, _init.info->stringtable_info, _init.create, _init.read_only),
-      _node_region(name, _init.info->node_info, _init.create, _init.read_only),
-      _edge_region(name, _init.info->edge_info, _init.create, _init.read_only),
-      _allocator_region(name, _init.info->allocator_info, _init.create, _init.read_only),
+      _transaction_region(name, _init.info->transaction_info,
+                          _init.params.create, _init.params.read_only),
+      _journal_region(name, _init.info->journal_info,
+                      _init.params.create, _init.params.read_only),
+      _indexmanager_region(name, _init.info->indexmanager_info,
+                           _init.params.create, _init.params.read_only),
+      _stringtable_region(name, _init.info->stringtable_info,
+                          _init.params.create, _init.params.read_only),
+      _node_region(name, _init.info->node_info, _init.params.create, _init.params.read_only),
+      _edge_region(name, _init.info->edge_info, _init.params.create, _init.params.read_only),
+      _allocator_region(name, _init.info->allocator_info,
+                        _init.params.create, _init.params.read_only),
       _transaction_manager(_init.info->transaction_info.addr,
                            _init.info->transaction_info.len,
                            _init.info->journal_info.addr,
                            _init.info->journal_info.len,
-                           _init.create, _init.read_only,
-                           _init.msync_needed),
-      _index_manager(_init.info->indexmanager_info.addr, _init.create, _init.msync_needed),
+                           _init.params),
+      _index_manager(_init.info->indexmanager_info.addr, _init.params),
       _string_table(_init.info->stringtable_info.addr,
                     _init.info->stringtable_info.len,
                     _init.info->max_stringid_length,
-                    _init.create, _init.msync_needed),
+                    _init.params),
       _node_table(_init.info->node_info.addr,
                   _init.node_size, _init.info->node_info.len,
-                  _init.create, _init.msync_needed),
+                  _init.params),
       _edge_table(_init.info->edge_info.addr,
                   _init.edge_size, _init.info->edge_info.len,
-                  _init.create, _init.msync_needed),
+                  _init.params),
       _allocator(_init.info->allocator_info.addr,
                  _init.info->allocator_info.len,
                  &_init.info->allocator_hdr,
-                 _init.create, _init.msync_needed),
+                 _init.params),
       _locale(_init.info->locale_name[0] != '\0'
                   ? std::locale(_init.info->locale_name)
                   : std::locale())
 {
-    TransactionManager::commit(_init.msync_needed);
+    TransactionManager::commit(_init.params.msync_needed);
 }
 
 namespace PMGD {

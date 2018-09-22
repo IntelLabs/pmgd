@@ -38,20 +38,20 @@ using namespace PMGD;
 constexpr unsigned Allocator::fixed_sizes[];
 
 Allocator::Allocator(uint64_t pool_addr, uint64_t pool_size,
-                      RegionHeader *hdr, bool create, bool msync_needed)
+                      RegionHeader *hdr, const CommonParams &params)
     : _pm_base(reinterpret_cast<uint64_t *>(pool_addr)),
       _size(pool_size),
       _chunks(pool_addr + CHUNK_SIZE, &hdr->chunks_hdr,
-                CHUNK_SIZE, pool_size - CHUNK_SIZE, create, msync_needed),
-      _freeform_allocator(*this, &hdr->freeform_hdr, create),
+                CHUNK_SIZE, pool_size - CHUNK_SIZE, params),
+      _freeform_allocator(*this, &hdr->freeform_hdr, params.create),
       _small_chunks(pool_addr, &hdr->flex_hdr, FixSizeAllocator::SMALL_CHUNK_SIZE,
-                CHUNK_SIZE, *this, create, msync_needed),
+                CHUNK_SIZE, *this, params),
       _chunk_allocator(*this)
 {
     for (unsigned i = 0; i < NUM_FIXED_SIZES; ++i) {
         _fixsize_allocator[i] = new FixSizeAllocator(_small_chunks,
                                       &hdr->fixsize_hdr[i],
-                                      fixed_sizes[i], create);
+                                      fixed_sizes[i], params.create);
     }
     // This will get flushed to PM outside in the caller
 }

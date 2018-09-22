@@ -39,8 +39,7 @@ using namespace PMGD;
 TransactionManager::TransactionManager(
             uint64_t transaction_table_addr, uint64_t transaction_table_size,
             uint64_t journal_addr, uint64_t journal_size,
-            bool create, bool read_only,
-            bool msync_needed)
+            const CommonParams &params)
     : _tx_table(reinterpret_cast<TransactionHdr *>(transaction_table_addr)),
       _journal_addr(reinterpret_cast<void *>(journal_addr)),
       _max_transactions(transaction_table_size / sizeof (TransactionHdr)),
@@ -56,12 +55,12 @@ TransactionManager::TransactionManager(
     if (_max_extents < _max_transactions)
         throw PMGDException(InvalidConfig);
 
-    if (create) {
-        reset_table(msync_needed);
+    if (params.create) {
+        reset_table(params.msync_needed);
         _cur_tx_id = 0;
     }
     else
-        recover(read_only, msync_needed);
+        recover(params.read_only, params.msync_needed);
 }
 
 void *TransactionManager::tx_jbegin(int index)

@@ -67,7 +67,7 @@ int main()
         os::MapRegion region1(".", "region1", start_addr, region_size, create1, create1, false);
         os::MapRegion region2(".", "region2", hdr_addr, hdr_size, create1, create1, false);
         Allocator::RegionHeader *hdr = reinterpret_cast<Allocator::RegionHeader *>(hdr_addr);
-        Allocator allocator1(start_addr, region_size, hdr, create1, false);
+        Allocator allocator1(start_addr, region_size, hdr, CommonParams{create1, false});
 
         cout << "Step 1: Test pair\n";
         // Since we do not have an allocator for anything < 16B, create large ptrs
