@@ -27,6 +27,8 @@
  *
  */
 
+#pragma once
+
 #include <string>
 #include <vector>
 
@@ -34,6 +36,26 @@
 #include "os.h"
 
 namespace PMGD {
+    // We pass the same set of variables in a lot of constructors.
+    // So let's collect them together.
+    struct CommonParams {
+        bool create;
+        bool read_only;
+        bool msync_needed;    // false only when NoMsync used for msync cases.
+        bool always_msync;    // true only when AlwaysMsync used for msync cases.
+
+        // Most common use case of this structure is to pass
+        // create and msync parameters. So make the common constructor.
+        CommonParams(bool c, bool m) : CommonParams(c, false, m, false)
+          {}
+
+        CommonParams(bool c, bool r, bool m, bool a)
+        {
+            create = c;  read_only = r;
+            msync_needed = m; always_msync = a;
+        }
+    };
+
     struct RegionInfo {
         static const int REGION_NAME_LEN = 32;
         char name[REGION_NAME_LEN];
