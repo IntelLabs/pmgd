@@ -40,11 +40,11 @@ using namespace std;
 Allocator::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
                       RegionHeader *hdr_addr,
                       unsigned object_size, uint64_t pool_size,
-                      Allocator &allocator, bool create, bool msync_needed)
+                      Allocator &allocator, const CommonParams &params)
     : _pm(hdr_addr),
       _obj_size(object_size), _pool_size(pool_size),
       _max_objs_per_pool(pool_size / object_size),
-      _msync_needed(msync_needed),
+      _msync_needed(params.msync_needed),
       _allocator(allocator)
 {
     // Make sure we have a well-aligned pool_addr.
@@ -58,7 +58,7 @@ Allocator::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
     // data structures for our code, and most likely there will at least
     // be one index (loader.id), this allocation won't be a waste.
     int64_t num_allocated;
-    if (create) {
+    if (params.create) {
         _pm->pool_base = pool_addr;
         _pm->next_pool_hdr = NULL;
         num_allocated = 0;
@@ -69,7 +69,7 @@ Allocator::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
     _last_hdr_scanned = _pm;
     if (num_allocated < _max_objs_per_pool) {
         FixedAllocator *fa = new FixedAllocator(pool_addr, &_pm->fa_hdr,
-                            _obj_size, _pool_size, create, msync_needed);
+                            _obj_size, _pool_size, params);
         _fa_pools.insert(pair<uint64_t,FixedAllocatorInfo*>(pool_addr,
                             new FixedAllocatorInfo{fa, _pm,
                             NULL, fa->num_allocated()}) );
@@ -107,7 +107,8 @@ void *Allocator::FlexFixedAllocator::alloc()
         int64_t num_allocated = FixedAllocator::num_allocated(&hdr->fa_hdr);
         if (num_allocated < _max_objs_per_pool) {
             FixedAllocator *fa = new FixedAllocator(hdr->pool_base, &hdr->fa_hdr,
-                                    _obj_size, _pool_size, false, _msync_needed);
+                                    _obj_size, _pool_size,
+                                    CommonParams{false, false, _msync_needed, false});
             addr = fa->alloc();
             num_allocated++;
 
@@ -145,7 +146,8 @@ Allocator::FlexFixedAllocator::FixedAllocatorInfo *Allocator::FlexFixedAllocator
 
     hdr->pool_base = pool_addr;
     FixedAllocator *fa = new FixedAllocator(pool_addr, &(hdr->fa_hdr),
-                            _obj_size, _pool_size, true, _msync_needed);
+                            _obj_size, _pool_size,
+                            CommonParams{true, false, _msync_needed, false});
     hdr->next_pool_hdr = NULL;
 
     TransactionImpl *tx = TransactionImpl::get_tx();
@@ -234,7 +236,8 @@ void Allocator::FlexFixedAllocator::free(void *addr)
     else {
         if (fa == NULL) {
             fa = new FixedAllocator(pool_base, &(hdr->fa_hdr),
-                                    _obj_size, _pool_size, false, _msync_needed);
+                                    _obj_size, _pool_size,
+                                    CommonParams{false, false, _msync_needed, false});
         }
         fa->free(addr, 1);
         if (fa_info == NULL) {

@@ -32,6 +32,7 @@
 #include <locale>
 #include <stddef.h>
 #include "graph.h"
+#include "GraphConfig.h"
 #include "Allocator.h"
 #include "IndexManager.h"
 #include "TransactionManager.h"
@@ -48,12 +49,10 @@ namespace PMGD {
         struct GraphInfo;
 
         struct GraphInit {
-            bool create;
-            bool read_only;
-            bool msync_needed;    // false only when NoMsync used for msync cases.
-            bool always_msync;    // true only when AlwaysMsync used for msync cases.
             unsigned node_size;
             unsigned edge_size;
+
+            CommonParams params;
 
             os::MapRegion info_map;
             GraphInfo *info;
@@ -102,14 +101,14 @@ namespace PMGD {
 
         void check_read_write()
         {
-            if (_init.read_only)
+            if (_init.params.read_only)
                 throw PMGDException(ReadOnly);
         }
 
         void msync_options(bool &msync_needed, bool &always_msync)
         {
-            msync_needed = _init.msync_needed;
-            always_msync = _init.always_msync;
+            msync_needed = _init.params.msync_needed;
+            always_msync = _init.params.always_msync;
         }
     };
 };

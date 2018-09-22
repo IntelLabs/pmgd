@@ -36,6 +36,7 @@
 #include "edge.h"
 #include "iterator.h"
 #include "callback.h"
+#include "GraphConfig.h"
 
 namespace PMGD {
     class Allocator;
@@ -81,12 +82,12 @@ namespace PMGD {
         Graph::IndexStats get_index_stats(IndexList *tag_entry);
 
     public:
-        IndexManager(const uint64_t region_addr, bool create, bool msync_needed)
+        IndexManager(const uint64_t region_addr, const CommonParams &params)
             : _tag_prop_map(reinterpret_cast<TagList *>(region_addr))
         {
-            if (create) {
-                _tag_prop_map[0].init(msync_needed);
-                _tag_prop_map[1].init(msync_needed);
+            if (params.create) {
+                _tag_prop_map[0].init(params.msync_needed);
+                _tag_prop_map[1].init(params.msync_needed);
             }
         }
 
