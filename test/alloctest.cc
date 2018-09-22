@@ -569,7 +569,7 @@ void var_large_tests(Graph &db, Allocator &allocator1)
 int var_allocator_test()
 {
     try {
-        Graph db("varallocgraph", Graph::Create);
+        Graph db("varallocgraph", Graph::Create | Graph::NoMsync);
         Transaction tx1(db, Transaction::ReadWrite);
 
         bool create1 = true;

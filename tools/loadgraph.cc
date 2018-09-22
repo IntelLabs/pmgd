@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     }
 
     try {
-        Graph db(db_name);
+        Graph db(db_name, Graph::NoMsync);
 
         if (!append) {
             Transaction tx(db, Transaction::ReadWrite);
