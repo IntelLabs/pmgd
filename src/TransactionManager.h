@@ -35,6 +35,7 @@
 #include <immintrin.h>
 #include "arch.h"
 #include "os.h"
+#include "GraphConfig.h"
 
 namespace PMGD {
     // TransactionId is never reset and should not roll-over.
@@ -90,8 +91,7 @@ namespace PMGD {
                            uint64_t transaction_table_size,
                            uint64_t journal_addr,
                            uint64_t journal_size,
-                           bool create, bool read_only,
-                           bool msync_needed);
+                           const CommonParams &params);
 
         TransactionHandle alloc_transaction(bool read_only, bool msync_needed);
         void free_transaction(const TransactionHandle &, bool msync_needed);
