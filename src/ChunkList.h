@@ -34,6 +34,7 @@
 #include "Allocator.h"
 #include "KeyValuePair.h"
 #include "TransactionImpl.h"
+#include "RangeSet.h"
 
 namespace PMGD {
     // List of chunks. Size passed at creation time. The number of
@@ -74,10 +75,11 @@ namespace PMGD {
         // and init will be called only the first time.
         // Called as part of node creation. Will be flushed when
         // new node is flushed.
-        void init(bool msync_needed)
+        void init(bool msync_needed, RangeSet &pending_commits)
         {
             *this = ChunkList();
-            TransactionImpl::flush_range(this, sizeof *this, msync_needed);
+            TransactionImpl::flush_range(this, sizeof *this,
+                                         msync_needed, pending_commits);
         }
 
         V* add(const K &key, Allocator &allocator);
