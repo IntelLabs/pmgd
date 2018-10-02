@@ -53,7 +53,7 @@ namespace PMGD {
         StringTable(const StringTable &) = delete;
         void operator=(const StringTable &) = delete;
         StringTable(const uint64_t region_addr, size_t len,
-                    unsigned stringid_len, const CommonParams &params);
+                    unsigned stringid_len, CommonParams &params);
         bool get(const char *name, uint16_t &id, bool add);
         std::string get(uint16_t id) const;
     };

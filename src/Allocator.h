@@ -200,7 +200,7 @@ namespace PMGD {
 
             FlexFixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
                         unsigned object_size, uint64_t pool_size,
-                        Allocator &allocator, const CommonParams &params);
+                        Allocator &allocator, CommonParams &params);
 
             void *alloc();
             void free(void *addr);
@@ -361,7 +361,7 @@ namespace PMGD {
         Allocator(const Allocator &) = delete;
         void operator=(const Allocator &) = delete;
         Allocator(uint64_t pool_addr, uint64_t pool_size,
-                    RegionHeader *hdr, const CommonParams &params);
+                    RegionHeader *hdr, CommonParams &params);
         void *alloc(size_t size);
         void free(void *addr, size_t size);
 

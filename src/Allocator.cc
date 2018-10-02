@@ -38,7 +38,7 @@ using namespace PMGD;
 constexpr unsigned Allocator::fixed_sizes[];
 
 Allocator::Allocator(uint64_t pool_addr, uint64_t pool_size,
-                      RegionHeader *hdr, const CommonParams &params)
+                      RegionHeader *hdr, CommonParams &params)
     : _pm_base(reinterpret_cast<uint64_t *>(pool_addr)),
       _size(pool_size),
       _chunks(pool_addr + CHUNK_SIZE, &hdr->chunks_hdr,

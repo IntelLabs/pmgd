@@ -37,7 +37,6 @@
 #include <list>
 
 #include "os.h"
-#include "RangeSet.h"
 #include "exception.h"
 
 class PMGD::os::MapRegion::OSMapRegion {
@@ -123,19 +122,17 @@ PMGD::os::MapRegion::OSMapRegion::~OSMapRegion()
     close(_fd);
 }
 
-static PMGD::os::RangeSet pending_commits;
-
 static const unsigned PAGE_SIZE = 4096;
 static const unsigned PAGE_OFFSET = PAGE_SIZE - 1;
 static const uint64_t PAGE_MASK = ~uint64_t(PAGE_OFFSET);
 
-void PMGD::os::flush(void *addr)
+void PMGD::os::flush(void *addr, RangeSet &pending_commits)
 {
     uint64_t aligned_addr = (uint64_t)addr & PAGE_MASK;
     pending_commits.add(aligned_addr, aligned_addr + PAGE_SIZE);
 }
 
-void PMGD::os::commit()
+void PMGD::os::commit(RangeSet &pending_commits)
 {
     for (auto i = pending_commits.begin(); i != pending_commits.end(); i++)
         msync((void *)i->start, i->end - i->start, MS_SYNC);

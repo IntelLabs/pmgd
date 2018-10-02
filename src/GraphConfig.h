@@ -34,6 +34,7 @@
 
 #include "graph.h"
 #include "os.h"
+#include "RangeSet.h"
 
 namespace PMGD {
     // We pass the same set of variables in a lot of constructors.
@@ -44,15 +45,22 @@ namespace PMGD {
         bool msync_needed;    // false only when NoMsync used for msync cases.
         bool always_msync;    // true only when AlwaysMsync used for msync cases.
 
+        // Make this a pointer so we have the option of setting
+        // it to the transactional data structure when a transaction is
+        // active. At graph create time, we can allocate a new one.
+        RangeSet *pending_commits;  // Needed to track graph time page writes for msync
+
         // Most common use case of this structure is to pass
         // create and msync parameters. So make the common constructor.
-        CommonParams(bool c, bool m) : CommonParams(c, false, m, false)
+        CommonParams(bool c, bool m) :
+            CommonParams(c, false, m, false, m ? new RangeSet() : NULL)
           {}
 
-        CommonParams(bool c, bool r, bool m, bool a)
+        CommonParams(bool c, bool r, bool m, bool a, RangeSet *pc)
         {
             create = c;  read_only = r;
             msync_needed = m; always_msync = a;
+            pending_commits = pc;
         }
     };
 
