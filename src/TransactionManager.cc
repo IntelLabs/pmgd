@@ -31,6 +31,7 @@
 #include <assert.h>
 #include "TransactionManager.h"
 #include "TransactionImpl.h"
+#include "RangeSet.h"
 #include "exception.h"
 #include "arch.h"
 
@@ -39,7 +40,7 @@ using namespace PMGD;
 TransactionManager::TransactionManager(
             uint64_t transaction_table_addr, uint64_t transaction_table_size,
             uint64_t journal_addr, uint64_t journal_size,
-            const CommonParams &params)
+            CommonParams &params)
     : _tx_table(reinterpret_cast<TransactionHdr *>(transaction_table_addr)),
       _journal_addr(reinterpret_cast<void *>(journal_addr)),
       _max_transactions(transaction_table_size / sizeof (TransactionHdr)),
@@ -56,11 +57,11 @@ TransactionManager::TransactionManager(
         throw PMGDException(InvalidConfig);
 
     if (params.create) {
-        reset_table(params.msync_needed);
+        reset_table(params.msync_needed, *params.pending_commits);
         _cur_tx_id = 0;
     }
     else
-        recover(params.read_only, params.msync_needed);
+        recover(params.read_only, params.msync_needed, *params.pending_commits);
 }
 
 void *TransactionManager::tx_jbegin(int index)
@@ -75,7 +76,7 @@ void *TransactionManager::tx_jend(int index)
     return static_cast<uint8_t *>(_journal_addr) + ((index+1) * _extent_size);
 }
 
-void TransactionManager::reset_table(bool msync_needed)
+void TransactionManager::reset_table(bool msync_needed, RangeSet &pending_commits)
 {
     for (int i = 0; i < _max_transactions; i++)
     {
@@ -83,11 +84,11 @@ void TransactionManager::reset_table(bool msync_needed)
         hdr->tx_id = 0;
         hdr->jbegin = tx_jbegin(i);
         hdr->jend = tx_jend(i);
-        flush(hdr, msync_needed);
+        flush(hdr, msync_needed, pending_commits);
     }
 }
 
-void TransactionManager::recover(bool read_only, bool msync_needed)
+void TransactionManager::recover(bool read_only, bool msync_needed, RangeSet &pending_commits)
 {
     // If there are any active transactions in the transaction table,
     // create a TransactionHandle and call recover_tx for each one.
@@ -107,10 +108,10 @@ void TransactionManager::recover(bool read_only, bool msync_needed)
 
             tx_id &= ~TransactionHdr::ACTIVE;
             TransactionHandle handle(tx_id, i, hdr->jbegin, hdr->jend);
-            TransactionImpl::recover_tx(handle, msync_needed);
+            TransactionImpl::recover_tx(handle, msync_needed, pending_commits);
 
             hdr->tx_id = tx_id;
-            flush(hdr, msync_needed);
+            flush(hdr, msync_needed, pending_commits);
         }
 
         if (tx_id > max_tx_id)
@@ -119,7 +120,9 @@ void TransactionManager::recover(bool read_only, bool msync_needed)
     _cur_tx_id = max_tx_id;
 }
 
-TransactionHandle TransactionManager::alloc_transaction(bool read_only, bool msync_needed)
+TransactionHandle TransactionManager::alloc_transaction(bool read_only,
+                                                        bool msync_needed,
+                                                        RangeSet &pending_commits)
 {
     if (read_only) {
         // For a read-only transaction, don't allocate a transaction ID
@@ -141,14 +144,16 @@ TransactionHandle TransactionManager::alloc_transaction(bool read_only, bool msy
         if ((prev_tx_id & TransactionHdr::ACTIVE) == 0
             && cmpxchg(hdr->tx_id, prev_tx_id, tx_id | TransactionHdr::ACTIVE))
         {
-            flush(hdr, msync_needed);
+            flush(hdr, msync_needed, pending_commits);
             return TransactionHandle(tx_id, i, tx_jbegin(i), tx_jend(i));
         }
     }
     throw PMGDException(OutOfTransactions);
 }
 
-void TransactionManager::free_transaction(const TransactionHandle &handle, bool msync_needed)
+void TransactionManager::free_transaction(const TransactionHandle &handle,
+                                          bool msync_needed,
+                                          RangeSet &pending_commits)
 {
     // If handle.index is -1, this is a read-only transaction, and
     // nothing needs to be done.
@@ -156,7 +161,7 @@ void TransactionManager::free_transaction(const TransactionHandle &handle, bool 
         // Writing 0 to the transaction-id commits the transaction
         TransactionHdr *hdr = &_tx_table[handle.index];
         hdr->tx_id &= ~TransactionHdr::ACTIVE;
-        flush(hdr, msync_needed);
-        commit(msync_needed);
+        flush(hdr, msync_needed, pending_commits);
+        commit(msync_needed, pending_commits);
     }
 }

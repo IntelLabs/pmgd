@@ -31,6 +31,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "RangeSet.h"
 
 namespace PMGD {
     // some useful constants
@@ -66,7 +67,7 @@ namespace PMGD {
         size_t get_default_region_size();
         size_t get_alignment(size_t size);
 
-        void flush(void *addr);
-        void commit();
+        void flush(void *addr, RangeSet &pending_commits);
+        void commit(RangeSet &pending_commits);
     };
 };

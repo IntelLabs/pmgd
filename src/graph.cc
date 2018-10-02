@@ -71,7 +71,7 @@ struct GraphImpl::GraphInfo {
     // wasting space due to alignment constraints.
     Allocator::RegionHeader allocator_hdr;
 
-    void init(const GraphConfig &, bool);
+    void init(const GraphConfig &, bool, RangeSet &);
 
     GraphInfo(const GraphInfo &) = delete;
     ~GraphInfo() = delete;
@@ -135,7 +135,8 @@ void Graph::create_index(IndexType index_type, StringID tag,
 
 GraphImpl::GraphInit::GraphInit(const char *name, int options,
                                 const Graph::Config *user_config)
-    : params{(options & Graph::Create), (options & Graph::ReadOnly), false, false},
+    : params{(options & Graph::Create), (options & Graph::ReadOnly),
+              false, false, new RangeSet()},
       info_map(name, info_name,
                GraphConfig::BASE_ADDRESS, GraphConfig::INFO_SIZE,
                params.create, false, params.read_only),
@@ -160,7 +161,7 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
     // For a new graph, initialize the info structure
     if (params.create) {
         const GraphConfig config(user_config);
-        info->init(config, params.msync_needed);
+        info->init(config, params.msync_needed, *params.pending_commits);
         node_size = config.node_size;
         edge_size = config.edge_size;
     }
@@ -170,7 +171,9 @@ GraphImpl::GraphInit::GraphInit(const char *name, int options,
     }
 }
 
-void GraphImpl::GraphInfo::init(const GraphConfig &config, bool msync_needed)
+void GraphImpl::GraphInfo::init(const GraphConfig &config,
+                                bool msync_needed,
+                                RangeSet &pending_commits)
 {
     version = VERSION;
     transaction_info = config.transaction_info;
@@ -188,7 +191,7 @@ void GraphImpl::GraphInfo::init(const GraphConfig &config, bool msync_needed)
         throw PMGDException(InvalidConfig);
     memcpy(locale_name, config.locale_name.c_str(), size);
 
-    TransactionImpl::flush_range(this, sizeof *this, msync_needed);
+    TransactionImpl::flush_range(this, sizeof *this, msync_needed, pending_commits);
 }
 
 GraphImpl::MapRegion::MapRegion(
@@ -235,7 +238,7 @@ GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
                   ? std::locale(_init.info->locale_name)
                   : std::locale())
 {
-    TransactionManager::commit(_init.params.msync_needed);
+    TransactionManager::commit(_init.params.msync_needed, *_init.params.pending_commits);
 }
 
 namespace PMGD {

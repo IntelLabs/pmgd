@@ -38,6 +38,7 @@
 #include "transaction.h"
 #include "callback.h"
 #include "compiler.h"
+#include "RangeSet.h"
 
 namespace PMGD {
     class GraphImpl;
@@ -49,8 +50,6 @@ namespace PMGD {
 
             GraphImpl *_db;
             int _tx_type;
-            bool _msync_needed;    // false only when NoMsync used for msync cases.
-            bool _always_msync;  // true only when AlwaysMsync used for msync cases.
             bool _committed;
 
             TransactionHandle _tx_handle;
@@ -60,11 +59,17 @@ namespace PMGD {
 
             CallbackList<void *, TransactionImpl *> _commit_callback_list;
 
+            // For Msync support
+            bool _msync_needed;    // false only when NoMsync used for msync cases.
+            bool _always_msync;  // true only when AlwaysMsync used for msync cases.
+            RangeSet _pending_commits;
+
             void log_je(void *src, size_t len);
             void finalize_commit();
             static void rollback(const TransactionHandle &h,
                                  const JournalEntry *jend,
-                                 bool msync_needed);
+                                 bool msync_needed,
+                                 RangeSet &pending_commits);
 
             TransactionId tx_id() const { return _tx_handle.id; }
             JournalEntry *jbegin()
@@ -157,14 +162,16 @@ namespace PMGD {
                 return _per_thread_tx;
             }
 
+            RangeSet *get_pending_commits() { return &_pending_commits; }
+
             // flush a range using clflushopt. Caller must call
             // commit to ensure the flushed data is durable.
-            static void flush_range(void *ptr, size_t len, bool msync_needed);
+            static void flush_range(void *ptr, size_t len, bool msync_needed, RangeSet &pc);
 
             // Another variation where TX is already present in the caller.
             void flush_range(void *ptr, size_t len);
 
             // roll-back the transaction
-            static void recover_tx(const TransactionHandle &, bool);
+            static void recover_tx(const TransactionHandle &, bool, RangeSet &);
     };
 };
