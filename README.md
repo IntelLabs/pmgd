@@ -1,4 +1,4 @@
-Persistent Memory Graph Database (PMGD)
+# Persistent Memory Graph Database (PMGD)
 
 Recent developments in persistent memory technologies like 3D XPoint
 promise storage elements  providing  nearly  the  speed  of  DRAM  and  the
@@ -9,7 +9,7 @@ and implemented an in-persistent-memory graph database, PMGD, optimized
 to run on a platform equipped with a vast amount of persistent memory.
 
 
-Features:
+## Features
 
 Atomicity, consistency, isolation, and durability (ACID) - As expected,
 each transaction either completes entirely or not at all,
@@ -43,7 +43,7 @@ plan to work on a distributed solution as soon as the we enable
 fine-grained concurrency in the library.
 
 
-System Overview:
+## System Overview
 
 Graphs stored in PMGD consist of nodes (or vertices) option-
 ally  connected  with  edges  (or  relationships). Graphs  may  be  di-
@@ -51,15 +51,16 @@ rected or undirected. PMGD always stores directed edges but
 its interface is such that direction may be ignored. All nodes need
 not be connected; a directed graph may be weakly connected (i.e., a
 path may not exist between all pairs of nodes). PMGD supports
-a property graph model with the following features - 
+a property graph model with the following features: 
 
--- Each node and each edge has an associated tag that can be used
+* Each node and each edge has an associated tag that can be used
 for classification. A tag is a short string that groups items into
 classes. For example, as shown in Figure 2 which represents a
 sample metadata graph of emails, a tag may be "Person", "Mes-
 sage", "To", or "Keyword". In applications that don’t require
 tags, they may be omitted.
--- Each node and each edge may have associated properties (dis-
+
+* Each node and each edge may have associated properties (dis-
 tinct from tags) stored as key-value pairs. Keys are short strings.
 Values  must  be  one  of  six  predefined  types:  booleans,  inte-
 gers,  floats,  strings,  date-time,  or  blobs  (i.e.,  arbitrary  strings
@@ -83,7 +84,7 @@ based on the expected query patterns, with an understanding that
 indices occupy additional memory. PMGD also allows a query
 to provide a predicate function that can examine the properties or
 relationships of a node or edge and determine whether it matches the query.
-Once relevant nodes have been found,  PMGD supports
+Once relevant nodes have been found, PMGD supports
 graph-oriented queries such as a) get neighbors of a node at n-hops,
 where n >= 1; b) get all nodes within a neighborhood of up to
 n-hops from a node; and c) get common neighbors of a set of nodes. Each
@@ -91,7 +92,7 @@ of these queries includes the ability to specify the direction and tag
 of edges to follow.
 
 
-Library sources:
+## Library sources
 
 The public interface headers are in the include/ folder while the
 library C++ sources are in src/. The Java bindings are implemented
@@ -99,20 +100,19 @@ in the java/ folder. Some higher level functionalities like
 neighbor functions are present in the util/ folder.
 
 
-Tools:
+## Tools
 
 We provide some simple tools like - 
-mkgraph - to make an empty graph and provide parameters like memory
+* mkgraph - to make an empty graph and provide parameters like memory
           region sizes, indexes etc. Run mkgraph -h for help.
-loadgraph - that can load from certain supported file formats into
+* loadgraph - that can load from certain supported file formats into
             an empty graph created with mkgraph. Run loadgraph -h for help.
-dumpgraph - to print the contents of the graph to screen. dumpgraph -h for help.
+* dumpgraph - to print the contents of the graph to screen. dumpgraph -h for help.
 
 
-Tests and sample code:
+## Tests and sample code
 
 The test folder has unit tests for a lot of the modules and the
 tests can be run using the run_all.sh script. clean_all.sh cleans
 up all the graphs created by run_all.sh. We plan to move our testing
 to GTEST in future release.
-
