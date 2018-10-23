@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
         db.create_index(Graph::EdgeIndex, "Sent", "SubmitTime", PropertyType::Time);
         tx.commit();
 
-        load_gson(db, "email.gson", node_added, edge_added);
+        load_gson(db, argv[1], node_added, edge_added);
 
         Transaction tx1(db, Transaction::ReadWrite);
         printf("## Trying iterator with tag Message and size: with DONT_CARE\n");
