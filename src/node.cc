@@ -57,11 +57,14 @@ void Node::cleanup(Allocator &index_allocator)
 
 NodeID Node::get_id() const
 {
+    // Node should already be locked since its reference was acquired.
     return TransactionImpl::get_tx()->get_db()->node_table().get_id(this);
 }
 
 void Node::add_edge(Edge *edge, Direction dir, StringID tag, Allocator &index_allocator)
 {
+    // Upgrade the reader lock to writer.
+    TransactionImpl::lock_node(this, true);
     if (dir == Outgoing)
         _out_edges->add(tag, edge, &edge->get_destination(), index_allocator);
     else
@@ -70,6 +73,7 @@ void Node::add_edge(Edge *edge, Direction dir, StringID tag, Allocator &index_al
 
 void Node::remove_edge(Edge *edge, Direction dir, Allocator &index_allocator)
 {
+    TransactionImpl::lock_node(this, true);
     if (dir == Outgoing)
         _out_edges->remove(edge->get_tag(), edge, index_allocator);
     else
@@ -80,13 +84,19 @@ Node &Node::get_neighbor(Direction dir, StringID edge_tag) const
 {
     if (dir == Outgoing || dir == Any) {
         const EdgeIndex::EdgePosition *pos = _out_edges->get_first(edge_tag);
-        if (pos)
-            return *pos->value.value();
+        if (pos) {
+            Node *n = pos->value.value();
+            TransactionImpl::lock_node(n, false);
+            return *n;
+        }
     }
     if (dir == Incoming || dir == Any) {
         const EdgeIndex::EdgePosition *pos = _in_edges->get_first(edge_tag);
-        if (pos)
-            return *pos->value.value();
+        if (pos) {
+            Node *n = pos->value.value();
+            TransactionImpl::lock_node(n, false);
+            return *n;
+        }
     }
     throw PMGDException(NullIterator);
 }
@@ -110,7 +120,6 @@ namespace PMGD {
         const EdgeIndex::EdgePosition *_pos;
         bool _vacant_flag = false;
         TransactionImpl *_tx;
-        IndexManager &_index_manager;
 
         friend class EdgeRef;
         Edge *get_edge() const { return _pos->value.key(); }
@@ -169,11 +178,10 @@ namespace PMGD {
               _key_pos(const_cast<EdgeIndex::KeyPosition *>(key_pos)),
               _tag(tag),
               _pos(pos),
-              _tx(TransactionImpl::get_tx()),
-              _index_manager(_tx->get_db()->index_manager())
+              _tx(TransactionImpl::get_tx())
         {
             if (_tx->is_read_write()) {
-                _index_manager.register_iterator(this,
+                _tx->iterator_callbacks().register_iterator(this,
                         [this](void *list_node) { remove_notify(list_node); });
             }
         }
@@ -217,7 +225,7 @@ namespace PMGD {
         ~Node_EdgeIteratorImpl()
         {
             if (_tx->is_read_write())
-                _index_manager.unregister_iterator(this);
+                _tx->iterator_callbacks().unregister_iterator(this);
         }
 
         operator bool() const { return _vacant_flag || _pos != NULL; }
@@ -317,19 +325,35 @@ EdgeIterator Node::get_edges() const
 }
 
 bool PMGD::Node::check_property(StringID id, Property &result) const
-    { return _property_list.check_property(id, result); }
+{
+    return _property_list.check_property(id, result);
+}
 
 PMGD::Property PMGD::Node::get_property(StringID id) const
-    { return _property_list.get_property(id); }
+{
+    return _property_list.get_property(id);
+}
 
 PMGD::PropertyIterator PMGD::Node::get_properties() const
-    { return _property_list.get_properties(); }
+{
+    return _property_list.get_properties();
+}
 
 void PMGD::Node::set_property(StringID id, const Property &new_value)
-    { _property_list.set_property(id, new_value, Graph::NodeIndex, _tag, this); }
+{
+    TransactionImpl::lock_node(this, true);
+    _property_list.set_property(id, new_value, Graph::NodeIndex, _tag, this);
+}
 
 void PMGD::Node::remove_property(StringID id)
-    { _property_list.remove_property(id, Graph::NodeIndex, _tag, this); }
+{
+    TransactionImpl::lock_node(this, true);
+    _property_list.remove_property(id, Graph::NodeIndex, _tag, this);
+}
 
 void PMGD::Node::remove_all_properties()
-    { _property_list.remove_all_properties(Graph::NodeIndex, _tag, this); }
+{
+    // This function is only called from remove_node in Graph.
+    // The node is already write locked in that case. So no need to lock.
+    _property_list.remove_all_properties(Graph::NodeIndex, _tag, this);
+}

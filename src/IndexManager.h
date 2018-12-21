@@ -36,6 +36,7 @@
 #include "edge.h"
 #include "iterator.h"
 #include "callback.h"
+#include "GraphConfig.h"
 
 namespace PMGD {
     class Allocator;
@@ -48,6 +49,7 @@ namespace PMGD {
     // index data structure.
     // The final index structure indexes based on property values
     class IndexManager {
+    private:
         static const unsigned TAGLIST_CHUNK_SIZE = 128;
         static const unsigned INDEXLIST_CHUNK_SIZE = 128;
 
@@ -65,10 +67,6 @@ namespace PMGD {
         // This is a pointer so we can typecast it in PM at the constructor
         TagList *_tag_prop_map;
 
-        CallbackList<void *, void *> _iterator_remove_list;
-        CallbackList<void *, void *> _iterator_rebalance_list;
-        CallbackList<void *, const PropertyRef &> _property_iterator_list;
-
         IndexList *add_tag_index(Graph::IndexType index_type,
                                      StringID tag,
                                      Allocator &allocator);
@@ -81,12 +79,12 @@ namespace PMGD {
         Graph::IndexStats get_index_stats(IndexList *tag_entry);
 
     public:
-        IndexManager(const uint64_t region_addr, bool create, bool msync_needed)
+        IndexManager(const uint64_t region_addr, CommonParams &params)
             : _tag_prop_map(reinterpret_cast<TagList *>(region_addr))
         {
-            if (create) {
-                _tag_prop_map[0].init(msync_needed);
-                _tag_prop_map[1].init(msync_needed);
+            if (params.create) {
+                _tag_prop_map[0].init(params.msync_needed, *params.pending_commits);
+                _tag_prop_map[1].init(params.msync_needed, *params.pending_commits);
             }
         }
 
@@ -133,37 +131,5 @@ namespace PMGD {
 
         Index::Index_IteratorImplIntf *get_iterator(Graph::IndexType index_type,
                                                     StringID tag);
-
-        void register_iterator(void *key,
-                               std::function<void(void *)> remove_callback)
-        {
-            _iterator_remove_list.register_callback(key, remove_callback);
-        }
-
-        void register_iterator(void *key,
-                               std::function<void(void *)> remove_callback,
-                               std::function<void(void *)> rebalance_callback)
-        {
-            _iterator_remove_list.register_callback(key, remove_callback);
-            _iterator_rebalance_list.register_callback(key, rebalance_callback);
-        }
-
-        void unregister_iterator(void *key)
-        {
-            _iterator_remove_list.unregister_callback(key);
-            _iterator_rebalance_list.unregister_callback(key);
-        }
-
-        void iterator_remove_notify(void *list_node) const
-            { _iterator_remove_list.do_callbacks(list_node); }
-        void iterator_rebalance_notify(void *tree) const
-            { _iterator_rebalance_list.do_callbacks(tree); }
-
-        void register_property_iterator(void *key, std::function<void(const PropertyRef &)> f)
-            { _property_iterator_list.register_callback(key, f); }
-        void unregister_property_iterator(void *key)
-            { _property_iterator_list.unregister_callback(key); }
-        void property_iterator_notify(const PropertyRef &p) const
-            { _property_iterator_list.do_callbacks(p); }
     };
 }

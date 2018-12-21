@@ -37,7 +37,7 @@
 using namespace PMGD;
 
 StringTable::StringTable(const uint64_t region_addr, size_t len,
-                         unsigned stringid_len, bool create, bool msync_needed)
+                         unsigned stringid_len, CommonParams &params)
     : MAX_STRINGID_LEN(stringid_len),
       NUM_HASH_BITS(bsr(len/stringid_len)),
       HASH_MASK((1 << NUM_HASH_BITS) - 1),
@@ -48,13 +48,14 @@ StringTable::StringTable(const uint64_t region_addr, size_t len,
     assert((num_entries & (num_entries - 1)) == 0 );
     assert(num_entries <= (1 << 16));
 
-    if (create) {
+    if (params.create) {
         // StringTable has to surely be zeroed out.
         // TODO Remove this in case PMFS or any other memory management
         // layer ensures that.
         memset(_pm, 0, len);
         // Cannot use write_nolog() since this is graph init time
-        TransactionImpl::flush_range(_pm, len, msync_needed);
+        TransactionImpl::flush_range(_pm, len, params.msync_needed,
+                                     *params.pending_commits);
     }
 }
 

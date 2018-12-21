@@ -36,25 +36,38 @@
 #include "pmgd.h"
 #include "util.h"
 #include "../src/Allocator.h"
+#include "../src/GraphConfig.h"
 #include "../src/os.h"
 #include "exception.h"
 
 using namespace PMGD;
 
-static void passfail(long id, long expected, long actual);
-static std::ostream& operator<< (std::ostream &out, Exception& e);
-static int fixed_allocator_test();
-static int var_allocator_test();
+namespace PMGD {
+    class AllocTest
+    {
+        int r;
 
-static int r;
+        void var_freeform_tests(Graph &db, Allocator &allocator1);
+        void var_fixed_tests(Graph &db, Allocator &allocator1);
+        void var_large_tests(Graph &db, Allocator &allocator1);
+        void passfail(long id, long expected, long actual);
+    public:
+        AllocTest() : r(0) {}
+        int fixed_allocator_test();
+        int var_allocator_test();
+    };
+}
+
+static std::ostream& operator<< (std::ostream &out, Exception& e);
 
 int main(int argc, char **argv)
 {
     std::cout << "Allocator unit test\n\n";
-    return fixed_allocator_test() + var_allocator_test();
+    AllocTest at;
+    return at.fixed_allocator_test() + at.var_allocator_test();
 }
 
-int fixed_allocator_test()
+int AllocTest::fixed_allocator_test()
 {
     uint64_t start_addr;
     uint64_t pool_size;
@@ -69,7 +82,8 @@ int fixed_allocator_test()
         pool_size = 1024;
         object_size = 32;
         os::MapRegion region1("fixedallocgraph", "region1", start_addr, pool_size, create1, create1, false);
-        FixedAllocator allocator1(start_addr, object_size, pool_size, create1, false);
+        CommonParams params(create1, false);
+        FixedAllocator allocator1(start_addr, object_size, pool_size, params);
         long base1 = start_addr + /* sizeof(struct RegionHeader) */64;
 
         void *addr1 = allocator1.alloc();
@@ -104,7 +118,7 @@ int fixed_allocator_test()
         pool_size = 96;
         object_size = 32;
         os::MapRegion region2("fixedallocgraph", "region2", start_addr, pool_size, create2, create2, false);
-        FixedAllocator allocator2(start_addr, object_size, pool_size, create2, false);
+        FixedAllocator allocator2(start_addr, object_size, pool_size, params);
         long base2 = start_addr + /* sizeof(struct RegionHeader) */64;
 
         addr1 = allocator2.alloc();
@@ -142,7 +156,7 @@ uint64_t pool_size;
 unsigned hdr_size;
 int testnum = 1;
 
-void var_freeform_tests(Graph &db, Allocator &allocator1)
+void AllocTest::var_freeform_tests(Graph &db, Allocator &allocator1)
 {
     long CHUNK_SIZE = 2 * 1024 * 1024;
     long size1M = 1024 * 1024;
@@ -223,6 +237,7 @@ void var_freeform_tests(Graph &db, Allocator &allocator1)
     addr = allocator1.alloc(size1M * 0.5);
     passfail(testnum++, base, (long)addr);
 
+#ifdef INNER_TX_CORRECT
     /**** Is this test case, and therefore the underlying logic, important?
      * Right now, modifying it to let the original sequence of tests be as is.
      */
@@ -237,6 +252,24 @@ void var_freeform_tests(Graph &db, Allocator &allocator1)
     addr = allocator1.alloc(4096 + 520160);
     passfail(testnum++, base, (long)addr);
     tx3.commit();
+#else
+    tx3.commit();
+
+    printf("Test the simple coalescing by freeing the last allocation from chunk3 + 4k\n");
+    {
+        Transaction tx(db, Transaction::ReadWrite | Transaction::Independent);
+        base -= 4096;
+        base -= 520160;
+        allocator1.free((void *)base, 520160);
+        tx.commit();
+    }
+    {
+        Transaction tx(db, Transaction::ReadWrite);
+        addr = allocator1.alloc(4096 + 520160);
+        passfail(testnum++, base, (long)addr);
+        tx.commit();
+    }
+#endif
 
     // Test releasing all allocations from the first chunk to see if it
     // is returned to the free pool and then reused.
@@ -262,12 +295,12 @@ void var_freeform_tests(Graph &db, Allocator &allocator1)
     // One by the default allocations for fixed chunks and 3 for this test.
 }
 
-void var_fixed_tests(Graph &db, Allocator &allocator1)
+void AllocTest::var_fixed_tests(Graph &db, Allocator &allocator1)
 {
     unsigned fixed_sizes[] = {16, 24, 32, 40, 48, 64};
     int NUM_FIXED_SIZES = 6;
     // sizeof(struct FixedChunk(16)) + align
-    long hdr_offset[] = {48, 40, 32, 64, 64, 64};
+    long hdr_offset[] = {64, 64, 64, 72, 80, 64};
     //long max_objects[] = {48, 40, 32, 64, 64, 64};
 
     // Number of objects allocated
@@ -400,12 +433,12 @@ void var_fixed_tests(Graph &db, Allocator &allocator1)
     printf("Now allocate 48B all the way to filling the entire 2MB chunk\n");
     // We have 2 allocations in the 48B chunk. Each 2MB page can contain 512
     // 4K chunks of which we are currently using 1 (from the previous test), so 511.
-    // So 511 chunks can contain 42924 allocations of 48B. To cross over to the next
-    // 2MB page, allocate at least 42925. Also, there are still 82 spots left in the
-    // first chunk dedicated to 48B. Rounding up to 43010.
+    // So 511 chunks can contain 42413 allocations of 48B. To cross over to the next
+    // 2MB page, allocate at least 42450. Also, there are still 81 spots left in the
+    // first chunk dedicated to 48B. Rounding up to 42500.
     Transaction tx8(db, Transaction::ReadWrite);
     unsigned index48 = 4;
-    for (int i = 2; i < 43010; ++i) {
+    for (int i = 2; i < 42500; ++i) {
         // Accounts for the one allocated already
         base += fixed_sizes[index48];
         // Running out of journal space
@@ -426,11 +459,10 @@ void var_fixed_tests(Graph &db, Allocator &allocator1)
     printf("Test return of all 48B emptying a 2MB page but shouldn't be returned cause it is current\n");
     // Now free enough of the 48B allocations to check if the 2MB page
     // is returned to the allocator. The above loop switches to a new
-    // 2MB page at 43008. So freeing 3 allocations should be enough
-    // 2 are on the new page, one should be from the previous page
+    // 2MB page at 42496. So freeing 4 allocations will empty that page.
     {
         Transaction tx(db, Transaction::ReadWrite | Transaction::Independent);
-        for (int i = 0; i < 2; ++i) {
+        for (int i = 0; i < 4; ++i) {
             allocator1.free((void *)base, fixed_sizes[index48]);
             base -= fixed_sizes[index48];
         }
@@ -441,28 +473,29 @@ void var_fixed_tests(Graph &db, Allocator &allocator1)
     // Base is moved a little extra behind in the previous for. So compensate.
     long new_page = base + fixed_sizes[index48] - hdr_offset[index48];
     printf("new_page set to 0x%lx, and base at 0x%lx\n", new_page, base);
-    base = new_page - fixed_sizes[index48];
+    // 64B already occupies a00000 and c00000
+    // So free some old address and see if that is not what is allocated first.
+    base = start_addr + 0x4050;
     {
         Transaction tx(db, Transaction::ReadWrite | Transaction::Independent);
         allocator1.free((void *)base, fixed_sizes[index48]);
         tx.commit();
     }
     addr = allocator1.alloc(fixed_sizes[index48]);
-    // The new alloc will come from the latest page, not the previous
-    // one since that is not current. Also, the current pointer in that
-    // chunk will be after the two allocations that we just freed.
-    base = new_page - fixed_sizes[index48];
+    // The new alloc will come from the latest page where we freed since
+    // it had 0 spaces before and by creating a space, we moved it to the
+    // list of available pages.
     passfail(testnum++, base, (long)addr);
     printf("New page at 48B allocations: 0x%lx, and base: 0x%lx\n", new_page, base);
     tx8.commit();
 
-    // The base at 0x800800000 has only 64B fixed allocs and is
+    // The base at 0x800a00000 has only 64B fixed allocs and is
     // not the current one for 64B. So test the return of 2MB
     // chunk using that. There are 32256 allocations to free.
     // Each page has 63 allocations.
     printf("Test returning of main chunk to the main allocator\n");
     Transaction tx9(db, Transaction::ReadWrite);
-    base = start_addr + 0x800000;
+    base = start_addr + 0xa00000;
     for (int i = 0; i < 512; ++i) {
         // Running out of journal space
         Transaction tx(db, Transaction::ReadWrite | Transaction::Independent);
@@ -479,7 +512,7 @@ void var_fixed_tests(Graph &db, Allocator &allocator1)
 }
 
 
-void var_large_tests(Graph &db, Allocator &allocator1)
+void AllocTest::var_large_tests(Graph &db, Allocator &allocator1)
 {
     long CHUNK_SIZE = 2 * 1024 * 1024;
     long size1M = 1024 * 1024;
@@ -502,20 +535,39 @@ void var_large_tests(Graph &db, Allocator &allocator1)
     addr = allocator1.alloc(size1M);
     passfail(testnum++, base, (long)addr);
 
+#ifdef INNER_TX_CORRECT
     {
         printf("Free the allocation before this and re-alloc from that space after commit\n");
         Transaction tx(db, Transaction::ReadWrite | Transaction::Independent);
-        base = start_base + CHUNK_SIZE - size1M * 0.5;
-        allocator1.free((void *)base, size1M * 0.5);
+        base = start_base + CHUNK_SIZE - size1M * 1.5;
+        allocator1.free((void *)base, size1M);
         tx.commit();
     }
     printf("Now allocate again, but just the smaller portion\n");
     addr = allocator1.alloc(size1M * 0.5);
     passfail(testnum++, base, (long)addr);
     tx1.commit();
+#else
+    tx1.commit();
+    {
+        printf("Free the allocation before this and re-alloc from that space after commit\n");
+        Transaction tx(db, Transaction::ReadWrite);
+        base = start_base + CHUNK_SIZE - size1M * 1.5;
+        allocator1.free((void *)base, size1M);
+        tx.commit();
+        base += size1M * 0.5;
+    }
+    {
+        printf("Now allocate again, but just the smaller portion\n");
+        Transaction tx(db, Transaction::ReadWrite);
+        addr = allocator1.alloc(size1M * 0.5);
+        passfail(testnum++, base, (long)addr);
+        tx.commit();
+    }
+#endif
 
     // Also, there will be no header for this one.
-    base = start_addr + 0x800000;
+    base = start_addr + 0xa00000;
     hdr_size = 24;
     printf("Testing borderline alloc within header size\n");
     Transaction tx2(db, Transaction::ReadWrite);
@@ -550,51 +602,33 @@ void var_large_tests(Graph &db, Allocator &allocator1)
     passfail(testnum++, base, (long)addr);
     tx5.commit();
 
-    base = start_base + CHUNK_SIZE - size1M;
+    base = start_base + CHUNK_SIZE - size1M * 0.5;
     // Now test the free code.
     printf("Testing free for large allocs\n");
     Transaction tx6(db, Transaction::ReadWrite);
     allocator1.free((void *)base, 3 * CHUNK_SIZE + size1M);
     tx6.commit();
 
-    printf("Now a regular alloc should come from the space freed in first chunk of the large alloc\n");
-    Transaction tx7(db, Transaction::ReadWrite);
-    addr = allocator1.alloc(size1M);
-    passfail(testnum++, base, (long)addr);
-    tx7.commit();
-
     printf("Large tests done....\n");
 }
 
-int var_allocator_test()
+int AllocTest::var_allocator_test()
 {
     try {
-        Graph db("varallocgraph", Graph::Create);
-        Transaction tx1(db, Transaction::ReadWrite);
-
-        bool create1 = true;
-        start_addr = 0x800000000;
-        pool_size = 104857600;       // 100MB
-        // We need a PM space for allocator header which normally
-        // will reside in the GraphInfo structure which is quite
-        // hidden. So creating a temporary space here to allow for
-        // the header.
-        uint64_t hdr_addr = start_addr + pool_size;
-        hdr_size = 1024;
-        os::MapRegion region3("varallocgraph", "region3", start_addr, pool_size, create1, create1, false);
-        os::MapRegion region4("varallocgraph", "region4", hdr_addr, hdr_size, create1, create1, false);
-        Allocator::RegionHeader *hdr = reinterpret_cast<Allocator::RegionHeader *>(hdr_addr);
-        Allocator allocator1(start_addr, pool_size, hdr, create1, false);
-        tx1.commit();
+        Graph::Config config;
+        config.allocator_region_size = 104857600;  // 100MB
+        Graph db("varallocgraph", Graph::Create | Graph::NoMsync, &config);
+        Allocator *allocator1 = Allocator::get_main_allocator(db);
+        start_addr = allocator1->get_start_addr();
 
         // While testing, also hit the case when the pool limit reaches.
         // That works but did not keep the test case here.
-        var_freeform_tests(db, allocator1);
+        var_freeform_tests(db, *allocator1);
 
-        var_fixed_tests(db, allocator1);
+        var_fixed_tests(db, *allocator1);
 
         // Now test the large and borderline allocations
-        var_large_tests(db, allocator1);
+        var_large_tests(db, *allocator1);
     }
     catch (Exception e)
     {
@@ -605,7 +639,7 @@ int var_allocator_test()
     return r;
 }
 
-static void passfail(long id, long expected, long actual)
+void AllocTest::passfail(long id, long expected, long actual)
 {
     if (expected == actual) {
         std::cout << "Test " << id << ": passed\n";

@@ -50,7 +50,7 @@ static constexpr char info_name[] = "graph.jdb";
 extern constexpr char commit_id[] = "Commit id: " COMMIT_ID;
 
 struct GraphImpl::GraphInfo {
-    static const uint64_t VERSION = 7;
+    static const uint64_t VERSION = 8;
 
     uint64_t version;
 
@@ -71,7 +71,7 @@ struct GraphImpl::GraphInfo {
     // wasting space due to alignment constraints.
     Allocator::RegionHeader allocator_hdr;
 
-    void init(const GraphConfig &, bool);
+    void init(const GraphConfig &, bool, RangeSet &);
 
     GraphInfo(const GraphInfo &) = delete;
     ~GraphInfo() = delete;
@@ -90,16 +90,25 @@ Graph::~Graph()
 
 Node &Graph::add_node(StringID tag)
 {
-    Node *node = (Node *)_impl->node_table().alloc();
-    node->init(tag, _impl->node_table().object_size(), _impl->allocator());
+    // The FixedAllocator doesn't implement its own locking. So lock
+    // it here such that it is reusable by the same transaction in case
+    // it needs to allocate multiple nodes.
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::NodeTable &ntable = _impl->node_table();
+    tx->acquire_lock(TransactionImpl::NodeLock, &ntable, true);
+    Node *node = (Node *)ntable.alloc();
+    node->init(tag, ntable.object_size(), _impl->allocator());
     _impl->index_manager().add_node(node, _impl->allocator());
     return *node;
 }
 
 Edge &Graph::add_edge(Node &src, Node &dest, StringID tag)
 {
-    Edge *edge = (Edge *)_impl->edge_table().alloc();
-    edge->init(src, dest, tag, _impl->edge_table().object_size());
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::EdgeTable &etable = _impl->edge_table();
+    tx->acquire_lock(TransactionImpl::EdgeLock, &etable, true);
+    Edge *edge = (Edge *)etable.alloc();
+    edge->init(src, dest, tag, etable.object_size());
     src.add_edge(edge, Outgoing, tag, _impl->allocator());
     dest.add_edge(edge, Incoming, tag, _impl->allocator());
     _impl->index_manager().add_edge(edge, _impl->allocator());
@@ -108,22 +117,38 @@ Edge &Graph::add_edge(Node &src, Node &dest, StringID tag)
 
 void Graph::remove(Node &node)
 {
-    Allocator &allocator = _impl->allocator();
-    node.remove_all_properties();
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::NodeTable &ntable = _impl->node_table();
+    tx->acquire_lock(TransactionImpl::NodeLock, &ntable, true);
+    tx->acquire_lock(TransactionImpl::NodeLock, &node, true);
+
+    // Remove edges before properties to ensure we can get all locks
+    // before doing the work.
     node.get_edges().process([this](Edge &edge) { remove(edge); });
-    node.cleanup(allocator);
+
+    Allocator &allocator = _impl->allocator();
     _impl->index_manager().remove_node(&node, allocator);
-    _impl->node_table().free(&node);
+
+    node.remove_all_properties();
+    node.cleanup(allocator);
+    ntable.free(&node);
 }
 
 void Graph::remove(Edge &edge)
 {
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::EdgeTable &etable = _impl->edge_table();
+    tx->acquire_lock(TransactionImpl::EdgeLock, &etable, true);
+    tx->acquire_lock(TransactionImpl::EdgeLock, &edge, true);
     Allocator &allocator = _impl->allocator();
-    edge.remove_all_properties();
     edge.get_source().remove_edge(&edge, Outgoing, allocator);
     edge.get_destination().remove_edge(&edge, Incoming, allocator);
     _impl->index_manager().remove_edge(&edge, allocator);
-    _impl->edge_table().free(&edge);
+
+    // Remove edge from nodes before properties to ensure we can get all locks
+    // before doing the work.
+    edge.remove_all_properties();
+    etable.free(&edge);
 }
 
 void Graph::create_index(IndexType index_type, StringID tag,
@@ -135,43 +160,57 @@ void Graph::create_index(IndexType index_type, StringID tag,
 
 GraphImpl::GraphInit::GraphInit(const char *name, int options,
                                 const Graph::Config *user_config)
-    : create(options & Graph::Create),
-      read_only(options & Graph::ReadOnly),
+    : params{(options & Graph::Create), (options & Graph::ReadOnly),
+              false, false, new RangeSet()},
       info_map(name, info_name,
                GraphConfig::BASE_ADDRESS, GraphConfig::INFO_SIZE,
-               create, false, read_only),
+               params.create, false, params.read_only),
       info(reinterpret_cast<GraphInfo *>(GraphConfig::BASE_ADDRESS))
 {
     int msync_options = options & Graph::AlwaysMsync;
     switch (msync_options) {
     case 0:
     case Graph::MsyncOnCommit:
-        msync_needed = true;
-        always_msync = false;
+        params.msync_needed = true;
+        params.always_msync = false;
         break;
     case Graph::AlwaysMsync:
-        msync_needed = always_msync = true;
+        params.msync_needed = params.always_msync = true;
         break;
     case Graph::NoMsync:
-        msync_needed = always_msync = false;
+        params.msync_needed = params.always_msync = false;
     }
+
+    // Since the lock variables are also calculated here and they
+    // have to be set regardless of create, initialize this struct
+    // outside of the if.
+    const GraphConfig config(user_config);
 
     // create was modified by _info_map constructor
     // depending on whether the file existed or not
     // For a new graph, initialize the info structure
-    if (create) {
-        const GraphConfig config(user_config);
-        info->init(config, msync_needed);
+    if (params.create) {
+        info->init(config, params.msync_needed, *params.pending_commits);
         node_size = config.node_size;
         edge_size = config.edge_size;
+        num_allocators = config.num_allocators;
     }
     else {
         if (info->version != GraphInfo::VERSION)
             throw PMGDException(VersionMismatch);
     }
+
+    node_striped_lock_size = config.node_striped_lock_size;
+    edge_striped_lock_size = config.edge_striped_lock_size;
+    index_striped_lock_size = config.index_striped_lock_size;
+    node_stripe_width = config.node_stripe_width;
+    edge_stripe_width = config.edge_stripe_width;
+    index_stripe_width = config.index_stripe_width;
 }
 
-void GraphImpl::GraphInfo::init(const GraphConfig &config, bool msync_needed)
+void GraphImpl::GraphInfo::init(const GraphConfig &config,
+                                bool msync_needed,
+                                RangeSet &pending_commits)
 {
     version = VERSION;
     transaction_info = config.transaction_info;
@@ -189,7 +228,7 @@ void GraphImpl::GraphInfo::init(const GraphConfig &config, bool msync_needed)
         throw PMGDException(InvalidConfig);
     memcpy(locale_name, config.locale_name.c_str(), size);
 
-    TransactionImpl::flush_range(this, sizeof *this, msync_needed);
+    TransactionImpl::flush_range(this, sizeof *this, msync_needed, pending_commits);
 }
 
 GraphImpl::MapRegion::MapRegion(
@@ -200,39 +239,47 @@ GraphImpl::MapRegion::MapRegion(
 
 GraphImpl::GraphImpl(const char *name, int options, const Graph::Config *config)
     : _init(name, options, config),
-      _transaction_region(name, _init.info->transaction_info, _init.create, _init.read_only),
-      _journal_region(name, _init.info->journal_info, _init.create, _init.read_only),
-      _indexmanager_region(name, _init.info->indexmanager_info, _init.create, _init.read_only),
-      _stringtable_region(name, _init.info->stringtable_info, _init.create, _init.read_only),
-      _node_region(name, _init.info->node_info, _init.create, _init.read_only),
-      _edge_region(name, _init.info->edge_info, _init.create, _init.read_only),
-      _allocator_region(name, _init.info->allocator_info, _init.create, _init.read_only),
+      _transaction_region(name, _init.info->transaction_info,
+                          _init.params.create, _init.params.read_only),
+      _journal_region(name, _init.info->journal_info,
+                      _init.params.create, _init.params.read_only),
+      _indexmanager_region(name, _init.info->indexmanager_info,
+                           _init.params.create, _init.params.read_only),
+      _stringtable_region(name, _init.info->stringtable_info,
+                          _init.params.create, _init.params.read_only),
+      _node_region(name, _init.info->node_info, _init.params.create, _init.params.read_only),
+      _edge_region(name, _init.info->edge_info, _init.params.create, _init.params.read_only),
+      _allocator_region(name, _init.info->allocator_info,
+                        _init.params.create, _init.params.read_only),
       _transaction_manager(_init.info->transaction_info.addr,
                            _init.info->transaction_info.len,
                            _init.info->journal_info.addr,
                            _init.info->journal_info.len,
-                           _init.create, _init.read_only,
-                           _init.msync_needed),
-      _index_manager(_init.info->indexmanager_info.addr, _init.create, _init.msync_needed),
+                           _init.params),
+      _index_manager(_init.info->indexmanager_info.addr, _init.params),
       _string_table(_init.info->stringtable_info.addr,
                     _init.info->stringtable_info.len,
                     _init.info->max_stringid_length,
-                    _init.create, _init.msync_needed),
+                    _init.params),
       _node_table(_init.info->node_info.addr,
                   _init.node_size, _init.info->node_info.len,
-                  _init.create, _init.msync_needed),
+                  _init.params),
       _edge_table(_init.info->edge_info.addr,
                   _init.edge_size, _init.info->edge_info.len,
-                  _init.create, _init.msync_needed),
-      _allocator(_init.info->allocator_info.addr,
+                  _init.params),
+      _allocator(this, _init.info->allocator_info.addr,
                  _init.info->allocator_info.len,
                  &_init.info->allocator_hdr,
-                 _init.create, _init.msync_needed),
+                 _init.num_allocators,
+                 _init.params),
       _locale(_init.info->locale_name[0] != '\0'
                   ? std::locale(_init.info->locale_name)
-                  : std::locale())
+                  : std::locale()),
+      _node_locks(_init.node_striped_lock_size, _init.node_stripe_width),
+      _edge_locks(_init.edge_striped_lock_size, _init.edge_stripe_width),
+      _index_locks(_init.index_striped_lock_size, _init.index_stripe_width)
 {
-    TransactionManager::commit(_init.msync_needed);
+    TransactionManager::commit(_init.params.msync_needed, *_init.params.pending_commits);
 }
 
 namespace PMGD {
@@ -261,6 +308,7 @@ namespace PMGD {
         Node *ref()
         {
             check_vacant();
+            TransactionImpl::lock_node(_cur, false);
             return _cur;
         }
     };
@@ -269,7 +317,12 @@ namespace PMGD {
         EdgeRef _ref;
 
         friend class EdgeRef;
-        Edge *get_edge() const { return (Edge *)_cur; }
+        Edge *get_edge() const
+        {
+            TransactionImpl::lock_edge(this, false);
+            return (Edge *)_cur;
+        }
+
         StringID get_tag() const { return get_edge()->get_tag(); }
         Node &get_source() const { return get_edge()->get_source(); }
         Node &get_destination() const { return get_edge()->get_destination(); }
@@ -357,7 +410,10 @@ void Graph_Iterator<B, T>::check_vacant()
 
 NodeIterator Graph::get_nodes()
 {
-    return NodeIterator(new Graph_NodeIteratorImpl(_impl->node_table()));
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::NodeTable &ntable = _impl->node_table();
+    tx->acquire_lock(TransactionImpl::NodeLock, &ntable, false);
+    return NodeIterator(new Graph_NodeIteratorImpl(ntable));
 }
 
 NodeIterator Graph::get_nodes(StringID tag)
@@ -374,7 +430,7 @@ NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp, bool re
         return get_nodes(tag);
     Index *index = _impl->index_manager().get_index(NodeIndex, tag, pp.id);
     if (index)
-        return NodeIterator(new Index_NodeIteratorImpl(index->get_iterator(pp, &_impl->locale(), reverse)));
+        return NodeIterator(new Index_NodeIteratorImpl(index->get_iterator(NodeIndex, pp, &_impl->locale(), reverse)));
     else
         return get_nodes(tag).filter(pp); // TODO Causes re-lookup of tag
 }
@@ -382,7 +438,10 @@ NodeIterator Graph::get_nodes(StringID tag, const PropertyPredicate &pp, bool re
 
 EdgeIterator Graph::get_edges()
 {
-    return EdgeIterator(new Graph_EdgeIteratorImpl(_impl->edge_table()));
+    TransactionImpl *tx = TransactionImpl::get_tx();
+    GraphImpl::EdgeTable &etable = _impl->edge_table();
+    tx->acquire_lock(TransactionImpl::EdgeLock, &etable, false);
+    return EdgeIterator(new Graph_EdgeIteratorImpl(etable));
 }
 
 EdgeIterator Graph::get_edges(StringID tag)
@@ -399,18 +458,24 @@ EdgeIterator Graph::get_edges(StringID tag, const PropertyPredicate &pp, bool re
         return get_edges(tag);
     Index *index = _impl->index_manager().get_index(EdgeIndex, tag, pp.id);
     if (index)
-        return EdgeIterator(new Index_EdgeIteratorImpl(index->get_iterator(pp, &_impl->locale(), reverse)));
+        return EdgeIterator(new Index_EdgeIteratorImpl(index->get_iterator(EdgeIndex, pp, &_impl->locale(), reverse)));
     else
         return get_edges(tag).filter(pp); // TODO Causes re-lookup of tag
 }
 
 NodeID Graph::get_id(const Node &node) const
 {
+    // The node id acquired from node_table which will not change unless
+    // the node is being removed. So read lock the node.
+    TransactionImpl::lock_node(&node, false);
     return _impl->node_table().get_id(&node);
 }
 
 EdgeID Graph::get_id(const Edge &edge) const
 {
+    // The edge id acquired from the edge table which will not change unless
+    // the edge is being removed. So read lock the edge.
+    TransactionImpl::lock_edge(&edge, false);
     return _impl->edge_table().get_id(&edge);
 }
 

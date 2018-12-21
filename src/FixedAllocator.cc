@@ -46,16 +46,16 @@ using namespace PMGD;
 #define ALLOC_OFFSET(sz) ((sizeof(RegionHeader) + (sz) - 1) & ~((sz) - 1))
 FixedAllocator::FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create, bool msync_needed)
+                               CommonParams &params)
     : _pm(hdr_addr),
       _pool_addr(pool_addr)
 {
     if ((uint64_t)hdr_addr == pool_addr)
-        _alloc_offset = ALLOC_OFFSET(create ? object_size : _pm->size);
+        _alloc_offset = ALLOC_OFFSET(params.create ? object_size : _pm->size);
     else
         _alloc_offset = 0;
 
-    if (create) {
+    if (params.create) {
         // Object size must be a power of 2 and at least 8 bytes.
         assert(object_size >= sizeof(uint64_t));
         assert(!(object_size & (object_size - 1)));
@@ -68,16 +68,17 @@ FixedAllocator::FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
         _pm->max_addr = pool_addr + pool_size;
         _pm->size = object_size;
 
-        TransactionImpl::flush_range(_pm, sizeof(*_pm), msync_needed);
+        TransactionImpl::flush_range(_pm, sizeof(*_pm),
+                                     params.msync_needed, *params.pending_commits);
     }
 }
 
 FixedAllocator::FixedAllocator(uint64_t pool_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create, bool msync_needed)
+                               CommonParams &params)
     : FixedAllocator(pool_addr, reinterpret_cast<RegionHeader *>(pool_addr),
                      object_size, pool_size,
-                     create, msync_needed)
+                     params)
 { }
 
 void *FixedAllocator::alloc()
@@ -151,11 +152,12 @@ void FixedAllocator::free(void *p)
     assert(p >= (void *)((uint64_t)_pool_addr + _alloc_offset) && p < _pm->tail_ptr);
     // Check to make sure it is a multiple of the size.
     assert((uint64_t)p % _pm->size == 0);
+
     // Check to make sure this object was indeed allocated.
     // assert(Check free list for p);
     TransactionImpl *tx = TransactionImpl::get_tx();
 
-    AllocatorCallback<FixedAllocator, void *>::delayed_free(tx, this, p);
+    AllocatorCallback::delayed_free(tx, this, p);
 }
 
 void FixedAllocator::clean_free_list
@@ -178,8 +180,14 @@ void FixedAllocator::clean_free_list
 // This should only be called at commit time by Allocator::clean_free_list()
 void FixedAllocator::free(void *p, unsigned num)
 {
-    TransactionImpl *tx = TransactionImpl::get_tx();
+    // Check to make sure given address was allocated from this allocator.
+    assert(p >= (void *)((uint64_t)_pool_addr + _alloc_offset));
+    assert((void *)((uint64_t)p + _pm->size * num) <= _pm->tail_ptr);
 
+    // Check to make sure it is a multiple of the size.
+    assert((uint64_t)p % _pm->size == 0);
+
+    TransactionImpl *tx = TransactionImpl::get_tx();
     if (((uint64_t)p + _pm->size * num) == (uint64_t)_pm->tail_ptr) {
         tx->write(&_pm->tail_ptr, (uint64_t *)p);
         tx->write(&_pm->num_allocated, _pm->num_allocated - num);

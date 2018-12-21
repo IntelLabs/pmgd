@@ -103,6 +103,24 @@ int main(int argc, char **argv)
             config.locale_name = argv[argi+1];
         else if (check_arg(argv[argi], 'A', "allocator-size"))
             config.allocator_region_size = strtoull(argv[argi+1], 0, 16);
+        else if (check_arg(argv[argi], 'c', "num-allocators"))
+            config.num_allocators = strtoul(argv[argi+1], 0, 0);
+        else if (check_arg(argv[argi], 'B', "node-locks-region-size"))
+            config.node_striped_lock_size = strtoul(argv[argi+1], 0, 16);
+        else if (check_arg(argv[argi], 'F', "edge-locks-region-size"))
+            config.edge_striped_lock_size = strtoul(argv[argi+1], 0, 16);
+        else if (check_arg(argv[argi], 'I', "index-locks-region-size"))
+            config.index_striped_lock_size = strtoul(argv[argi+1], 0, 16);
+        else if (check_arg(argv[argi], 'D', "default-locks-region-size"))
+            config.default_striped_lock_size = strtoul(argv[argi+1], 0, 16);
+        else if (check_arg(argv[argi], 'b', "node-locks-stripe-width"))
+            config.node_stripe_width = strtoul(argv[argi+1], 0, 0);
+        else if (check_arg(argv[argi], 'f', "edge-locks-stripe-width"))
+            config.edge_stripe_width = strtoul(argv[argi+1], 0, 0);
+        else if (check_arg(argv[argi], 'i', "index-locks-stripe-width"))
+            config.index_stripe_width = strtoul(argv[argi+1], 0, 0);
+        else if (check_arg(argv[argi], 'd', "default-locks-stripe-width"))
+            config.default_stripe_width = strtoul(argv[argi+1], 0, 0);
         else
             break;
         argi += 2;
@@ -237,6 +255,58 @@ void print_usage(FILE *stream)
 "          The default object sizes are 16, 32, 64, and 128. The default\n"
 "          pool size is REGION-SIZE. This option cannot be used with -A\n"
 "          or --allocator-size. POOL-SIZE is assumed to be in hexadecimal.\n"
+"\n"
+"  -c, --num-allocators NUMBER-PARALLEL-ALLOCATORS\n"
+"          Set the number of allocators that will operate on given pool.\n"
+"          This determines how many transactions can potentially allocate in\n"
+"          parallel. Default is 1.\n"
+"\n"
+"  -B, --node-locks-region-size SIZE\n"
+"          Set the size of the region in DRAM for locking nodes. This controls\n"
+"          the maximum number of locks that will be created to lock the nodes\n"
+"          allocated from the entire node table.\n"
+"          The default is the value of the\n"
+"          --default-locks-region-size parameter. SIZE is assumed to be in\n"
+"          hexadecimal.\n"
+"\n"
+"  -F, --edge-locks-region-size SIZE\n"
+"          Set the size of the region in DRAM for locking edges. This controls\n"
+"          the maximum number of locks that will be created to lock the edges\n"
+"          allocated from the entire edge table.\n"
+"          The default is the value of the\n"
+"          --default-locks-region-size parameter. SIZE is assumed to be in\n"
+"          hexadecimal.\n"
+"\n"
+"  -I, --index-locks-region-size SIZE\n"
+"          Set the size of the region in DRAM for locking index structures. This controls\n"
+"          the maximum number of locks that will be created to lock all the indices.\n"
+"          Advisable to keep it large.\n"
+"          The default is the value of the\n"
+"          --default-locks-region-size parameter. SIZE is assumed to be in\n"
+"          hexadecimal.\n"
+"\n"
+"  -D, --default-locks-region-size SIZE\n"
+"          This is used for any lock region not given. SIZE is assumed to be in\n"
+"          hexadecimal.\n"
+"\n"
+"  -b, --node-locks-stripe-width BYTES\n"
+"          Set the size of node table object/area covered by one lock.\n"
+"          The default is the value of the\n"
+"          --default-locks-stripe-width parameter.\n"
+"\n"
+"  -f, --edge-locks-stripe-width BYTES\n"
+"          Set the size of edge table object/area covered by one lock.\n"
+"          The default is the value of the\n"
+"          --default-locks-stripe-width parameter.\n"
+"\n"
+"  -i, --index-locks-stripe-width BYTES\n"
+"          Set the size of index object/area covered by one lock\n"
+"          The default is the value of the\n"
+"          --default-locks-stripe-width parameter.\n"
+"\n"
+"  -d, --default-locks-stripe-width BYTES\n"
+"          Set the default value of object/area covered by one lock\n"
+"          This is used whenever other values are not specified.\n"
 "\n"
 "  -l, --locale LOCALE-NAME\n"
 "          Set the name of the locale to be used for ordering strings in\n"

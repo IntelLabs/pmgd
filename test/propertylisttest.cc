@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     srand(seed);
 
     try {
-        Graph db(db_name, Graph::Create);
+        Graph db(db_name, Graph::Create | Graph::NoMsync);
 
         annotate("Start transaction");
         Transaction tx(db, Transaction::ReadWrite);
