@@ -52,6 +52,8 @@ namespace PMGD {
         OutOfTransactions,
         OutOfJournalSpace,
 
+        LockTimeout,
+
         InvalidID,
 
         InternalErrorBase = 100,

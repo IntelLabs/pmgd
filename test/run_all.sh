@@ -41,6 +41,11 @@ if test $# != 2 ; then
 fi
 
 SCRIPT_DIR=`dirname $0`
+cd $SCRIPT_DIR
+SCRIPT_DIR=$PWD
+cd -
+echo "Script run from $SCRIPT_DIR"
+
 GRAPH_DIR=$1
 mkdir -p ${GRAPH_DIR}
 # First get an absolute path for the graph dir, just in case
@@ -50,10 +55,10 @@ echo "Graphs in $GRAPH_DIR"
 cd -
 
 source ${SCRIPT_DIR}/common.sh
-find_test_dir
-if [ $? != 0 ]; then
-    exit -2
-fi
+# This script always lives in the test folder. So make that assumption
+TEST_DIR=${SCRIPT_DIR}
+
+echo "Test dir $TEST_DIR"
 
 DEL_GRAPH=$2
 
@@ -69,7 +74,7 @@ mkdir -p log
 # While this list could be constructed dynamically, keep it static
 # to allow for choosing and making sure we don't delete wrong dirs
 # by mistake.
-tests=( alloctest avltest chunklisttest edgeindextest
+tests=( alloctest allocaborttest avltest chunklisttest edgeindextest
         emailindextest filtertest indextest indexstringtest
         indexrangetest listtest load_gson_test load_tsv_test
         neighbortest nodeedgetest propertychunktest propertypredicatetest
@@ -77,11 +82,13 @@ tests=( alloctest avltest chunklisttest edgeindextest
         reverseindexrangetest rotest
         statsindextest statsallocatortest
         soltest stringtabletest txtest removetest
+        mtalloctest stripelocktest mtavltest mtaddfindremovetest
         test720 test750 test767
         load_pmgd_tests
         BindingsTest DateTest )
 
 graph_dirs=( fixedallocgraph varallocgraph avlgraph chunklistgraph edgeindexgraph
+             fixedallocabortgraph varallocabortgraph varallocabortlargegraph
              emailindexgraph filtergraph indexgraph indexstringgraph
              indexrangegraph listgraph load_gson_graph load_tsv_graph
              neighborgraph nodeedgegraph propertychunkgraph ppgraph
@@ -89,6 +96,7 @@ graph_dirs=( fixedallocgraph varallocgraph avlgraph chunklistgraph edgeindexgrap
              statsindexgraph statsallocatorgraph
              reverseindexrangegraph rograph
              solgraph stringtablegraph txgraph removegraph
+             mtallocgraph mtaddfindremovegraph
              test720graph test750graph test767graph
              bindingsgraph )
 
@@ -120,7 +128,9 @@ do
     case "$test" in
         propertychunktest) ${TEST_DIR}/$test 1000 || status=1;;
         propertylisttest) ${TEST_DIR}/$test propertylistgraph 100000 || status=1;;
-        load_gson_test) ${TEST_DIR}/$test email.gson || status=1;;
+        emailindextest) ${TEST_DIR}/$test ${TEST_DIR}/email.gson || status=1;;
+        removetest) ${TEST_DIR}/$test ${TEST_DIR}/allgoodcases.pmgd || status=1;;
+        load_gson_test) ${TEST_DIR}/$test ${TEST_DIR}/email.gson || status=1;;
         load_tsv_test) echo "1	2
             1	3
             2	4
@@ -149,7 +159,7 @@ do
                 status=1
             fi
             ;;
-        load_pmgd_tests) sh load_pmgd_tests.sh || status=1;;
+        load_pmgd_tests) sh ${TEST_DIR}/load_pmgd_tests.sh ${GRAPH_DIR} || status=1;;
         *) ${TEST_DIR}/$test n1 n2 n3 n4 || status=1;;
     esac > ${TEST_DIR}/log/${test}.log
 

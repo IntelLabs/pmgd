@@ -40,9 +40,14 @@ IndexManager::IndexList *IndexManager::add_tag_index(
                                            StringID tag,
                                            Allocator &allocator)
 {
+    // ChunkList add encapsulates locking. That means, if the tag didn't
+    // exist and is added to an existing chunk, then that entire chunk
+    // is write locked till TX finishes. Otherwise the relevant chunk is
+    // read locked.
     // ChunkList should call the empty constructor if this element was
     // newly added. So the entry will always be correctly initialized
     IndexList *tag_entry = _tag_prop_map[index_type].add(tag, allocator);
+
     // If there is no other property id entry for this tag, make that
     // 0th entry be an entry for NO property id (represented by 0). So
     // all nodes/edges for this tag will get indexed here apart from their
@@ -152,7 +157,7 @@ void IndexManager::remove(Graph::IndexType index_type, StringID tag, void *obj,
     // This particular property only has one value = true and should
     // be the first and only node in the tree.
     bool value = true;
-    List<void *> *list = idx->find(value);
+    List<void *> *list = idx->find(value, true);
     list->remove(obj, allocator);
 }
 
@@ -388,10 +393,12 @@ Index::Index_IteratorImplIntf *IndexManager::get_iterator
     prop0_idx = get_index(index_type, tag, 0);
     if (!prop0_idx)
         return NULL;
+
     // This index can never be null cause we create it for each non-zero tag.
     // The second parameter here is the locale which we surely do not need for
     // a boolean property.
-    return prop0_idx->get_iterator(PropertyPredicate(0, PropertyPredicate::Eq, true), NULL, false);
+    return prop0_idx->get_iterator(index_type, PropertyPredicate(0, PropertyPredicate::Eq, true),
+                                    NULL, false);
 }
 
 void IndexManager::update

@@ -44,10 +44,13 @@ namespace PMGD {
 
     class Graph {
         friend class Transaction;
+        friend class Allocator;
         GraphImpl *_impl;
 
     public:
-        enum OpenOptions { ReadWrite = 0, Create = 1, ReadOnly = 2 };
+        // In case of msync, MsyncOnCommit is the default.
+        enum OpenOptions { ReadWrite = 0, Create = 1, ReadOnly = 2, NoMsync = 4,
+                           MsyncOnCommit = 8, AlwaysMsync = 12};
 
         struct Config {
             struct AllocatorInfo {
@@ -66,6 +69,27 @@ namespace PMGD {
             size_t transaction_table_size;
             size_t journal_size;
             size_t allocator_region_size;
+
+            unsigned num_allocators;
+
+            // The parameters below are DRAM-based parameters that can be
+            // modified each time the graph is created/opened. The variables
+            // above are PM-based parameters which are fixed once the graph
+            // is created. locale_name is not included in
+            // the DRAM variable list.
+            size_t default_striped_lock_size; // bytes
+            size_t node_striped_lock_size;    // bytes
+            size_t edge_striped_lock_size;    // bytes
+            size_t index_striped_lock_size;   // bytes
+
+            // Indicate how many bytes get covered by one
+            // bucket in the stripe lock. Keep it modular per
+            // lock stripe since nodes, edges and index nodes
+            // can be of very different sizes.
+            unsigned default_stripe_width;
+            unsigned node_stripe_width;
+            unsigned edge_stripe_width;
+            unsigned index_stripe_width;
 
             std::string locale_name;
 

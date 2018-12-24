@@ -107,7 +107,7 @@ namespace PMGD {
         new_node->value = value;
         new_node->next = _list;
         // Since new_node is new allocation, just flush it without logging.
-        TransactionImpl::flush_range(new_node, sizeof *new_node);
+        tx->flush_range(new_node, sizeof *new_node);
 
         // Since _list and _num_elems are contiguous, log() makes sense
         tx->log(this, sizeof *this);
@@ -127,7 +127,7 @@ namespace PMGD {
         while (temp != NULL) {
             if (value == temp->value) {
                 TransactionImpl *tx = TransactionImpl::get_tx();
-                tx->get_db()->index_manager().iterator_remove_notify(temp);
+                tx->iterator_callbacks().iterator_remove_notify(temp);
                 if (prev == NULL) { // Changing _list
                     // Both members need to change
                     tx->log(this, sizeof *this);

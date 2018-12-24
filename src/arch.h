@@ -52,6 +52,10 @@ static inline bool bts(volatile T &m, int bit)
 }
 
 template <typename T>
+static inline void atomic_and(volatile T &m, T v)
+  { asm volatile ("lock and%z0 %1, %0" : "+m"(m) : "ri"(v)); }
+
+template <typename T>
 static inline unsigned bsr(T value)
 {
     T r;
@@ -73,52 +77,29 @@ static inline void memory_barrier() // Instruct compiler not to re-order
     __asm__ volatile ("" : : : "memory");
 }
 
-#if defined(HSPM) || !defined(NOPM)
-__asm__ (
-    ".macro pcommit\n\t"
-    ".byte 0x66, 0x0f, 0xae, 0xf8\n\t"
-    ".endm\n\t"
-
-    ".macro clflushopt mem\n\t"
-    ".byte 0x66\n\t"
-    "clflush \\mem\n\t"
-    ".endm\n\t"
-
-    ".macro mysfence param\n\t"
-    ".byte 0x66\n\t"
-    "lfence\n\t"
-    "mov \\param, %al\n\t"
-    ".endm\n\t"
-
-    ".macro mypcommit param\n\t"
-    ".byte 0x66\n\t"
-    "sfence\n\t"
-    "mov \\param, %al\n\t"
-    ".endm\n\t"
-
-    ".macro mymemset\n\t"
-    ".byte 0x66\n\t"
-    "mfence\n\t"
-    ".endm\n\t"
-);
-#endif
-
-static inline void clflush(void *addr)
+template <typename T>
+static inline T xadd(volatile T &m, T v)
 {
-#ifndef NOPM
-    __asm__("clflushopt \"%0\"" : "+m"(*(char *)addr) : : "memory");
-#endif
+    T r = v;
+    asm volatile ("lock xadd %1, %0" : "+m"(m), "+r"(r));
+    return r;
 }
 
-static inline void persistent_barrier(uint8_t param)
+static inline void pause()
 {
-#if defined(HSPM)
-    __asm__ volatile ("mysfence %0"  : : "N"(param));
-    __asm__ volatile ("mypcommit %0" : : "N"(param+1));
-    __asm__ volatile ("mysfence %0"  : : "N"(param+2));
-#elif !defined(NOPM)
+    asm("pause");
+}
+
+#define CONCAT_(x, y)     x##y
+#define CONCAT(x, y)      CONCAT_(x, y)
+#define STRINGIFY_(x)     #x
+#define STRINGIFY(x)      STRINGIFY_(x) 
+static inline void clflush(void *addr)
+{
+    __asm__(STRINGIFY(PMFLUSH) " %0" : : "m"(*(char *)addr), "m"(*(char (*)[64])((uintptr_t)addr & -64)));
+}
+
+static inline void persistent_barrier()
+{
     __asm__ volatile ("sfence" : : : "memory");
-    __asm__ volatile ("pcommit" : : : "memory");
-    __asm__ volatile ("sfence" : : : "memory");
-#endif
 }

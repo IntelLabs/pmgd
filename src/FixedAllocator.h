@@ -32,7 +32,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "TransactionImpl.h"
-#include "AllocatorCallback.h"
+#include "GraphConfig.h"
 
 namespace PMGD {
     /**
@@ -81,7 +81,7 @@ namespace PMGD {
         // Maintain objects to be freed at commit time, in this list.
         std::list<void *> _free_list;
 
-        friend class AllocatorCallback<FixedAllocator, void *>;
+        friend class AllocatorCallback;
         void clean_free_list(TransactionImpl *tx, const std::list<void *> &list);
 
     public:
@@ -90,11 +90,11 @@ namespace PMGD {
 
         FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create);
+                               CommonParams &params);
 
         FixedAllocator(uint64_t pool_addr,
                                uint32_t object_size, uint64_t pool_size,
-                               bool create);
+                               CommonParams &params);
 
         // Primary allocator functions; serialized
         void *alloc();
@@ -139,5 +139,35 @@ namespace PMGD {
 
         unsigned occupancy() const;
         unsigned health() const;
+    };
+
+    class AllocatorCallback
+    {
+        FixedAllocator *_allocator;
+        std::list<void *> _list;
+    public:
+        AllocatorCallback(FixedAllocator *a) : _allocator(a) { }
+
+        void operator()(TransactionImpl *tx)
+            { _allocator->clean_free_list(tx, _list); }
+
+        void add(void *s) { _list.push_front(s); }
+
+        static void delayed_free(TransactionImpl *tx, FixedAllocator *allocator,
+                                 void *s)
+        {
+            auto *f = tx->lookup_commit_callback(allocator);
+            if (f == NULL) {
+                tx->register_commit_callback(allocator, AllocatorCallback(allocator));
+
+                // The callback object is copied when it is registered,
+                // so we have to call lookup again to get a pointer to
+                // the stored object.
+                f = tx->lookup_commit_callback(allocator);
+            }
+
+            auto *cb = f->template target<AllocatorCallback>();
+            cb->add(s);
+        }
     };
 }

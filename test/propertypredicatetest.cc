@@ -47,7 +47,7 @@ int main(int argc, char **argv)
         Transaction tx(db, create ? Transaction::ReadWrite : 0);
 
         for (int i = 1; i < argc; i++) {
-            char tag[8] = {0};
+            char tag[14] = {0};
             sprintf(tag, "tag%d",i);
             Node &n = db.add_node(tag);
             n.set_property("id", argv[i]);
