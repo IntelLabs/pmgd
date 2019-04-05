@@ -252,8 +252,20 @@ std::string time_to_string(const Time &t, bool utc)
 #endif
 
     // Check for remaining bytes to make sure there is room for the
-    // timezone portion.
-    assert(num_bytes > 0 && num_bytes < 70);
+    // timezone and potentially the microsecond portion.
+    assert(num_bytes > 0 && num_bytes < 63);
+
+    if (t.usec > 0) {
+        if (t.usec % 1000 == 0) { // So no microsec component
+            sprintf(str + num_bytes, ".%.3d", (int)(t.usec / 1000));
+            num_bytes += 4; // Count the dot.
+        }
+        else {
+            sprintf(str + num_bytes, ".%.6d", (int)t.usec);
+            num_bytes += 7; // Count the dot.
+        }
+    }
+
     // Add the timezone now.
     if (utc)
         sprintf(str + num_bytes, "Z");
