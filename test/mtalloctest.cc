@@ -79,7 +79,8 @@ const unsigned PMGD::MTAllocTest::PEACE_TIME;
 int main()
 {
     cout << "MTAlloc unit test with 5 allocators\n\n";
-    MTAllocTest mtat(5);
+    cout << std::thread::hardware_concurrency() << endl;
+    MTAllocTest mtat(std::thread::hardware_concurrency());
     int r = mtat.run_test();
     printf("%d\n", r);
 
@@ -197,6 +198,8 @@ int MTAllocTest::free_thread(int tid)
     printf("Thread id: %d, %s\n", tid, __FUNCTION__);
     unsigned t1 = tid - 4, t2 = t1 + 2;
 
+    // Allow for more time on slower systems.
+    this_thread::sleep_for(chrono::microseconds(PEACE_TIME));
     printf("Free allocations from threads %d and %d\n", t1, t2);
     while (!_allocdone[t1] || !_allocdone[t2] || _tofree[t1].size() > 0 ||
             _tofree[t2].size() > 0) {
