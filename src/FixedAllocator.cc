@@ -157,6 +157,11 @@ void FixedAllocator::free(void *p)
     // assert(Check free list for p);
     TransactionImpl *tx = TransactionImpl::get_tx();
 
+    // Just change the free bit for now so we do not count that
+    // as a valid object within the same transaction
+    tx->log(p, sizeof(uint64_t));
+    *(uint64_t *)p |= FREE_BIT;
+
     AllocatorCallback::delayed_free(tx, this, p);
 }
 
