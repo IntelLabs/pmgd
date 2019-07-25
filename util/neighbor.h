@@ -85,6 +85,13 @@ extern PMGD::NodeIterator get_neighbors
      PMGD::StringID tag = 0,
      bool unique = true);
 
+extern PMGD::NodeIterator get_neighbors
+    (const PMGD::Node &node,
+     PMGD::Direction dir,
+     PMGD::StringID tag,
+     const std::vector<PMGD::PropertyPredicate> &pps,
+     bool unique = true);
+
 extern PMGD::NodeIterator get_joint_neighbors
     (const std::vector<JointNeighborConstraint> &constraints,
      bool unique = true);
