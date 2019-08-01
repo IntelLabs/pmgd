@@ -41,6 +41,8 @@
 #include "FixedAllocator.h"
 #include "TransactionImpl.h"
 
+#include <iostream>
+
 using namespace PMGD;
 
 #define ALLOC_OFFSET(sz) ((sizeof(RegionHeader) + (sz) - 1) & ~((sz) - 1))
@@ -61,6 +63,13 @@ FixedAllocator::FixedAllocator(uint64_t pool_addr, RegionHeader *hdr_addr,
         assert(!(object_size & (object_size - 1)));
         // Make sure we have a well-aligned pool_addr.
         assert((_pool_addr & (object_size - 1)) == 0);
+
+        std::cout << "FixedAllocator::FixedAllocator -  " << "\t";
+        std::cout << "pool_addr: "      << pool_addr << "\t";
+        std::cout << "hdr_addr: "       << hdr_addr << "\t";
+        std::cout << "object_size: "    << object_size << "\t";
+        std::cout << "pool_size: "      << pool_size << "\t";
+        std::cout << std::endl;
 
         _pm->tail_ptr = (uint64_t *)(_pool_addr + _alloc_offset);
         _pm->free_ptr = NULL;
@@ -91,6 +100,18 @@ void *FixedAllocator::alloc()
     if (_pm->free_ptr != NULL) {
         /* We found an object on the free list */
         p = _pm->free_ptr;
+
+        std::cout << "FixedAllocator::alloc - " << "\t";
+        std::cout << "_pm: "              << _pm << "\t";
+        std::cout << "_pm.tail_ptr: "     << _pm->tail_ptr << "\t";
+        std::cout << "_pm.free_ptr: "     << _pm->free_ptr << "\t";
+        std::cout << "_pm.num_allocated: "<< _pm->num_allocated << "\t";
+        std::cout << "_pm.max_addr: "     << _pm->max_addr << "\t";
+        std::cout << "_pm.size: "         << _pm->size << "\t";
+        std::cout << "_pool_addr: "       << _pool_addr << "\t";
+        std::cout << "_alloc_offset: "    << _alloc_offset << "\t";
+        std::cout << "_free_list_size: "  << _free_list.size() << "\t";
+        std::cout << std::endl;
 
         // Log the 8-byte freelist pointer in the allocated object.
         tx->log(p, sizeof(uint64_t));

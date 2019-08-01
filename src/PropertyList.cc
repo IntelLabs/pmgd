@@ -40,6 +40,8 @@
 #include "GraphImpl.h"
 #include "arch.h"
 
+#include <iostream> // TODO REMOVE
+
 using namespace PMGD;
 
 namespace PMGD {
@@ -659,6 +661,14 @@ void PropertyRef::set_blob(const void *value, std::size_t size,
 {
     if (size > UINT_MAX) throw PMGDException(NotImplemented);
     void *p = allocator.alloc(size);
+
+    std::cout << "PropertyRef::set_blob -  " << "\t";
+    std::cout << "p: "     << p << "\t";
+    std::cout << "value: " << value << "\t";
+    std::cout << "value: " << (char *)value << "\t";
+    std::cout << "size: "  << size << "\t";
+    std::cout << std::endl;
+
     memcpy(p, value, size);
     TransactionImpl *tx = TransactionImpl::get_tx();
     tx->flush_range(p, size);

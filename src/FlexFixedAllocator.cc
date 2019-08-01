@@ -34,6 +34,8 @@
 #include "AllocatorUnit.h"
 #include "TransactionImpl.h"
 
+#include <iostream>
+
 using namespace PMGD;
 using namespace std;
 
@@ -149,6 +151,13 @@ AllocatorUnit::FlexFixedAllocator::FixedAllocatorInfo *AllocatorUnit::FlexFixedA
         new (_allocator.alloc_free_form(sizeof(RegionHeader))) RegionHeader;
     uint64_t pool_addr;
     FixedAllocator *fa;
+
+    std::cout << "AllocatorUnit::FlexFixedAllocator::add_new_pool() - "<< "\t";
+    std::cout << "hdr: " << hdr << "\t";
+    std::cout << "hdr.pool_base: "      << hdr->pool_base << "\t";
+    std::cout << "hdr.next_pool_hdr: "  << hdr->next_pool_hdr << "\t";
+    std::cout << "hdr.fa_hdr: "  << &hdr->fa_hdr << "\t";
+    std::cout << std::endl;
 
     // This should get is the inner transaction from the FixSizeAllocator.
     TransactionImpl *tx = TransactionImpl::get_tx();
