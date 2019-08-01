@@ -69,6 +69,8 @@ class NeighborIteratorImpl : public NodeIteratorImplIntf
     const bool _unique;
     EdgeIterator _ei;
 
+    std::vector<PMGD::PropertyFilter<PMGD::Edge>> _pfs;
+
     std::set<Node *>_seen;
 
     Node *_neighbor;
@@ -76,11 +78,16 @@ class NeighborIteratorImpl : public NodeIteratorImplIntf
     bool _next()
     {
         while (_ei) {
+            for (auto &pf : _pfs)
+                if (pf(*_ei) == PMGD::DontPass)
+                    goto next;
+
             _neighbor = get_neighbor(_node, *_ei, _dir);
             if (!_unique)
                 return true;
             if (_seen.insert(_neighbor).second)
                 return true;
+        next:
             _ei.next();
         }
         return false;
@@ -90,11 +97,15 @@ public:
     NeighborIteratorImpl(const Node &node,
                          const PMGD::Direction dir,
                          const StringID tag,
+                         const std::vector<PMGD::PropertyPredicate> &pps,
                          const bool unique)
         : _node(node), _dir(dir), _unique(unique), _ei(node.get_edges(dir, tag))
     {
+        for (const auto& p : pps)
+            _pfs.push_back(PMGD::PropertyFilter<PMGD::Edge>(p));
         _next();
     }
+
 
     operator bool() const { return bool(_ei); }
 
@@ -388,9 +399,18 @@ public:
 NodeIterator get_neighbors
     (const Node &n, Direction dir, StringID tag, bool unique)
 {
-    return NodeIterator(new NeighborIteratorImpl(n, dir, tag, unique));
+    std::vector<PMGD::PropertyPredicate> pps; // empty
+    return NodeIterator(new NeighborIteratorImpl(n, dir, tag, pps, unique));
 }
 
+NodeIterator get_neighbors
+    (const Node &n,
+     Direction dir, StringID tag,
+     const std::vector<PMGD::PropertyPredicate> &pps,
+     bool unique)
+{
+    return NodeIterator(new NeighborIteratorImpl(n, dir, tag, pps, unique));
+}
 
 NodeIterator get_joint_neighbors
     (const std::vector<JointNeighborConstraint> &constraints, bool unique)

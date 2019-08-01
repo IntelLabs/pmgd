@@ -40,6 +40,14 @@
 
 using namespace PMGD;
 
+template <typename T> int count(T &iter)
+{
+    int n;
+    for (n = 0; iter; iter.next())
+        n++;
+    return n;
+}
+
 int main(int argc, char **argv)
 {
     bool create = (argc > 1);
@@ -69,23 +77,25 @@ int main(int argc, char **argv)
             don.set_property("Name", "Don");
 
             auto add_message =
-                [&db](Node &from, const std::initializer_list<Node *> &to)
+                [&db](Node &from, const std::initializer_list<Node *> &to,
+                      int order)
                 {
                     static int next_id = 1;
                     Node &m = db.add_node("Message");
                     m.set_property("id", next_id++);
-                    db.add_edge(from, m, "From");
+                    Edge &e = db.add_edge(from, m, "From");
+                    e.set_property("order", order);
                     for (auto t : to)
                         db.add_edge(m, *t, "To");
                 };
 
-            add_message(ann, { &bob });
-            add_message(bob, { &ann });
-            add_message(ann, { &bob, &carl });
-            add_message(bob, { &carl });
-            add_message(bob, { &don });
-            add_message(carl, { &bob, &don });
-            add_message(bob, { &carl, &don });
+            add_message(ann, { &bob }, 0);
+            add_message(bob, { &ann }, 1);
+            add_message(ann, { &bob, &carl }, 2);
+            add_message(bob, { &carl }, 3);
+            add_message(bob, { &don }, 4);
+            add_message(carl, { &bob, &don }, 5);
+            add_message(bob, { &carl, &don }, 6);
 
             tx.commit();
         }
@@ -261,12 +271,8 @@ int main(int argc, char **argv)
          */
         printf("neighbor test 4\n");
         NodeIterator ni4 = get_neighborhood(*mi, 2, true);
-        n = 0;
-        while (ni4) {
-            n++;
-            ni4.next();
-        }
-        if (n != 2) {
+
+        if (count(ni4) != 2) {
             fprintf(stderr, "neighbortest: failure 4 (%d)\n", n);
             r = 2;
         }
@@ -277,12 +283,8 @@ int main(int argc, char **argv)
         // There should be two neighbors at 2-hops of this node.
         printf("neighbor test 5a\n");
         NodeIterator ni5a = get_nhop_neighbors(*ani, 2);
-        n = 0;
-        while (ni5a) {
-            n++;
-            ni5a.next();
-        }
-        if (n != 2) {
+
+        if (count(ni5a) != 2) {
             fprintf(stderr, "neighbortest: failure 5a (%d)\n", n);
             r = 2;
         }
@@ -331,13 +333,9 @@ int main(int argc, char **argv)
 
         printf("neighbor test 6b\n");
         NeighborhoodIterator ni6b = get_neighborhood(*bi, 3, true);
-        n = 0;
-        while (ni6b) {
-            n++;
-            ni6b.next();
-        }
+
         // Should return the same number of nodes as depth 2
-        if (n != 10) {
+        if (count(ni6b) != 10) {
             fprintf(stderr, "neighbortest: failure 6b (%d)\n", n);
             r = 2;
         }
@@ -345,12 +343,8 @@ int main(int argc, char **argv)
         // Now follow only outgoing edges.
         printf("neighbor test 6c\n");
         NodeIterator ni6c = get_neighborhood(*bi, 2, Direction::Outgoing, true);
-        n = 0;
-        while (ni6c) {
-            n++;
-            ni6c.next();
-        }
-        if (n != 7) {
+
+        if (count(ni6c) != 7) {
             fprintf(stderr, "neighbortest: failure 6c (%d)\n", n);
             r = 2;
         }
@@ -358,12 +352,8 @@ int main(int argc, char **argv)
         // Now follow only outgoing edges with a tag.
         printf("neighbor test 6d\n");
         NeighborhoodIterator ni6d = get_neighborhood(*bi, 2, Direction::Outgoing, "From", true);
-        n = 0;
-        while (ni6d) {
-            n++;
-            ni6d.next();
-        }
-        if (n != 4) {
+
+        if (count(ni6d) != 4) {
             fprintf(stderr, "neighbortest: failure 6d (%d)\n", n);
             r = 2;
         }
@@ -374,12 +364,8 @@ int main(int argc, char **argv)
         vn.push_back(EdgeConstraint{ Outgoing, "To" });
         printf("neighbor test 6e\n");
         NodeIterator ni6e = get_neighborhood(*bi, vn, true);
-        n = 0;
-        while (ni6e) {
-            n++;
-            ni6e.next();
-        }
-        if (n != 7) {
+
+        if (count(ni6e) != 7) {
             fprintf(stderr, "neighbortest: failure 6e (%d)\n", n);
             r = 2;
         }
@@ -405,6 +391,46 @@ int main(int argc, char **argv)
         catch (Exception e) {
             if (e.num != VacantIterator)
                 throw;
+        }
+
+        // Test to filter neighbors based on edge properties
+        printf("neighbor test 8a\n");
+        NodeIterator ann_node = db.get_nodes("Person",
+                                             PropertyPredicate{ "Name",
+                                                PropertyPredicate::Eq, "Ann" });
+
+        NodeIterator ni8a = get_neighbors(*ann_node, Direction::Any, "From",
+                                          { PropertyPredicate{ "order",
+                                                PropertyPredicate::Ge, 1 }});
+
+        if (count(ni8a) != 1) {
+            fprintf(stderr, "neighbortest: failure 8a(%d)\n", n);
+            r = 2;
+        }
+
+        printf("neighbor test 8b\n");
+
+        NodeIterator ni8b = get_neighbors(*ann_node, Direction::Any, "From",
+                                          { PropertyPredicate{ "order",
+                                                PropertyPredicate::Eq, 0 }});
+
+        if (count(ni8b) != 1) {
+            fprintf(stderr, "neighbortest: failure 8b(%d)\n", n);
+            r = 2;
+        }
+
+        printf("neighbor test 8c\n");
+
+        NodeIterator bob_node = db.get_nodes("Person",
+                                             PropertyPredicate{ "Name",
+                                                PropertyPredicate::Eq, "Bob" });
+        NodeIterator ni8c = get_neighbors(*bob_node, Direction::Any, "From",
+                                          { PropertyPredicate{ "order",
+                                                PropertyPredicate::Ge, 2 }});
+
+        if (count(ni8c) != 3) {
+            fprintf(stderr, "neighbortest: failure 8c(%d)\n", n);
+            r = 2;
         }
 
         // Don't commit the transaction, so the graph can be used again.
