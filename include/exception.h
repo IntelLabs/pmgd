@@ -55,6 +55,7 @@ namespace PMGD {
         LockTimeout,
 
         InvalidID,
+        IndexExists,
 
         InternalErrorBase = 100,
         NotImplemented,

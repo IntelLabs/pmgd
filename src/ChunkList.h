@@ -292,6 +292,9 @@ namespace PMGD {
                         // This lock order is the same as in insert.
                         tx->acquire_lock(TransactionImpl::IndexLock, this, true);
                         tx->acquire_lock(TransactionImpl::IndexLock, curr, true);
+
+                        curr->data[curr_slot].value().~V();
+
                         tx->log_range(&curr->occupants, &curr->num_elems);
                         --curr->num_elems;
                         curr->occupants &= (~bit_pos);

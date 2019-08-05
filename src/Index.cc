@@ -38,6 +38,30 @@
 
 using namespace PMGD;
 
+void Index::remove_index(Allocator &allocator)
+{
+    switch(_ptype) {
+        case PropertyType::Integer:
+            static_cast<LongValueIndex *>(this)->remove_index(allocator);
+            break;
+        case PropertyType::Float:
+            static_cast<FloatValueIndex *>(this)->remove_index(allocator);
+            break;
+        case PropertyType::Boolean:
+            static_cast<BoolValueIndex *>(this)->remove_index(allocator);
+            break;
+        case PropertyType::Time:
+            static_cast<TimeValueIndex *>(this)->remove_index(allocator);
+            break;
+        case PropertyType::String:
+            static_cast<StringValueIndex *>(this)->remove_index(allocator);
+            break;
+        case PropertyType::NoValue:
+        case PropertyType::Blob:
+            throw PMGDException(PropertyTypeInvalid);
+    }
+}
+
 void Index::add(const Property &p, void *n, GraphImpl *db)
 {
     if (_ptype != p.type())
