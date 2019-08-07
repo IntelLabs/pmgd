@@ -216,7 +216,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "neighbortest: expected range error exception from check_messages\n");
             r = 2;
         }
-        catch (std::out_of_range) {
+        catch (std::out_of_range&) {
         }
 
         check_messages1(ann, bob, { 1, 2, 3 });

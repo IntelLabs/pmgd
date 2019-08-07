@@ -181,7 +181,7 @@ int main(int argc, char **argv)
         print_exception(e, stderr);
         return 1;
     }
-    catch (std::runtime_error e) {
+    catch (std::runtime_error& e) {
         fprintf(stderr, "[Exception] %s\n", e.what());
         return 1;
     };
