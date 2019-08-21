@@ -159,6 +159,7 @@ AllocatorUnit::FlexFixedAllocator::FixedAllocatorInfo *AllocatorUnit::FlexFixedA
     CommonParams params(true, false, _msync_needed, false, tx->get_pending_commits());
     fa = new FixedAllocator(pool_addr, &(hdr->fa_hdr), _obj_size, _pool_size, params);
     hdr->next_pool_hdr = NULL;
+    tx->flush_range(hdr, sizeof(uint64_t) + sizeof(RegionHeader *));
 
     tx->write(&_last_hdr_scanned->next_pool_hdr, hdr);
 
@@ -167,6 +168,8 @@ AllocatorUnit::FlexFixedAllocator::FixedAllocatorInfo *AllocatorUnit::FlexFixedA
     _fa_pools.insert(pair<uint64_t, FixedAllocatorInfo*>(pool_addr, fa_info));
     _last_hdr_scanned = hdr;
 
+    AllocatorAbortCallback<FlexFixedAllocator>::restore_dram_state(tx,
+                                                  this, fa_info, true);
     return fa_info;
 }
 
@@ -272,6 +275,20 @@ void AllocatorUnit::FlexFixedAllocator::remove_dram_chunk(void *info)
 {
     FixedAllocatorInfo *fa_info = static_cast<FixedAllocatorInfo *>(info);
     _fa_pools.erase(fa_info->hdr->pool_base);
+    RegionHeader *this_hdr = fa_info->hdr;
+    RegionHeader *hdr = NULL;
+
+    if (_last_hdr_scanned == this_hdr) {
+        hdr = _pm;
+        while (hdr != NULL) {
+            if (hdr->pool_base == this_hdr->pool_base)
+                break;
+            hdr = hdr->next_pool_hdr;
+        }
+        assert(hdr != NULL);
+        _last_hdr_scanned = hdr->next_pool_hdr;
+    }
+
     delete fa_info;
 }
 

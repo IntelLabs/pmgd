@@ -157,10 +157,10 @@ AllocatorUnit::VariableAllocator::FreeFormChunk *AllocatorUnit::VariableAllocato
             inner_tx.write(&_hdr->start_chunk, dst_chunk);
         else
             inner_tx.write(&_last_chunk_scanned->next_chunk, dst_chunk);
-        _last_chunk_scanned = dst_chunk;
 
         inner_tx.commit();
     }
+    _last_chunk_scanned = dst_chunk;
 
     return dst_chunk;
 }
