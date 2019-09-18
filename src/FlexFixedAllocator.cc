@@ -43,7 +43,8 @@ AllocatorUnit::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
                       AllocatorUnit &allocator, CommonParams &params)
     : _pm(hdr_addr),
       _obj_size(object_size), _pool_size(pool_size),
-      _max_objs_per_pool(pool_size / object_size),
+      _max_objs_first_pool(pool_size / object_size),
+      _max_objs_per_pool(_max_objs_first_pool),
       _msync_needed(params.msync_needed),
       _allocator(allocator)
 {
@@ -142,11 +143,6 @@ void *AllocatorUnit::FlexFixedAllocator::alloc()
 
 AllocatorUnit::FlexFixedAllocator::FixedAllocatorInfo *AllocatorUnit::FlexFixedAllocator::add_new_pool()
 {
-    // We also need space for the header. Easiest is to get it
-    // from the free form chunk, even if it is a fixed size header
-    // otherwise we will have a chicken and egg problem.
-    RegionHeader *hdr =
-        new (_allocator.alloc_free_form(sizeof(RegionHeader))) RegionHeader;
     uint64_t pool_addr;
     FixedAllocator *fa;
 
@@ -154,12 +150,17 @@ AllocatorUnit::FlexFixedAllocator::FixedAllocatorInfo *AllocatorUnit::FlexFixedA
     TransactionImpl *tx = TransactionImpl::get_tx();
 
     pool_addr = reinterpret_cast<uint64_t>(_allocator.alloc_chunk());
+    RegionHeader *hdr = (RegionHeader *)pool_addr;
 
-    hdr->pool_base = pool_addr;
     CommonParams params(true, false, _msync_needed, false, tx->get_pending_commits());
     fa = new FixedAllocator(pool_addr, &(hdr->fa_hdr), _obj_size, _pool_size, params);
+    hdr->pool_base = pool_addr;
     hdr->next_pool_hdr = NULL;
-    tx->flush_range(hdr, sizeof(uint64_t) + sizeof(RegionHeader *));
+    tx->flush_range(&(hdr->pool_base), sizeof(uint64_t) + sizeof(RegionHeader *));
+
+    // This is a bit of a hack. Should just read it off of the
+    // allocator but is simpler than making a function call.
+    _max_objs_per_pool = _max_objs_first_pool - 1;
 
     tx->write(&_last_hdr_scanned->next_pool_hdr, hdr);
 
@@ -232,7 +233,6 @@ void AllocatorUnit::FlexFixedAllocator::free(void *addr)
             _last_hdr_scanned = prev;
 
         _allocator.free_chunk(pool_base);
-        _allocator.free_free_form(hdr, sizeof(RegionHeader));
 
         // Remove the DRAM entry too
         if (fa_info != NULL) {
