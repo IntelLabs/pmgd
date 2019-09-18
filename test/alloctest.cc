@@ -401,24 +401,26 @@ void AllocTest::var_fixed_tests(Graph &db, Allocator &allocator1)
 
     long endbase64 = start_addr;
     printf("Now allocate 64B all the way to filling the entire 2MB chunk\n");
-    // We have 1 allocation in the 64B chunk. Each 2MB page can contain 512
+    // We have 1 allocation in the 64B chunk. Each 2MB page can contain 511
+    // except the first one created.
     // 4K chunks of which we are currently using 6 (including 1 for 64B), so 506.
     // So 507 chunks can contain 31941 allocations of 64B. To cross over to the next
     // 2MB page, allocate at least 31942. Actually filling 2 2MB pages so
-    // we can do a free test. So add another 32256
+    // we can do a free test. So add another 32193
     Transaction tx7(db, Transaction::ReadWrite);
-    for (int i = 1; i < 64256; ++i) {
+    for (int i = 1; i < 64140; ++i) {
         // Accounts for the one allocated already
         base += fixed_sizes[index];
         // Running out of journal space
         Transaction tx(db, Transaction::ReadWrite | Transaction::Independent);
         addr = allocator1.alloc(fixed_sizes[index]);
         // Note down how many page switches
-        if ( (long)addr % CHUNK_SIZE == hdr_offset[index] )
+        if ( ((long)addr - SMALL_CHUNK_SIZE) % CHUNK_SIZE == hdr_offset[index] )
             printf("Switched to next 2MB at %d, addr: %p\n", i, addr);
+
         // Since the variable alloc test happens before this, the address of the
         // next one will come 4 chunks after
-        if (addr == (void *)(start_addr + 6*CHUNK_SIZE + hdr_offset[index])) {
+        if (addr == (void *)(start_addr + 5*CHUNK_SIZE + SMALL_CHUNK_SIZE + hdr_offset[index])) {
             base = (long)addr;
             endbase64 = base - hdr_offset[index];
             printf("Switched to next 2MB at %d, endbase64: 0x%lx\n", i, endbase64);
@@ -438,7 +440,7 @@ void AllocTest::var_fixed_tests(Graph &db, Allocator &allocator1)
     // first chunk dedicated to 48B. Rounding up to 42500.
     Transaction tx8(db, Transaction::ReadWrite);
     unsigned index48 = 4;
-    for (int i = 2; i < 42500; ++i) {
+    for (int i = 2; i < 42420; ++i) {
         // Accounts for the one allocated already
         base += fixed_sizes[index48];
         // Running out of journal space
@@ -489,14 +491,14 @@ void AllocTest::var_fixed_tests(Graph &db, Allocator &allocator1)
     printf("New page at 48B allocations: 0x%lx, and base: 0x%lx\n", new_page, base);
     tx8.commit();
 
-    // The base at 0x800a00000 has only 64B fixed allocs and is
+    // The base at 0x800800000 has only 64B fixed allocs and is
     // not the current one for 64B. So test the return of 2MB
     // chunk using that. There are 32256 allocations to free.
     // Each page has 63 allocations.
     printf("Test returning of main chunk to the main allocator\n");
     Transaction tx9(db, Transaction::ReadWrite);
-    base = start_addr + 0xa00000;
-    for (int i = 0; i < 512; ++i) {
+    base = start_addr + 0x800000 + SMALL_CHUNK_SIZE;
+    for (int i = 0; i < 511; ++i) {
         // Running out of journal space
         Transaction tx(db, Transaction::ReadWrite | Transaction::Independent);
         base += hdr_offset[index];
@@ -567,7 +569,7 @@ void AllocTest::var_large_tests(Graph &db, Allocator &allocator1)
 #endif
 
     // Also, there will be no header for this one.
-    base = start_addr + 0xa00000;
+    base = start_addr + 0x800000;
     hdr_size = 24;
     printf("Testing borderline alloc within header size\n");
     Transaction tx2(db, Transaction::ReadWrite);
@@ -620,6 +622,7 @@ int AllocTest::var_allocator_test()
         Graph db("varallocgraph", Graph::Create | Graph::NoMsync, &config);
         Allocator *allocator1 = Allocator::get_main_allocator(db);
         start_addr = allocator1->get_start_addr();
+        printf("Starting address for var_allocator_test: 0x%lx\n", start_addr);
 
         // While testing, also hit the case when the pool limit reaches.
         // That works but did not keep the test case here.
