@@ -148,7 +148,17 @@ int main(int argc, char *argv[])
                 for (NodeIterator ni = db.get_nodes(0 , pp); ni; ni.next()) {
                     printf("STILL PRESENT: %lld\n", ni->get_property(ID).int_value());
                     count++;
-                }
+                }                
+            }
+
+            // Make sure the nodes are also absent if no search conditions
+            // are specified.
+            int fcount = 0;
+            for (NodeIterator ni = db.get_nodes(""); ni; ni.next())
+                fcount++;
+            if (fcount != (num_nodes - remove_nodes.size())) {
+                printf("Nodes still lingering in Fixed Allocator\n");
+                fail++;
             }
             if (count > 0) {
                 printf("Remove before abort FAIL: %d\n", count);
@@ -165,7 +175,7 @@ int main(int argc, char *argv[])
             // Make sure all the nodes in the remove list are still present in the graph.
             for (auto it : remove_nodes) {
                 PropertyPredicate pp(ID, PropertyPredicate::Eq, it);
-                for (NodeIterator ni = db.get_nodes(0, pp); ni; ni.next())
+                for (NodeIterator ni = db.get_nodes("", pp); ni; ni.next())
                     count++;
             }
             if (count != remove_nodes.size()) {

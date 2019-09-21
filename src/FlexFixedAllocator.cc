@@ -43,7 +43,6 @@ AllocatorUnit::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
                       AllocatorUnit &allocator, CommonParams &params)
     : _pm(hdr_addr),
       _obj_size(object_size), _pool_size(pool_size),
-      _max_objs_per_pool(pool_size / object_size),
       _msync_needed(params.msync_needed),
       _allocator(allocator)
 {
@@ -67,12 +66,13 @@ AllocatorUnit::FlexFixedAllocator::FlexFixedAllocator(uint64_t pool_addr,
         num_allocated = FixedAllocator::num_allocated(&_pm->fa_hdr);
 
     _last_hdr_scanned = _pm;
-    if (num_allocated < _max_objs_per_pool) {
+    unsigned max_objs = pool_size / object_size;
+    if (num_allocated < max_objs) {
         FixedAllocator *fa = new FixedAllocator(pool_addr, &_pm->fa_hdr,
                             _obj_size, _pool_size, params);
         _fa_pools.insert(pair<uint64_t,FixedAllocatorInfo*>(pool_addr,
                             new FixedAllocatorInfo{fa, _pm,
-                            NULL, fa->num_allocated()}) );
+                            NULL, fa->num_allocated(), max_objs}) );
     }
 }
 
@@ -85,6 +85,10 @@ void *AllocatorUnit::FlexFixedAllocator::alloc()
     void *addr = NULL;
     auto it = _fa_pools.begin();
 
+    // Since we already start with the first pool, all the rest will
+    // have one object less in this traversal.
+    unsigned max_objs = _pool_size / _obj_size - 1;
+
     if (it != _fa_pools.end()) {
         FixedAllocatorInfo *fa_info = it->second;
         addr = fa_info->fa->alloc();
@@ -93,7 +97,7 @@ void *AllocatorUnit::FlexFixedAllocator::alloc()
         // If the fa is in the list, it should have space.
         assert(addr != NULL);
 
-        if (fa_info->num_allocated == _max_objs_per_pool) {
+        if (fa_info->num_allocated == fa_info->max_objs_per_pool) {
             // Make sure this fa no longer appears in the available list.
             // And no DRAM restore needed here since this is called within
             // an inner TX that commits if the previous alloc was successful.
@@ -110,8 +114,9 @@ void *AllocatorUnit::FlexFixedAllocator::alloc()
 
         // This chunk must not be in the DRAM lists since we go
         // in a sequence.
-        int64_t num_allocated = FixedAllocator::num_allocated(&hdr->fa_hdr);
-        if (num_allocated < _max_objs_per_pool) {
+        FixedAllocator::RegionHeader *fa_hdr = &hdr->fa_hdr;
+        int64_t num_allocated = FixedAllocator::num_allocated(fa_hdr);
+        if (num_allocated < max_objs) {
             // Existing fixed allocator. No RangeSet needed.
             CommonParams params(false, false);
             FixedAllocator *fa = new FixedAllocator(hdr->pool_base, &hdr->fa_hdr,
@@ -120,10 +125,10 @@ void *AllocatorUnit::FlexFixedAllocator::alloc()
             num_allocated = fa->num_allocated();
 
             // For later scans
-            if (num_allocated < _max_objs_per_pool) {
+            if (num_allocated < max_objs) {
                 _fa_pools.insert(pair<uint64_t,FixedAllocatorInfo*>(hdr->pool_base,
                                     new FixedAllocatorInfo{fa, hdr,
-                                    prev, num_allocated}) );
+                                    prev, num_allocated, max_objs}) );
             }
             else
                 delete fa;
@@ -142,31 +147,34 @@ void *AllocatorUnit::FlexFixedAllocator::alloc()
 
 AllocatorUnit::FlexFixedAllocator::FixedAllocatorInfo *AllocatorUnit::FlexFixedAllocator::add_new_pool()
 {
-    // We also need space for the header. Easiest is to get it
-    // from the free form chunk, even if it is a fixed size header
-    // otherwise we will have a chicken and egg problem.
-    RegionHeader *hdr =
-        new (_allocator.alloc_free_form(sizeof(RegionHeader))) RegionHeader;
     uint64_t pool_addr;
     FixedAllocator *fa;
+
+    // This is a bit of a hack. Should just read it off of the
+    // allocator but is simpler than making a function call.
+    unsigned max_objs = _pool_size / _obj_size - 1;
 
     // This should get is the inner transaction from the FixSizeAllocator.
     TransactionImpl *tx = TransactionImpl::get_tx();
 
     pool_addr = reinterpret_cast<uint64_t>(_allocator.alloc_chunk());
+    RegionHeader *hdr = (RegionHeader *)pool_addr;
 
-    hdr->pool_base = pool_addr;
     CommonParams params(true, false, _msync_needed, false, tx->get_pending_commits());
     fa = new FixedAllocator(pool_addr, &(hdr->fa_hdr), _obj_size, _pool_size, params);
+    hdr->pool_base = pool_addr;
     hdr->next_pool_hdr = NULL;
+    tx->flush_range(&(hdr->pool_base), sizeof(uint64_t) + sizeof(RegionHeader *));
 
     tx->write(&_last_hdr_scanned->next_pool_hdr, hdr);
 
     FixedAllocatorInfo *fa_info = new FixedAllocatorInfo{fa,
-                                            hdr, _last_hdr_scanned, 0};
+                                            hdr, _last_hdr_scanned, 0, max_objs};
     _fa_pools.insert(pair<uint64_t, FixedAllocatorInfo*>(pool_addr, fa_info));
     _last_hdr_scanned = hdr;
 
+    AllocatorAbortCallback<FlexFixedAllocator>::restore_dram_state(tx,
+                                                  this, fa_info, true);
     return fa_info;
 }
 
@@ -229,7 +237,6 @@ void AllocatorUnit::FlexFixedAllocator::free(void *addr)
             _last_hdr_scanned = prev;
 
         _allocator.free_chunk(pool_base);
-        _allocator.free_free_form(hdr, sizeof(RegionHeader));
 
         // Remove the DRAM entry too
         if (fa_info != NULL) {
@@ -246,16 +253,20 @@ void AllocatorUnit::FlexFixedAllocator::free(void *addr)
         }
     }
     else {
+        FixedAllocator::RegionHeader *fa_hdr = &(hdr->fa_hdr);
         if (fa == NULL) {
             CommonParams params(false, false);
-            fa = new FixedAllocator(pool_base, &(hdr->fa_hdr),
+            fa = new FixedAllocator(pool_base, fa_hdr,
                                     _obj_size, _pool_size, params);
-            num_allocated = FixedAllocator::num_allocated(&(hdr->fa_hdr)) - 1;
+            num_allocated = FixedAllocator::num_allocated(fa_hdr) - 1;
         }
         fa->free(addr, 1);
-        assert(num_allocated == FixedAllocator::num_allocated(&(hdr->fa_hdr)));
+        assert(num_allocated == FixedAllocator::num_allocated(fa_hdr));
         if (fa_info == NULL) {
-            fa_info = new FixedAllocatorInfo{fa, hdr, prev, num_allocated};
+            unsigned max_objs = _pool_size / _obj_size;
+            if ((uint64_t)fa_hdr == pool_base)
+                max_objs--;
+            fa_info = new FixedAllocatorInfo{fa, hdr, prev, num_allocated, max_objs};
 
             // In case there is abort due to anything else, this chunk should
             // be removed from DRAM list.
@@ -272,6 +283,20 @@ void AllocatorUnit::FlexFixedAllocator::remove_dram_chunk(void *info)
 {
     FixedAllocatorInfo *fa_info = static_cast<FixedAllocatorInfo *>(info);
     _fa_pools.erase(fa_info->hdr->pool_base);
+    RegionHeader *this_hdr = fa_info->hdr;
+    RegionHeader *hdr = NULL;
+
+    if (_last_hdr_scanned == this_hdr) {
+        hdr = _pm;
+        while (hdr != NULL) {
+            if (hdr->pool_base == this_hdr->pool_base)
+                break;
+            hdr = hdr->next_pool_hdr;
+        }
+        assert(hdr != NULL);
+        _last_hdr_scanned = hdr->next_pool_hdr;
+    }
+
     delete fa_info;
 }
 

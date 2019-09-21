@@ -225,9 +225,9 @@ namespace PMGD {
             // of the FixedAllocators themselves since we are not using the pool
             // itself for the header.
             struct RegionHeader {
+                FixedAllocator::RegionHeader fa_hdr;
                 uint64_t pool_base;
                 RegionHeader *next_pool_hdr;
-                FixedAllocator::RegionHeader fa_hdr;
             };
 
         private:
@@ -248,7 +248,15 @@ namespace PMGD {
                 // whether the 2MB chunk should be returned to the main
                 // allocator, maintain this ourselves.
                 int64_t num_allocated;
+                // Indicate whats the max this allocator can allocate. After
+                // the first one, rest of them have one less spot.
+                unsigned max_objs_per_pool;
 
+                FixedAllocatorInfo(FixedAllocator *f, RegionHeader *h,
+                                    RegionHeader *p, int64_t num, unsigned max) :
+                                    fa(f), hdr(h), prev(p),
+                                    num_allocated(num), max_objs_per_pool(max)
+                  { }
                 ~FixedAllocatorInfo() { if (fa != NULL) delete fa; }
             };
 
@@ -258,7 +266,6 @@ namespace PMGD {
             // Variables used repeatedly
             unsigned _obj_size;
             uint64_t _pool_size;
-            unsigned _max_objs_per_pool;
 
             // For msync cases
             bool _msync_needed;
@@ -450,12 +457,6 @@ namespace PMGD {
         // free_chunk only called at commit time.
         void *alloc_chunk(unsigned num_contiguous = 1);
         void free_chunk(uint64_t chunk_base, unsigned num_contiguous = 1);
-
-        // We want to make sure the flex fixed allocator can request its header
-        // space from the free form allocator. So provide a private function that
-        // only it can access.
-        void *alloc_free_form(size_t size) { return _freeform_allocator.alloc(size); }
-        void free_free_form(void *addr, size_t size) { _freeform_allocator.free(addr, size); }
 
         friend class MultiAllocatorFreeCallback;
         friend class Allocator;
