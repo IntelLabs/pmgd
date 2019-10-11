@@ -1,0 +1,186 @@
+This set of source files provides a Jarvis Lake-based implementation
+of the LDBC Social Network Benchmark's Interactive Workload.
+
+Manifest
+========
+
+- README: this file
+- COPYING: license
+- build.gradle: build/run script
+- src: source files
+
+
+Expectations
+============
+
+This document assumes the reader is familiar with the LDBC Social
+Network Benchmark.  Good sources of information include the LDBC
+Social Network Benchmark specification [1] and the LDBC SNB Data
+Generator project hosted at GitHub, Inc. [2].
+
+
+Running modes
+=============
+
+This distribution supports two running modes. First and foremost you
+can run the LDBC benchmark with its provided driver [3]. However, you
+can also run some of the queries individually in standalone mode.
+That mode might be useful for debugging or microbenchmarking. In that
+mode a query runs on a single thread and processes input arguments as
+quickly as possible.  Currently only the complex read queries can be
+run that way. To run a complex query in standalone mode requires the
+substitution parameter file, as produced by the LDBC data generator
+with the PARAM_GENERATION environment variable set to 1.  See below
+for details.
+
+
+Requirements
+============
+
+- gradle version 2.10
+- java 1.7
+
+
+Instructions
+============
+
+Edit build.gradle
+-----------------
+
+Edit build.gradle to set the following parameters:
+- LDBC driver version
+- path to the Jarvis Lake directory containing tools and libraries
+
+
+Install ldbc_driver
+-------------------
+
+$ git clone https://github.com/ldbc/ldbc_driver
+$ cd ../ldbc_driver/
+$ git checkout 0.2
+$ mvn clean -DskipTests
+$ mvn package -DskipTests
+$ mvn install -DskipTests
+
+
+Build our queries
+-----------------
+
+$ gradle build
+
+
+Generate data
+-------------
+
+Generate a dataset using the LDBC SNB data generator [2] with the
+scale factor of your choice, the PARAM_GENERATION environment variable
+set to 1, and most other parameters left to their default values.  In
+the end the goal is to have ../ldbc_snb_datagen/data/social_network/
+holding the CSV files to seed the benchmark graph database and
+../ldbc_snb_datagen/substitution_parameters/ containing files used as
+input to the LDBC benchmark or to the complex queries run in
+standalone mode.  You may have to issue a command like bin/hdfs dfs
+-get data ../ldbc_snb_datagen/data/ to retrieve your data.
+
+Load the database
+-----------------
+
+Run
+$ sh loadgraph.sh <path-to-data> <graph-name> <path-to-jarvis>
+
+For example:
+$ sh loadgraph.sh ../ldbc_snb_datagen/data/social_network ldbc-graph ../jarvis
+
+
+Prepare a benchmark run
+-----------------------
+
+Copy the property file corresponding to the chosen scale factor and
+name it ldbc.properties. For example:
+$ cp ../ldbc_driver/workloads/ldbc/snb/interactive/\
+ldbc_snb_interactive_SF-0001.properties ./ldbc.properties
+
+Edit ./ldbc.properties to configure your benchmark run.  Minimally, set
+'database' to "jarvis.ldbc.JarvisDb", add 'url' to point to the correct
+database (e.g., ldbc-graph), add 'operation_count' to the desired
+value, and make sure 'ldbc.snb.interactive.parameters_dir' points to
+the query parameter files produced by the data generation phase (e.g.,
+../ldbc_snb_datagen/substitution_parameters/).
+
+Copy the update property file corresponding to the data set. For example:
+$ cp ../ldbc_snb_datagen/data/updateStream.properties .
+
+You may instead choose to disable the update queries.
+
+
+
+Run the benchmark
+-----------------
+
+$ gradle -q ldbc
+
+
+Run a complex query
+-------------------
+
+$ src/queries/queryX [-v | -t] <graph-name> <substitution-parameters-file>
+    -v print results
+    -t collect and print timing
+
+For example:
+$ src/queries/query1 -t ldbc-graph ../ldbc_snb_datagen/substitution_parameters/query_1_param.txt
+$ src/queries/query1 -v ldbc-graph ../ldbc_snb_datagen/substitution_parameters/query_1_param.txt > query1.out
+
+
+Validate the implementation
+---------------------------
+
+Follow the instructions that come with the LDBC SNB interactive
+validation project [4].
+
+1. Clone the project in ../ldbc_snb_interactive_validation.
+
+2. Untar the content of
+   ldbc_snb_interactive_validation/neo4j/neo4j--validation_set.tar.gz
+   into ../ldbc_snb_interactive_validation.
+
+4. Load CSV files into a database using loadgraph.sh. For example:
+$ sh loadgraph.sh ../ldbc_snb_interactive_validation/social_network/string_date ldbc-validation-graph ../jarvis
+
+5. Copy the property file provided with that project and name it
+   validation.properties. For example:
+$ cp ../ldbc_snb_interactive_validation/neo4j/readwrite_neo4j--ldbc_driver_config--db_validation.properties ./validation.properties
+
+6. Edit the LDBC driver configuration section of validation.properties. For
+example:
+database=jarvis.ldbc.JarvisDb
+url=ldbc-validation-graph
+validate_database=../ldbc_snb_interactive_validation/validation_params.csv
+ldbc.snb.interactive.parameters_dir=../ldbc_snb_interactive_validation/substitution_parameters/
+
+7. Issue the command 'gradle validate'.
+
+8. Important: must reload the validation database from scratch (step
+   4) every time you run validation.
+
+
+References
+==========
+
+[1] Arnau Prat (Editor).  LDBC Social Network Benchmark (SNB), v0.2.2
+    First Public Draft, release 0.2.2.  Retrieved December 17, 2015.
+
+[2] LDBC SNB Data Generator.
+    https://github.com/ldbc/ldbc_snb_datagen, last retrieved March
+    18th, 2016, with, then, latest commit 2645cc0.
+
+[3] LDBC SNB Benchmark Driver.  https://github.com/ldbc/ldbc_driver,
+    last retrieved March 30th, 2016, version 0.2, commit 55f7ac0.
+
+[4] LDBC SNB Interactive Validation Project.
+    https://github.com/ldbc/ldbc_snb_interactive_validation, last
+    retrieved April 5th, 2016, with then, the latest commit 03c34c0.
+
+
+Copyright (C) 2016 Alain Kaegi
+Copyright (C) 2016 Intel Corporation

@@ -1,0 +1,35 @@
+/*
+ * Copyright (C) 2016 Alain Kaegi
+ * Copyright (C) 2016 Intel Corporation
+ */
+
+def ldbcDriverVersion = '0.2-SNAPSHOT'
+def pmgd = '/opt/intel/vdms/pmgd'
+
+apply plugin: 'java'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile "com.ldbc.driver:jeeves:${ldbcDriverVersion}"
+    compile files('/opt/intel/vdms/pmgd/lib/pmgd-jni.jar')
+    runtime files('/opt/intel/vdms/pmgd/lib/libpmgd.so')
+    runtime files('/opt/intel/vdms/pmgd/lib/libpmgd-util.so')
+    runtime files('/opt/intel/vdms/pmgd/lib/libpmgd-jni.so')
+    runtime files('/opt/intel/pmgd-evaluation/LDBC/ldbc_snb_jarvis/src/jni/libqueries-jni.so')
+}
+
+task ldbc(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'com.ldbc.driver.Client'
+    args = [ '-P', 'ldbc.properties', '-P', 'updateStream.properties' ]
+}
+
+task validate(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'com.ldbc.driver.Client'
+    args = [ '-P', 'validation.properties']
+}

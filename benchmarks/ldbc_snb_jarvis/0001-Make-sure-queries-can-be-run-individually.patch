@@ -1,0 +1,410 @@
+From 343d1183d1209d5a506c0bc6cf39d78dea9a8ef6 Mon Sep 17 00:00:00 2001
+From: Vishakha Gupta-Cledat <vishakha.s.gupta@intel.com>
+Date: Tue, 14 Jun 2016 11:29:02 -0700
+Subject: [PATCH] Make sure queries can be run individually
+
+---
+ build.gradle           | 181 +++++++++++++++++++++++++++++++++++++++++++++++++
+ src/queries/query1.cc  |   7 +-
+ src/queries/query10.cc |   2 +
+ src/queries/query11.cc |   2 +
+ src/queries/query12.cc |   2 +
+ src/queries/query13.cc |   2 +
+ src/queries/query14.cc |   2 +
+ src/queries/query2.cc  |   2 +
+ src/queries/query3.cc  |   2 +
+ src/queries/query4.cc  |   2 +
+ src/queries/query5.cc  |   2 +
+ src/queries/query6.cc  |   2 +
+ src/queries/query7.cc  |   2 +
+ src/queries/query8.cc  |   2 +
+ src/queries/query9.cc  |   2 +
+ 15 files changed, 212 insertions(+), 2 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index 100a41a..e72f873 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -5,6 +5,7 @@
+ 
+ def ldbcDriverVersion = '0.2-SNAPSHOT'
+ def jarvis = '../jarvis'
++def pathToInput = '../datasets/sf10/substitution_parameters/'
+ 
+ apply plugin: 'java'
+ 
+@@ -33,3 +34,183 @@ task validate(type: JavaExec) {
+     main = 'com.ldbc.driver.Client'
+     args = [ '-P', 'validation.properties']
+ }
++
++// Run complex queries in verbose (-Pverbose) or in timing (-Ptiming) mode.
++String getQueryArg() {
++    return project.hasProperty('timing') ? '-t' : '-v'
++}
++
++task query1(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query1Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_1_param.txt" ]
++}
++
++task query2(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query2Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_2_param.txt" ]
++}
++
++task query3(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query3Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_3_param.txt" ]
++}
++
++task query4(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query4Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_4_param.txt" ]
++}
++
++task query5(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query5Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_5_param.txt" ]
++}
++
++task query6(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query6Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_6_param.txt" ]
++}
++
++task query7(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query7Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_7_param.txt" ]
++}
++
++task query8(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query8Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_8_param.txt" ]
++}
++
++task query9(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query9Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_9_param.txt" ]
++}
++
++task query10(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query10Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_10_param.txt" ]
++}
++
++task query11(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query11Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_11_param.txt" ]
++}
++
++task query12(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query12Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_12_param.txt" ]
++}
++
++task query13(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query13Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_13_param.txt" ]
++}
++
++task query14(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.Query14Driver'
++    args = [ getQueryArg(),
++             "${jarvis}",
++             "${pathToInput}/query_14_param.txt" ]
++}
++
++task shortquery1(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.ShortQuery1Driver'
++    if (project.hasProperty('personId'))
++        args = [ "${jarvis}", personId ]
++    else
++        args = [ "${jarvis}", -1 ]
++}
++
++task shortquery2(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.ShortQuery2Driver'
++    if (project.hasProperty('personId'))
++        args = [ "${jarvis}", personId ]
++    else
++        args = [ "${jarvis}", -1 ]
++}
++
++task shortquery3(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.ShortQuery3Driver'
++    if (project.hasProperty('personId'))
++        args = [ "${jarvis}", personId ]
++    else
++        args = [ "${jarvis}", -1 ]
++}
++
++task shortquery4(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.ShortQuery4Driver'
++    if (project.hasProperty('messageId'))
++        args = [ "${jarvis}", messageId ]
++    else
++        args = [ "${jarvis}", -1 ]
++}
++
++task shortquery5(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.ShortQuery5Driver'
++    if (project.hasProperty('messageId'))
++        args = [ "${jarvis}", messageId ]
++    else
++        args = [ "${jarvis}", -1 ]
++}
++
++task shortquery6(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.ShortQuery6Driver'
++    if (project.hasProperty('messageId'))
++        args = [ "${jarvis}", messageId ]
++    else
++        args = [ "${jarvis}", -1 ]
++}
++
++task shortquery7(type: JavaExec) {
++    classpath = sourceSets.main.runtimeClasspath
++    main = 'ldbc.drivers.ShortQuery7Driver'
++    if (project.hasProperty('messageId'))
++        args = [ "${jarvis}", messageId ]
++    else
++        args = [ "${jarvis}", -1 ]
++}
+diff --git a/src/queries/query1.cc b/src/queries/query1.cc
+index 88b5d75..2b8fd0f 100644
+--- a/src/queries/query1.cc
++++ b/src/queries/query1.cc
+@@ -234,9 +234,12 @@ static void print(const Query1Result &results)
+ static void print(const Query1ResultItem &r)
+ {
+     char birthday_str[40], creationDate_str[40];
+-    strftime(birthday_str, sizeof birthday_str, "%F", &r.birthday);
++    struct tm birthday_tm, creationDate_tm;
++    r.birthday.get_tm(&birthday_tm);
++    r.creationDate.get_tm(&creationDate_tm);
++    strftime(birthday_str, sizeof birthday_str, "%F", &birthday_tm);
+     strftime(creationDate_str, sizeof creationDate_str,
+-             "%a %b %d %H:%M:%S %Y", &r.creationDate);
++             "%a %b %d %H:%M:%S %Y", &creationDate_tm);
+ 
+     printf("  %d, %llu, %s, %s, %s, %s, %s, %s\n",
+             r.distance, r.id, r.lastName.c_str(), birthday_str,
+diff --git a/src/queries/query10.cc b/src/queries/query10.cc
+index 12cc7e5..e9c739b 100644
+--- a/src/queries/query10.cc
++++ b/src/queries/query10.cc
+@@ -144,6 +144,8 @@ bool Query10ResultItem::operator<(const Query10ResultItem &a) const
+ static void print(const Query10Result &results);
+ static void print(const Query10ResultItem &r);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+diff --git a/src/queries/query11.cc b/src/queries/query11.cc
+index 49912e8..42956c6 100644
+--- a/src/queries/query11.cc
++++ b/src/queries/query11.cc
+@@ -128,6 +128,8 @@ static std::string get_country(const Node &n)
+ static void print(const Query11Result &);
+ static void print(const Query11ResultItem &);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+diff --git a/src/queries/query12.cc b/src/queries/query12.cc
+index 508b724..c79738f 100644
+--- a/src/queries/query12.cc
++++ b/src/queries/query12.cc
+@@ -138,6 +138,8 @@ bool Query12ResultItem::operator<(const Query12ResultItem &a) const
+ static void print(const Query12Result &);
+ static void print(const Query12ResultItem &);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+diff --git a/src/queries/query13.cc b/src/queries/query13.cc
+index 9276ac6..b19ab41 100644
+--- a/src/queries/query13.cc
++++ b/src/queries/query13.cc
+@@ -52,6 +52,8 @@ Query13Result query13(Graph &db, unsigned long long id1, unsigned long long id2)
+ 
+ static void print(const Query13Result &result);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+diff --git a/src/queries/query14.cc b/src/queries/query14.cc
+index fc861d5..13fc163 100644
+--- a/src/queries/query14.cc
++++ b/src/queries/query14.cc
+@@ -162,6 +162,8 @@ Query14Result Result::get_results()
+ static void print(const Query14Result &);
+ static void print(const Query14ResultItem &);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+diff --git a/src/queries/query2.cc b/src/queries/query2.cc
+index 05d1a9e..2ae857e 100644
+--- a/src/queries/query2.cc
++++ b/src/queries/query2.cc
+@@ -105,6 +105,8 @@ bool Query2ResultItem::operator<(const Query2ResultItem &a) const
+ static void print(const Query2Result &);
+ static void print(const Query2ResultItem &);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+diff --git a/src/queries/query3.cc b/src/queries/query3.cc
+index b01ffa4..4f1a93e 100644
+--- a/src/queries/query3.cc
++++ b/src/queries/query3.cc
+@@ -130,6 +130,8 @@ static std::string get_country(const Node &n)
+ static void print(const Query3Result &);
+ static void print(const Query3ResultItem &);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+diff --git a/src/queries/query4.cc b/src/queries/query4.cc
+index 2d92b0b..3e23cb8 100644
+--- a/src/queries/query4.cc
++++ b/src/queries/query4.cc
+@@ -101,6 +101,8 @@ bool Query4ResultItem::operator<(const Query4ResultItem &a) const
+ static void print(const Query4Result &results);
+ static void print(const Query4ResultItem &r);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+diff --git a/src/queries/query5.cc b/src/queries/query5.cc
+index c86b000..aa9fa8f 100644
+--- a/src/queries/query5.cc
++++ b/src/queries/query5.cc
+@@ -118,6 +118,8 @@ bool Query5ResultItem::operator<(const Query5ResultItem &a) const
+ static void print(const Query5Result &r);
+ static void print(const Query5ResultItem &r);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+diff --git a/src/queries/query6.cc b/src/queries/query6.cc
+index 147da1f..6f89cd0 100644
+--- a/src/queries/query6.cc
++++ b/src/queries/query6.cc
+@@ -112,6 +112,8 @@ bool Query6ResultItem::operator<(const Query6ResultItem &a) const
+ 
+ static void print(const Query6Result &);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+diff --git a/src/queries/query7.cc b/src/queries/query7.cc
+index 3343928..4db5873 100644
+--- a/src/queries/query7.cc
++++ b/src/queries/query7.cc
+@@ -121,6 +121,8 @@ void Query7ResultItem::fill(const Node &start)
+ static void print(const Query7Result &results);
+ static void print(const Query7ResultItem &r);
+ 
++strings_t strings;
++
+ 
+ int main(int argc, char **argv)
+ {
+diff --git a/src/queries/query8.cc b/src/queries/query8.cc
+index a4b8f7c..8f9730f 100644
+--- a/src/queries/query8.cc
++++ b/src/queries/query8.cc
+@@ -100,6 +100,8 @@ void Query8ResultItem::fill(const Node &start)
+ static void print(const Query8Result &results);
+ static void print(const Query8ResultItem &r);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+diff --git a/src/queries/query9.cc b/src/queries/query9.cc
+index f68647a..4c8d67a 100644
+--- a/src/queries/query9.cc
++++ b/src/queries/query9.cc
+@@ -118,6 +118,8 @@ bool Query9ResultItem::operator<(const Query9ResultItem &a) const
+ static void print(const Query9Result &results);
+ static void print(const Query9ResultItem &r);
+ 
++strings_t strings;
++
+ int main(int argc, char **argv)
+ {
+     GET_ARGS
+-- 
+1.9.1
+

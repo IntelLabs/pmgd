@@ -1,0 +1,92 @@
+Client  Loaded DB: jarvis.ldbc.JarvisDb
+Client  Driver Configuration
+Client  Workload Start Time:	2018-10-29 - 06:06:16.807
+Parameters:
+	Name:                           LDBC
+	DB:                             jarvis.ldbc.JarvisDb
+	Workload:                       com.ldbc.driver.workloads.ldbc.snb.interactive.LdbcSnbInteractiveWorkload
+	Operation Count:                50,000
+	Warmup Count:                   0
+	Worker Threads:                 1
+	Status Display Interval:        00:00.000.000 (m:s.ms.us)
+	Time Unit:                      MILLISECONDS
+	Results Directory:              /opt/intel/pmgd-evaluation/LDBC/ldbc_snb_jarvis/results
+	Create Results Log:             false
+	Time Compression Ratio:         1.0000000
+	Peer IDs:                       []
+	Validation Creation Params:     null
+	Database Validation File:       null
+	Validate Workload:              false
+	Calculate Workload Statistics:  false
+	Spinner Sleep Duration:         00:00.000.000 (m:s.ms.us) / 0 (ms)
+	Print Help:                     false
+	Ignore Scheduled Start Times:   false
+	User-defined parameters:
+		ldbc.snb.interactive.LdbcQuery10_enable = true
+		ldbc.snb.interactive.LdbcQuery10_freq = 35
+		ldbc.snb.interactive.LdbcQuery11_enable = true
+		ldbc.snb.interactive.LdbcQuery11_freq = 19
+		ldbc.snb.interactive.LdbcQuery12_enable = true
+		ldbc.snb.interactive.LdbcQuery12_freq = 44
+		ldbc.snb.interactive.LdbcQuery13_enable = true
+		ldbc.snb.interactive.LdbcQuery13_freq = 19
+		ldbc.snb.interactive.LdbcQuery14_enable = true
+		ldbc.snb.interactive.LdbcQuery14_freq = 49
+		ldbc.snb.interactive.LdbcQuery1_enable = true
+		ldbc.snb.interactive.LdbcQuery1_freq = 26
+		ldbc.snb.interactive.LdbcQuery2_enable = true
+		ldbc.snb.interactive.LdbcQuery2_freq = 37
+		ldbc.snb.interactive.LdbcQuery3_enable = true
+		ldbc.snb.interactive.LdbcQuery3_freq = 92
+		ldbc.snb.interactive.LdbcQuery4_enable = true
+		ldbc.snb.interactive.LdbcQuery4_freq = 36
+		ldbc.snb.interactive.LdbcQuery5_enable = true
+		ldbc.snb.interactive.LdbcQuery5_freq = 66
+		ldbc.snb.interactive.LdbcQuery6_enable = true
+		ldbc.snb.interactive.LdbcQuery6_freq = 236
+		ldbc.snb.interactive.LdbcQuery7_enable = true
+		ldbc.snb.interactive.LdbcQuery7_freq = 54
+		ldbc.snb.interactive.LdbcQuery8_enable = true
+		ldbc.snb.interactive.LdbcQuery8_freq = 15
+		ldbc.snb.interactive.LdbcQuery9_enable = true
+		ldbc.snb.interactive.LdbcQuery9_freq = 287
+		ldbc.snb.interactive.LdbcShortQuery1PersonProfile_enable = false
+		ldbc.snb.interactive.LdbcShortQuery2PersonPosts_enable = false
+		ldbc.snb.interactive.LdbcShortQuery3PersonFriends_enable = false
+		ldbc.snb.interactive.LdbcShortQuery4MessageContent_enable = false
+		ldbc.snb.interactive.LdbcShortQuery5MessageCreator_enable = false
+		ldbc.snb.interactive.LdbcShortQuery6MessageForum_enable = false
+		ldbc.snb.interactive.LdbcShortQuery7MessageReplies_enable = false
+		ldbc.snb.interactive.LdbcUpdate1AddPerson_enable = false
+		ldbc.snb.interactive.LdbcUpdate2AddPostLike_enable = false
+		ldbc.snb.interactive.LdbcUpdate3AddCommentLike_enable = false
+		ldbc.snb.interactive.LdbcUpdate4AddForum_enable = false
+		ldbc.snb.interactive.LdbcUpdate5AddForumMembership_enable = false
+		ldbc.snb.interactive.LdbcUpdate6AddPost_enable = false
+		ldbc.snb.interactive.LdbcUpdate7AddComment_enable = false
+		ldbc.snb.interactive.LdbcUpdate8AddFriendship_enable = false
+		ldbc.snb.interactive.gct_delta_duration = 10000
+		ldbc.snb.interactive.max_write_event_start_time = 1359705610000
+		ldbc.snb.interactive.min_write_event_start_time = 1350780489156
+		ldbc.snb.interactive.num_events = 99746544
+		ldbc.snb.interactive.parameters_dir = ../../pmdir/LDBC/datasets/sf10/substitution_parameters
+		ldbc.snb.interactive.short_read_dissipation = 0.2
+		ldbc.snb.interactive.update_interleave = 89
+		threadcount = 48
+		url = /opt/intel/pmgd-evaluation/pmdir/LDBC/pmgd/conc-sf10-graph
+
+Client   ---------------------------------
+Client   --- No Warmup Phase Requested ---
+Client   ---------------------------------
+Client  
+Client   -----------------
+Client   --- Run Phase ---
+Client   -----------------
+Client  Scanning workload streams to calculate their limits...
+WorkloadStreams  Scanned 0 of 0 - OFFSET
+
+WorkloadStreams  Scanned 50,000 of 50,000 - RUN
+
+Client  Loaded workload: com.ldbc.driver.workloads.ldbc.snb.interactive.LdbcSnbInteractiveWorkload
+Client  Retrieving operation stream for workload: LdbcSnbInteractiveWorkload
+Client  Instantiating WorkloadRunner

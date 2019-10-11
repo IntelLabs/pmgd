@@ -1,0 +1,4 @@
+sudo mount -t pmfs -o physaddr=0x10000000000,init=128G,backing=/eval2/pmfs_db/LDBC/jarvis/sf30.pmfs none /mnt/pmfs/
+sudo chown -R user:user /mnt/pmfs
+mkdir -p /mnt/pmfs/databases/LDBC/jarvis/
+/usr/bin/time -o time-log.txt sh loadgraph.sh ../datasets/sf30/social_network_jarvis /mnt/pmfs/databases/LDBC/jarvis/sf30-graph ../jarvis/
