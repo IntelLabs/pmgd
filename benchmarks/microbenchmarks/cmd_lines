@@ -1,0 +1,3 @@
+g++-4.8 --std=c++11 -I"../jarvis/include" -I"../jarvis/util" -O3 -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-parentheses -Wno-conversion -MP -MMD -o SearchExpression.o -c SearchExpression.cc
+g++-4.8 --std=c++11 -I"../jarvis/include" -I"../jarvis/util" -O3 -fomit-frame-pointer -funit-at-a-time -finline-limit=2000000 -fno-strict-aliasing -fno-rtti -fno-threadsafe-statics -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-parentheses -Wno-conversion -Wno-unused-variable -MP -MMD -o jarvis_trace.o -c jarvis_trace.cc
+g++-4.8 -O3 -o trace jarvis_trace.o SearchExpression.o "../jarvis/lib/jarvis.lib" "../jarvis/lib/jarvis-util.lib"
