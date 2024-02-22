@@ -38,6 +38,8 @@ namespace PMGD {
     {
         typedef typename AvlTree<K,V>::TreeNode TreeNode;
 
+        void remove_tree(TreeNode *curr, Allocator &allocator);
+
         // Helper functions for the iterators to function.
         class Compare;
         class Stack;
@@ -92,6 +94,8 @@ namespace PMGD {
             TransactionImpl *tx = TransactionImpl::get_tx();
             tx->flush_range(this, sizeof *this);
         }
+
+        void remove_index(Allocator &);
 
         using AvlTree<K,V>::add;
         using AvlTree<K,V>::remove;

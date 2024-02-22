@@ -858,6 +858,25 @@ void AvlTreeIndex<K,V>::index_stats_info(Graph::IndexStats &stats)
     stats_health_recursive(this->_tree, stats, avg_elem_per_node);
 }
 
+template <typename K, typename V>
+void AvlTreeIndex<K,V>::remove_index(Allocator &allocator)
+{
+    remove_tree(this->_tree, allocator);
+}
+
+template <typename K, typename V>
+void AvlTreeIndex<K,V>::remove_tree(TreeNode *tree, Allocator &allocator)
+{
+    if (tree != NULL) {
+        remove_tree(tree->left, allocator);
+        remove_tree(tree->right, allocator);
+        tree->value.remove_list(allocator);
+        tree->key.~K();
+        allocator.free(tree, sizeof (TreeNode));
+    }
+}
+
+
 // Explicitly instantiate any types that might be required
 template class AvlTreeIndex<long long, List<void *>>;
 template class AvlTreeIndex<bool, List<void *>>;

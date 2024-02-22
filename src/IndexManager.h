@@ -88,10 +88,13 @@ namespace PMGD {
             }
         }
 
-        void create_index(Graph::IndexType index_type, StringID tag,
+        Index *create_index(Graph::IndexType index_type, StringID tag,
                             StringID property_id,
                             PropertyType ptype,
                             Allocator &allocator);
+
+        void remove_index(Graph::IndexType index_type, StringID tag,
+                            StringID property_id, Allocator &allocator);
 
         // Nodes and edges have to be added to an index in two
         // stages. One at the add_node or add_edge stage. Another at
